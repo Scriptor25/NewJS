@@ -1,14 +1,14 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Context.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Value.hpp>
 
 NJS::FormatExpr::FormatExpr(
-    TypePtr type,
     const size_t count,
     std::map<size_t, std::string> statics,
     std::map<size_t, ExprPtr> dynamics)
-    : Expr(std::move(type)), Count(count), Statics(std::move(statics)), Dynamics(std::move(dynamics))
+    : Count(count), Statics(std::move(statics)), Dynamics(std::move(dynamics))
 {
 }
 
@@ -45,7 +45,7 @@ std::ostream& NJS::FormatExpr::Print(std::ostream& os)
     for (size_t i = 0; i < Count; ++i)
     {
         if (Statics.contains(i)) os << Statics[i];
-        else if (Dynamics.contains(i)) os << '{' << Dynamics[i] << '}';
+        else if (Dynamics.contains(i)) Dynamics[i]->Print(os << '{') << '}';
     }
     return os << '"';
 }

@@ -1,15 +1,10 @@
 #pragma once
 
-#include <memory>
-#include <NJS/Builder.hpp>
+#include <llvm/IR/Value.h>
+#include <NJS/NJS.hpp>
 
 namespace NJS
 {
-    class Builder;
-
-    typedef std::shared_ptr<struct Type> TypePtr;
-    typedef std::shared_ptr<class Value> ValuePtr;
-
     class Value
     {
     public:

@@ -1,8 +1,7 @@
 #include <llvm/IR/BasicBlock.h>
 #include <NJS/AST.hpp>
-
-#include "NJS/Builder.hpp"
-#include "NJS/Value.hpp"
+#include <NJS/Builder.hpp>
+#include <NJS/Value.hpp>
 
 NJS::ForStmt::ForStmt(StmtPtr init, ExprPtr condition, StmtPtr loop, StmtPtr body)
     : Init(std::move(init)), Condition(std::move(condition)), Loop(std::move(loop)), Body(std::move(body))
@@ -42,10 +41,10 @@ NJS::ValuePtr NJS::ForStmt::GenLLVM(Builder& builder)
 std::ostream& NJS::ForStmt::Print(std::ostream& os)
 {
     os << "for (";
-    if (Init) os << Init;
-    os << ";";
-    if (Condition) os << ' ' << Condition;
-    os << ";";
-    if (Loop) os << ' ' << Loop;
-    return os << ") " << Body;
+    if (Init) Init->Print(os);
+    os << ';';
+    if (Condition) Condition->Print(os << ' ');
+    os << ';';
+    if (Loop) Loop->Print(os << ' ');
+    return Body->Print(os << ") ");
 }

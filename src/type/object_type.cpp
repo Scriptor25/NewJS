@@ -1,5 +1,6 @@
 #include <llvm/IR/DerivedTypes.h>
 #include <NJS/Builder.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Type.hpp>
 
@@ -23,6 +24,11 @@ NJS::ObjectType::ObjectType(const std::map<std::string, TypePtr>& element_types)
 {
     for (const auto& [name, type] : element_types)
         ElementTypes.emplace_back(name, type);
+}
+
+bool NJS::ObjectType::IsComplex()
+{
+    return true;
 }
 
 size_t NJS::ObjectType::Size()

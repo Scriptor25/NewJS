@@ -1,3 +1,4 @@
+#include <NJS/Builder.hpp>
 #include <NJS/Value.hpp>
 
 NJS::ValuePtr NJS::LValue::Create(Builder& builder, const TypePtr& type, llvm::Value* ptr)

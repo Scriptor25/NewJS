@@ -1,18 +1,46 @@
 #include <llvm/IR/Value.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/NJS.hpp>
+#include <NJS/Operator.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::BinaryExpr::BinaryExpr(TypePtr type, std::string op, ExprPtr lhs, ExprPtr rhs)
-    : Expr(std::move(type)), Op(std::move(op)), LHS(std::move(lhs)), RHS(std::move(rhs))
+NJS::BinaryExpr::BinaryExpr(std::string op, ExprPtr lhs, ExprPtr rhs)
+    : Op(std::move(op)), Lhs(std::move(lhs)), Rhs(std::move(rhs))
 {
 }
 
 NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
 {
-    auto lhs = LHS->GenLLVM(builder);
-    const auto rhs = RHS->GenLLVM(builder);
+    static std::map<std::string, std::function<ValuePtr(Builder&, const ValuePtr&, const ValuePtr&)>> ops
+    {
+        {"==", {}},
+        {"!=", {}},
+        {"<", {}},
+        {"<=", OperatorLE},
+        {">", {}},
+        {">=", {}},
+        {"||", {}},
+        {"^^", {}},
+        {"&&", {}},
+        {"|", {}},
+        {"^", {}},
+        {"&", {}},
+        {"+", OperatorAdd},
+        {"-", OperatorSub},
+        {"*", {}},
+        {"/", {}},
+        {"%", {}},
+        {"**", {}},
+        {"//", {}},
+        {"<<", {}},
+        {">>", {}},
+    };
+
+    auto lhs = Lhs->GenLLVM(builder);
+    const auto rhs = Rhs->GenLLVM(builder);
 
     if (Op == "=")
     {
@@ -20,35 +48,28 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
         return lhs;
     }
 
-    llvm::Value* value{};
-
-    const auto lv = lhs->Load();
-    const auto rv = rhs->Load();
-
-    if (Op == "<") value = builder.LLVMBuilder().CreateFCmpOLT(lv, rv);
-
-    if (value)
-        return RValue::Create(builder, builder.Ctx().GetBooleanType(), value);
+    if (const auto& _ = ops[Op]; _)
+        if (auto value = _(builder, lhs, rhs))
+            return value;
 
     const auto assign = Op.back() == '=';
     const auto op = assign ? Op.substr(0, Op.size() - 1) : Op;
-    if (op == "+") value = builder.LLVMBuilder().CreateFAdd(lv, rv);
-    if (op == "-") value = builder.LLVMBuilder().CreateFSub(lv, rv);
 
-    if (value)
-    {
-        if (assign)
+    if (const auto& _ = ops[op]; _)
+        if (auto value = _(builder, lhs, rhs))
         {
-            lhs->Store(value);
-            return lhs;
+            if (assign)
+            {
+                lhs->Store(value->Load());
+                return lhs;
+            }
+            return value;
         }
-        return RValue::Create(builder, builder.Ctx().GetNumberType(), value);
-    }
 
-    Error("undefined binary operator");
+    Error("undefined binary operator '{} {} {}'", lhs->GetType(), Op, rhs->GetType());
 }
 
 std::ostream& NJS::BinaryExpr::Print(std::ostream& os)
 {
-    return os << LHS << ' ' << Op << ' ' << RHS;
+    return Rhs->Print(Lhs->Print(os) << ' ' << Op << ' ');
 }

@@ -1,11 +1,15 @@
 #include <ranges>
 #include <NJS/Context.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Type.hpp>
 
 NJS::Context::Context()
 {
-    StackPush();
+    GetVoidType();
+    GetBooleanType();
+    GetNumberType();
+    GetStringType();
 }
 
 NJS::TypePtr& NJS::Context::GetType(const std::string& str)
@@ -40,19 +44,11 @@ NJS::TypePtr NJS::Context::GetStringType()
     return GetPrimitiveType(Type_String);
 }
 
-NJS::TypePtr NJS::Context::GetMultiType(const std::vector<TypePtr>& element_types)
-{
-    auto& ref = GetType(MultiType::GenString(element_types));
-    if (ref) return ref;
-    return ref = std::make_shared<MultiType>(element_types);
-}
-
 NJS::TypePtr NJS::Context::GetTupleType(const std::vector<TypePtr>& element_types)
 {
     auto& ref = GetType(TupleType::GenString(element_types));
     if (ref) return ref;
-    const auto element_type = GetMultiType(element_types);
-    return ref = std::make_shared<TupleType>(element_type, element_types);
+    return ref = std::make_shared<TupleType>( element_types);
 }
 
 NJS::TypePtr NJS::Context::GetObjectType(const std::map<std::string, TypePtr>& element_types)
@@ -77,28 +73,4 @@ NJS::TypePtr NJS::Context::GetFunctionType(
     auto& ref = GetType(FunctionType::GenString(param_types, result_type, vararg));
     if (ref) return ref;
     return ref = std::make_shared<FunctionType>(param_types, result_type, vararg);
-}
-
-void NJS::Context::StackPush()
-{
-    m_Stack.emplace_back();
-}
-
-void NJS::Context::StackPop()
-{
-    m_Stack.pop_back();
-}
-
-NJS::TypePtr& NJS::Context::CreateVar(const std::string& name)
-{
-    if (m_Stack.back().contains(name))
-        Error("redefining symbol with name '{}'", name);
-    return m_Stack.back()[name];
-}
-
-NJS::TypePtr& NJS::Context::GetVar(const std::string& name)
-{
-    for (auto& ref : std::ranges::reverse_view(m_Stack))
-        if (ref.contains(name)) return ref[name];
-    Error("no symbol with name '{}'", name);
 }

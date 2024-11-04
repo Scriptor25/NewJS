@@ -1,38 +1,29 @@
 #include <NJS/Context.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Parser.hpp>
 
 NJS::TypePtr NJS::Parser::ParseType()
 {
-    std::vector<TypePtr> types;
-    do
+    TypePtr type;
+
+    const auto where = m_Token.Where;
+
+    if (At("[")) type = ParseTupleType();
+    else if (At("{")) type = ParseObjectType();
+    else if (At("(")) type = ParseFunctionType();
+    else type = m_Ctx.GetType(Expect(TokenType_Symbol).StringValue);
+
+    if (!type)
+        Error(where, "expected a valid typename here");
+
+    while (NextAt("["))
     {
-        TypePtr type;
-
-        if (NextAt("void")) type = m_Ctx.GetVoidType();
-        else if (NextAt("boolean")) type = m_Ctx.GetBooleanType();
-        else if (NextAt("number")) type = m_Ctx.GetNumberType();
-        else if (NextAt("string")) type = m_Ctx.GetStringType();
-        else if (At("[")) type = ParseTupleType();
-        else if (At("{")) type = ParseObjectType();
-        else
-        {
-            const auto where = m_Token.Where;
-            type = m_Ctx.GetType(Expect(TokenType_Symbol).StringValue);
-            if (!type) Error(where, "expected some kind of type here");
-        }
-
-        while (NextAt("["))
-        {
-            Expect("]");
-            type = m_Ctx.GetArrayType(type);
-        }
-        types.push_back(type);
+        Expect("]");
+        type = m_Ctx.GetArrayType(type);
     }
-    while (NextAt("|"));
 
-    if (types.size() == 1) return types.front();
-    return m_Ctx.GetMultiType(types);
+    return type;
 }
 
 NJS::TypePtr NJS::Parser::ParseTupleType()
@@ -51,15 +42,35 @@ NJS::TypePtr NJS::Parser::ParseObjectType()
     return m_Ctx.GetObjectType(types);
 }
 
-void NJS::Parser::ParseTypeList(std::vector<TypePtr>& types, const std::string& delim)
+NJS::TypePtr NJS::Parser::ParseFunctionType()
+{
+    Expect("(");
+    std::vector<TypePtr> params;
+    const auto vararg = ParseTypeList(params, ")");
+    TypePtr result;
+    if (NextAt(":"))
+        result = ParseType();
+    else result = m_Ctx.GetVoidType();
+    return m_Ctx.GetFunctionType(params, result, vararg);
+}
+
+bool NJS::Parser::ParseTypeList(std::vector<TypePtr>& types, const std::string& delim)
 {
     while (!NextAt(delim))
     {
+        if (NextAt("."))
+        {
+            Expect(".");
+            Expect(".");
+            Expect(delim);
+            return true;
+        }
         types.push_back(ParseType());
         if (!At(delim))
             Expect(",");
         else NextAt(",");
     }
+    return false;
 }
 
 void NJS::Parser::ParseTypeMap(std::map<std::string, TypePtr>& types, const std::string& delim)

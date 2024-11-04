@@ -4,25 +4,16 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <NJS/NJS.hpp>
 
 namespace NJS
 {
-    class Context;
-    class Builder;
-
-    typedef std::shared_ptr<struct Type> TypePtr;
-    typedef std::shared_ptr<struct Param> ParamPtr;
-    typedef std::shared_ptr<class Value> ValuePtr;
-
-    std::ostream& operator<<(std::ostream&, const ParamPtr&);
-
     struct Param
     {
         explicit Param(std::string);
         virtual ~Param() = default;
 
         virtual bool RequireValue();
-        virtual void CreateVars(Context&, const TypePtr&);
         virtual void CreateVars(Builder&, bool, ValuePtr);
 
         virtual std::ostream& Print(std::ostream&);
@@ -36,7 +27,6 @@ namespace NJS
         explicit DestructureObject(std::map<std::string, ParamPtr>);
 
         bool RequireValue() override;
-        void CreateVars(Context&, const TypePtr&) override;
         void CreateVars(Builder&, bool, ValuePtr) override;
 
         std::ostream& Print(std::ostream&) override;
@@ -49,7 +39,6 @@ namespace NJS
         explicit DestructureArray(std::vector<ParamPtr>);
 
         bool RequireValue() override;
-        void CreateVars(Context&, const TypePtr&) override;
         void CreateVars(Builder&, bool, ValuePtr) override;
 
         std::ostream& Print(std::ostream&) override;

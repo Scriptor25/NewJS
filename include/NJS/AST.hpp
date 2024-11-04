@@ -3,29 +3,10 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <NJS/NJS.hpp>
 
 namespace NJS
 {
-    class Builder;
-
-    typedef std::shared_ptr<struct Type> TypePtr;
-    typedef std::shared_ptr<struct Param> ParamPtr;
-    typedef std::shared_ptr<class Value> ValuePtr;
-
-    typedef std::shared_ptr<struct Stmt> StmtPtr;
-    typedef std::shared_ptr<struct Expr> ExprPtr;
-
-    typedef std::shared_ptr<struct ScopeStmt> ScopeStmtPtr;
-    typedef std::shared_ptr<struct FunctionStmt> FunctionStmtPtr;
-    typedef std::shared_ptr<struct VariableStmt> VariableStmtPtr;
-    typedef std::shared_ptr<struct IfStmt> IfStmtPtr;
-    typedef std::shared_ptr<struct ForStmt> ForStmtPtr;
-    typedef std::shared_ptr<struct ForInOfStmt> ForInOfStmtPtr;
-    typedef std::shared_ptr<struct ReturnStmt> ReturnStmtPtr;
-
-    std::ostream& operator<<(std::ostream&, const StmtPtr&);
-    std::ostream& operator<<(std::ostream&, const ExprPtr&);
-
     struct Stmt
     {
         virtual ~Stmt() = default;
@@ -45,14 +26,15 @@ namespace NJS
 
     struct FunctionStmt : Stmt
     {
-        FunctionStmt(std::string name, std::vector<ParamPtr> params, TypePtr, ScopeStmtPtr body);
+        FunctionStmt(std::string name, std::vector<ParamPtr> params, bool, TypePtr, ScopeStmtPtr body);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
         std::string Name;
         std::vector<ParamPtr> Params;
-        TypePtr Type;
+        bool VarArg;
+        TypePtr ResultType;
         ScopeStmtPtr Body;
     };
 
@@ -118,26 +100,23 @@ namespace NJS
 
     struct Expr : Stmt
     {
-        explicit Expr(TypePtr);
-
-        TypePtr Type;
     };
 
     struct BinaryExpr : Expr
     {
-        BinaryExpr(TypePtr, std::string, ExprPtr, ExprPtr);
+        BinaryExpr(std::string, ExprPtr, ExprPtr);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
         std::string Op;
-        ExprPtr LHS;
-        ExprPtr RHS;
+        ExprPtr Lhs;
+        ExprPtr Rhs;
     };
 
     struct CallExpr : Expr
     {
-        CallExpr(TypePtr, ExprPtr, std::vector<ExprPtr>);
+        CallExpr(ExprPtr, std::vector<ExprPtr>);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -148,17 +127,17 @@ namespace NJS
 
     struct ConstTupleExpr : Expr
     {
-        ConstTupleExpr(TypePtr, std::vector<ExprPtr>);
+        explicit ConstTupleExpr(std::vector<ExprPtr>);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
-        std::vector<ExprPtr> Entries;
+        std::vector<ExprPtr> Elements;
     };
 
     struct ConstFunctionExpr : Expr
     {
-        ConstFunctionExpr(TypePtr, std::vector<ParamPtr>, ScopeStmt);
+        ConstFunctionExpr(std::vector<ParamPtr>, ScopeStmt);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -169,7 +148,7 @@ namespace NJS
 
     struct ConstNumberExpr : Expr
     {
-        ConstNumberExpr(TypePtr, double);
+        explicit ConstNumberExpr(double);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -179,17 +158,17 @@ namespace NJS
 
     struct ConstObjectExpr : Expr
     {
-        ConstObjectExpr(TypePtr, std::map<std::string, ExprPtr>);
+        explicit ConstObjectExpr(std::map<std::string, ExprPtr>);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
-        std::map<std::string, ExprPtr> Entries;
+        std::map<std::string, ExprPtr> Elements;
     };
 
     struct ConstStringExpr : Expr
     {
-        ConstStringExpr(TypePtr, std::string);
+        explicit ConstStringExpr(std::string);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -199,7 +178,7 @@ namespace NJS
 
     struct FormatExpr : Expr
     {
-        FormatExpr(TypePtr, size_t, std::map<size_t, std::string>, std::map<size_t, ExprPtr>);
+        FormatExpr(size_t, std::map<size_t, std::string>, std::map<size_t, ExprPtr>);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -211,7 +190,7 @@ namespace NJS
 
     struct MemberExpr : Expr
     {
-        MemberExpr(TypePtr, ExprPtr, std::string);
+        MemberExpr(ExprPtr, std::string);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -222,7 +201,7 @@ namespace NJS
 
     struct SubscriptExpr : Expr
     {
-        SubscriptExpr(TypePtr, ExprPtr, ExprPtr);
+        SubscriptExpr(ExprPtr, ExprPtr);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -233,7 +212,7 @@ namespace NJS
 
     struct SymbolExpr : Expr
     {
-        SymbolExpr(TypePtr, std::string);
+        explicit SymbolExpr(std::string);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -243,7 +222,7 @@ namespace NJS
 
     struct UnaryExpr : Expr
     {
-        UnaryExpr(TypePtr, std::string, bool, ExprPtr);
+        UnaryExpr(std::string, bool, ExprPtr);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;

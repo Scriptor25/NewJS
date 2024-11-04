@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ostream>
+#include <string>
 
 namespace NJS
 {
@@ -10,6 +10,4 @@ namespace NJS
         size_t Row = 0;
         size_t Col = 0;
     };
-
-    std::ostream& operator<<(std::ostream&, const SourceLocation&);
 }

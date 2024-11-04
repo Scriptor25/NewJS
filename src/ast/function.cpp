@@ -1,13 +1,24 @@
 #include <llvm/IR/Verifier.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Context.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Param.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::FunctionStmt::FunctionStmt(std::string name, std::vector<ParamPtr> params, TypePtr type, ScopeStmtPtr body)
-    : Name(std::move(name)), Params(std::move(params)), Type(std::move(type)), Body(std::move(body))
+NJS::FunctionStmt::FunctionStmt(
+    std::string name,
+    std::vector<ParamPtr> params,
+    const bool vararg,
+    TypePtr result_type,
+    ScopeStmtPtr body)
+    : Name(std::move(name)),
+      Params(std::move(params)),
+      VarArg(vararg),
+      ResultType(std::move(result_type)),
+      Body(std::move(body))
 {
 }
 
@@ -16,10 +27,14 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
     auto function = builder.LLVMModule().getFunction(builder.ValueName(Name));
     if (!function)
     {
-        const auto type = llvm::dyn_cast<llvm::FunctionType>(Type->GenLLVM(builder));
-        function = llvm::Function::Create(type, llvm::GlobalValue::ExternalLinkage, Name, builder.LLVMModule());
+        std::vector<TypePtr> types;
+        for (const auto& param : Params)
+            types.push_back(param->Type);
+        const auto type = builder.Ctx().GetFunctionType(types, ResultType, VarArg);
+        const auto llvm_type = llvm::dyn_cast<llvm::FunctionType>(type->GenLLVM(builder));
+        function = llvm::Function::Create(llvm_type, llvm::GlobalValue::ExternalLinkage, Name, builder.LLVMModule());
 
-        builder.CreateVar(Name) = LValue::Create(builder, Type, function);
+        builder.CreateVar(Name) = LValue::Create(builder, type, function);
     }
 
     if (!Body) return {};
@@ -53,6 +68,8 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
         Error("not all code paths return");
     }
 
+    function->print(llvm::outs());
+
     if (verifyFunction(*function, &llvm::errs()))
         Error("failed to verify function");
 
@@ -66,9 +83,14 @@ std::ostream& NJS::FunctionStmt::Print(std::ostream& os)
     for (size_t i = 0; i < Params.size(); ++i)
     {
         if (i > 0) os << ", ";
-        os << Params[i];
+        Params[i]->Print(os);
     }
-    os << "): " << Type->Result();
+    if (VarArg)
+    {
+        if (!Params.empty()) os << ", ";
+        os << "...";
+    }
+    ResultType->Print(os << "): ");
     if (Body) Body->Print(os << ' ');
     return os;
 }

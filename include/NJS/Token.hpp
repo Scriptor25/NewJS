@@ -25,9 +25,6 @@ namespace NJS
         std::string StringValue;
         double NumberValue = 0.0;
     };
-
-    std::ostream& operator<<(std::ostream&, TokenType);
-    std::ostream& operator<<(std::ostream&, const Token&);
 }
 
 namespace std

@@ -1,3 +1,4 @@
+#include <ostream>
 #include <NJS/NJS.hpp>
 
 unsigned depth = 0;

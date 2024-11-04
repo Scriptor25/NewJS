@@ -46,7 +46,7 @@ NJS::ValuePtr NJS::IfStmt::GenLLVM(Builder& builder)
 
 std::ostream& NJS::IfStmt::Print(std::ostream& os)
 {
-    os << "if (" << Condition << ") " << Then;
-    if (Else) os << " else " << Else;
+    Then->Print(Condition->Print(os << "if (") << ") ");
+    if (Else) Else->Print(os << " else ");
     return os;
 }

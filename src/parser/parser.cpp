@@ -1,7 +1,8 @@
 #include <iostream>
+#include <NJS/Error.hpp>
 #include <NJS/NJS.hpp>
-#include <NJS/Parser.hpp>
 #include <NJS/Param.hpp>
+#include <NJS/Parser.hpp>
 
 NJS::Parser::Parser(Context& ctx, std::istream& stream, std::string filename)
     : m_Ctx(ctx), m_Stream(stream)

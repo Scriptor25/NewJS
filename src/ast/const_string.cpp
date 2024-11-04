@@ -1,9 +1,10 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Context.hpp>
 #include <NJS/Value.hpp>
 
-NJS::ConstStringExpr::ConstStringExpr(TypePtr type, std::string value)
-    : Expr(std::move(type)), Value(std::move(value))
+NJS::ConstStringExpr::ConstStringExpr(std::string value)
+    : Value(std::move(value))
 {
 }
 

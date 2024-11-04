@@ -1,5 +1,5 @@
 #include <NJS/Builder.hpp>
-#include <NJS/NJS.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/Type.hpp>
 
 std::string NJS::PrimitiveType::GenString(const TypeName name)

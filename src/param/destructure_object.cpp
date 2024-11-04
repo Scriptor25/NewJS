@@ -1,4 +1,5 @@
 #include <NJS/Builder.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Param.hpp>
 #include <NJS/Type.hpp>
@@ -12,13 +13,6 @@ NJS::DestructureObject::DestructureObject(std::map<std::string, ParamPtr> elemen
 bool NJS::DestructureObject::RequireValue()
 {
     return true;
-}
-
-void NJS::DestructureObject::CreateVars(Context& ctx, const TypePtr& type)
-{
-    if (type && Type && type != Type) Error("cannot assign value of type {} to value of type {}", type, Type);
-    for (const auto& [name, element] : Elements)
-        element->CreateVars(ctx, (Type ? Type : type)->Member(name));
 }
 
 void NJS::DestructureObject::CreateVars(Builder& builder, const bool is_const, ValuePtr value)
@@ -43,13 +37,13 @@ std::ostream& NJS::DestructureObject::Print(std::ostream& os)
 {
     os << "{ ";
     bool first = true;
-    for (const auto& [key, value] : Elements)
+    for (const auto& [name, element] : Elements)
     {
         if (first) first = false;
         else os << ", ";
-        os << key << ": " << value;
+        element->Print(os << name << ": ");
     }
     os << " }";
-    if (Type) os << ": " << Type;
+    if (Type) Type->Print(os << ": ");
     return os;
 }

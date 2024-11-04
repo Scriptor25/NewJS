@@ -17,22 +17,8 @@ NJS::FunctionStmtPtr NJS::Parser::ParseFunction()
         result_type = ParseType();
     else result_type = m_Ctx.GetVoidType();
 
-    auto& ref = m_Ctx.CreateVar(name);
-
-    m_Ctx.StackPush();
-
-    std::vector<TypePtr> param_types;
-    for (const auto& param : params)
-    {
-        param->CreateVars(m_Ctx, {});
-        param_types.push_back(param->Type);
-    }
-    ref = m_Ctx.GetFunctionType(param_types, result_type, vararg);
-
     ScopeStmtPtr body;
     if (At("{")) body = ParseScope();
 
-    m_Ctx.StackPop();
-
-    return std::make_shared<FunctionStmt>(name, params, ref, body);
+    return std::make_shared<FunctionStmt>(name, params, vararg, result_type, body);
 }

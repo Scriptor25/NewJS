@@ -1,14 +1,10 @@
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
 
-#include "NJS/Context.hpp"
-
 NJS::StmtPtr NJS::Parser::ParseFor()
 {
     StmtPtr init, loop;
     ExprPtr condition;
-
-    m_Ctx.StackPush();
 
     Expect("for");
     Expect("(");
@@ -36,7 +32,5 @@ NJS::StmtPtr NJS::Parser::ParseFor()
     }
 
     auto body = ParseLine();
-    m_Ctx.StackPop();
-
     return std::make_shared<ForStmt>(init, condition, loop, body);
 }

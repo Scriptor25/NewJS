@@ -37,3 +37,10 @@ function printArray(array: number[]) {
 
 printArray(t1)
 printArray(a1)
+
+function foo(x: number): (): number {
+    function bar(): number {
+        return x
+    }
+    return bar
+}

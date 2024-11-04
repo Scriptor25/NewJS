@@ -6,13 +6,10 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
-#include <NJS/Context.hpp>
+#include <NJS/NJS.hpp>
 
 namespace NJS
 {
-    typedef std::shared_ptr<class Value> ValuePtr;
-    typedef std::shared_ptr<struct Type> TypePtr;
-
     struct StackFrame
     {
         [[nodiscard]] bool contains(const std::string&) const;

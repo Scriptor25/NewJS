@@ -1,47 +1,30 @@
 #pragma once
 
-#include <format>
-#include <functional>
-#include <iostream>
-#include <ostream>
-#include <NJS/SourceLocation.hpp>
+#include <memory>
 
 namespace NJS
 {
+    class Context;
+    class Builder;
+
+    struct SourceLocation;
+    struct Token;
+
+    typedef std::shared_ptr<struct Type> TypePtr;
+    typedef std::shared_ptr<struct Param> ParamPtr;
+    typedef std::shared_ptr<class Value> ValuePtr;
+
+    typedef std::shared_ptr<struct Stmt> StmtPtr;
+    typedef std::shared_ptr<struct Expr> ExprPtr;
+    typedef std::shared_ptr<struct ScopeStmt> ScopeStmtPtr;
+    typedef std::shared_ptr<struct FunctionStmt> FunctionStmtPtr;
+    typedef std::shared_ptr<struct VariableStmt> VariableStmtPtr;
+    typedef std::shared_ptr<struct IfStmt> IfStmtPtr;
+    typedef std::shared_ptr<struct ForStmt> ForStmtPtr;
+    typedef std::shared_ptr<struct ForInOfStmt> ForInOfStmtPtr;
+    typedef std::shared_ptr<struct ReturnStmt> ReturnStmtPtr;
+
     void Indent();
     void Exdent();
     std::ostream& Spacing(std::ostream&);
-
-    template <typename... Args>
-    [[noreturn]] void Error(const SourceLocation& where, const std::string& format, Args&&... args)
-    {
-        const auto message = std::vformat(format, std::make_format_args(args...));
-        std::cerr << "at " << where << ": " << message << std::endl;
-        throw std::runtime_error("NJS::Error");
-    }
-
-    template <typename... Args>
-    [[noreturn]] void Error(const std::string& format, Args&&... args)
-    {
-        const auto message = std::vformat(format, std::make_format_args(args...));
-        std::cerr << message << std::endl;
-        throw std::runtime_error("NJS::Error");
-    }
-
-    [[noreturn]] inline void Error(const SourceLocation& where)
-    {
-        std::cerr << "at " << where << std::endl;
-        throw std::runtime_error("NJS::Error");
-    }
-
-    template <typename R>
-    R Catch(const std::function<R()>& t, const std::function<void()>& c)
-    {
-        try { return t(); }
-        catch (std::exception&)
-        {
-            c();
-            throw;
-        }
-    }
 }

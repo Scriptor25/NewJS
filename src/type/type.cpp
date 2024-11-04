@@ -1,16 +1,16 @@
 #include <NJS/Type.hpp>
 
-std::ostream& NJS::operator<<(std::ostream& os, const TypePtr& type)
-{
-    return type->Print(os);
-}
-
 NJS::Type::Type(std::string str)
     : String(std::move(str))
 {
 }
 
 bool NJS::Type::IsTuple()
+{
+    return false;
+}
+
+bool NJS::Type::IsComplex()
 {
     return false;
 }
@@ -50,7 +50,7 @@ size_t NJS::Type::ElementSize()
     return 0;
 }
 
-std::ostream& NJS::Type::Print(std::ostream& os)
+std::ostream& NJS::Type::Print(std::ostream& os) const
 {
     return os << String;
 }

@@ -1,34 +1,30 @@
 #include <iostream>
 #include <sstream>
 #include <NJS/AST.hpp>
+#include <NJS/Context.hpp>
+#include <NJS/Error.hpp>
+#include <NJS/NJS.hpp>
 #include <NJS/Parser.hpp>
-
-#include "NJS/Context.hpp"
-#include "NJS/NJS.hpp"
-#include "NJS/Param.hpp"
 
 NJS::ExprPtr NJS::Parser::ParsePrimary()
 {
     if (At(TokenType_Symbol))
     {
         const auto name = Skip().StringValue;
-        const auto type = m_Ctx.GetVar(name);
-        return std::make_shared<SymbolExpr>(type, name);
+        return std::make_shared<SymbolExpr>(name);
     }
 
     if (At(TokenType_Number))
-        return std::make_shared<ConstNumberExpr>(m_Ctx.GetNumberType(), Skip().NumberValue);
+        return std::make_shared<ConstNumberExpr>(Skip().NumberValue);
 
     if (At(TokenType_String))
-        return std::make_shared<ConstStringExpr>(m_Ctx.GetStringType(), Skip().StringValue);
+        return std::make_shared<ConstStringExpr>(Skip().StringValue);
 
     if (At(TokenType_Operator))
     {
         const auto op = Skip().StringValue;
         auto operand = ParseOperand();
-
-        TypePtr type; // TODO: get operator result
-        return std::make_shared<UnaryExpr>(type, op, false, operand);
+        return std::make_shared<UnaryExpr>(op, false, operand);
     }
 
     if (NextAt("("))
@@ -41,59 +37,37 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
     if (NextAt("{"))
     {
         std::map<std::string, ExprPtr> entries;
-        std::map<std::string, TypePtr> types;
         while (!NextAt("}"))
         {
             const auto name = Expect(TokenType_Symbol).StringValue;
             if (!NextAt(":"))
-            {
-                const auto type = m_Ctx.GetVar(name);
-                entries[name] = std::make_shared<SymbolExpr>(type, name);
-                types[name] = type;
-            }
+                entries[name] = std::make_shared<SymbolExpr>(name);
             else
             {
                 const auto value = ParseExpression();
                 entries[name] = value;
-                types[name] = value->Type;
             }
 
             if (!At("}"))
                 Expect(",");
             else NextAt(",");
         }
-        return std::make_shared<ConstObjectExpr>(m_Ctx.GetObjectType(types), entries);
+        return std::make_shared<ConstObjectExpr>(entries);
     }
 
     if (NextAt("["))
     {
         std::vector<ExprPtr> entries;
-        std::vector<TypePtr> types;
         while (!NextAt("]"))
         {
             const auto value = ParseExpression();
             entries.push_back(value);
-            types.push_back(value->Type);
 
             if (!At("]"))
                 Expect(",");
             else NextAt(",");
         }
-
-        auto first = types.front();
-        bool same = true;
-        for (const auto& type : types)
-            if (first != type)
-            {
-                same = false;
-                break;
-            }
-
-        TypePtr type;
-        if (same) type = m_Ctx.GetArrayType(first);
-        else type = m_Ctx.GetTupleType(types);
-
-        return std::make_shared<ConstTupleExpr>(type, entries);
+        return std::make_shared<ConstTupleExpr>(entries);
     }
 
     if (At("$"))
@@ -117,14 +91,12 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
 
             std::stringstream stream(source);
             Parser parser(m_Ctx, stream, "<dynamic>");
-            dynamics[index++] = Catch<ExprPtr>(
-                [&] { return parser.ParseExpression(); },
-                [&] { Error(where); });
+            dynamics[index++] = parser.ParseExpression();
 
             source.erase(0, static_cast<size_t>(stream.tellg()) - 1);
         }
         if (!source.empty()) statics[index++] = source;
-        return std::make_shared<FormatExpr>(m_Ctx.GetStringType(), index, statics, dynamics);
+        return std::make_shared<FormatExpr>(index, statics, dynamics);
     }
 
     if (NextAt("?"))
@@ -139,18 +111,8 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
             result_type = ParseType();
         else result_type = m_Ctx.GetVoidType();
 
-        m_Ctx.StackPush();
-        std::vector<TypePtr> param_types;
-        for (const auto& param : params)
-        {
-            param->CreateVars(m_Ctx, {});
-            param_types.push_back(param->Type);
-        }
         const auto body = ParseScope();
-        m_Ctx.StackPop();
-
-        const auto type = m_Ctx.GetFunctionType(param_types, result_type, vararg);
-        return std::make_shared<ConstFunctionExpr>(type, params, *body);
+        return std::make_shared<ConstFunctionExpr>(params, *body);
     }
 
     Error(m_Token.Where, "unused token {}", m_Token);

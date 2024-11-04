@@ -1,3 +1,4 @@
+#include <NJS/Error.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Value.hpp>
 

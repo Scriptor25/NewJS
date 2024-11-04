@@ -1,8 +1,8 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 
-NJS::SymbolExpr::SymbolExpr(TypePtr type, std::string name)
-    : Expr(std::move(type)), Name(std::move(name))
+NJS::SymbolExpr::SymbolExpr(std::string name)
+    : Name(std::move(name))
 {
 }
 

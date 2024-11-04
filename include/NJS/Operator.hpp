@@ -1,19 +1,10 @@
 #pragma once
 
-#include <memory>
+#include <NJS/NJS.hpp>
 
 namespace NJS
 {
-    class Context;
-    typedef std::shared_ptr<struct Type> TypePtr;
-
-    struct Operator
-    {
-        static Operator& Get(const std::string&);
-
-        TypePtr Result(Context&, const TypePtr&, const TypePtr&) const;
-
-        std::string Id;
-        int Precedence;
-    };
+    ValuePtr OperatorLE(Builder&, const ValuePtr&, const ValuePtr&);
+    ValuePtr OperatorAdd(Builder&, const ValuePtr&, const ValuePtr&);
+    ValuePtr OperatorSub(Builder&, const ValuePtr&, const ValuePtr&);
 }

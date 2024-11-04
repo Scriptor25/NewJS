@@ -1,11 +1,13 @@
 #include <llvm/IR/Value.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Context.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Value.hpp>
 
-NJS::UnaryExpr::UnaryExpr(TypePtr type, std::string op, const bool op_right, ExprPtr operand)
-    : Expr(std::move(type)), Op(std::move(op)), OpRight(op_right), Operand(std::move(operand))
+NJS::UnaryExpr::UnaryExpr(std::string op, const bool op_right, ExprPtr operand)
+    : Op(std::move(op)), OpRight(op_right), Operand(std::move(operand))
 {
 }
 
@@ -36,5 +38,5 @@ NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder)
 
 std::ostream& NJS::UnaryExpr::Print(std::ostream& os)
 {
-    return os << (OpRight ? "" : Op) << Operand << (OpRight ? Op : "");
+    return Operand->Print(os << (OpRight ? "" : Op)) << (OpRight ? Op : "");
 }

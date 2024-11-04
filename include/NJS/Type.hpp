@@ -6,21 +6,17 @@
 #include <string>
 #include <vector>
 #include <llvm/IR/Type.h>
+#include <NJS/NJS.hpp>
 
 namespace NJS
 {
-    class Builder;
-
-    typedef std::shared_ptr<struct Type> TypePtr;
-
-    std::ostream& operator<<(std::ostream&, const TypePtr&);
-
     struct Type
     {
         explicit Type(std::string);
         virtual ~Type() = default;
 
         virtual bool IsTuple();
+        virtual bool IsComplex();
         virtual size_t Size();
         virtual TypePtr Member(const std::string&);
         virtual size_t MemberIndex(const std::string&);
@@ -31,20 +27,9 @@ namespace NJS
 
         virtual llvm::Type* GenLLVM(Builder&) = 0;
 
-        std::ostream& Print(std::ostream&);
+        std::ostream& Print(std::ostream&) const;
 
         std::string String;
-    };
-
-    struct MultiType : Type
-    {
-        static std::string GenString(const std::vector<TypePtr>&);
-
-        explicit MultiType(const std::vector<TypePtr>&);
-
-        llvm::Type* GenLLVM(Builder&) override;
-
-        std::vector<TypePtr> Types;
     };
 
     enum TypeName
@@ -74,6 +59,7 @@ namespace NJS
 
         explicit ArrayType(TypePtr);
 
+        bool IsComplex() override;
         TypePtr Element() override;
         TypePtr Element(size_t) override;
         size_t ElementSize() override;
@@ -87,16 +73,15 @@ namespace NJS
     {
         static std::string GenString(const std::vector<TypePtr>&);
 
-        TupleType(TypePtr, std::vector<TypePtr>);
+        explicit TupleType(std::vector<TypePtr>);
 
+        bool IsComplex() override;
         bool IsTuple() override;
         size_t Size() override;
-        TypePtr Element() override;
         TypePtr Element(size_t) override;
 
         llvm::Type* GenLLVM(Builder&) override;
 
-        TypePtr ElementType;
         std::vector<TypePtr> ElementTypes;
     };
 
@@ -106,6 +91,7 @@ namespace NJS
 
         explicit ObjectType(const std::map<std::string, TypePtr>&);
 
+        bool IsComplex() override;
         size_t Size() override;
         TypePtr Member(const std::string&) override;
         size_t MemberIndex(const std::string&) override;
@@ -121,6 +107,7 @@ namespace NJS
 
         FunctionType(std::vector<TypePtr>, TypePtr, bool);
 
+        bool IsComplex() override;
         TypePtr Result() override;
 
         llvm::Type* GenLLVM(Builder&) override;

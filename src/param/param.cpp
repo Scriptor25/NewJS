@@ -1,13 +1,9 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Context.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Param.hpp>
 #include <NJS/Value.hpp>
-
-std::ostream& NJS::operator<<(std::ostream& os, const ParamPtr& ref)
-{
-    return ref->Print(os);
-}
 
 NJS::Param::Param(std::string name)
     : Name(std::move(name))
@@ -19,12 +15,6 @@ bool NJS::Param::RequireValue()
     return false;
 }
 
-void NJS::Param::CreateVars(Context& ctx, const TypePtr& type)
-{
-    if (type && Type && type != Type) Error("cannot assign value of type {} to value of type {}", type, Type);
-    ctx.CreateVar(Name) = Type ? Type : type;
-}
-
 void NJS::Param::CreateVars(Builder& builder, const bool is_const, ValuePtr value)
 {
     const auto type = Type ? Type : value->GetType();
@@ -34,6 +24,6 @@ void NJS::Param::CreateVars(Builder& builder, const bool is_const, ValuePtr valu
 std::ostream& NJS::Param::Print(std::ostream& os)
 {
     os << Name;
-    if (Type) os << ": " << Type;
+    if (Type) Type->Print(os << ": ");
     return os;
 }

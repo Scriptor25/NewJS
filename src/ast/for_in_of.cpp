@@ -11,5 +11,5 @@ NJS::ValuePtr NJS::ForInOfStmt::GenLLVM(Builder& builder)
 
 std::ostream& NJS::ForInOfStmt::Print(std::ostream& os)
 {
-    return os << "for (" << Init << ' ' << (Of ? "of" : "in") << ' ' << Value << ") " << Body;
+    return Body->Print(Value->Print(Init->Print(os << "for (") << ' ' << (Of ? "of" : "in") << ' ') << ") ");
 }

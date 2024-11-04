@@ -20,10 +20,10 @@ std::ostream& NJS::ScopeStmt::Print(std::ostream& os)
 {
     if (Children.empty()) return os << "{}";
 
-    os << "{" << std::endl;
+    os << '{' << std::endl;
     Indent();
     for (const auto& child : Children)
-        Spacing(os) << child << std::endl;
+        child->Print(Spacing(os)) << std::endl;
     Exdent();
-    return Spacing(os) << "}";
+    return Spacing(os) << '}';
 }

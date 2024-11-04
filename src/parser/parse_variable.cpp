@@ -12,6 +12,5 @@ NJS::VariableStmtPtr NJS::Parser::ParseVariable()
     if ((!At("in") && !At("of") && (is_const || name->RequireValue()) && (Expect("="), true)) || NextAt("="))
         value = ParseExpression();
 
-    name->CreateVars(m_Ctx, value ? value->Type : nullptr);
     return std::make_shared<VariableStmt>(is_const, name, value);
 }

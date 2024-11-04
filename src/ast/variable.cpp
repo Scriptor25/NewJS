@@ -16,7 +16,7 @@ NJS::ValuePtr NJS::VariableStmt::GenLLVM(Builder& builder)
 
 std::ostream& NJS::VariableStmt::Print(std::ostream& os)
 {
-    os << (IsConst ? "const" : "let") << ' ' << Name;
-    if (Value) os << " = " << Value;
+    Name->Print(os << (IsConst ? "const" : "let") << ' ');
+    if (Value) Value->Print(os << " = ");
     return os;
 }

@@ -1,9 +1,12 @@
+#include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Value.h>
 #include <NJS/AST.hpp>
+#include <NJS/Builder.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::CallExpr::CallExpr(TypePtr type, ExprPtr callee, std::vector<ExprPtr> args)
-    : Expr(std::move(type)), Callee(std::move(callee)), Args(std::move(args))
+NJS::CallExpr::CallExpr(ExprPtr callee, std::vector<ExprPtr> args)
+    : Callee(std::move(callee)), Args(std::move(args))
 {
 }
 
@@ -22,11 +25,11 @@ NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder)
 
 std::ostream& NJS::CallExpr::Print(std::ostream& os)
 {
-    os << Callee << '(';
+    Callee->Print(os) << '(';
     for (size_t i = 0; i < Args.size(); ++i)
     {
         if (i > 0) os << ", ";
-        os << Args[i];
+        Args[i]->Print(os);
     }
     return os << ')';
 }

@@ -1,6 +1,8 @@
 #include <llvm/IR/DerivedTypes.h>
 #include <NJS/Type.hpp>
 
+#include "NJS/Builder.hpp"
+
 std::string NJS::FunctionType::GenString(
     const std::vector<TypePtr>& param_types,
     const TypePtr& result_type,
@@ -30,6 +32,11 @@ NJS::FunctionType::FunctionType(std::vector<TypePtr> param_types, TypePtr result
 {
 }
 
+bool NJS::FunctionType::IsComplex()
+{
+    return true;
+}
+
 NJS::TypePtr NJS::FunctionType::Result()
 {
     return ResultType;
@@ -37,9 +44,16 @@ NJS::TypePtr NJS::FunctionType::Result()
 
 llvm::Type* NJS::FunctionType::GenLLVM(Builder& builder)
 {
-    const auto result = ResultType->GenLLVM(builder);
+    const auto result = ResultType->IsComplex()
+                            ? builder.LLVMBuilder().getPtrTy()
+                            : ResultType->GenLLVM(builder);
     std::vector<llvm::Type*> params(ParamTypes.size());
     for (size_t i = 0; i < ParamTypes.size(); ++i)
-        params[i] = ParamTypes[i]->GenLLVM(builder);
+    {
+        const auto type = ParamTypes[i];
+        params[i] = type->IsComplex()
+                        ? builder.LLVMBuilder().getPtrTy()
+                        : type->GenLLVM(builder);
+    }
     return llvm::FunctionType::get(result, params, VarArg);
 }

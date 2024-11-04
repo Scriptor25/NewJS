@@ -1,7 +1,8 @@
 #include <NJS/AST.hpp>
+#include <NJS/Param.hpp>
 
-NJS::ConstFunctionExpr::ConstFunctionExpr(TypePtr type, std::vector<ParamPtr> params, ScopeStmt body)
-    : Expr(std::move(type)), Params(std::move(params)), Body(std::move(body))
+NJS::ConstFunctionExpr::ConstFunctionExpr(std::vector<ParamPtr> params, ScopeStmt body)
+    : Params(std::move(params)), Body(std::move(body))
 {
 }
 
@@ -18,7 +19,7 @@ std::ostream& NJS::ConstFunctionExpr::Print(std::ostream& os)
         for (size_t i = 0; i < Params.size(); ++i)
         {
             if (i > 0) os << ", ";
-            os << Params[i];
+            Params[i]->Print(os);
         }
         os << ") ";
     }

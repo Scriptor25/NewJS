@@ -12,6 +12,11 @@ NJS::ArrayType::ArrayType(TypePtr element_type)
 {
 }
 
+bool NJS::ArrayType::IsComplex()
+{
+    return true;
+}
+
 NJS::TypePtr NJS::ArrayType::Element()
 {
     return ElementType;
@@ -29,5 +34,8 @@ size_t NJS::ArrayType::ElementSize()
 
 llvm::Type* NJS::ArrayType::GenLLVM(Builder& builder)
 {
-    return builder.LLVMBuilder().getPtrTy();
+    std::vector<llvm::Type*> elements(2);
+    elements[0] = builder.LLVMBuilder().getPtrTy();
+    elements[1] = builder.LLVMBuilder().getInt64Ty();
+    return llvm::StructType::get(builder.LLVMContext(), elements);
 }
