@@ -50,7 +50,7 @@ namespace NJS
         void ParseTypeMap(std::map<std::string, TypePtr>&, const std::string&);
 
         ParamPtr ParseParam();
-        void ParseParamList(std::vector<ParamPtr>&, const std::string&);
+        bool ParseParamList(std::vector<ParamPtr>&, const std::string&);
         void ParseParamMap(std::map<std::string, ParamPtr>&, const std::string&);
 
         void ParseTypeAlias();

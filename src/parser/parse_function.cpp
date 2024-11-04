@@ -10,7 +10,7 @@ NJS::FunctionStmtPtr NJS::Parser::ParseFunction()
 
     std::vector<ParamPtr> params;
     Expect("(");
-    ParseParamList(params, ")");
+    const auto vararg = ParseParamList(params, ")");
 
     TypePtr result_type;
     if (NextAt(":"))
@@ -20,15 +20,19 @@ NJS::FunctionStmtPtr NJS::Parser::ParseFunction()
     auto& ref = m_Ctx.CreateVar(name);
 
     m_Ctx.StackPush();
+
     std::vector<TypePtr> param_types;
     for (const auto& param : params)
     {
         param->CreateVars(m_Ctx, {});
         param_types.push_back(param->Type);
     }
-    ref = m_Ctx.GetFunctionType(param_types, result_type);
-    const auto body = ParseScope();
+    ref = m_Ctx.GetFunctionType(param_types, result_type, vararg);
+
+    ScopeStmtPtr body;
+    if (At("{")) body = ParseScope();
+
     m_Ctx.StackPop();
 
-    return std::make_shared<FunctionStmt>(name, params, result_type, *body);
+    return std::make_shared<FunctionStmt>(name, params, ref, body);
 }

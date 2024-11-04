@@ -5,9 +5,12 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <llvm/IR/Type.h>
 
 namespace NJS
 {
+    class Builder;
+
     typedef std::shared_ptr<struct Type> TypePtr;
 
     std::ostream& operator<<(std::ostream&, const TypePtr&);
@@ -17,11 +20,18 @@ namespace NJS
         explicit Type(std::string);
         virtual ~Type() = default;
 
+        virtual bool IsTuple();
+        virtual size_t Size();
         virtual TypePtr Member(const std::string&);
+        virtual size_t MemberIndex(const std::string&);
         virtual TypePtr Result();
         virtual TypePtr Element();
         virtual TypePtr Element(size_t);
-        virtual std::ostream& Print(std::ostream&);
+        virtual size_t ElementSize();
+
+        virtual llvm::Type* GenLLVM(Builder&) = 0;
+
+        std::ostream& Print(std::ostream&);
 
         std::string String;
     };
@@ -32,13 +42,14 @@ namespace NJS
 
         explicit MultiType(const std::vector<TypePtr>&);
 
+        llvm::Type* GenLLVM(Builder&) override;
+
         std::vector<TypePtr> Types;
     };
 
     enum TypeName
     {
         Type_Void,
-        Type_Undefined,
         Type_Boolean,
         Type_Number,
         Type_String,
@@ -50,6 +61,10 @@ namespace NJS
 
         explicit PrimitiveType(TypeName);
 
+        size_t Size() override;
+
+        llvm::Type* GenLLVM(Builder&) override;
+
         TypeName Name;
     };
 
@@ -58,8 +73,12 @@ namespace NJS
         static std::string GenString(const TypePtr&);
 
         explicit ArrayType(TypePtr);
+
         TypePtr Element() override;
         TypePtr Element(size_t) override;
+        size_t ElementSize() override;
+
+        llvm::Type* GenLLVM(Builder&) override;
 
         TypePtr ElementType;
     };
@@ -69,8 +88,13 @@ namespace NJS
         static std::string GenString(const std::vector<TypePtr>&);
 
         TupleType(TypePtr, std::vector<TypePtr>);
+
+        bool IsTuple() override;
+        size_t Size() override;
         TypePtr Element() override;
         TypePtr Element(size_t) override;
+
+        llvm::Type* GenLLVM(Builder&) override;
 
         TypePtr ElementType;
         std::vector<TypePtr> ElementTypes;
@@ -80,21 +104,30 @@ namespace NJS
     {
         static std::string GenString(const std::map<std::string, TypePtr>&);
 
-        explicit ObjectType(std::map<std::string, TypePtr>);
-        TypePtr Member(const std::string&) override;
+        explicit ObjectType(const std::map<std::string, TypePtr>&);
 
-        std::map<std::string, TypePtr> ElementTypes;
+        size_t Size() override;
+        TypePtr Member(const std::string&) override;
+        size_t MemberIndex(const std::string&) override;
+
+        llvm::Type* GenLLVM(Builder&) override;
+
+        std::vector<std::pair<std::string, TypePtr>> ElementTypes;
     };
 
     struct FunctionType : Type
     {
-        static std::string GenString(const std::vector<TypePtr>&, const TypePtr&);
+        static std::string GenString(const std::vector<TypePtr>&, const TypePtr&, bool);
 
-        FunctionType(std::vector<TypePtr>, TypePtr);
+        FunctionType(std::vector<TypePtr>, TypePtr, bool);
+
         TypePtr Result() override;
+
+        llvm::Type* GenLLVM(Builder&) override;
 
         std::vector<TypePtr> ParamTypes;
         TypePtr ResultType;
+        bool VarArg;
     };
 }
 

@@ -1,0 +1,32 @@
+#include <llvm/IR/Value.h>
+#include <NJS/AST.hpp>
+#include <NJS/Value.hpp>
+
+NJS::CallExpr::CallExpr(TypePtr type, ExprPtr callee, std::vector<ExprPtr> args)
+    : Expr(std::move(type)), Callee(std::move(callee)), Args(std::move(args))
+{
+}
+
+NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder)
+{
+    const auto callee = Callee->GenLLVM(builder);
+    std::vector<llvm::Value*> args(Args.size());
+    for (size_t i = 0; i < Args.size(); ++i)
+        args[i] = Args[i]->GenLLVM(builder)->Load();
+    const auto value = builder.LLVMBuilder().CreateCall(
+        llvm::dyn_cast<llvm::FunctionType>(callee->GetLLVMType()),
+        callee->GetPtr(),
+        args);
+    return RValue::Create(builder, callee->GetType()->Result(), value);
+}
+
+std::ostream& NJS::CallExpr::Print(std::ostream& os)
+{
+    os << Callee << '(';
+    for (size_t i = 0; i < Args.size(); ++i)
+    {
+        if (i > 0) os << ", ";
+        os << Args[i];
+    }
+    return os << ')';
+}

@@ -16,7 +16,6 @@ namespace NJS
         TypePtr GetPrimitiveType(TypeName);
 
         TypePtr GetVoidType();
-        TypePtr GetUndefinedType();
         TypePtr GetBooleanType();
         TypePtr GetNumberType();
         TypePtr GetStringType();
@@ -24,7 +23,7 @@ namespace NJS
         TypePtr GetTupleType(const std::vector<TypePtr>&);
         TypePtr GetObjectType(const std::map<std::string, TypePtr>&);
         TypePtr GetArrayType(const TypePtr&);
-        TypePtr GetFunctionType(const std::vector<TypePtr>&, const TypePtr&);
+        TypePtr GetFunctionType(const std::vector<TypePtr>&, const TypePtr&, bool);
 
         void StackPush();
         void StackPop();

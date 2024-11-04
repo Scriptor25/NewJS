@@ -8,9 +8,11 @@
 namespace NJS
 {
     class Context;
+    class Builder;
 
     typedef std::shared_ptr<struct Type> TypePtr;
     typedef std::shared_ptr<struct Param> ParamPtr;
+    typedef std::shared_ptr<class Value> ValuePtr;
 
     std::ostream& operator<<(std::ostream&, const ParamPtr&);
 
@@ -21,6 +23,7 @@ namespace NJS
 
         virtual bool RequireValue();
         virtual void CreateVars(Context&, const TypePtr&);
+        virtual void CreateVars(Builder&, bool, ValuePtr);
 
         virtual std::ostream& Print(std::ostream&);
 
@@ -34,6 +37,7 @@ namespace NJS
 
         bool RequireValue() override;
         void CreateVars(Context&, const TypePtr&) override;
+        void CreateVars(Builder&, bool, ValuePtr) override;
 
         std::ostream& Print(std::ostream&) override;
 
@@ -46,6 +50,7 @@ namespace NJS
 
         bool RequireValue() override;
         void CreateVars(Context&, const TypePtr&) override;
+        void CreateVars(Builder&, bool, ValuePtr) override;
 
         std::ostream& Print(std::ostream&) override;
 

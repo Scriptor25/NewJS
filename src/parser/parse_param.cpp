@@ -1,4 +1,3 @@
-#include <NJS/Context.hpp>
 #include <NJS/Param.hpp>
 #include <NJS/Parser.hpp>
 
@@ -30,15 +29,24 @@ NJS::ParamPtr NJS::Parser::ParseParam()
     return param;
 }
 
-void NJS::Parser::ParseParamList(std::vector<ParamPtr>& params, const std::string& delim)
+bool NJS::Parser::ParseParamList(std::vector<ParamPtr>& params, const std::string& delim)
 {
     while (!NextAt(delim))
     {
+        if (NextAt("."))
+        {
+            Expect(".");
+            Expect(".");
+            Expect(delim);
+            return true;
+        }
+
         params.push_back(ParseParam());
         if (!At(delim))
             Expect(",");
         else NextAt(",");
     }
+    return false;
 }
 
 void NJS::Parser::ParseParamMap(std::map<std::string, ParamPtr>& params, const std::string& delim)

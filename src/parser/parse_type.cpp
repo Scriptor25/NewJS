@@ -10,7 +10,6 @@ NJS::TypePtr NJS::Parser::ParseType()
         TypePtr type;
 
         if (NextAt("void")) type = m_Ctx.GetVoidType();
-        else if (NextAt("undefined")) type = m_Ctx.GetUndefinedType();
         else if (NextAt("boolean")) type = m_Ctx.GetBooleanType();
         else if (NextAt("number")) type = m_Ctx.GetNumberType();
         else if (NextAt("string")) type = m_Ctx.GetStringType();

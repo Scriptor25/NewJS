@@ -17,10 +17,10 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
     }
 
     if (At(TokenType_Number))
-        return std::make_shared<NumberExpr>(m_Ctx.GetNumberType(), Skip().NumberValue);
+        return std::make_shared<ConstNumberExpr>(m_Ctx.GetNumberType(), Skip().NumberValue);
 
     if (At(TokenType_String))
-        return std::make_shared<StringExpr>(m_Ctx.GetStringType(), Skip().StringValue);
+        return std::make_shared<ConstStringExpr>(m_Ctx.GetStringType(), Skip().StringValue);
 
     if (At(TokenType_Operator))
     {
@@ -62,7 +62,7 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
                 Expect(",");
             else NextAt(",");
         }
-        return std::make_shared<ObjectExpr>(m_Ctx.GetObjectType(types), entries);
+        return std::make_shared<ConstObjectExpr>(m_Ctx.GetObjectType(types), entries);
     }
 
     if (NextAt("["))
@@ -93,7 +93,7 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
         if (same) type = m_Ctx.GetArrayType(first);
         else type = m_Ctx.GetTupleType(types);
 
-        return std::make_shared<ArrayExpr>(type, entries);
+        return std::make_shared<ConstTupleExpr>(type, entries);
     }
 
     if (At("$"))
@@ -130,7 +130,9 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
     if (NextAt("?"))
     {
         std::vector<ParamPtr> params;
-        if (NextAt("(")) ParseParamList(params, ")");
+        bool vararg = false;
+        if (NextAt("("))
+            vararg = ParseParamList(params, ")");
 
         TypePtr result_type;
         if (NextAt(": "))
@@ -147,8 +149,8 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
         const auto body = ParseScope();
         m_Ctx.StackPop();
 
-        const auto type = m_Ctx.GetFunctionType(param_types, result_type);
-        return std::make_shared<FunctionExpr>(type, params, *body);
+        const auto type = m_Ctx.GetFunctionType(param_types, result_type, vararg);
+        return std::make_shared<ConstFunctionExpr>(type, params, *body);
     }
 
     Error(m_Token.Where, "unused token {}", m_Token);

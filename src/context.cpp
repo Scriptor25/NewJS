@@ -25,11 +25,6 @@ NJS::TypePtr NJS::Context::GetVoidType()
     return GetPrimitiveType(Type_Void);
 }
 
-NJS::TypePtr NJS::Context::GetUndefinedType()
-{
-    return GetPrimitiveType(Type_Undefined);
-}
-
 NJS::TypePtr NJS::Context::GetBooleanType()
 {
     return GetPrimitiveType(Type_Boolean);
@@ -74,11 +69,14 @@ NJS::TypePtr NJS::Context::GetArrayType(const TypePtr& element_type)
     return ref = std::make_shared<ArrayType>(element_type);
 }
 
-NJS::TypePtr NJS::Context::GetFunctionType(const std::vector<TypePtr>& param_types, const TypePtr& result_type)
+NJS::TypePtr NJS::Context::GetFunctionType(
+    const std::vector<TypePtr>& param_types,
+    const TypePtr& result_type,
+    const bool vararg)
 {
-    auto& ref = GetType(FunctionType::GenString(param_types, result_type));
+    auto& ref = GetType(FunctionType::GenString(param_types, result_type, vararg));
     if (ref) return ref;
-    return ref = std::make_shared<FunctionType>(param_types, result_type);
+    return ref = std::make_shared<FunctionType>(param_types, result_type, vararg);
 }
 
 void NJS::Context::StackPush()

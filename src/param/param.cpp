@@ -1,6 +1,13 @@
+#include <NJS/Builder.hpp>
 #include <NJS/Context.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Param.hpp>
+#include <NJS/Value.hpp>
+
+std::ostream& NJS::operator<<(std::ostream& os, const ParamPtr& ref)
+{
+    return ref->Print(os);
+}
 
 NJS::Param::Param(std::string name)
     : Name(std::move(name))
@@ -18,36 +25,15 @@ void NJS::Param::CreateVars(Context& ctx, const TypePtr& type)
     ctx.CreateVar(Name) = Type ? Type : type;
 }
 
-NJS::DestructureObject::DestructureObject(std::map<std::string, ParamPtr> elements)
-    : Param(""), Elements(std::move(elements))
+void NJS::Param::CreateVars(Builder& builder, const bool is_const, ValuePtr value)
 {
+    const auto type = Type ? Type : value->GetType();
+    builder.CreateVar(Name) = builder.CreateGlobal(builder.ValueName(Name), type, is_const, value);
 }
 
-bool NJS::DestructureObject::RequireValue()
+std::ostream& NJS::Param::Print(std::ostream& os)
 {
-    return true;
-}
-
-void NJS::DestructureObject::CreateVars(Context& ctx, const TypePtr& type)
-{
-    if (type && Type && type != Type) Error("cannot assign value of type {} to value of type {}", type, Type);
-    for (const auto& [name, element] : Elements)
-        element->CreateVars(ctx, (Type ? Type : type)->Member(name));
-}
-
-NJS::DestructureArray::DestructureArray(std::vector<ParamPtr> elements)
-    : Param(""), Elements(std::move(elements))
-{
-}
-
-bool NJS::DestructureArray::RequireValue()
-{
-    return true;
-}
-
-void NJS::DestructureArray::CreateVars(Context& ctx, const TypePtr& type)
-{
-    if (type && Type && type != Type) Error("cannot assign value of type {} to value of type {}", type, Type);
-    for (size_t i = 0; i < Elements.size(); ++i)
-        Elements[i]->CreateVars(ctx, (Type ? Type : type)->Element(i));
+    os << Name;
+    if (Type) os << ": " << Type;
+    return os;
 }

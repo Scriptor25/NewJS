@@ -1,5 +1,6 @@
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
+#include <NJS/Type.hpp>
 
 NJS::ExprPtr NJS::Parser::ParseOperand()
 {
