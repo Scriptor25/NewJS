@@ -1,4 +1,5 @@
 #include <NJS/AST.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/Param.hpp>
 
 NJS::ConstFunctionExpr::ConstFunctionExpr(std::vector<ParamPtr> params, ScopeStmt body)
@@ -8,6 +9,7 @@ NJS::ConstFunctionExpr::ConstFunctionExpr(std::vector<ParamPtr> params, ScopeStm
 
 NJS::ValuePtr NJS::ConstFunctionExpr::GenLLVM(Builder& builder)
 {
+    Error("NJS::ConstFunctionExpr::GenLLVM");
 }
 
 std::ostream& NJS::ConstFunctionExpr::Print(std::ostream& os)

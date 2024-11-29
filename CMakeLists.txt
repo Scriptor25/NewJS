@@ -27,6 +27,9 @@ target_include_directories(NewJS PUBLIC "include" ${LLVM_INCLUDE_DIRS})
 target_link_directories(NewJS PUBLIC ${LLVM_LIBRARY_DIRS})
 target_link_libraries(NewJS PUBLIC ${LLVM_LIBNAMES_LIST})
 
+file(GLOB_RECURSE lib_sources "lib/*.cpp")
+add_library(StdNewJS ${lib_sources})
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     add_custom_command(TARGET NewJS POST_BUILD
             COMMAND ${CMAKE_OBJCOPY} --only-keep-debug $<TARGET_FILE:NewJS> $<TARGET_FILE:NewJS>.dbg

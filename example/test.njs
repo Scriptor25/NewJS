@@ -25,8 +25,9 @@ function recurse(n: number): number {
     return recurse(n - 1) + recurse(n - 2)
 }
 
+const n = 10
 const r = recurse(10)
-println($"recurse(10) = {r}")
+println($"recurse({n}) = {r}")
 
 const t1 = ["Felix", u1]
 const a1 = [1, 2, 3]

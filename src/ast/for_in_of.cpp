@@ -1,4 +1,5 @@
 #include <NJS/AST.hpp>
+#include <NJS/Error.hpp>
 
 NJS::ForInOfStmt::ForInOfStmt(StmtPtr init, const bool of, ExprPtr value, StmtPtr body)
     : Init(std::move(init)), Of(of), Value(std::move(value)), Body(std::move(body))
@@ -7,6 +8,7 @@ NJS::ForInOfStmt::ForInOfStmt(StmtPtr init, const bool of, ExprPtr value, StmtPt
 
 NJS::ValuePtr NJS::ForInOfStmt::GenLLVM(Builder& builder)
 {
+    Error("NJS::ForInOfStmt::GenLLVM");
 }
 
 std::ostream& NJS::ForInOfStmt::Print(std::ostream& os)

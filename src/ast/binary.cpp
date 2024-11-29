@@ -48,15 +48,15 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
         return lhs;
     }
 
-    if (const auto& _ = ops[Op]; _)
-        if (auto value = _(builder, lhs, rhs))
+    if (const auto& op = ops[Op]; op)
+        if (auto value = op(builder, lhs, rhs))
             return value;
 
     const auto assign = Op.back() == '=';
-    const auto op = assign ? Op.substr(0, Op.size() - 1) : Op;
+    const auto o = assign ? Op.substr(0, Op.size() - 1) : Op;
 
-    if (const auto& _ = ops[op]; _)
-        if (auto value = _(builder, lhs, rhs))
+    if (const auto& op = ops[o]; op)
+        if (auto value = op(builder, lhs, rhs))
         {
             if (assign)
             {
