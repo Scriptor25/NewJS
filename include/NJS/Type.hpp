@@ -7,6 +7,7 @@
 #include <vector>
 #include <llvm/IR/Type.h>
 #include <NJS/NJS.hpp>
+#include <NJS/TypeId.hpp>
 
 namespace NJS
 {
@@ -25,7 +26,8 @@ namespace NJS
         virtual TypePtr Element(size_t);
         virtual size_t ElementSize();
 
-        virtual llvm::Type* GenLLVM(Builder&) = 0;
+        [[nodiscard]] virtual TypeId GetId() const = 0;
+        virtual llvm::Type* GenLLVM(Builder&) const = 0;
 
         std::ostream& Print(std::ostream&) const;
 
@@ -48,7 +50,8 @@ namespace NJS
 
         size_t Size() override;
 
-        llvm::Type* GenLLVM(Builder&) override;
+        [[nodiscard]] TypeId GetId() const override;
+        llvm::Type* GenLLVM(Builder&) const override;
 
         TypeName Name;
     };
@@ -64,7 +67,8 @@ namespace NJS
         TypePtr Element(size_t) override;
         size_t ElementSize() override;
 
-        llvm::Type* GenLLVM(Builder&) override;
+        [[nodiscard]] TypeId GetId() const override;
+        llvm::Type* GenLLVM(Builder&) const override;
 
         TypePtr ElementType;
     };
@@ -80,7 +84,8 @@ namespace NJS
         size_t Size() override;
         TypePtr Element(size_t) override;
 
-        llvm::Type* GenLLVM(Builder&) override;
+        [[nodiscard]] TypeId GetId() const override;
+        llvm::Type* GenLLVM(Builder&) const override;
 
         std::vector<TypePtr> ElementTypes;
     };
@@ -96,7 +101,8 @@ namespace NJS
         TypePtr Member(const std::string&) override;
         size_t MemberIndex(const std::string&) override;
 
-        llvm::Type* GenLLVM(Builder&) override;
+        [[nodiscard]] TypeId GetId() const override;
+        llvm::Type* GenLLVM(Builder&) const override;
 
         std::vector<std::pair<std::string, TypePtr>> ElementTypes;
     };
@@ -110,7 +116,8 @@ namespace NJS
         bool IsComplex() override;
         TypePtr Result() override;
 
-        llvm::Type* GenLLVM(Builder&) override;
+        [[nodiscard]] TypeId GetId() const override;
+        llvm::Type* GenLLVM(Builder&) const override;
 
         std::vector<TypePtr> ParamTypes;
         TypePtr ResultType;

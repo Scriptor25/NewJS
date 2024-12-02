@@ -1,4 +1,4 @@
-function println(...)
+function println(message: string)
 
 function fib(n: number): number {
     let a = 0

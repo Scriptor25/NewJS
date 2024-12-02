@@ -7,6 +7,9 @@
 
 int main(const int argc, const char* const* argv)
 {
+    if (argc != 2)
+        return 1;
+
     NJS::Context context;
     NJS::Builder builder(context, "module");
 
@@ -15,7 +18,7 @@ int main(const int argc, const char* const* argv)
     NJS::Parser parser(context, stream, filename);
     parser.Parse([&](const NJS::StmtPtr& ptr)
     {
-        ptr->Print(std::cout) << std::endl;
+        ptr->Print(std::cerr) << std::endl;
         ptr->GenLLVM(builder);
     });
     stream.close();

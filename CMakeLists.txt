@@ -29,6 +29,7 @@ target_link_libraries(NewJS PUBLIC ${LLVM_LIBNAMES_LIST})
 
 file(GLOB_RECURSE lib_sources "lib/*.cpp")
 add_library(StdNewJS ${lib_sources})
+target_include_directories(StdNewJS PUBLIC "include")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     add_custom_command(TARGET NewJS POST_BUILD

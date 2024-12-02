@@ -42,7 +42,12 @@ NJS::TypePtr NJS::FunctionType::Result()
     return ResultType;
 }
 
-llvm::Type* NJS::FunctionType::GenLLVM(Builder& builder)
+NJS::TypeId NJS::FunctionType::GetId() const
+{
+    return TypeId_Function;
+}
+
+llvm::Type* NJS::FunctionType::GenLLVM(Builder& builder) const
 {
     const auto result = ResultType->IsComplex()
                             ? builder.LLVMBuilder().getPtrTy()

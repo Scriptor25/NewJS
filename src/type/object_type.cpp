@@ -53,7 +53,12 @@ size_t NJS::ObjectType::MemberIndex(const std::string& name)
     Error("undefined member");
 }
 
-llvm::Type* NJS::ObjectType::GenLLVM(Builder& builder)
+NJS::TypeId NJS::ObjectType::GetId() const
+{
+    return TypeId_Object;
+}
+
+llvm::Type* NJS::ObjectType::GenLLVM(Builder& builder) const
 {
     std::vector<llvm::Type*> elements(ElementTypes.size());
     for (size_t i = 0; i < ElementTypes.size(); ++i)

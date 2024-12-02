@@ -31,7 +31,19 @@ size_t NJS::PrimitiveType::Size()
     }
 }
 
-llvm::Type* NJS::PrimitiveType::GenLLVM(Builder& builder)
+NJS::TypeId NJS::PrimitiveType::GetId() const
+{
+    switch (Name)
+    {
+    case Type_Void: return TypeId_Void;
+    case Type_Boolean: return TypeId_Boolean;
+    case Type_Number: return TypeId_Number;
+    case Type_String: return TypeId_String;
+    default: Error("unknown primitive type does not have a type id");
+    }
+}
+
+llvm::Type* NJS::PrimitiveType::GenLLVM(Builder& builder) const
 {
     switch (Name)
     {

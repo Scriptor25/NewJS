@@ -15,7 +15,7 @@ bool NJS::Param::RequireValue()
     return false;
 }
 
-void NJS::Param::CreateVars(Builder& builder, const bool is_const, ValuePtr value)
+void NJS::Param::CreateVars(Builder& builder, const bool is_const, const ValuePtr value)
 {
     const auto type = Type ? Type : value->GetType();
     builder.CreateVar(Name) = builder.CreateGlobal(builder.ValueName(Name), type, is_const, value);

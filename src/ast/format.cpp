@@ -14,23 +14,33 @@ NJS::FormatExpr::FormatExpr(
 
 NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder)
 {
-    const auto ptr = builder.CreateAlloca(builder.LLVMBuilder().getInt8Ty(), 1024);
+    constexpr auto N = 1024;
+    const auto ptr = builder.CreateAlloca(builder.LLVMBuilder().getInt8Ty(), N);
 
-    std::vector<llvm::Value*> args(3 + Statics.size() + 2 * Dynamics.size());
+    std::vector<llvm::Value*> args(3 + 2 * Statics.size() + 3 * Dynamics.size());
     size_t x = 0;
     args[x++] = ptr;
-    args[x++] = builder.LLVMBuilder().getInt64(Statics.size());
-    args[x++] = builder.LLVMBuilder().getInt64(Dynamics.size());
-    for (const auto& [i, s] : Statics)
-        args[x++] = builder.LLVMBuilder().CreateLoad(
-            builder.LLVMBuilder().getPtrTy(),
-            builder.LLVMBuilder().CreateGlobalStringPtr(s));
-    for (const auto& [i, d] : Dynamics)
+    args[x++] = builder.LLVMBuilder().getInt64(N);
+    for (size_t i = 0; i < Count; ++i)
     {
-        const auto value = d->GenLLVM(builder);
-        args[x++] = builder.LLVMBuilder().getInt64(0); // TODO: value type id
-        args[x++] = value->Load();
+        if (Statics.contains(i))
+        {
+            args[x++] = builder.LLVMBuilder().getInt8(1);
+            args[x++] = builder.LLVMBuilder().CreateLoad(
+                builder.LLVMBuilder().getPtrTy(),
+                builder.LLVMBuilder().CreateGlobalStringPtr(Statics[i]));
+        }
+        else if (Dynamics.contains(i))
+        {
+            args[x++] = builder.LLVMBuilder().getInt8(2);
+            const auto value = Dynamics[i]->GenLLVM(builder);
+            args[x++] = builder.LLVMBuilder().getInt64(value->GetType()->GetId());
+            if (value->GetType()->IsComplex())
+                args[x++] = value->GetPtr();
+            else args[x++] = value->Load();
+        }
     }
+    args[x++] = builder.LLVMBuilder().getInt8(0);
 
     llvm::FunctionCallee format;
     builder.GetFormat(format);

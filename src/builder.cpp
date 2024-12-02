@@ -80,7 +80,7 @@ llvm::Value* NJS::Builder::CreateAlloca(llvm::Type* type, const size_t size) con
 NJS::ValuePtr NJS::Builder::CreateGlobal(
     const std::string& name,
     const TypePtr& type,
-    const bool is_const,
+    const bool /*is_const*/,
     const ValuePtr& init)
 {
     const auto llvm_type = type->GenLLVM(*this);
@@ -94,7 +94,7 @@ NJS::ValuePtr NJS::Builder::CreateGlobal(
     const auto gv = new llvm::GlobalVariable(
         LLVMModule(),
         llvm_type,
-        is_const,
+        false,
         llvm::GlobalValue::InternalLinkage,
         const_init,
         name);
@@ -105,10 +105,9 @@ NJS::ValuePtr NJS::Builder::CreateGlobal(
 
 void NJS::Builder::GetFormat(llvm::FunctionCallee& ref) const
 {
-    std::vector<llvm::Type*> param_types(3);
+    std::vector<llvm::Type*> param_types(2);
     param_types[0] = LLVMBuilder().getPtrTy();
     param_types[1] = LLVMBuilder().getInt64Ty();
-    param_types[2] = LLVMBuilder().getInt64Ty();
     const auto type = llvm::FunctionType::get(LLVMBuilder().getVoidTy(), param_types, true);
     ref = LLVMModule().getOrInsertFunction("format", type);
 }

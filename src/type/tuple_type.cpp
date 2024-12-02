@@ -45,7 +45,12 @@ NJS::TypePtr NJS::TupleType::Element(const size_t i)
     return ElementTypes[i];
 }
 
-llvm::Type* NJS::TupleType::GenLLVM(Builder& builder)
+NJS::TypeId NJS::TupleType::GetId() const
+{
+    return TypeId_Tuple;
+}
+
+llvm::Type* NJS::TupleType::GenLLVM(Builder& builder) const
 {
     std::vector<llvm::Type*> elements(ElementTypes.size());
     for (size_t i = 0; i < ElementTypes.size(); ++i)

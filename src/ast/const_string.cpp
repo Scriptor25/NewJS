@@ -11,7 +11,7 @@ NJS::ConstStringExpr::ConstStringExpr(std::string value)
 NJS::ValuePtr NJS::ConstStringExpr::GenLLVM(Builder& builder)
 {
     const auto ptr = builder.LLVMBuilder().CreateGlobalStringPtr(Value);
-    return LValue::Create(builder, builder.Ctx().GetStringType(), ptr);
+    return RValue::Create(builder, builder.Ctx().GetStringType(), ptr);
 }
 
 std::ostream& NJS::ConstStringExpr::Print(std::ostream& os)

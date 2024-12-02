@@ -68,8 +68,6 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
         Error("not all code paths return");
     }
 
-    function->print(llvm::outs());
-
     if (verifyFunction(*function, &llvm::errs()))
         Error("failed to verify function");
 

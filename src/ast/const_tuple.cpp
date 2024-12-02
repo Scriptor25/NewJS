@@ -64,7 +64,7 @@ NJS::ValuePtr NJS::ConstTupleExpr::GenLLVM(Builder& builder)
         const auto llvm_element_type = type->Element()->GenLLVM(builder);
         for (size_t i = 0; i < Elements.size(); ++i)
         {
-            const auto llvm_gep = builder.LLVMBuilder().CreateStructGEP(llvm_element_type, llvm_ptr, i);
+            const auto llvm_gep = builder.LLVMBuilder().CreateConstGEP1_64(llvm_element_type, llvm_ptr, i);
             builder.LLVMBuilder().CreateStore(values[i]->Load(), llvm_gep);
         }
     }

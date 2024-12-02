@@ -32,7 +32,12 @@ size_t NJS::ArrayType::ElementSize()
     return ElementType->Size();
 }
 
-llvm::Type* NJS::ArrayType::GenLLVM(Builder& builder)
+NJS::TypeId NJS::ArrayType::GetId() const
+{
+    return TypeId_Array;
+}
+
+llvm::Type* NJS::ArrayType::GenLLVM(Builder& builder) const
 {
     std::vector<llvm::Type*> elements(2);
     elements[0] = builder.LLVMBuilder().getPtrTy();

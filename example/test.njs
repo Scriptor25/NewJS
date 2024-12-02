@@ -1,4 +1,4 @@
-function println(...)
+function println(message: string)
 
 type User = {
     name: string,
@@ -15,7 +15,7 @@ const u1 = {
 }
 
 function printUser({ name: n, surname: s, age: a, type: t }: User) {
-    println(n, s, a, t)
+    println($"{n} {s} {a} {t}")
 }
 
 printUser(u1)
@@ -33,7 +33,7 @@ const t1 = ["Felix", u1]
 const a1 = [1, 2, 3]
 
 function printArray(array: number[]) {
-    println(array)
+    println($"{array}")
 }
 
 printArray(t1)
