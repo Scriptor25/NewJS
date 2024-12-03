@@ -32,11 +32,6 @@ NJS::FunctionType::FunctionType(std::vector<TypePtr> param_types, TypePtr result
 {
 }
 
-bool NJS::FunctionType::IsComplex()
-{
-    return true;
-}
-
 NJS::TypePtr NJS::FunctionType::Result()
 {
     return ResultType;
@@ -44,21 +39,20 @@ NJS::TypePtr NJS::FunctionType::Result()
 
 NJS::TypeId NJS::FunctionType::GetId() const
 {
-    return TypeId_Function;
+    return TypeId_Complex;
 }
 
 llvm::Type* NJS::FunctionType::GenLLVM(Builder& builder) const
 {
-    const auto result = ResultType->IsComplex()
-                            ? builder.LLVMBuilder().getPtrTy()
-                            : ResultType->GenLLVM(builder);
+    const auto ptr_ty = builder.LLVMBuilder().getPtrTy();
+    return llvm::StructType::get(ptr_ty, ptr_ty);
+}
+
+llvm::Type* NJS::FunctionType::GenBaseLLVM(Builder& builder) const
+{
+    const auto result = ResultType->GenLLVM(builder);
     std::vector<llvm::Type*> params(ParamTypes.size());
     for (size_t i = 0; i < ParamTypes.size(); ++i)
-    {
-        const auto type = ParamTypes[i];
-        params[i] = type->IsComplex()
-                        ? builder.LLVMBuilder().getPtrTy()
-                        : type->GenLLVM(builder);
-    }
+        params[i] = ParamTypes[i]->GenLLVM(builder);
     return llvm::FunctionType::get(result, params, VarArg);
 }

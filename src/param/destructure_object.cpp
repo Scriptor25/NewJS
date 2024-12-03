@@ -15,21 +15,30 @@ bool NJS::DestructureObject::RequireValue()
     return true;
 }
 
-void NJS::DestructureObject::CreateVars(Builder& builder, const bool is_const, ValuePtr value)
+void NJS::DestructureObject::CreateVars(Builder& builder, const bool is_const, const ValuePtr& value)
 {
-    if (!value->IsL())
+    const auto type = Type ? Type : value->GetType();
+
+    if (value->IsL())
     {
-        value = builder.CreateAlloca(value->GetType());
-        value->Store(value->Load());
+        const auto ptr = value->GetPtr();
+        const auto ty = type->GenLLVM(builder);
+        const auto data_ptr = builder.LLVMBuilder().CreateStructGEP(ty, ptr, 1);
+        const auto data_ty = type->GenBaseLLVM(builder);
+
+        for (const auto& [name, element] : Elements)
+        {
+            const auto gep = builder.LLVMBuilder().CreateStructGEP(data_ty, data_ptr, type->MemberIndex(name));
+            element->CreateVars(builder, is_const, LValue::Create(builder, type->Member(name), gep));
+        }
     }
-
-    const auto llvm_type = Type->GenLLVM(builder);
-    const auto ptr = value->GetPtr();
-
-    for (const auto& [name, element] : Elements)
+    else
     {
-        const auto gep = builder.LLVMBuilder().CreateStructGEP(llvm_type, ptr, Type->MemberIndex(name));
-        element->CreateVars(builder, is_const, LValue::Create(builder, Type->Member(name), gep));
+        for (const auto& [name, element] : Elements)
+        {
+            const auto member = builder.LLVMBuilder().CreateExtractValue(value->Load(), {1, type->MemberIndex(name)});
+            element->CreateVars(builder, is_const, RValue::Create(builder, type->Member(name), member));
+        }
     }
 }
 

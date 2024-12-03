@@ -1,4 +1,5 @@
 #include <NJS/Builder.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
 NJS::ValuePtr NJS::LValue::Create(Builder& builder, const TypePtr& type, llvm::Value* ptr)
@@ -18,7 +19,7 @@ llvm::Value* NJS::LValue::GetPtr() const
 
 llvm::Value* NJS::LValue::Load()
 {
-    return GetBuilder().LLVMBuilder().CreateLoad(GetLLVMType(), m_Ptr);
+    return GetBuilder().LLVMBuilder().CreateLoad(GetType()->GenLLVM(GetBuilder()), m_Ptr);
 }
 
 void NJS::LValue::Store(llvm::Value* value)

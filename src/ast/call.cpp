@@ -17,7 +17,7 @@ NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder)
     for (size_t i = 0; i < Args.size(); ++i)
         args[i] = Args[i]->GenLLVM(builder)->Load();
     const auto value = builder.LLVMBuilder().CreateCall(
-        llvm::dyn_cast<llvm::FunctionType>(callee->GetLLVMType()),
+        llvm::dyn_cast<llvm::FunctionType>(callee->GetType()->GenBaseLLVM(builder)),
         callee->GetPtr(),
         args);
     return RValue::Create(builder, callee->GetType()->Result(), value);

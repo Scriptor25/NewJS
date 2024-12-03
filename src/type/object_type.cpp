@@ -26,11 +26,6 @@ NJS::ObjectType::ObjectType(const std::map<std::string, TypePtr>& element_types)
         ElementTypes.emplace_back(name, type);
 }
 
-bool NJS::ObjectType::IsComplex()
-{
-    return true;
-}
-
 size_t NJS::ObjectType::Size()
 {
     size_t size = 0;
@@ -55,10 +50,17 @@ size_t NJS::ObjectType::MemberIndex(const std::string& name)
 
 NJS::TypeId NJS::ObjectType::GetId() const
 {
-    return TypeId_Object;
+    return TypeId_Complex;
 }
 
 llvm::Type* NJS::ObjectType::GenLLVM(Builder& builder) const
+{
+    const auto ptr_ty = builder.LLVMBuilder().getPtrTy();
+    const auto str_ty = GenBaseLLVM(builder);
+    return llvm::StructType::get(ptr_ty, str_ty);
+}
+
+llvm::Type* NJS::ObjectType::GenBaseLLVM(Builder& builder) const
 {
     std::vector<llvm::Type*> elements(ElementTypes.size());
     for (size_t i = 0; i < ElementTypes.size(); ++i)

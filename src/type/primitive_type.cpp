@@ -23,10 +23,10 @@ size_t NJS::PrimitiveType::Size()
 {
     switch (Name)
     {
-    case Type_Void: return 0; // void
-    case Type_Boolean: return 1; // i1
-    case Type_Number: // double
-    case Type_String: return 8; // ptr
+    case Type_Void: return 0;
+    case Type_Boolean: return 1;
+    case Type_Number:
+    case Type_String: return 8;
     default: Error("unknown primitive type does not have any size");
     }
 }

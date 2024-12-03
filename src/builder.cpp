@@ -20,6 +20,13 @@ NJS::ValuePtr& NJS::StackFrame::operator[](const std::string& name)
     return Values[name];
 }
 
+std::string NJS::StackFrame::ValueName(const std::string& name) const
+{
+    if (name.empty()) return ParentName;
+    if (ParentName.empty()) return name;
+    return ParentName + '.' + name;
+}
+
 NJS::Builder::Builder(Context& ctx, const std::string& module_id)
     : m_Ctx(ctx)
 {
@@ -80,7 +87,7 @@ llvm::Value* NJS::Builder::CreateAlloca(llvm::Type* type, const size_t size) con
 NJS::ValuePtr NJS::Builder::CreateGlobal(
     const std::string& name,
     const TypePtr& type,
-    const bool /*is_const*/,
+    const bool is_const,
     const ValuePtr& init)
 {
     const auto llvm_type = type->GenLLVM(*this);
@@ -94,7 +101,7 @@ NJS::ValuePtr NJS::Builder::CreateGlobal(
     const auto gv = new llvm::GlobalVariable(
         LLVMModule(),
         llvm_type,
-        false,
+        is_const,
         llvm::GlobalValue::InternalLinkage,
         const_init,
         name);
@@ -122,13 +129,7 @@ void NJS::Builder::GetMalloc(llvm::FunctionCallee& ref) const
 
 void NJS::Builder::Push(const std::string& name)
 {
-    const auto frame_name = m_Stack.empty()
-                                ? name
-                                : m_Stack.back().ParentName.empty()
-                                ? name
-                                : name.empty()
-                                ? m_Stack.back().ParentName
-                                : m_Stack.back().ParentName + '.' + name;
+    const auto frame_name = m_Stack.empty() ? name : m_Stack.back().ValueName(name);
     m_Stack.emplace_back(frame_name);
 }
 
@@ -139,7 +140,7 @@ void NJS::Builder::Pop()
 
 std::string NJS::Builder::ValueName(const std::string& name) const
 {
-    return m_Stack.back().ParentName.empty() ? name : m_Stack.back().ParentName + '.' + name;
+    return m_Stack.back().ValueName(name);
 }
 
 NJS::ValuePtr& NJS::Builder::CreateVar(const std::string& name)

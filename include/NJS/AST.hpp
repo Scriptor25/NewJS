@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <llvm/IR/Constant.h>
 #include <NJS/NJS.hpp>
 
 namespace NJS
@@ -137,12 +138,14 @@ namespace NJS
 
     struct ConstFunctionExpr : Expr
     {
-        ConstFunctionExpr(std::vector<ParamPtr>, ScopeStmt);
+        ConstFunctionExpr(std::vector<ParamPtr>, bool, TypePtr, ScopeStmt);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
         std::vector<ParamPtr> Params;
+        bool VarArg;
+        TypePtr ResultType;
         ScopeStmt Body;
     };
 
@@ -174,6 +177,8 @@ namespace NJS
         std::ostream& Print(std::ostream&) override;
 
         std::string Value;
+
+        static std::map<std::string, llvm::Constant*> GlobalStringTable;
     };
 
     struct FormatExpr : Expr

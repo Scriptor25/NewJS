@@ -4,13 +4,15 @@ namespace NJS
 {
     enum TypeId
     {
+        /** primitive void type */
         TypeId_Void,
+        /** primitive boolean type */
         TypeId_Boolean,
+        /** primitive number type */
         TypeId_Number,
+        /** primitive string type */
         TypeId_String,
-        TypeId_Array,
-        TypeId_Tuple,
-        TypeId_Object,
-        TypeId_Function,
+        /** complex type, consisting of a pointer to an info structure and some data */
+        TypeId_Complex,
     };
 }

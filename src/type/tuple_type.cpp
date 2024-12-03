@@ -22,11 +22,6 @@ NJS::TupleType::TupleType(std::vector<TypePtr> element_types)
 {
 }
 
-bool NJS::TupleType::IsComplex()
-{
-    return true;
-}
-
 bool NJS::TupleType::IsTuple()
 {
     return true;
@@ -47,10 +42,17 @@ NJS::TypePtr NJS::TupleType::Element(const size_t i)
 
 NJS::TypeId NJS::TupleType::GetId() const
 {
-    return TypeId_Tuple;
+    return TypeId_Complex;
 }
 
 llvm::Type* NJS::TupleType::GenLLVM(Builder& builder) const
+{
+    const auto ptr_ty = builder.LLVMBuilder().getPtrTy();
+    const auto tup_ty = GenBaseLLVM(builder);
+    return llvm::StructType::get(ptr_ty, tup_ty);
+}
+
+llvm::Type* NJS::TupleType::GenBaseLLVM(Builder& builder) const
 {
     std::vector<llvm::Type*> elements(ElementTypes.size());
     for (size_t i = 0; i < ElementTypes.size(); ++i)

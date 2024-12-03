@@ -10,7 +10,8 @@ NJS::ConstStringExpr::ConstStringExpr(std::string value)
 
 NJS::ValuePtr NJS::ConstStringExpr::GenLLVM(Builder& builder)
 {
-    const auto ptr = builder.LLVMBuilder().CreateGlobalStringPtr(Value);
+    auto& ptr = GlobalStringTable[Value];
+    if (!ptr) ptr = builder.LLVMBuilder().CreateGlobalStringPtr(Value);
     return RValue::Create(builder, builder.Ctx().GetStringType(), ptr);
 }
 
@@ -18,3 +19,5 @@ std::ostream& NJS::ConstStringExpr::Print(std::ostream& os)
 {
     return os << '"' << Value << '"';
 }
+
+std::map<std::string, llvm::Constant*> NJS::ConstStringExpr::GlobalStringTable;

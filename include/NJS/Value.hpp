@@ -12,7 +12,6 @@ namespace NJS
 
         [[nodiscard]] Builder& GetBuilder() const;
         [[nodiscard]] TypePtr GetType() const;
-        [[nodiscard]] llvm::Type* GetLLVMType() const;
 
         [[nodiscard]] virtual bool IsL() const = 0;
         [[nodiscard]] virtual llvm::Value* GetPtr() const = 0;
@@ -26,7 +25,6 @@ namespace NJS
     private:
         Builder& m_Builder;
         TypePtr m_Type;
-        llvm::Type* m_LLVMType;
     };
 
     class RValue : public Value

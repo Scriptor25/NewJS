@@ -16,8 +16,9 @@ namespace NJS
         explicit Type(std::string);
         virtual ~Type() = default;
 
+        bool IsComplex() const;
+
         virtual bool IsTuple();
-        virtual bool IsComplex();
         virtual size_t Size();
         virtual TypePtr Member(const std::string&);
         virtual size_t MemberIndex(const std::string&);
@@ -28,6 +29,7 @@ namespace NJS
 
         [[nodiscard]] virtual TypeId GetId() const = 0;
         virtual llvm::Type* GenLLVM(Builder&) const = 0;
+        virtual llvm::Type* GenBaseLLVM(Builder&) const;
 
         std::ostream& Print(std::ostream&) const;
 
@@ -62,13 +64,13 @@ namespace NJS
 
         explicit ArrayType(TypePtr);
 
-        bool IsComplex() override;
         TypePtr Element() override;
         TypePtr Element(size_t) override;
         size_t ElementSize() override;
 
         [[nodiscard]] TypeId GetId() const override;
         llvm::Type* GenLLVM(Builder&) const override;
+        llvm::Type* GenBaseLLVM(Builder&) const override;
 
         TypePtr ElementType;
     };
@@ -79,13 +81,13 @@ namespace NJS
 
         explicit TupleType(std::vector<TypePtr>);
 
-        bool IsComplex() override;
         bool IsTuple() override;
         size_t Size() override;
         TypePtr Element(size_t) override;
 
         [[nodiscard]] TypeId GetId() const override;
         llvm::Type* GenLLVM(Builder&) const override;
+        llvm::Type* GenBaseLLVM(Builder&) const override;
 
         std::vector<TypePtr> ElementTypes;
     };
@@ -96,13 +98,13 @@ namespace NJS
 
         explicit ObjectType(const std::map<std::string, TypePtr>&);
 
-        bool IsComplex() override;
         size_t Size() override;
         TypePtr Member(const std::string&) override;
         size_t MemberIndex(const std::string&) override;
 
         [[nodiscard]] TypeId GetId() const override;
         llvm::Type* GenLLVM(Builder&) const override;
+        llvm::Type* GenBaseLLVM(Builder&) const override;
 
         std::vector<std::pair<std::string, TypePtr>> ElementTypes;
     };
@@ -113,11 +115,11 @@ namespace NJS
 
         FunctionType(std::vector<TypePtr>, TypePtr, bool);
 
-        bool IsComplex() override;
         TypePtr Result() override;
 
         [[nodiscard]] TypeId GetId() const override;
         llvm::Type* GenLLVM(Builder&) const override;
+        llvm::Type* GenBaseLLVM(Builder&) const override;
 
         std::vector<TypePtr> ParamTypes;
         TypePtr ResultType;

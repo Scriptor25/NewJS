@@ -16,6 +16,8 @@ namespace NJS
         ValuePtr operator[](const std::string&) const;
         ValuePtr& operator[](const std::string&);
 
+        std::string ValueName(const std::string&) const;
+
         std::string ParentName;
         std::map<std::string, ValuePtr> Values;
     };

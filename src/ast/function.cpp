@@ -31,8 +31,12 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
         for (const auto& param : Params)
             types.push_back(param->Type);
         const auto type = builder.Ctx().GetFunctionType(types, ResultType, VarArg);
-        const auto llvm_type = llvm::dyn_cast<llvm::FunctionType>(type->GenLLVM(builder));
-        function = llvm::Function::Create(llvm_type, llvm::GlobalValue::ExternalLinkage, Name, builder.LLVMModule());
+        const auto llvm_type = llvm::dyn_cast<llvm::FunctionType>(type->GenBaseLLVM(builder));
+        function = llvm::Function::Create(
+            llvm_type,
+            llvm::GlobalValue::ExternalLinkage,
+            builder.ValueName(Name),
+            builder.LLVMModule());
 
         builder.CreateVar(Name) = LValue::Create(builder, type, function);
     }
@@ -49,6 +53,7 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
         const auto& param = Params[i];
         const auto arg = function->getArg(i);
         arg->setName(param->Name);
+
         const auto value = RValue::Create(builder, param->Type, arg);
         param->CreateVars(builder, false, value);
     }
@@ -67,6 +72,8 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
         }
         Error("not all code paths return");
     }
+
+    function->print(llvm::errs());
 
     if (verifyFunction(*function, &llvm::errs()))
         Error("failed to verify function");

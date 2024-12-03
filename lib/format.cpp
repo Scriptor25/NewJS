@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
@@ -17,20 +18,23 @@ void format(char* stream, const uint64_t n, ...)
             switch (va_arg(ap, int))
             {
             case NJS::TypeId_Void:
-                offset += snprintf(stream + offset, n - offset, "void");
+                offset += snprintf(stream + offset, n - offset, "<void>");
                 break;
+
             case NJS::TypeId_Boolean:
                 {
                     const auto val = va_arg(ap, int);
                     offset += snprintf(stream + offset, n - offset, "%s", val ? "true" : "false");
                 }
                 break;
+
             case NJS::TypeId_Number:
                 {
                     const auto val = va_arg(ap, double);
-                    offset += snprintf(stream + offset, n - offset, "%f", val);
+                    offset += snprintf(stream + offset, n - offset, val == round(val) ? "%.0f" : "%f", val);
                 }
                 break;
+
             case NJS::TypeId_String:
                 {
                     const auto val = va_arg(ap, const char*);
@@ -39,12 +43,30 @@ void format(char* stream, const uint64_t n, ...)
                 break;
 
             case NJS::TypeId_Array:
+                {
+                    const auto array = va_arg(ap, const void*);
+                    offset += snprintf(stream + offset, n - offset, "%p", array);
+                }
+                break;
+
             case NJS::TypeId_Tuple:
+                {
+                    const auto tuple = va_arg(ap, const void*);
+                    offset += snprintf(stream + offset, n - offset, "%p", tuple);
+                }
+                break;
+
             case NJS::TypeId_Object:
+                {
+                    const auto object = va_arg(ap, const void*);
+                    offset += snprintf(stream + offset, n - offset, "%p", object);
+                }
+                break;
+
             case NJS::TypeId_Function:
                 {
-                    const auto val = va_arg(ap, const void*);
-                    offset += snprintf(stream + offset, n - offset, "%p", val);
+                    const auto function = va_arg(ap, const void*);
+                    offset += snprintf(stream + offset, n - offset, "%p", function);
                 }
                 break;
 

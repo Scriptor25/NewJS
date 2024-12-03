@@ -26,7 +26,7 @@ function recurse(n: number): number {
 }
 
 const n = 10
-const r = recurse(10)
+const r = recurse(n)
 println($"recurse({n}) = {r}")
 
 const t1 = ["Felix", u1]
@@ -36,12 +36,16 @@ function printArray(array: number[]) {
     println($"{array}")
 }
 
-printArray(t1)
 printArray(a1)
 
 function foo(x: number): (): number {
     function bar(): number {
-        return x
+        return 123
     }
     return bar
 }
+
+const [name1, {name, surname, age, type}] = ["Felix", u1]
+const [x1, x2, x3] = [4, 5, 6]
+
+println($"{name1} {name} {surname} {age} {type} {x1} {x2} {x3}")

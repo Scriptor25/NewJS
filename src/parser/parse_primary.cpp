@@ -112,7 +112,7 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
         else result_type = m_Ctx.GetVoidType();
 
         const auto body = ParseScope();
-        return std::make_shared<ConstFunctionExpr>(params, *body);
+        return std::make_shared<ConstFunctionExpr>(params, vararg, result_type, *body);
     }
 
     Error(m_Token.Where, "unused token {}", m_Token);

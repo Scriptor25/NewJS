@@ -12,11 +12,6 @@ NJS::ArrayType::ArrayType(TypePtr element_type)
 {
 }
 
-bool NJS::ArrayType::IsComplex()
-{
-    return true;
-}
-
 NJS::TypePtr NJS::ArrayType::Element()
 {
     return ElementType;
@@ -34,13 +29,20 @@ size_t NJS::ArrayType::ElementSize()
 
 NJS::TypeId NJS::ArrayType::GetId() const
 {
-    return TypeId_Array;
+    return TypeId_Complex;
 }
 
 llvm::Type* NJS::ArrayType::GenLLVM(Builder& builder) const
 {
-    std::vector<llvm::Type*> elements(2);
-    elements[0] = builder.LLVMBuilder().getPtrTy();
-    elements[1] = builder.LLVMBuilder().getInt64Ty();
-    return llvm::StructType::get(builder.LLVMContext(), elements);
+    const auto ptr_ty = builder.LLVMBuilder().getPtrTy();
+    const auto int_ty = builder.LLVMBuilder().getInt64Ty();
+    const auto arr_ty = llvm::StructType::get(ptr_ty, int_ty);
+    return llvm::StructType::get(ptr_ty, arr_ty);
+}
+
+llvm::Type* NJS::ArrayType::GenBaseLLVM(Builder& builder) const
+{
+    const auto ptr_ty = builder.LLVMBuilder().getPtrTy();
+    const auto int_ty = builder.LLVMBuilder().getInt64Ty();
+    return llvm::StructType::get(ptr_ty, int_ty);
 }
