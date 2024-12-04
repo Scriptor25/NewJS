@@ -31,6 +31,11 @@ void NJS::Parser::NewLine()
     ++m_Where.Row;
 }
 
+bool NJS::Parser::AtEof() const
+{
+    return m_Token.Type == TokenType_EOF;
+}
+
 bool NJS::Parser::At(const TokenType type) const
 {
     return m_Token.Type == type;

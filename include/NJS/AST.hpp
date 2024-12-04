@@ -204,6 +204,17 @@ namespace NJS
         std::string Member;
     };
 
+    struct ScopeExpr : Expr
+    {
+        ScopeExpr(std::vector<StmtPtr>, ExprPtr);
+
+        ValuePtr GenLLVM(Builder&) override;
+        std::ostream& Print(std::ostream&) override;
+
+        std::vector<StmtPtr> Children;
+        ExprPtr Last;
+    };
+
     struct SubscriptExpr : Expr
     {
         SubscriptExpr(ExprPtr, ExprPtr);
@@ -213,6 +224,18 @@ namespace NJS
 
         ExprPtr Array;
         ExprPtr Index;
+    };
+
+    struct SwitchExpr : Expr
+    {
+        SwitchExpr(ExprPtr, std::vector<std::pair<ExprPtr, ExprPtr>>, ExprPtr);
+
+        ValuePtr GenLLVM(Builder&) override;
+        std::ostream& Print(std::ostream&) override;
+
+        ExprPtr Switcher;
+        std::vector<std::pair<ExprPtr, ExprPtr>> Cases;
+        ExprPtr DefaultCase;
     };
 
     struct SymbolExpr : Expr

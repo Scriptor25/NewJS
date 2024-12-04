@@ -31,7 +31,7 @@ NJS::ParamPtr NJS::Parser::ParseParam()
 
 bool NJS::Parser::ParseParamList(std::vector<ParamPtr>& params, const std::string& delim)
 {
-    while (!NextAt(delim))
+    while (!At(delim) && !AtEof())
     {
         if (NextAt("."))
         {
@@ -46,12 +46,13 @@ bool NJS::Parser::ParseParamList(std::vector<ParamPtr>& params, const std::strin
             Expect(",");
         else NextAt(",");
     }
+    Expect(delim);
     return false;
 }
 
 void NJS::Parser::ParseParamMap(std::map<std::string, ParamPtr>& params, const std::string& delim)
 {
-    while (!NextAt(delim))
+    while (!At(delim) && !AtEof())
     {
         auto name = Expect(TokenType_Symbol).StringValue;
         if (NextAt(":"))
@@ -62,4 +63,5 @@ void NJS::Parser::ParseParamMap(std::map<std::string, ParamPtr>& params, const s
             Expect(",");
         else NextAt(",");
     }
+    Expect(delim);
 }

@@ -22,6 +22,7 @@ namespace NJS
         void Escape();
         Token& Next();
 
+        [[nodiscard]] bool AtEof() const;
         [[nodiscard]] bool At(TokenType) const;
         [[nodiscard]] bool At(const std::string&) const;
 
@@ -59,6 +60,12 @@ namespace NJS
         ExprPtr ParseBinary(ExprPtr lhs, unsigned min_pre);
         ExprPtr ParseOperand();
         ExprPtr ParsePrimary();
+        ExprPtr ParseConstObject();
+        ExprPtr ParseConstTuple();
+        ExprPtr ParseConstFunction();
+        ExprPtr ParseFormat();
+        ExprPtr ParseSwitchExpr();
+        ExprPtr ParseScopeExpr();
 
         Context& m_Ctx;
         std::istream& m_Stream;
