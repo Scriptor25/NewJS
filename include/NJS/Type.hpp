@@ -5,9 +5,10 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Type.h>
+#include <llvm/IR/Value.h>
 #include <NJS/NJS.hpp>
-#include <NJS/TypeId.hpp>
 
 namespace NJS
 {
@@ -16,10 +17,8 @@ namespace NJS
         explicit Type(std::string);
         virtual ~Type() = default;
 
-        bool IsComplex() const;
-
-        virtual bool IsTuple();
-        virtual size_t Size();
+        virtual bool IsPrimitive() const;
+        virtual size_t Size() const;
         virtual TypePtr Member(const std::string&);
         virtual size_t MemberIndex(const std::string&);
         virtual TypePtr Result();
@@ -27,9 +26,8 @@ namespace NJS
         virtual TypePtr Element(size_t);
         virtual size_t ElementSize();
 
-        [[nodiscard]] virtual TypeId GetId() const = 0;
+        virtual void TypeInfo(Builder&, std::vector<llvm::Value*>&) const = 0;
         virtual llvm::Type* GenLLVM(Builder&) const = 0;
-        virtual llvm::Type* GenBaseLLVM(Builder&) const;
 
         std::ostream& Print(std::ostream&) const;
 
@@ -50,9 +48,10 @@ namespace NJS
 
         explicit PrimitiveType(TypeName);
 
-        size_t Size() override;
+        bool IsPrimitive() const override;
+        size_t Size() const override;
 
-        [[nodiscard]] TypeId GetId() const override;
+        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
         llvm::Type* GenLLVM(Builder&) const override;
 
         TypeName Name;
@@ -60,19 +59,19 @@ namespace NJS
 
     struct ArrayType : Type
     {
-        static std::string GenString(const TypePtr&);
+        static std::string GenString(const TypePtr&, size_t);
 
-        explicit ArrayType(TypePtr);
+        ArrayType(TypePtr, size_t);
 
         TypePtr Element() override;
         TypePtr Element(size_t) override;
         size_t ElementSize() override;
 
-        [[nodiscard]] TypeId GetId() const override;
+        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
         llvm::Type* GenLLVM(Builder&) const override;
-        llvm::Type* GenBaseLLVM(Builder&) const override;
 
         TypePtr ElementType;
+        size_t ElementCount;
     };
 
     struct TupleType : Type
@@ -81,13 +80,11 @@ namespace NJS
 
         explicit TupleType(std::vector<TypePtr>);
 
-        bool IsTuple() override;
-        size_t Size() override;
+        size_t Size() const override;
         TypePtr Element(size_t) override;
 
-        [[nodiscard]] TypeId GetId() const override;
+        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
         llvm::Type* GenLLVM(Builder&) const override;
-        llvm::Type* GenBaseLLVM(Builder&) const override;
 
         std::vector<TypePtr> ElementTypes;
     };
@@ -98,13 +95,12 @@ namespace NJS
 
         explicit ObjectType(const std::map<std::string, TypePtr>&);
 
-        size_t Size() override;
+        size_t Size() const override;
         TypePtr Member(const std::string&) override;
         size_t MemberIndex(const std::string&) override;
 
-        [[nodiscard]] TypeId GetId() const override;
+        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
         llvm::Type* GenLLVM(Builder&) const override;
-        llvm::Type* GenBaseLLVM(Builder&) const override;
 
         std::vector<std::pair<std::string, TypePtr>> ElementTypes;
     };
@@ -117,9 +113,10 @@ namespace NJS
 
         TypePtr Result() override;
 
-        [[nodiscard]] TypeId GetId() const override;
+        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
         llvm::Type* GenLLVM(Builder&) const override;
-        llvm::Type* GenBaseLLVM(Builder&) const override;
+
+        llvm::FunctionType* GenFnLLVM(Builder&) const;
 
         std::vector<TypePtr> ParamTypes;
         TypePtr ResultType;

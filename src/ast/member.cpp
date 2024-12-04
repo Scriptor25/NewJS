@@ -13,17 +13,19 @@ NJS::ValuePtr NJS::MemberExpr::GenLLVM(Builder& builder)
 {
     const auto object = Object->GenLLVM(builder);
     const auto type = object->GetType();
-
     const auto member_type = type->Member(Member);
     const auto member_index = type->MemberIndex(Member);
 
-    const auto ty = type->GenLLVM(builder);
-    const auto ptr = object->GetPtr();
-    const auto data_ty = type->GenBaseLLVM(builder);
-    const auto data_ptr = builder.LLVMBuilder().CreateStructGEP(ty, ptr, 1);
+    if (object->IsL())
+    {
+        const auto ty = type->GenLLVM(builder);
+        const auto ptr = object->GetPtr();
+        const auto gep = builder.LLVMBuilder().CreateStructGEP(ty, ptr, member_index);
+        return LValue::Create(builder, member_type, gep);
+    }
 
-    const auto gep = builder.LLVMBuilder().CreateStructGEP(data_ty, data_ptr, member_index, Member);
-    return LValue::Create(builder, member_type, gep);
+    const auto value = builder.LLVMBuilder().CreateExtractValue(object->Load(), member_index);
+    return RValue::Create(builder, member_type, value);
 }
 
 std::ostream& NJS::MemberExpr::Print(std::ostream& os)

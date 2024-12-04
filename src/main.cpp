@@ -18,7 +18,7 @@ int main(const int argc, const char* const* argv)
     NJS::Parser parser(context, stream, filename);
     parser.Parse([&](const NJS::StmtPtr& ptr)
     {
-        ptr->Print(std::cerr) << std::endl;
+        // ptr->Print(std::cerr) << std::endl;
         ptr->GenLLVM(builder);
     });
     stream.close();

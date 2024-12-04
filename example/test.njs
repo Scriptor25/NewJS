@@ -29,10 +29,10 @@ const n = 10
 const r = recurse(n)
 println($"recurse({n}) = {r}")
 
-const t1 = ["Felix", u1]
 const a1 = [1, 2, 3]
+const t1 = ["Felix", u1, a1]
 
-function printArray(array: number[]) {
+function printArray(array: number[3]) {
     println($"{array}")
 }
 
@@ -46,6 +46,6 @@ function foo(x: number): (): number {
 }
 
 const [name1, {name, surname, age, type}] = ["Felix", u1]
-const [x1, x2, x3] = [4, 5, 6]
 
-println($"{name1} {name} {surname} {age} {type} {x1} {x2} {x3}")
+println($"{name1} {name} {surname} {age} {type} {[4, 5, 6]}")
+println($"t1 = {t1}")

@@ -21,23 +21,28 @@ void NJS::DestructureObject::CreateVars(Builder& builder, const bool is_const, c
 
     if (value->IsL())
     {
-        const auto ptr = value->GetPtr();
-        const auto ty = type->GenLLVM(builder);
-        const auto data_ptr = builder.LLVMBuilder().CreateStructGEP(ty, ptr, 1);
-        const auto data_ty = type->GenBaseLLVM(builder);
-
         for (const auto& [name, element] : Elements)
         {
-            const auto gep = builder.LLVMBuilder().CreateStructGEP(data_ty, data_ptr, type->MemberIndex(name));
-            element->CreateVars(builder, is_const, LValue::Create(builder, type->Member(name), gep));
+            const auto member_type = type->Member(name);
+            const auto member_index = type->MemberIndex(name);
+            const auto member = LValue::Create(
+                builder,
+                member_type,
+                builder.LLVMBuilder().CreateStructGEP(type->GenLLVM(builder), value->GetPtr(), member_index));
+            element->CreateVars(builder, is_const, member);
         }
     }
     else
     {
         for (const auto& [name, element] : Elements)
         {
-            const auto member = builder.LLVMBuilder().CreateExtractValue(value->Load(), {1, type->MemberIndex(name)});
-            element->CreateVars(builder, is_const, RValue::Create(builder, type->Member(name), member));
+            const auto member_type = type->Member(name);
+            const auto member_index = type->MemberIndex(name);
+            const auto member = RValue::Create(
+                builder,
+                member_type,
+                builder.LLVMBuilder().CreateExtractValue(value->Load(), member_index));
+            element->CreateVars(builder, is_const, member);
         }
     }
 }

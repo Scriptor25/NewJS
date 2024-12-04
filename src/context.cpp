@@ -17,60 +17,50 @@ NJS::TypePtr& NJS::Context::GetType(const std::string& str)
     return m_TypeMap[str];
 }
 
-NJS::TypePtr NJS::Context::GetPrimitiveType(TypeName name)
+std::shared_ptr<NJS::PrimitiveType> NJS::Context::GetPrimitiveType(TypeName name)
 {
-    auto& ref = GetType(PrimitiveType::GenString(name));
-    if (ref) return ref;
-    return ref = std::make_shared<PrimitiveType>(name);
+    return GetType<PrimitiveType>(name);
 }
 
-NJS::TypePtr NJS::Context::GetVoidType()
+std::shared_ptr<NJS::PrimitiveType> NJS::Context::GetVoidType()
 {
     return GetPrimitiveType(Type_Void);
 }
 
-NJS::TypePtr NJS::Context::GetBooleanType()
+std::shared_ptr<NJS::PrimitiveType> NJS::Context::GetBooleanType()
 {
     return GetPrimitiveType(Type_Boolean);
 }
 
-NJS::TypePtr NJS::Context::GetNumberType()
+std::shared_ptr<NJS::PrimitiveType> NJS::Context::GetNumberType()
 {
     return GetPrimitiveType(Type_Number);
 }
 
-NJS::TypePtr NJS::Context::GetStringType()
+std::shared_ptr<NJS::PrimitiveType> NJS::Context::GetStringType()
 {
     return GetPrimitiveType(Type_String);
 }
 
-NJS::TypePtr NJS::Context::GetTupleType(const std::vector<TypePtr>& element_types)
+std::shared_ptr<NJS::TupleType> NJS::Context::GetTupleType(const std::vector<TypePtr>& element_types)
 {
-    auto& ref = GetType(TupleType::GenString(element_types));
-    if (ref) return ref;
-    return ref = std::make_shared<TupleType>( element_types);
+    return GetType<TupleType>(element_types);
 }
 
-NJS::TypePtr NJS::Context::GetObjectType(const std::map<std::string, TypePtr>& element_types)
+std::shared_ptr<NJS::ObjectType> NJS::Context::GetObjectType(const std::map<std::string, TypePtr>& element_types)
 {
-    auto& ref = GetType(ObjectType::GenString(element_types));
-    if (ref) return ref;
-    return ref = std::make_shared<ObjectType>(element_types);
+    return GetType<ObjectType>(element_types);
 }
 
-NJS::TypePtr NJS::Context::GetArrayType(const TypePtr& element_type)
+std::shared_ptr<NJS::ArrayType> NJS::Context::GetArrayType(const TypePtr& element_type, const size_t element_count)
 {
-    auto& ref = GetType(ArrayType::GenString(element_type));
-    if (ref) return ref;
-    return ref = std::make_shared<ArrayType>(element_type);
+    return GetType<ArrayType>(element_type, element_count);
 }
 
-NJS::TypePtr NJS::Context::GetFunctionType(
+std::shared_ptr<NJS::FunctionType> NJS::Context::GetFunctionType(
     const std::vector<TypePtr>& param_types,
     const TypePtr& result_type,
     const bool vararg)
 {
-    auto& ref = GetType(FunctionType::GenString(param_types, result_type, vararg));
-    if (ref) return ref;
-    return ref = std::make_shared<FunctionType>(param_types, result_type, vararg);
+    return GetType<FunctionType>(param_types, result_type, vararg);
 }

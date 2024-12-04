@@ -25,9 +25,8 @@ NJS::ValuePtr NJS::ConstObjectExpr::GenLLVM(Builder& builder)
     const auto type = builder.Ctx().GetObjectType(types);
 
     llvm::Value* object = llvm::ConstantStruct::getNullValue(type->GenLLVM(builder));
-
     for (size_t i = 0; i < values.size(); ++i)
-        object = builder.LLVMBuilder().CreateInsertValue(object, values[i]->Load(), {1, i});
+        object = builder.LLVMBuilder().CreateInsertValue(object, values[i]->Load(), i);
 
     return RValue::Create(builder, type, object);
 }

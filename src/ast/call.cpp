@@ -1,4 +1,3 @@
-#include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Value.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
@@ -13,14 +12,17 @@ NJS::CallExpr::CallExpr(ExprPtr callee, std::vector<ExprPtr> args)
 NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder)
 {
     const auto callee = Callee->GenLLVM(builder);
+
     std::vector<llvm::Value*> args(Args.size());
     for (size_t i = 0; i < Args.size(); ++i)
         args[i] = Args[i]->GenLLVM(builder)->Load();
+
+    const auto callee_type = std::dynamic_pointer_cast<FunctionType>(callee->GetType());
     const auto value = builder.LLVMBuilder().CreateCall(
-        llvm::dyn_cast<llvm::FunctionType>(callee->GetType()->GenBaseLLVM(builder)),
-        callee->GetPtr(),
+        callee_type->GenFnLLVM(builder),
+        callee->Load(),
         args);
-    return RValue::Create(builder, callee->GetType()->Result(), value);
+    return RValue::Create(builder, callee_type->Result(), value);
 }
 
 std::ostream& NJS::CallExpr::Print(std::ostream& os)

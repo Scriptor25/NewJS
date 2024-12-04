@@ -1,7 +1,7 @@
 #include <llvm/IR/DerivedTypes.h>
+#include <NJS/Builder.hpp>
+#include <NJS/Std.hpp>
 #include <NJS/Type.hpp>
-
-#include "NJS/Builder.hpp"
 
 std::string NJS::FunctionType::GenString(
     const std::vector<TypePtr>& param_types,
@@ -37,22 +37,26 @@ NJS::TypePtr NJS::FunctionType::Result()
     return ResultType;
 }
 
-NJS::TypeId NJS::FunctionType::GetId() const
+void NJS::FunctionType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
 {
-    return TypeId_Complex;
+    args.push_back(builder.LLVMBuilder().getInt32(ID_FUNCTION));
+    ResultType->TypeInfo(builder, args);
+    args.push_back(builder.LLVMBuilder().getInt64(ParamTypes.size()));
+    for (const auto& param : ParamTypes)
+        param->TypeInfo(builder, args);
+    args.push_back(builder.LLVMBuilder().getInt32(VarArg));
 }
 
 llvm::Type* NJS::FunctionType::GenLLVM(Builder& builder) const
 {
-    const auto ptr_ty = builder.LLVMBuilder().getPtrTy();
-    return llvm::StructType::get(ptr_ty, ptr_ty);
+    return builder.LLVMBuilder().getPtrTy();
 }
 
-llvm::Type* NJS::FunctionType::GenBaseLLVM(Builder& builder) const
+llvm::FunctionType* NJS::FunctionType::GenFnLLVM(Builder& builder) const
 {
     const auto result = ResultType->GenLLVM(builder);
-    std::vector<llvm::Type*> params(ParamTypes.size());
-    for (size_t i = 0; i < ParamTypes.size(); ++i)
-        params[i] = ParamTypes[i]->GenLLVM(builder);
+    std::vector<llvm::Type*> params;
+    for (const auto& type : ParamTypes)
+        params.push_back(type->GenLLVM(builder));
     return llvm::FunctionType::get(result, params, VarArg);
 }

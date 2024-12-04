@@ -26,36 +26,13 @@ NJS::ValuePtr NJS::ConstTupleExpr::GenLLVM(Builder& builder)
             is_tuple = true;
     }
 
-    const auto type = is_tuple
-                          ? builder.Ctx().GetTupleType(types)
-                          : builder.Ctx().GetArrayType(types.front());
+    TypePtr type;
+    if (is_tuple) type = builder.Ctx().GetTupleType(types);
+    else type = builder.Ctx().GetArrayType(types.front(), Elements.size());
 
-    llvm::Value* value = llvm::ConstantStruct::getNullValue(type->GenLLVM(builder));
-
-    if (is_tuple)
-    {
-        for (size_t i = 0; i < Elements.size(); ++i)
-            value = builder.LLVMBuilder().CreateInsertValue(value, values[i]->Load(), {1, i});
-    }
-    else
-    {
-        llvm::FunctionCallee malloc;
-        builder.GetMalloc(malloc);
-
-        const auto bytes = builder.LLVMBuilder().getInt64(Elements.size() * type->ElementSize());
-        const auto malloc_ptr = builder.LLVMBuilder().CreateCall(malloc, {bytes});
-        const auto len = builder.LLVMBuilder().getInt64(Elements.size());
-
-        value = builder.LLVMBuilder().CreateInsertValue(value, malloc_ptr, {1, 0});
-        value = builder.LLVMBuilder().CreateInsertValue(value, len, {1, 1});
-
-        const auto el_ty = type->Element()->GenLLVM(builder);
-        for (size_t i = 0; i < Elements.size(); ++i)
-        {
-            const auto gep = builder.LLVMBuilder().CreateConstGEP1_64(el_ty, malloc_ptr, i);
-            builder.LLVMBuilder().CreateStore(values[i]->Load(), gep);
-        }
-    }
+    llvm::Value* value = llvm::Constant::getNullValue(type->GenLLVM(builder));
+    for (size_t i = 0; i < Elements.size(); ++i)
+        value = builder.LLVMBuilder().CreateInsertValue(value, values[i]->Load(), i);
 
     return RValue::Create(builder, type, value);
 }

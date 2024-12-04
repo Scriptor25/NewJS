@@ -5,17 +5,12 @@ NJS::Type::Type(std::string str)
 {
 }
 
-bool NJS::Type::IsComplex() const
-{
-    return GetId() == TypeId_Complex;
-}
-
-bool NJS::Type::IsTuple()
+bool NJS::Type::IsPrimitive() const
 {
     return false;
 }
 
-size_t NJS::Type::Size()
+size_t NJS::Type::Size() const
 {
     return 0;
 }
@@ -48,11 +43,6 @@ NJS::TypePtr NJS::Type::Element(size_t)
 size_t NJS::Type::ElementSize()
 {
     return 0;
-}
-
-llvm::Type* NJS::Type::GenBaseLLVM(Builder&) const
-{
-    return {};
 }
 
 std::ostream& NJS::Type::Print(std::ostream& os) const

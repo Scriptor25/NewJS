@@ -16,7 +16,7 @@ namespace NJS
         ValuePtr operator[](const std::string&) const;
         ValuePtr& operator[](const std::string&);
 
-        std::string ValueName(const std::string&) const;
+        [[nodiscard]] std::string ValueName(const std::string&) const;
 
         std::string ParentName;
         std::map<std::string, ValuePtr> Values;
@@ -27,7 +27,7 @@ namespace NJS
     public:
         Builder(Context&, const std::string&);
 
-        void Close() const;
+        void Close();
 
         [[nodiscard]] Context& Ctx() const;
 
@@ -41,7 +41,6 @@ namespace NJS
         ValuePtr CreateGlobal(const std::string&, const TypePtr&, bool, const ValuePtr&);
 
         void GetFormat(llvm::FunctionCallee&) const;
-        void GetMalloc(llvm::FunctionCallee&) const;
 
         void Push(const std::string& = {});
         void Pop();

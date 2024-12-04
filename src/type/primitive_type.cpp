@@ -1,5 +1,6 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
+#include <NJS/Std.hpp>
 #include <NJS/Type.hpp>
 
 std::string NJS::PrimitiveType::GenString(const TypeName name)
@@ -19,7 +20,12 @@ NJS::PrimitiveType::PrimitiveType(const TypeName name)
 {
 }
 
-size_t NJS::PrimitiveType::Size()
+bool NJS::PrimitiveType::IsPrimitive() const
+{
+    return true;
+}
+
+size_t NJS::PrimitiveType::Size() const
 {
     switch (Name)
     {
@@ -31,15 +37,22 @@ size_t NJS::PrimitiveType::Size()
     }
 }
 
-NJS::TypeId NJS::PrimitiveType::GetId() const
+void NJS::PrimitiveType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
 {
     switch (Name)
     {
-    case Type_Void: return TypeId_Void;
-    case Type_Boolean: return TypeId_Boolean;
-    case Type_Number: return TypeId_Number;
-    case Type_String: return TypeId_String;
-    default: Error("unknown primitive type does not have a type id");
+    case Type_Void:
+        args.push_back(builder.LLVMBuilder().getInt32(ID_VOID));
+        break;
+    case Type_Boolean:
+        args.push_back(builder.LLVMBuilder().getInt32(ID_BOOLEAN));
+        break;
+    case Type_Number:
+        args.push_back(builder.LLVMBuilder().getInt32(ID_NUMBER));
+        break;
+    case Type_String:
+        args.push_back(builder.LLVMBuilder().getInt32(ID_STRING));
+        break;
     }
 }
 

@@ -43,9 +43,11 @@ NJS::Builder::Builder(Context& ctx, const std::string& module_id)
     Push();
 }
 
-void NJS::Builder::Close() const
+void NJS::Builder::Close()
 {
     LLVMBuilder().CreateRet(LLVMBuilder().getInt32(0));
+    Pop();
+
     LLVMModule().print(llvm::outs(), nullptr);
 }
 
@@ -117,14 +119,6 @@ void NJS::Builder::GetFormat(llvm::FunctionCallee& ref) const
     param_types[1] = LLVMBuilder().getInt64Ty();
     const auto type = llvm::FunctionType::get(LLVMBuilder().getVoidTy(), param_types, true);
     ref = LLVMModule().getOrInsertFunction("format", type);
-}
-
-void NJS::Builder::GetMalloc(llvm::FunctionCallee& ref) const
-{
-    std::vector<llvm::Type*> param_types(1);
-    param_types[0] = LLVMBuilder().getInt64Ty();
-    const auto type = llvm::FunctionType::get(LLVMBuilder().getPtrTy(), param_types, false);
-    ref = LLVMModule().getOrInsertFunction("malloc", type);
 }
 
 void NJS::Builder::Push(const std::string& name)

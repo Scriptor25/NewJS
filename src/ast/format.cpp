@@ -2,6 +2,7 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Context.hpp>
 #include <NJS/NJS.hpp>
+#include <NJS/Std.hpp>
 #include <NJS/Value.hpp>
 
 NJS::FormatExpr::FormatExpr(
@@ -17,32 +18,39 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder)
     constexpr auto N = 1024;
     const auto ptr = builder.CreateAlloca(builder.LLVMBuilder().getInt8Ty(), N);
 
-    std::vector<llvm::Value*> args(3 + 2 * Statics.size() + 3 * Dynamics.size());
-    size_t x = 0;
-    args[x++] = ptr;
-    args[x++] = builder.LLVMBuilder().getInt64(N);
+    std::vector<llvm::Value*> args;
+
+    args.push_back(ptr);
+    args.push_back(builder.LLVMBuilder().getInt64(N));
+
     for (size_t i = 0; i < Count; ++i)
     {
         if (Statics.contains(i))
         {
-            args[x++] = builder.LLVMBuilder().getInt32(1);
-
             const auto value = Statics[i];
-            auto& str_ptr = ConstStringExpr::GlobalStringTable[value];
-            if (!str_ptr) str_ptr = builder.LLVMBuilder().CreateGlobalStringPtr(value);
-            args[x++] = str_ptr;
+            const auto str = ConstStringExpr::GetString(builder, value);
+
+            args.push_back(builder.LLVMBuilder().getInt32(ID_STRING));
+            args.push_back(str);
         }
         else if (Dynamics.contains(i))
         {
-            args[x++] = builder.LLVMBuilder().getInt32(2);
             const auto value = Dynamics[i]->GenLLVM(builder);
-            args[x++] = builder.LLVMBuilder().getInt32(value->GetType()->GetId());
-            if (value->GetType()->IsComplex())
-                args[x++] = value->GetPtr();
-            else args[x++] = value->Load();
+            value->GetType()->TypeInfo(builder, args);
+            if (value->GetType()->IsPrimitive())
+                args.push_back(value->Load());
+            else if (value->IsL())
+                args.push_back(value->GetPtr());
+            else
+            {
+                const auto tmp = builder.CreateAlloca(value->GetType());
+                tmp->Store(value->Load());
+                args.push_back(tmp->GetPtr());
+            }
         }
     }
-    args[x++] = builder.LLVMBuilder().getInt32(0);
+
+    args.push_back(builder.LLVMBuilder().getInt32(ID_VOID));
 
     llvm::FunctionCallee format;
     builder.GetFormat(format);

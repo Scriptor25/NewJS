@@ -178,7 +178,7 @@ namespace NJS
 
         std::string Value;
 
-        static std::map<std::string, llvm::Constant*> GlobalStringTable;
+        static llvm::Constant* GetString(Builder&, const std::string&);
     };
 
     struct FormatExpr : Expr
