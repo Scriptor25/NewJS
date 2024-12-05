@@ -1,8 +1,8 @@
-SRC = $(foreach P,$(wildcard day_*),$(wildcard $(P)\\*.njs))
+SRC = main.njs $(foreach P,$(wildcard day_*),$(wildcard $(P)/*.njs))
 OBJ = $(patsubst %.njs,%.o,$(SRC))
 
 %.o: %.ll
-	llc -o $@ --filetype=ojb $<
+	llc -o $@ --filetype=obj $<
 
 %.ll: %.njs
 	../../../build/NewJS $< > $@
@@ -14,4 +14,4 @@ launch: main.exe
 	main.exe
 
 clean:
-	cmd /c del $(OBJ)
+	cmd /c del $(subst /,\\,$(OBJ)) main.exe
