@@ -1,4 +1,4 @@
-function println(message: string)
+extern println(message: string)
 
 type User = {
     name: string,
@@ -38,12 +38,17 @@ function printArray(array: number[3]) {
 
 printArray(a1)
 
-function foo(x: number): (): number {
+for (let i = 0; i < 3; ++i)
+    println($"a1[{i}] = {a1[i]}")
+
+function foo(): (): number {
     function bar(): number {
         return 123
     }
     return bar
 }
+
+println($"foo()() = {foo()()}")
 
 const [name1, {name, surname, age, type}] = ["Felix", u1]
 

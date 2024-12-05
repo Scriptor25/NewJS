@@ -1,8 +1,7 @@
 #include <NJS/AST.hpp>
+#include <NJS/Builder.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
-
-#include "NJS/Builder.hpp"
-#include "NJS/Type.hpp"
 
 NJS::MemberExpr::MemberExpr(ExprPtr object, std::string member)
     : Object(std::move(object)), Member(std::move(member))

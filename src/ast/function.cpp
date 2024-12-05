@@ -30,10 +30,10 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
     auto function = builder.LLVMModule().getFunction(name);
     if (!function)
     {
-        std::vector<TypePtr> types;
+        std::vector<TypePtr> param_types;
         for (const auto& param : Params)
-            types.push_back(param->Type);
-        const auto type = builder.Ctx().GetFunctionType(types, ResultType, VarArg);
+            param_types.push_back(param->Type);
+        const auto type = builder.Ctx().GetFunctionType(param_types, ResultType, VarArg);
         const auto llvm_type = type->GenFnLLVM(builder);
         function = llvm::Function::Create(
             llvm_type,
@@ -47,8 +47,9 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
     if (!Body) return {};
     if (!function->empty()) Error("cannot redefine function");
 
-    const auto bkp = builder.LLVMBuilder().GetInsertBlock();
-    builder.LLVMBuilder().SetInsertPoint(llvm::BasicBlock::Create(builder.LLVMContext(), "entry", function));
+    const auto return_block = builder.LLVMBuilder().GetInsertBlock();
+    const auto entry_block = llvm::BasicBlock::Create(builder.LLVMContext(), "entry", function);
+    builder.LLVMBuilder().SetInsertPoint(entry_block);
 
     builder.Push(Name);
     for (size_t i = 0; i < Params.size(); ++i)
@@ -64,25 +65,25 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
     Body->GenLLVM(builder);
     builder.Pop();
 
-    for (auto& bb : *function)
+    for (auto& block : *function)
     {
-        if (bb.getTerminator()) continue;
+        if (block.getTerminator()) continue;
         if (function->getReturnType()->isVoidTy())
         {
-            builder.LLVMBuilder().SetInsertPoint(&bb);
+            builder.LLVMBuilder().SetInsertPoint(&block);
             builder.LLVMBuilder().CreateRetVoid();
             continue;
         }
-        Error("not all code paths return");
+        Error("not all code paths return a value: in function {} ({})", Name, name);
     }
 
     if (verifyFunction(*function, &llvm::errs()))
     {
         function->print(llvm::errs());
-        Error("failed to verify function");
+        Error("failed to verify function {} ({})", Name, name);
     }
 
-    builder.LLVMBuilder().SetInsertPoint(bkp);
+    builder.LLVMBuilder().SetInsertPoint(return_block);
     return {};
 }
 

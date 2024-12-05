@@ -2,10 +2,9 @@
 
 #include <functional>
 #include <memory>
+#include <NJS/Import.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Token.hpp>
-
-#include "Import.hpp"
 
 namespace NJS
 {

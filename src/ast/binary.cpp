@@ -1,4 +1,3 @@
-#include <llvm/IR/Value.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
@@ -44,7 +43,7 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
 
     if (Op == "=")
     {
-        lhs->Store(rhs->Load());
+        lhs->Store(rhs);
         return lhs;
     }
 
@@ -60,7 +59,7 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
         {
             if (assign)
             {
-                lhs->Store(value->Load());
+                lhs->Store(value);
                 return lhs;
             }
             return value;

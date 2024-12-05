@@ -19,7 +19,7 @@ void NJS::Param::CreateVars(Builder& builder, const bool is_const, const ValuePt
 {
     const auto type = Type ? Type : value->GetType();
     const auto var = builder.CreateVar(Name) = builder.CreateAlloca(type);
-    if (value) var->Store(value->Load());
+    if (value) var->Store(value);
 }
 
 std::ostream& NJS::Param::Print(std::ostream& os)

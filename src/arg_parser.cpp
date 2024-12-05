@@ -50,14 +50,12 @@ bool NJS::ArgParser::Flag(const ID id) const
     return m_Flags.at(id);
 }
 
-bool NJS::ArgParser::HasOption(const ID id) const
+void NJS::ArgParser::Option(const ID id, std::string& option, const std::string& alt) const
 {
-    return m_Options.contains(id);
-}
-
-std::string NJS::ArgParser::Option(const ID id) const
-{
-    if (!m_Options.contains(id))
-        return {};
-    return m_Options.at(id);
+    if (m_Options.contains(id))
+    {
+        option = m_Options.at(id);
+        return;
+    }
+    option = alt;
 }

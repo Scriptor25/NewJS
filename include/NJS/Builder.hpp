@@ -4,7 +4,6 @@
 #include <memory>
 #include <vector>
 #include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <NJS/NJS.hpp>
 
@@ -25,7 +24,7 @@ namespace NJS
     class Builder
     {
     public:
-        Builder(Context&, llvm::LLVMContext&, const std::string&);
+        Builder(Context&, llvm::LLVMContext&, const std::string&, bool);
 
         void Close();
 

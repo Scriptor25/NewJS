@@ -44,7 +44,7 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder)
             else
             {
                 const auto tmp = builder.CreateAlloca(value->GetType());
-                tmp->Store(value->Load());
+                tmp->Store(value);
                 args.push_back(tmp->GetPtr());
             }
         }

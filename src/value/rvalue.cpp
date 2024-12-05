@@ -17,12 +17,17 @@ llvm::Value* NJS::RValue::GetPtr() const
     Error("cannot get pointer to rvalue");
 }
 
-llvm::Value* NJS::RValue::Load()
+llvm::Value* NJS::RValue::Load() const
 {
     return m_Value;
 }
 
-void NJS::RValue::Store(llvm::Value*)
+void NJS::RValue::Store(llvm::Value*) const
+{
+    Error("cannot assign to rvalue");
+}
+
+void NJS::RValue::Store(ValuePtr) const
 {
     Error("cannot assign to rvalue");
 }

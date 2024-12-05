@@ -15,3 +15,5 @@ launch: main.exe
 
 clean:
 	cmd /c del $(subst /,\\,$(OBJ)) main.exe
+
+.PHONY: launch clean

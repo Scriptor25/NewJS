@@ -24,7 +24,15 @@ void NJS::Linker::Link(std::unique_ptr<llvm::Module>&& module) const
         Error("failed to link modules");
 }
 
-void NJS::Linker::Output(llvm::raw_ostream& output_stream) const
+void NJS::Linker::Emit(llvm::raw_ostream& output_stream, const llvm::CodeGenFileType output_type) const
 {
-    m_LLVMModule->print(output_stream, {});
+    if (output_type == llvm::CodeGenFileType::Null)
+    {
+        m_LLVMModule->print(output_stream, {});
+        return;
+    }
+
+    Error(
+        "emission of filetype {} is not implemented",
+        output_type == llvm::CodeGenFileType::ObjectFile ? "obj" : "asm");
 }

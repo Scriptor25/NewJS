@@ -27,7 +27,7 @@ std::string NJS::StackFrame::ValueName(const std::string& name) const
     return ParentName + '.' + name;
 }
 
-NJS::Builder::Builder(Context& ctx, llvm::LLVMContext& context, const std::string& module_id)
+NJS::Builder::Builder(Context& ctx, llvm::LLVMContext& context, const std::string& module_id, const bool is_main)
     : m_Ctx(ctx), m_LLVMContext(context), m_ModuleID(module_id)
 {
     m_LLVMModule = std::make_unique<llvm::Module>(module_id, m_LLVMContext);
@@ -40,7 +40,7 @@ NJS::Builder::Builder(Context& ctx, llvm::LLVMContext& context, const std::strin
         const auto function = llvm::Function::Create(
             type,
             llvm::GlobalValue::ExternalLinkage,
-            m_ModuleID == "main" ? "main" : ValueName("main"),
+            is_main ? "main" : ValueName("main"),
             LLVMModule());
         LLVMBuilder().SetInsertPoint(llvm::BasicBlock::Create(LLVMContext(), "entry", function));
     }

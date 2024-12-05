@@ -25,8 +25,7 @@ namespace NJS
         [[nodiscard]] std::string Executable() const;
         void Values(std::vector<std::string>&) const;
         [[nodiscard]] bool Flag(ID) const;
-        [[nodiscard]] bool HasOption(ID) const;
-        [[nodiscard]] std::string Option(ID) const;
+        void Option(ID, std::string&, const std::string& = {}) const;
 
     private:
         std::map<std::string, std::pair<ID, bool>> m_Args;

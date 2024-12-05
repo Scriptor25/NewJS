@@ -16,8 +16,9 @@ namespace NJS
         [[nodiscard]] virtual bool IsL() const = 0;
         [[nodiscard]] virtual llvm::Value* GetPtr() const = 0;
 
-        virtual llvm::Value* Load() = 0;
-        virtual void Store(llvm::Value*) = 0;
+        virtual llvm::Value* Load() const = 0;
+        virtual void Store(llvm::Value*) const = 0;
+        virtual void Store(ValuePtr) const = 0;
 
     protected:
         Value(Builder&, TypePtr);
@@ -35,8 +36,9 @@ namespace NJS
         [[nodiscard]] bool IsL() const override;
         [[nodiscard]] llvm::Value* GetPtr() const override;
 
-        llvm::Value* Load() override;
-        void Store(llvm::Value*) override;
+        llvm::Value* Load() const override;
+        void Store(llvm::Value*) const override;
+        void Store(ValuePtr) const override;
 
     private:
         RValue(Builder&, TypePtr, llvm::Value*);
@@ -52,8 +54,9 @@ namespace NJS
         [[nodiscard]] bool IsL() const override;
         [[nodiscard]] llvm::Value* GetPtr() const override;
 
-        llvm::Value* Load() override;
-        void Store(llvm::Value*) override;
+        llvm::Value* Load() const override;
+        void Store(llvm::Value*) const override;
+        void Store(ValuePtr) const override;
 
     private:
         LValue(Builder&, TypePtr, llvm::Value*);
