@@ -28,19 +28,23 @@ std::string NJS::StackFrame::ValueName(const std::string& name) const
 }
 
 NJS::Builder::Builder(Context& ctx, const std::string& module_id)
-    : m_Ctx(ctx)
+    : m_Ctx(ctx), m_ModuleID(module_id)
 {
     m_LLVMContext = std::make_unique<llvm::LLVMContext>();
     m_LLVMModule = std::make_unique<llvm::Module>(module_id, *m_LLVMContext);
     m_LLVMBuilder = std::make_unique<llvm::IRBuilder<>>(*m_LLVMContext);
 
+    Push(m_ModuleID);
+
     {
         const auto type = llvm::FunctionType::get(LLVMBuilder().getInt32Ty(), false);
-        const auto function = llvm::Function::Create(type, llvm::GlobalValue::ExternalLinkage, "main", LLVMModule());
+        const auto function = llvm::Function::Create(
+            type,
+            llvm::GlobalValue::ExternalLinkage,
+            m_ModuleID == "main" ? "main" : ValueName("main"),
+            LLVMModule());
         LLVMBuilder().SetInsertPoint(llvm::BasicBlock::Create(LLVMContext(), "entry", function));
     }
-
-    Push();
 }
 
 void NJS::Builder::Close()
@@ -140,7 +144,7 @@ std::string NJS::Builder::ValueName(const std::string& name) const
 NJS::ValuePtr& NJS::Builder::CreateVar(const std::string& name)
 {
     auto& stack = m_Stack.back();
-    if (stack.contains(name)) Error("cannot redefine symbol");
+    if (stack.contains(name)) Error("cannot redefine symbol '{}'", name);
     return stack[name];
 }
 
@@ -148,5 +152,5 @@ NJS::ValuePtr& NJS::Builder::GetVar(const std::string& name)
 {
     for (auto& stack : std::ranges::reverse_view(m_Stack))
         if (stack.contains(name)) return stack[name];
-    Error("undefined symbol");
+    Error("undefined symbol '{}'", name);
 }

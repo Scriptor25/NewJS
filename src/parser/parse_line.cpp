@@ -9,8 +9,11 @@ NJS::StmtPtr NJS::Parser::ParseLine()
         return {};
     }
 
+    if (At("import"))
+        return ParseImport();
+
     if (At("{")) return ParseScope();
-    if (At("function")) return ParseFunction();
+    if (At("function") || At("extern")) return ParseFunction();
     if (At("let") || At("const")) return ParseVariable();
     if (At("if")) return ParseIf();
     if (At("for")) return ParseFor();

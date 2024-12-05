@@ -16,6 +16,7 @@ namespace NJS
 
     typedef std::shared_ptr<struct Stmt> StmtPtr;
     typedef std::shared_ptr<struct Expr> ExprPtr;
+    typedef std::shared_ptr<struct ImportStmt> ImportStmtPtr;
     typedef std::shared_ptr<struct ScopeStmt> ScopeStmtPtr;
     typedef std::shared_ptr<struct FunctionStmt> FunctionStmtPtr;
     typedef std::shared_ptr<struct VariableStmt> VariableStmtPtr;

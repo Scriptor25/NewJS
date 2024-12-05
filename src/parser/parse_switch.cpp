@@ -8,11 +8,11 @@ NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
     const auto switcher = ParseExpression();
     Expect(")");
 
-    std::vector<std::pair<ExprPtr, ExprPtr>> cases;
+    std::map<ExprPtr, std::vector<ExprPtr>> cases;
     ExprPtr default_case;
 
     Expect("{");
-    while (!At("{") && !AtEof())
+    while (!At("}") && !AtEof())
     {
         if (!default_case && NextAt("default"))
         {
@@ -23,14 +23,17 @@ NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
         }
 
         Expect("case");
-        const auto case_entry = ParsePrimary();
+
+        std::vector<ExprPtr> case_entries;
+        do case_entries.push_back(ParsePrimary());
+        while (NextAt(","));
 
         ExprPtr value;
         if (NextAt("->"))
             value = ParseExpression();
         else value = ParseScopeExpr();
 
-        cases.emplace_back(case_entry, value);
+        cases[value] = case_entries;
     }
     Expect("}");
 

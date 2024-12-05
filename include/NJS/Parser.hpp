@@ -5,6 +5,8 @@
 #include <NJS/NJS.hpp>
 #include <NJS/Token.hpp>
 
+#include "Import.hpp"
+
 namespace NJS
 {
     typedef std::function<void(const StmtPtr&)> Callback;
@@ -47,6 +49,9 @@ namespace NJS
 
         void ParseTypeAlias();
         void ParseInterface();
+
+        ImportStmtPtr ParseImport();
+        ImportMapping ParseImportMapping();
 
         StmtPtr ParseLine();
         ScopeStmtPtr ParseScope();

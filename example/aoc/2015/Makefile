@@ -1,17 +1,17 @@
-SRC := main.njs $(foreach P,$(wildcard day_*),$(P)\\\\part_1.njs $(P)\\\\part_2.njs $(P)\\\\$(P).njs)
-OBJ := $(patsubst %.njs,%.o,$(SRC))
-
-%.ll: %.njs
-	../../../build/NewJS.exe $< > $@
+SRC = $(foreach P,$(wildcard day_*),$(wildcard $(P)\\*.njs))
+OBJ = $(patsubst %.njs,%.o,$(SRC))
 
 %.o: %.ll
-	llc -o $@ --filetype=obj $<
+	llc -o $@ --filetype=ojb $<
+
+%.ll: %.njs
+	../../../build/NewJS $< > $@
 
 main.exe: $(OBJ)
-	gcc -o main.exe $^ -L../../../build -lStdNewJS
+	gcc -o $@ $^ -L../../../build -lStdNewJS
 
 launch: main.exe
 	main.exe
 
 clean:
-	@cmd /c del $(OBJ) main.exe
+	cmd /c del $(OBJ)

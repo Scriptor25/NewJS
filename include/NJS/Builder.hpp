@@ -52,6 +52,7 @@ namespace NJS
 
     private:
         Context& m_Ctx;
+        std::string m_ModuleID;
 
         std::unique_ptr<llvm::LLVMContext> m_LLVMContext;
         std::unique_ptr<llvm::Module> m_LLVMModule;

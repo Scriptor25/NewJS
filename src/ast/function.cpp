@@ -9,12 +9,14 @@
 #include <NJS/Value.hpp>
 
 NJS::FunctionStmt::FunctionStmt(
+    const bool extern_,
     std::string name,
     std::vector<ParamPtr> params,
     const bool vararg,
     TypePtr result_type,
     ScopeStmtPtr body)
-    : Name(std::move(name)),
+    : Extern(extern_),
+      Name(std::move(name)),
       Params(std::move(params)),
       VarArg(vararg),
       ResultType(std::move(result_type)),
@@ -24,7 +26,8 @@ NJS::FunctionStmt::FunctionStmt(
 
 NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
 {
-    auto function = builder.LLVMModule().getFunction(builder.ValueName(Name));
+    const auto name = Extern ? Name : builder.ValueName(Name);
+    auto function = builder.LLVMModule().getFunction(name);
     if (!function)
     {
         std::vector<TypePtr> types;
@@ -35,7 +38,7 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
         function = llvm::Function::Create(
             llvm_type,
             llvm::GlobalValue::ExternalLinkage,
-            builder.ValueName(Name),
+            name,
             builder.LLVMModule());
 
         builder.CreateVar(Name) = RValue::Create(builder, type, function);
@@ -85,7 +88,9 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
 
 std::ostream& NJS::FunctionStmt::Print(std::ostream& os)
 {
-    os << "function " << Name << "(";
+    if (Extern) os << "extern";
+    else os << "function";
+    os << ' ' << Name << "(";
     for (size_t i = 0; i < Params.size(); ++i)
     {
         if (i > 0) os << ", ";

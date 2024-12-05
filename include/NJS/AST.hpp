@@ -1,9 +1,11 @@
 #pragma once
 
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <vector>
 #include <llvm/IR/Constant.h>
+#include <NJS/Import.hpp>
 #include <NJS/NJS.hpp>
 
 namespace NJS
@@ -13,6 +15,18 @@ namespace NJS
         virtual ~Stmt() = default;
         virtual ValuePtr GenLLVM(Builder&) = 0;
         virtual std::ostream& Print(std::ostream&) = 0;
+    };
+
+    struct ImportStmt : Stmt
+    {
+        ImportStmt(ImportMapping, std::filesystem::path, std::vector<FunctionStmtPtr>);
+
+        ValuePtr GenLLVM(Builder&) override;
+        std::ostream& Print(std::ostream&) override;
+
+        ImportMapping Mapping;
+        std::filesystem::path Filepath;
+        std::vector<FunctionStmtPtr> Functions;
     };
 
     struct ScopeStmt : Stmt
@@ -27,11 +41,12 @@ namespace NJS
 
     struct FunctionStmt : Stmt
     {
-        FunctionStmt(std::string name, std::vector<ParamPtr> params, bool, TypePtr, ScopeStmtPtr body);
+        FunctionStmt(bool, std::string, std::vector<ParamPtr>, bool, TypePtr, ScopeStmtPtr);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
+        bool Extern;
         std::string Name;
         std::vector<ParamPtr> Params;
         bool VarArg;
@@ -228,13 +243,13 @@ namespace NJS
 
     struct SwitchExpr : Expr
     {
-        SwitchExpr(ExprPtr, std::vector<std::pair<ExprPtr, ExprPtr>>, ExprPtr);
+        SwitchExpr(ExprPtr, std::map<ExprPtr, std::vector<ExprPtr>>, ExprPtr);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
         ExprPtr Switcher;
-        std::vector<std::pair<ExprPtr, ExprPtr>> Cases;
+        std::map<ExprPtr, std::vector<ExprPtr>> Cases;
         ExprPtr DefaultCase;
     };
 
@@ -246,6 +261,18 @@ namespace NJS
         std::ostream& Print(std::ostream&) override;
 
         std::string Name;
+    };
+
+    struct TernaryExpr : Expr
+    {
+        TernaryExpr(ExprPtr, ExprPtr, ExprPtr);
+
+        ValuePtr GenLLVM(Builder&) override;
+        std::ostream& Print(std::ostream&) override;
+
+        ExprPtr Condition;
+        ExprPtr Then;
+        ExprPtr Else;
     };
 
     struct UnaryExpr : Expr

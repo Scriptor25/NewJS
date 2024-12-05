@@ -5,7 +5,8 @@
 
 NJS::FunctionStmtPtr NJS::Parser::ParseFunction()
 {
-    Expect("function");
+    const auto extern_ = NextAt("extern");
+    if (!extern_) Expect("function");
     const auto name = Expect(TokenType_Symbol).StringValue;
 
     std::vector<ParamPtr> params;
@@ -20,5 +21,5 @@ NJS::FunctionStmtPtr NJS::Parser::ParseFunction()
     ScopeStmtPtr body;
     if (At("{")) body = ParseScope();
 
-    return std::make_shared<FunctionStmt>(name, params, vararg, result_type, body);
+    return std::make_shared<FunctionStmt>(extern_, name, params, vararg, result_type, body);
 }

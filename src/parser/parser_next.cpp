@@ -64,6 +64,7 @@ NJS::Token& NJS::Parser::Next()
                 NewLine();
                 break;
 
+            case '?':
             case '!':
             case '~':
             case '+':
@@ -93,7 +94,6 @@ NJS::Token& NJS::Parser::Next()
                 return m_Token = {where, TokenType_Parenthesis, value};
 
             case '$':
-            case '?':
             case '@':
             case '#':
             case ',':

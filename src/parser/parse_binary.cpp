@@ -16,6 +16,7 @@ NJS::ExprPtr NJS::Parser::ParseBinary(ExprPtr lhs, const unsigned min_pre)
         {"^=", 0},
         {"<<=", 0},
         {">>=", 0},
+        {"?", 0},
         {"||", 1},
         {"^^", 2},
         {"&&", 3},
@@ -51,7 +52,13 @@ NJS::ExprPtr NJS::Parser::ParseBinary(ExprPtr lhs, const unsigned min_pre)
         while (At(TokenType_Operator) && (get_pre() > op_pre || (!get_pre() && get_pre() >= op_pre)))
             rhs = ParseBinary(rhs, op_pre + (get_pre() > op_pre ? 1 : 0));
 
-        lhs = std::make_shared<BinaryExpr>(op, lhs, rhs);
+        if (op == "?")
+        {
+            Expect(":");
+            const auto else_ = ParseExpression();
+            lhs = std::make_shared<TernaryExpr>(lhs, rhs, else_);
+        }
+        else lhs = std::make_shared<BinaryExpr>(op, lhs, rhs);
     }
 
     return lhs;
