@@ -27,12 +27,11 @@ std::string NJS::StackFrame::ValueName(const std::string& name) const
     return ParentName + '.' + name;
 }
 
-NJS::Builder::Builder(Context& ctx, const std::string& module_id)
-    : m_Ctx(ctx), m_ModuleID(module_id)
+NJS::Builder::Builder(Context& ctx, llvm::LLVMContext& context, const std::string& module_id)
+    : m_Ctx(ctx), m_LLVMContext(context), m_ModuleID(module_id)
 {
-    m_LLVMContext = std::make_unique<llvm::LLVMContext>();
-    m_LLVMModule = std::make_unique<llvm::Module>(module_id, *m_LLVMContext);
-    m_LLVMBuilder = std::make_unique<llvm::IRBuilder<>>(*m_LLVMContext);
+    m_LLVMModule = std::make_unique<llvm::Module>(module_id, m_LLVMContext);
+    m_LLVMBuilder = std::make_unique<llvm::IRBuilder<>>(m_LLVMContext);
 
     Push(m_ModuleID);
 
@@ -51,8 +50,6 @@ void NJS::Builder::Close()
 {
     LLVMBuilder().CreateRet(LLVMBuilder().getInt32(0));
     Pop();
-
-    LLVMModule().print(llvm::outs(), nullptr);
 }
 
 NJS::Context& NJS::Builder::Ctx() const
@@ -60,9 +57,14 @@ NJS::Context& NJS::Builder::Ctx() const
     return m_Ctx;
 }
 
+std::unique_ptr<llvm::Module>&& NJS::Builder::MoveModule()
+{
+    return std::move(m_LLVMModule);
+}
+
 llvm::LLVMContext& NJS::Builder::LLVMContext() const
 {
-    return *m_LLVMContext;
+    return m_LLVMContext;
 }
 
 llvm::Module& NJS::Builder::LLVMModule() const

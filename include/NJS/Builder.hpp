@@ -25,11 +25,13 @@ namespace NJS
     class Builder
     {
     public:
-        Builder(Context&, const std::string&);
+        Builder(Context&, llvm::LLVMContext&, const std::string&);
 
         void Close();
 
         [[nodiscard]] Context& Ctx() const;
+
+        std::unique_ptr<llvm::Module>&& MoveModule();
 
         [[nodiscard]] llvm::LLVMContext& LLVMContext() const;
         [[nodiscard]] llvm::Module& LLVMModule() const;
@@ -52,9 +54,10 @@ namespace NJS
 
     private:
         Context& m_Ctx;
+        llvm::LLVMContext& m_LLVMContext;
+
         std::string m_ModuleID;
 
-        std::unique_ptr<llvm::LLVMContext> m_LLVMContext;
         std::unique_ptr<llvm::Module> m_LLVMModule;
         std::unique_ptr<llvm::IRBuilder<>> m_LLVMBuilder;
 

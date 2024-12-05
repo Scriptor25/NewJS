@@ -5,7 +5,7 @@ OBJ = $(patsubst %.njs,%.o,$(SRC))
 	llc -o $@ --filetype=obj $<
 
 %.ll: %.njs
-	../../../build/NewJS $< > $@
+	../../../build/NewJS -o $@ $<
 
 main.exe: $(OBJ)
 	gcc -o $@ $^ -L../../../build -lStdNewJS
