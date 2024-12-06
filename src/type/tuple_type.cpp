@@ -22,12 +22,9 @@ NJS::TupleType::TupleType(std::vector<TypePtr> element_types)
 {
 }
 
-size_t NJS::TupleType::Size() const
+bool NJS::TupleType::IsTuple() const
 {
-    size_t size = 0;
-    for (const auto& type : ElementTypes)
-        size += type->Size();
-    return size;
+    return true;
 }
 
 NJS::TypePtr NJS::TupleType::Element(const size_t i)
@@ -35,12 +32,25 @@ NJS::TypePtr NJS::TupleType::Element(const size_t i)
     return ElementTypes[i];
 }
 
+size_t NJS::TupleType::NumElements() const
+{
+    return ElementTypes.size();
+}
+
 void NJS::TupleType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
 {
-    args.push_back(builder.LLVMBuilder().getInt32(ID_TUPLE));
-    args.push_back(builder.LLVMBuilder().getInt64(ElementTypes.size()));
+    args.push_back(builder.GetBuilder().getInt32(ID_TUPLE));
+    args.push_back(builder.GetBuilder().getInt64(ElementTypes.size()));
     for (const auto& element : ElementTypes)
         element->TypeInfo(builder, args);
+}
+
+size_t NJS::TupleType::Bytes() const
+{
+    size_t bytes = 0;
+    for (const auto& element : ElementTypes)
+        bytes += element->Bytes();
+    return bytes;
 }
 
 llvm::Type* NJS::TupleType::GenLLVM(Builder& builder) const
@@ -48,5 +58,5 @@ llvm::Type* NJS::TupleType::GenLLVM(Builder& builder) const
     std::vector<llvm::Type*> elements;
     for (const auto& element : ElementTypes)
         elements.push_back(element->GenLLVM(builder));
-    return llvm::StructType::get(builder.LLVMContext(), elements);
+    return llvm::StructType::get(builder.GetContext(), elements);
 }

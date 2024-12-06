@@ -26,30 +26,30 @@ NJS::FunctionStmt::FunctionStmt(
 
 NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
 {
-    const auto name = Extern ? Name : builder.ValueName(Name);
-    auto function = builder.LLVMModule().getFunction(name);
+    const auto name = Extern ? Name : builder.GetName(Name);
+    auto function = builder.GetModule().getFunction(name);
     if (!function)
     {
         std::vector<TypePtr> param_types;
         for (const auto& param : Params)
             param_types.push_back(param->Type);
-        const auto type = builder.Ctx().GetFunctionType(param_types, ResultType, VarArg);
+        const auto type = builder.GetCtx().GetFunctionType(param_types, ResultType, VarArg);
         const auto llvm_type = type->GenFnLLVM(builder);
         function = llvm::Function::Create(
             llvm_type,
             llvm::GlobalValue::ExternalLinkage,
             name,
-            builder.LLVMModule());
+            builder.GetModule());
 
-        builder.CreateVar(Name) = RValue::Create(builder, type, function);
+        builder.DefVar(Name) = RValue::Create(builder, type, function);
     }
 
     if (!Body) return {};
     if (!function->empty()) Error("cannot redefine function");
 
-    const auto return_block = builder.LLVMBuilder().GetInsertBlock();
-    const auto entry_block = llvm::BasicBlock::Create(builder.LLVMContext(), "entry", function);
-    builder.LLVMBuilder().SetInsertPoint(entry_block);
+    const auto return_block = builder.GetBuilder().GetInsertBlock();
+    const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
+    builder.GetBuilder().SetInsertPoint(entry_block);
 
     builder.Push(Name);
     for (size_t i = 0; i < Params.size(); ++i)
@@ -70,8 +70,8 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
         if (block.getTerminator()) continue;
         if (function->getReturnType()->isVoidTy())
         {
-            builder.LLVMBuilder().SetInsertPoint(&block);
-            builder.LLVMBuilder().CreateRetVoid();
+            builder.GetBuilder().SetInsertPoint(&block);
+            builder.GetBuilder().CreateRetVoid();
             continue;
         }
         Error("not all code paths return a value: in function {} ({})", Name, name);
@@ -83,7 +83,7 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
         Error("failed to verify function {} ({})", Name, name);
     }
 
-    builder.LLVMBuilder().SetInsertPoint(return_block);
+    builder.GetBuilder().SetInsertPoint(return_block);
     return {};
 }
 

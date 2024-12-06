@@ -28,27 +28,32 @@ namespace NJS
 
         void Close();
 
-        [[nodiscard]] Context& Ctx() const;
+        [[nodiscard]] Context& GetCtx() const;
 
         std::unique_ptr<llvm::Module>&& MoveModule();
 
-        [[nodiscard]] llvm::LLVMContext& LLVMContext() const;
-        [[nodiscard]] llvm::Module& LLVMModule() const;
-        [[nodiscard]] llvm::IRBuilder<>& LLVMBuilder() const;
+        [[nodiscard]] llvm::LLVMContext& GetContext() const;
+        [[nodiscard]] llvm::Module& GetModule() const;
+        [[nodiscard]] llvm::IRBuilder<>& GetBuilder() const;
 
-        ValuePtr CreateAlloca(const TypePtr&);
-        llvm::Value* CreateAlloca(llvm::Type*, size_t) const;
+        llvm::Value* CreateMalloc(size_t) const;
+        llvm::Value* CreateRealloc(llvm::Value*, llvm::Value*) const;
+        llvm::Value* CreateMemcpy(llvm::Value*, llvm::Value*, llvm::Value*) const;
+        llvm::Value* CreateStrlen(llvm::Value*) const;
+        llvm::Value* CreateAlloca(llvm::Type*, size_t = 0) const;
+        ValuePtr CreateAlloca(const TypePtr&, size_t = 0);
+        llvm::Value* CreateEmpty(const TypePtr&);
 
-        ValuePtr CreateGlobal(const std::string&, const TypePtr&, bool, const ValuePtr&);
+        ValuePtr CreateSubscript(const ValuePtr&, llvm::Value*);
 
         void GetFormat(llvm::FunctionCallee&) const;
 
         void Push(const std::string& = {});
         void Pop();
 
-        [[nodiscard]] std::string ValueName(const std::string&) const;
+        [[nodiscard]] std::string GetName(const std::string&) const;
 
-        ValuePtr& CreateVar(const std::string&);
+        ValuePtr& DefVar(const std::string&);
         ValuePtr& GetVar(const std::string&);
 
     private:

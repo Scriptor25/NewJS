@@ -11,7 +11,7 @@ NJS::ReturnStmt::ReturnStmt(ExprPtr value)
 NJS::ValuePtr NJS::ReturnStmt::GenLLVM(Builder& builder)
 {
     const auto value = Value->GenLLVM(builder);
-    builder.LLVMBuilder().CreateRet(value->Load());
+    builder.GetBuilder().CreateRet(value->Load());
     return {};
 }
 

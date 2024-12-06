@@ -10,8 +10,8 @@ NJS::ConstNumberExpr::ConstNumberExpr(const double value)
 
 NJS::ValuePtr NJS::ConstNumberExpr::GenLLVM(Builder& builder)
 {
-    const auto type = builder.Ctx().GetNumberType();
-    const auto value = llvm::ConstantFP::get(builder.LLVMBuilder().getDoubleTy(), Value);
+    const auto type = builder.GetCtx().GetNumberType();
+    const auto value = llvm::ConstantFP::get(builder.GetBuilder().getDoubleTy(), Value);
     return RValue::Create(builder, type, value);
 }
 

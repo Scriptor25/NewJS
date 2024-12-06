@@ -19,11 +19,11 @@ NJS::ValuePtr NJS::MemberExpr::GenLLVM(Builder& builder)
     {
         const auto ty = type->GenLLVM(builder);
         const auto ptr = object->GetPtr();
-        const auto gep = builder.LLVMBuilder().CreateStructGEP(ty, ptr, member_index);
+        const auto gep = builder.GetBuilder().CreateStructGEP(ty, ptr, member_index);
         return LValue::Create(builder, member_type, gep);
     }
 
-    const auto value = builder.LLVMBuilder().CreateExtractValue(object->Load(), member_index);
+    const auto value = builder.GetBuilder().CreateExtractValue(object->Load(), member_index);
     return RValue::Create(builder, member_type, value);
 }
 

@@ -15,6 +15,7 @@ namespace NJS
         TokenType_Other,
         TokenType_Parenthesis,
         TokenType_String,
+        TokenType_Char,
         TokenType_Symbol,
     };
 

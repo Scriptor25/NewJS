@@ -12,21 +12,37 @@
 
 namespace NJS
 {
+    enum Primitive
+    {
+        Primitive_Void,
+        Primitive_Boolean,
+        Primitive_Number,
+        Primitive_String,
+        Primitive_Char,
+    };
+
     struct Type
     {
         explicit Type(std::string);
         virtual ~Type() = default;
 
         virtual bool IsPrimitive() const;
-        virtual size_t Size() const;
+        virtual bool IsPrimitive(Primitive) const;
+        virtual bool IsArray() const;
+        virtual bool IsTuple() const;
+        virtual bool IsObject() const;
+        virtual bool IsFunction() const;
+        virtual bool IsVector() const;
+
         virtual TypePtr Member(const std::string&);
         virtual size_t MemberIndex(const std::string&);
         virtual TypePtr Result();
         virtual TypePtr Element();
         virtual TypePtr Element(size_t);
-        virtual size_t ElementSize();
+        virtual size_t NumElements() const;
 
         virtual void TypeInfo(Builder&, std::vector<llvm::Value*>&) const = 0;
+        virtual size_t Bytes() const = 0;
         virtual llvm::Type* GenLLVM(Builder&) const = 0;
 
         std::ostream& Print(std::ostream&) const;
@@ -34,27 +50,20 @@ namespace NJS
         std::string String;
     };
 
-    enum TypeName
-    {
-        Type_Void,
-        Type_Boolean,
-        Type_Number,
-        Type_String,
-    };
-
     struct PrimitiveType : Type
     {
-        static std::string GenString(TypeName);
+        static std::string GenString(Primitive);
 
-        explicit PrimitiveType(TypeName);
+        explicit PrimitiveType(Primitive);
 
         bool IsPrimitive() const override;
-        size_t Size() const override;
+        bool IsPrimitive(Primitive) const override;
 
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        size_t Bytes() const override;
         llvm::Type* GenLLVM(Builder&) const override;
 
-        TypeName Name;
+        Primitive Name;
     };
 
     struct ArrayType : Type
@@ -63,11 +72,14 @@ namespace NJS
 
         ArrayType(TypePtr, size_t);
 
+        bool IsArray() const override;
+
         TypePtr Element() override;
         TypePtr Element(size_t) override;
-        size_t ElementSize() override;
+        size_t NumElements() const override;
 
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        size_t Bytes() const override;
         llvm::Type* GenLLVM(Builder&) const override;
 
         TypePtr ElementType;
@@ -80,10 +92,13 @@ namespace NJS
 
         explicit TupleType(std::vector<TypePtr>);
 
-        size_t Size() const override;
+        bool IsTuple() const override;
+
         TypePtr Element(size_t) override;
+        size_t NumElements() const override;
 
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        size_t Bytes() const override;
         llvm::Type* GenLLVM(Builder&) const override;
 
         std::vector<TypePtr> ElementTypes;
@@ -95,11 +110,15 @@ namespace NJS
 
         explicit ObjectType(const std::map<std::string, TypePtr>&);
 
-        size_t Size() const override;
+        bool IsObject() const override;
+
         TypePtr Member(const std::string&) override;
         size_t MemberIndex(const std::string&) override;
+        TypePtr Element(size_t) override;
+        size_t NumElements() const override;
 
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        size_t Bytes() const override;
         llvm::Type* GenLLVM(Builder&) const override;
 
         std::vector<std::pair<std::string, TypePtr>> ElementTypes;
@@ -111,9 +130,12 @@ namespace NJS
 
         FunctionType(std::vector<TypePtr>, TypePtr, bool);
 
+        bool IsFunction() const override;
+
         TypePtr Result() override;
 
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        size_t Bytes() const override;
         llvm::Type* GenLLVM(Builder&) const override;
 
         llvm::FunctionType* GenFnLLVM(Builder&) const;
@@ -121,6 +143,26 @@ namespace NJS
         std::vector<TypePtr> ParamTypes;
         TypePtr ResultType;
         bool VarArg;
+    };
+
+    struct VectorType : Type
+    {
+        static std::string GenString(const TypePtr&);
+
+        explicit VectorType(TypePtr);
+
+        bool IsVector() const override;
+
+        TypePtr Element() override;
+        TypePtr Element(size_t) override;
+
+        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        size_t Bytes() const override;
+        llvm::Type* GenLLVM(Builder&) const override;
+
+        static llvm::StructType* GenVecLLVM(const Builder&);
+
+        TypePtr ElementType;
     };
 }
 

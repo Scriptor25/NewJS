@@ -10,9 +10,34 @@ bool NJS::Type::IsPrimitive() const
     return false;
 }
 
-size_t NJS::Type::Size() const
+bool NJS::Type::IsPrimitive(Primitive) const
 {
-    return 0;
+    return false;
+}
+
+bool NJS::Type::IsArray() const
+{
+    return false;
+}
+
+bool NJS::Type::IsTuple() const
+{
+    return false;
+}
+
+bool NJS::Type::IsObject() const
+{
+    return false;
+}
+
+bool NJS::Type::IsFunction() const
+{
+    return false;
+}
+
+bool NJS::Type::IsVector() const
+{
+    return false;
 }
 
 NJS::TypePtr NJS::Type::Member(const std::string&)
@@ -40,7 +65,7 @@ NJS::TypePtr NJS::Type::Element(size_t)
     return {};
 }
 
-size_t NJS::Type::ElementSize()
+size_t NJS::Type::NumElements() const
 {
     return 0;
 }

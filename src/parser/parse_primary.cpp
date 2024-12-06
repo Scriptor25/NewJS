@@ -1,5 +1,3 @@
-#include <iostream>
-#include <sstream>
 #include <NJS/AST.hpp>
 #include <NJS/Context.hpp>
 #include <NJS/Error.hpp>
@@ -8,6 +6,15 @@
 
 NJS::ExprPtr NJS::Parser::ParsePrimary()
 {
+    if (At(TokenType_Number))
+        return std::make_shared<ConstNumberExpr>(Skip().NumberValue);
+
+    if (At(TokenType_String))
+        return std::make_shared<ConstStringExpr>(Skip().StringValue);
+
+    if (At(TokenType_Char))
+        return std::make_shared<ConstCharExpr>(Skip().StringValue[0]);
+
     if (NextAt("("))
     {
         const auto ptr = ParseExpression();
@@ -30,17 +37,17 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
     if (At("switch"))
         return ParseSwitchExpr();
 
+    if (NextAt("true"))
+        return std::make_shared<ConstBooleanExpr>(true);
+
+    if (NextAt("false"))
+        return std::make_shared<ConstBooleanExpr>(false);
+
     if (At(TokenType_Symbol))
     {
         const auto name = Skip().StringValue;
         return std::make_shared<SymbolExpr>(name);
     }
-
-    if (At(TokenType_Number))
-        return std::make_shared<ConstNumberExpr>(Skip().NumberValue);
-
-    if (At(TokenType_String))
-        return std::make_shared<ConstStringExpr>(Skip().StringValue);
 
     if (At(TokenType_Operator))
     {

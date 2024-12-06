@@ -27,12 +27,12 @@ NJS::ValuePtr NJS::ConstTupleExpr::GenLLVM(Builder& builder)
     }
 
     TypePtr type;
-    if (is_tuple) type = builder.Ctx().GetTupleType(types);
-    else type = builder.Ctx().GetArrayType(types.front(), Elements.size());
+    if (is_tuple) type = builder.GetCtx().GetTupleType(types);
+    else type = builder.GetCtx().GetArrayType(types.front(), Elements.size());
 
     llvm::Value* value = llvm::Constant::getNullValue(type->GenLLVM(builder));
     for (size_t i = 0; i < Elements.size(); ++i)
-        value = builder.LLVMBuilder().CreateInsertValue(value, values[i]->Load(), i);
+        value = builder.GetBuilder().CreateInsertValue(value, values[i]->Load(), i);
 
     return RValue::Create(builder, type, value);
 }

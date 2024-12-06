@@ -16,24 +16,27 @@ NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder)
     const auto operand = Operand->GenLLVM(builder);
 
     const auto ov = operand->Load();
-    const auto one = llvm::ConstantFP::get(builder.LLVMBuilder().getDoubleTy(), 1.0);
+    const auto one = llvm::ConstantFP::get(builder.GetBuilder().getDoubleTy(), 1.0);
 
     llvm::Value* value{};
     bool assign = false;
-    if (Op == "++") value = builder.LLVMBuilder().CreateFAdd(ov, one), assign = true;
-    else if (Op == "--") value = builder.LLVMBuilder().CreateFSub(ov, one), assign = true;
+    if (Op == "++") value = builder.GetBuilder().CreateFAdd(ov, one), assign = true;
+    else if (Op == "--") value = builder.GetBuilder().CreateFSub(ov, one), assign = true;
+    else if (Op == "-") value = builder.GetBuilder().CreateFNeg(ov), assign = false;
 
     if (value)
     {
         if (assign)
         {
             operand->Store(value);
+            if (OpRight)
+                return RValue::Create(builder, operand->GetType(), ov);
             return operand;
         }
-        return RValue::Create(builder, builder.Ctx().GetNumberType(), value);
+        return RValue::Create(builder, operand->GetType(), value);
     }
 
-    Error("undefined unary operator");
+    Error("undefined unary operator {}{}", Op, operand->GetType());
 }
 
 std::ostream& NJS::UnaryExpr::Print(std::ostream& os)

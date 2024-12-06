@@ -1,4 +1,3 @@
-#include <ranges>
 #include <NJS/Context.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/NJS.hpp>
@@ -10,6 +9,7 @@ NJS::Context::Context()
     GetBooleanType();
     GetNumberType();
     GetStringType();
+    GetCharType();
 }
 
 NJS::TypePtr& NJS::Context::GetType(const std::string& str)
@@ -17,29 +17,34 @@ NJS::TypePtr& NJS::Context::GetType(const std::string& str)
     return m_TypeMap[str];
 }
 
-std::shared_ptr<NJS::PrimitiveType> NJS::Context::GetPrimitiveType(TypeName name)
+std::shared_ptr<NJS::PrimitiveType> NJS::Context::GetPrimitiveType(Primitive name)
 {
     return GetType<PrimitiveType>(name);
 }
 
 std::shared_ptr<NJS::PrimitiveType> NJS::Context::GetVoidType()
 {
-    return GetPrimitiveType(Type_Void);
+    return GetPrimitiveType(Primitive_Void);
 }
 
 std::shared_ptr<NJS::PrimitiveType> NJS::Context::GetBooleanType()
 {
-    return GetPrimitiveType(Type_Boolean);
+    return GetPrimitiveType(Primitive_Boolean);
 }
 
 std::shared_ptr<NJS::PrimitiveType> NJS::Context::GetNumberType()
 {
-    return GetPrimitiveType(Type_Number);
+    return GetPrimitiveType(Primitive_Number);
 }
 
 std::shared_ptr<NJS::PrimitiveType> NJS::Context::GetStringType()
 {
-    return GetPrimitiveType(Type_String);
+    return GetPrimitiveType(Primitive_String);
+}
+
+std::shared_ptr<NJS::PrimitiveType> NJS::Context::GetCharType()
+{
+    return GetPrimitiveType(Primitive_Char);
 }
 
 std::shared_ptr<NJS::TupleType> NJS::Context::GetTupleType(const std::vector<TypePtr>& element_types)
@@ -63,4 +68,9 @@ std::shared_ptr<NJS::FunctionType> NJS::Context::GetFunctionType(
     const bool vararg)
 {
     return GetType<FunctionType>(param_types, result_type, vararg);
+}
+
+std::shared_ptr<NJS::VectorType> NJS::Context::GetVectorType(const TypePtr& element_type)
+{
+    return GetType<VectorType>(element_type);
 }

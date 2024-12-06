@@ -49,6 +49,8 @@ static void Object_AppendV(Type*, char*, uint64_t, uint64_t&, va_list&);
 static void Object_AppendP(Type*, char*, uint64_t, uint64_t&, char*&);
 static void Function_AppendV(Type*, char*, uint64_t, uint64_t&, va_list&);
 static void Function_AppendP(Type*, char*, uint64_t, uint64_t&, char*&);
+static void Vector_AppendV(Type*, char*, uint64_t, uint64_t&, va_list&);
+static void Vector_AppendP(Type*, char*, uint64_t, uint64_t&, char*&);
 
 struct Type
 {
@@ -161,6 +163,21 @@ struct FunctionType : Type
     bool VarArg;
 };
 
+struct VectorType : Type
+{
+    VectorType(Type* element_type)
+        : Type(Vector_AppendV, Vector_AppendP), ElementType(element_type)
+    {
+    }
+
+    ~VectorType()
+    {
+        delete ElementType;
+    }
+
+    Type* ElementType;
+};
+
 Type* ParseType(va_list& ap)
 {
     switch (const auto id = va_arg(ap, int))
@@ -208,6 +225,12 @@ Type* ParseType(va_list& ap)
                 param_types[i] = ParseType(ap);
             const auto vararg = va_arg(ap, int);
             return new FunctionType(result_type, param_types, param_count, vararg);
+        }
+
+    case ID_VECTOR:
+        {
+            const auto element_type = ParseType(ap);
+            return new VectorType(element_type);
         }
 
     default:
@@ -356,6 +379,55 @@ void Function_AppendP(Type* type, char* stream, const uint64_t n, uint64_t& offs
     const auto self = static_cast<FunctionType*>(type);
     offset += snprintf(stream + offset, n - offset, "%p", ptr);
     ptr += sizeof(char*);
+}
+
+struct vector_t
+{
+    char* ptr;
+    uint64_t size;
+};
+
+void Vector_AppendV(Type* type, char* stream, const uint64_t n, uint64_t& offset, va_list& ap)
+{
+    const auto self = static_cast<VectorType*>(type);
+    auto [vec_ptr, vec_size] = **va_arg(ap, vector_t**);
+
+    if (!vec_size)
+    {
+        offset += snprintf(stream + offset, n - offset, "[]");
+        return;
+    }
+
+    offset += snprintf(stream + offset, n - offset, "[ ");
+    for (size_t i = 0; i < vec_size; ++i)
+    {
+        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
+        self->ElementType->AppendPtr(stream, n, offset, vec_ptr);
+    }
+    offset += snprintf(stream + offset, n - offset, " ]");
+}
+
+void Vector_AppendP(Type* type, char* stream, const uint64_t n, uint64_t& offset, char*& ptr)
+{
+    const auto self = static_cast<VectorType*>(type);
+    auto [vec_ptr, vec_size] = **reinterpret_cast<vector_t**>(ptr);
+
+    if (!vec_size)
+    {
+        offset += snprintf(stream + offset, n - offset, "[]");
+        ptr += sizeof(vector_t**);
+        return;
+    }
+
+    offset += snprintf(stream + offset, n - offset, "[ ");
+    for (size_t i = 0; i < vec_size; ++i)
+    {
+        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
+        self->ElementType->AppendPtr(stream, n, offset, vec_ptr);
+    }
+    offset += snprintf(stream + offset, n - offset, " ]");
+
+    ptr += sizeof(vector_t**);
 }
 
 void format(char* stream, const uint64_t n, ...)

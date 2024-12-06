@@ -79,14 +79,28 @@ namespace NJS
         StmtPtr Body;
     };
 
-    struct ForInOfStmt : Stmt
+    struct VariableStmt : Stmt
     {
-        ForInOfStmt(StmtPtr, bool of, ExprPtr value, StmtPtr body);
+        VariableStmt(bool is_const, ParamPtr name, ExprPtr value);
+
+        void GenLLVM(Builder&, const ValuePtr&) const;
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
-        StmtPtr Init;
+        bool IsConst;
+        ParamPtr Name;
+        ExprPtr Value;
+    };
+
+    struct ForInOfStmt : Stmt
+    {
+        ForInOfStmt(VariableStmt, bool of, ExprPtr value, StmtPtr body);
+
+        ValuePtr GenLLVM(Builder&) override;
+        std::ostream& Print(std::ostream&) override;
+
+        VariableStmt Init;
         bool Of;
         ExprPtr Value;
         StmtPtr Body;
@@ -99,18 +113,6 @@ namespace NJS
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
-        ExprPtr Value;
-    };
-
-    struct VariableStmt : Stmt
-    {
-        VariableStmt(bool is_const, ParamPtr name, ExprPtr value);
-
-        ValuePtr GenLLVM(Builder&) override;
-        std::ostream& Print(std::ostream&) override;
-
-        bool IsConst;
-        ParamPtr Name;
         ExprPtr Value;
     };
 
@@ -141,14 +143,24 @@ namespace NJS
         std::vector<ExprPtr> Args;
     };
 
-    struct ConstTupleExpr : Expr
+    struct ConstBooleanExpr : Expr
     {
-        explicit ConstTupleExpr(std::vector<ExprPtr>);
+        explicit ConstBooleanExpr(bool);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
-        std::vector<ExprPtr> Elements;
+        bool Value;
+    };
+
+    struct ConstCharExpr : Expr
+    {
+        explicit ConstCharExpr(char);
+
+        ValuePtr GenLLVM(Builder&) override;
+        std::ostream& Print(std::ostream&) override;
+
+        char Value;
     };
 
     struct ConstFunctionExpr : Expr
@@ -193,7 +205,17 @@ namespace NJS
 
         std::string Value;
 
-        static llvm::Constant* GetString(Builder&, const std::string&);
+        static llvm::Constant* GetString(const Builder&, const std::string&);
+    };
+
+    struct ConstTupleExpr : Expr
+    {
+        explicit ConstTupleExpr(std::vector<ExprPtr>);
+
+        ValuePtr GenLLVM(Builder&) override;
+        std::ostream& Print(std::ostream&) override;
+
+        std::vector<ExprPtr> Elements;
     };
 
     struct FormatExpr : Expr
@@ -248,7 +270,7 @@ namespace NJS
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
-        ExprPtr Switcher;
+        ExprPtr Condition;
         std::map<ExprPtr, std::vector<ExprPtr>> Cases;
         ExprPtr DefaultCase;
     };

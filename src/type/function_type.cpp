@@ -32,6 +32,11 @@ NJS::FunctionType::FunctionType(std::vector<TypePtr> param_types, TypePtr result
 {
 }
 
+bool NJS::FunctionType::IsFunction() const
+{
+    return true;
+}
+
 NJS::TypePtr NJS::FunctionType::Result()
 {
     return ResultType;
@@ -39,17 +44,22 @@ NJS::TypePtr NJS::FunctionType::Result()
 
 void NJS::FunctionType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
 {
-    args.push_back(builder.LLVMBuilder().getInt32(ID_FUNCTION));
+    args.push_back(builder.GetBuilder().getInt32(ID_FUNCTION));
     ResultType->TypeInfo(builder, args);
-    args.push_back(builder.LLVMBuilder().getInt64(ParamTypes.size()));
+    args.push_back(builder.GetBuilder().getInt64(ParamTypes.size()));
     for (const auto& param : ParamTypes)
         param->TypeInfo(builder, args);
-    args.push_back(builder.LLVMBuilder().getInt32(VarArg));
+    args.push_back(builder.GetBuilder().getInt32(VarArg));
+}
+
+size_t NJS::FunctionType::Bytes() const
+{
+    return 8;
 }
 
 llvm::Type* NJS::FunctionType::GenLLVM(Builder& builder) const
 {
-    return builder.LLVMBuilder().getPtrTy();
+    return builder.GetBuilder().getPtrTy();
 }
 
 llvm::FunctionType* NJS::FunctionType::GenFnLLVM(Builder& builder) const

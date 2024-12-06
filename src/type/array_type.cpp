@@ -13,6 +13,11 @@ NJS::ArrayType::ArrayType(TypePtr element_type, const size_t element_count)
 {
 }
 
+bool NJS::ArrayType::IsArray() const
+{
+    return true;
+}
+
 NJS::TypePtr NJS::ArrayType::Element()
 {
     return ElementType;
@@ -23,16 +28,21 @@ NJS::TypePtr NJS::ArrayType::Element(const size_t i)
     return ElementType;
 }
 
-size_t NJS::ArrayType::ElementSize()
+size_t NJS::ArrayType::NumElements() const
 {
-    return ElementType->Size();
+    return ElementCount;
 }
 
 void NJS::ArrayType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
 {
-    args.push_back(builder.LLVMBuilder().getInt32(ID_ARRAY));
-    args.push_back(builder.LLVMBuilder().getInt64(ElementCount));
+    args.push_back(builder.GetBuilder().getInt32(ID_ARRAY));
+    args.push_back(builder.GetBuilder().getInt64(ElementCount));
     ElementType->TypeInfo(builder, args);
+}
+
+size_t NJS::ArrayType::Bytes() const
+{
+    return ElementCount * ElementType->Bytes();
 }
 
 llvm::Type* NJS::ArrayType::GenLLVM(Builder& builder) const

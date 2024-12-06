@@ -1,5 +1,6 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
@@ -12,23 +13,12 @@ NJS::ValuePtr NJS::SubscriptExpr::GenLLVM(Builder& builder)
 {
     const auto array = Array->GenLLVM(builder);
     const auto index = Index->GenLLVM(builder);
-    const auto type = array->GetType();
 
-    const auto index_int = builder.LLVMBuilder().CreateFPToSI(index->Load(), builder.LLVMBuilder().getInt64Ty());
+    if (!index->GetType()->IsPrimitive(Primitive_Number))
+        Error("invalid subscript: index (second operand) must be of type number, but is {}", index->GetType());
 
-    if (array->IsL())
-    {
-        const auto ty = type->GenLLVM(builder);
-        const auto ptr = array->GetPtr();
-        const auto zero = llvm::Constant::getNullValue(index_int->getType());
-        const auto gep = builder.LLVMBuilder().CreateInBoundsGEP(ty, ptr, {zero, index_int});
-        return LValue::Create(builder, type->Element(), gep);
-    }
-
-    const auto idx = index_int;
-    const auto const_idx = llvm::dyn_cast<llvm::ConstantInt>(idx);
-    const auto value = builder.LLVMBuilder().CreateExtractValue(array->Load(), *const_idx->getValue().getRawData());
-    return RValue::Create(builder, type->Element(), value);
+    const auto int_index = builder.GetBuilder().CreateFPToSI(index->Load(), builder.GetBuilder().getInt64Ty());
+    return builder.CreateSubscript(array, int_index);
 }
 
 std::ostream& NJS::SubscriptExpr::Print(std::ostream& os)

@@ -39,9 +39,9 @@ void NJS::ImportMapping::MapFunctions(
         std::vector<TypePtr> param_types;
         for (const auto& param : function->Params)
             param_types.push_back(param->Type);
-        const auto type = builder.Ctx().GetFunctionType(param_types, function->ResultType, function->VarArg);
+        const auto type = builder.GetCtx().GetFunctionType(param_types, function->ResultType, function->VarArg);
         element_types[function->Name] = type;
-        auto callee = builder.LLVMModule().getOrInsertFunction(
+        auto callee = builder.GetModule().getOrInsertFunction(
             module_id + '.' + function->Name,
             type->GenFnLLVM(builder));
         elements[function->Name] = RValue::Create(builder, type, callee.getCallee());
@@ -49,19 +49,19 @@ void NJS::ImportMapping::MapFunctions(
 
     if (!Name.empty() && SubMappings.empty())
     {
-        const auto module_type = builder.Ctx().GetObjectType(element_types);
+        const auto module_type = builder.GetCtx().GetObjectType(element_types);
         llvm::Value* module = llvm::Constant::getNullValue(module_type->GenLLVM(builder));
         for (const auto& [name_, value_] : elements)
-            module = builder.LLVMBuilder().CreateInsertValue(module, value_->Load(), module_type->MemberIndex(name_));
+            module = builder.GetBuilder().CreateInsertValue(module, value_->Load(), module_type->MemberIndex(name_));
 
-        builder.CreateVar(Name) = RValue::Create(builder, module_type, module);
+        builder.DefVar(Name) = RValue::Create(builder, module_type, module);
     }
     else
     {
         for (const auto& [name_, value_] : elements)
         {
             if (!SubMappings.contains(name_)) continue;
-            builder.CreateVar(SubMappings.at(name_)) = value_;
+            builder.DefVar(SubMappings.at(name_)) = value_;
         }
     }
 }

@@ -28,7 +28,7 @@ void NJS::DestructureObject::CreateVars(Builder& builder, const bool is_const, c
             const auto member = LValue::Create(
                 builder,
                 member_type,
-                builder.LLVMBuilder().CreateStructGEP(type->GenLLVM(builder), value->GetPtr(), member_index));
+                builder.GetBuilder().CreateStructGEP(type->GenLLVM(builder), value->GetPtr(), member_index));
             element->CreateVars(builder, is_const, member);
         }
     }
@@ -41,7 +41,7 @@ void NJS::DestructureObject::CreateVars(Builder& builder, const bool is_const, c
             const auto member = RValue::Create(
                 builder,
                 member_type,
-                builder.LLVMBuilder().CreateExtractValue(value->Load(), member_index));
+                builder.GetBuilder().CreateExtractValue(value->Load(), member_index));
             element->CreateVars(builder, is_const, member);
         }
     }

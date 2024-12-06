@@ -22,7 +22,7 @@ void NJS::Parser::Parse(const Callback& callback)
 int NJS::Parser::Get()
 {
     ++m_Where.Col;
-    return m_Stream.get();
+    return m_C = m_Stream.get();
 }
 
 void NJS::Parser::NewLine()

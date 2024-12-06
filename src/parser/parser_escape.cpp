@@ -4,7 +4,7 @@ void NJS::Parser::Escape()
 {
     std::string value;
 
-    m_C = Get();
+    Get();
     switch (m_C)
     {
     case 'a':
@@ -32,16 +32,16 @@ void NJS::Parser::Escape()
         m_C = '\v';
         break;
     case 'x':
-        value += static_cast<char>(m_C = Get());
-        value += static_cast<char>(m_C = Get());
+        value += static_cast<char>(Get());
+        value += static_cast<char>(Get());
         m_C = std::stoi(value, nullptr, 16);
         break;
     default:
         if ('0' <= m_C && m_C <= '7')
         {
             value += static_cast<char>(m_C);
-            value += static_cast<char>(m_C = Get());
-            value += static_cast<char>(m_C = Get());
+            value += static_cast<char>(Get());
+            value += static_cast<char>(Get());
             m_C = std::stoi(value, nullptr, 8);
             break;
         }

@@ -15,6 +15,7 @@ NJS::Token& NJS::Parser::Next()
         State_Oct,
         State_Operator,
         State_String,
+        State_Char,
         State_Symbol,
     };
 
@@ -45,7 +46,7 @@ NJS::Token& NJS::Parser::Next()
             {
             case '/':
                 where = m_Where;
-                m_C = Get();
+                Get();
                 if (m_C == '/')
                 {
                     state = State_Comment_Line;
@@ -90,7 +91,7 @@ NJS::Token& NJS::Parser::Next()
             case ']':
                 where = m_Where;
                 value += static_cast<char>(m_C);
-                m_C = Get();
+                Get();
                 return m_Token = {where, TokenType_Parenthesis, value};
 
             case '$':
@@ -102,12 +103,12 @@ NJS::Token& NJS::Parser::Next()
             case ':':
                 where = m_Where;
                 value += static_cast<char>(m_C);
-                m_C = Get();
+                Get();
                 return m_Token = {where, TokenType_Other, value};
 
             case '0':
                 where = m_Where;
-                m_C = Get();
+                Get();
                 if (m_C == 'b' || m_C == 'B')
                 {
                     state = State_Bin;
@@ -131,10 +132,13 @@ NJS::Token& NJS::Parser::Next()
                 continue;
 
             case '"':
-            case '\'':
-            case '`':
                 where = m_Where;
                 state = State_String;
+                break;
+
+            case '\'':
+                where = m_Where;
+                state = State_Char;
                 break;
 
             default:
@@ -166,7 +170,7 @@ NJS::Token& NJS::Parser::Next()
         case State_Comment_Block:
             if (m_C == '*')
             {
-                m_C = Get();
+                Get();
                 if (m_C == '/')
                     state = State_Idle;
                 else if (m_C == '\n') NewLine();
@@ -175,28 +179,22 @@ NJS::Token& NJS::Parser::Next()
             break;
 
         case State_Operator:
-            if (comp_op[m_C])
-            {
-                value += static_cast<char>(m_C);
-                break;
-            }
-            return m_Token = {where, TokenType_Operator, value};
+            if (!comp_op[m_C])
+                return m_Token = {where, TokenType_Operator, value};
+            value += static_cast<char>(m_C);
+            break;
 
         case State_Bin:
-            if ('0' <= m_C && m_C <= '1')
-            {
-                value += static_cast<char>(m_C);
-                break;
-            }
-            return m_Token = {where, TokenType_Number, value, static_cast<double>(std::stoll(value, nullptr, 2))};
+            if ('0' > m_C || m_C > '1')
+                return m_Token = {where, TokenType_Number, value, static_cast<double>(std::stoll(value, nullptr, 2))};
+            value += static_cast<char>(m_C);
+            break;
 
         case State_Oct:
-            if ('0' <= m_C && m_C <= '7')
-            {
-                value += static_cast<char>(m_C);
-                break;
-            }
-            return m_Token = {where, TokenType_Number, value, static_cast<double>(std::stoll(value, nullptr, 8))};
+            if ('0' > m_C || m_C > '7')
+                return m_Token = {where, TokenType_Number, value, static_cast<double>(std::stoll(value, nullptr, 8))};
+            value += static_cast<char>(m_C);
+            break;
 
         case State_Dec:
             if (isdigit(m_C))
@@ -215,33 +213,39 @@ NJS::Token& NJS::Parser::Next()
             return m_Token = {where, TokenType_Number, value, static_cast<double>(std::stoll(value, nullptr, 10))};
 
         case State_Hex:
-            if (isxdigit(m_C))
-            {
-                value += static_cast<char>(m_C);
-                break;
-            }
-            return m_Token = {where, TokenType_Number, value, static_cast<double>(std::stoll(value, nullptr, 16))};
+            if (!isxdigit(m_C))
+                return m_Token = {where, TokenType_Number, value, static_cast<double>(std::stoll(value, nullptr, 16))};
+            value += static_cast<char>(m_C);
+            break;
 
         case State_Symbol:
-            if (isalnum(m_C) || m_C == '_')
-            {
-                value += static_cast<char>(m_C);
-                break;
-            }
-            return m_Token = {where, TokenType_Symbol, value};
+            if (!(isalnum(m_C) || m_C == '_'))
+                return m_Token = {where, TokenType_Symbol, value};
+            value += static_cast<char>(m_C);
+            break;
 
         case State_String:
-            if (m_C == '"' || m_C == '\'' || m_C == '`')
+            if (m_C == '"')
             {
-                m_C = Get();
+                Get();
                 return m_Token = {where, TokenType_String, value};
+            }
+            if (m_C == '\\') Escape();
+            value += static_cast<char>(m_C);
+            break;
+
+        case State_Char:
+            if (m_C == '\'')
+            {
+                Get();
+                return m_Token = {where, TokenType_Char, value};
             }
             if (m_C == '\\') Escape();
             value += static_cast<char>(m_C);
             break;
         }
 
-        m_C = Get();
+        Get();
     }
 
     return m_Token = {};

@@ -16,9 +16,9 @@ NJS::ValuePtr NJS::ImportStmt::GenLLVM(Builder& builder)
     if (module_id != "main")
     {
         const auto module_main = module_id + ".main";
-        const auto type = llvm::FunctionType::get(builder.LLVMBuilder().getVoidTy(), false);
-        const auto callee = builder.LLVMModule().getOrInsertFunction(module_main, type);
-        builder.LLVMBuilder().CreateCall(callee);
+        const auto type = llvm::FunctionType::get(builder.GetBuilder().getVoidTy(), false);
+        const auto callee = builder.GetModule().getOrInsertFunction(module_main, type);
+        builder.GetBuilder().CreateCall(callee);
     }
 
     Mapping.MapFunctions(builder, module_id, Functions);

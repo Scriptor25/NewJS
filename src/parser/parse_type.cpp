@@ -19,9 +19,13 @@ NJS::TypePtr NJS::Parser::ParseType()
 
     while (NextAt("["))
     {
-        const auto count = Expect(TokenType_Number).NumberValue;
+        if (At(TokenType_Number))
+        {
+            const auto count = Skip().NumberValue;
+            type = m_Ctx.GetArrayType(type, count);
+        }
+        else type = m_Ctx.GetVectorType(type);
         Expect("]");
-        type = m_Ctx.GetArrayType(type, count);
     }
 
     return type;

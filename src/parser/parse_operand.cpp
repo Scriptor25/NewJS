@@ -35,6 +35,13 @@ NJS::ExprPtr NJS::Parser::ParseOperand()
             continue;
         }
 
+        if (At("++") || At("--"))
+        {
+            const auto op = Skip().StringValue;
+            ptr = std::make_shared<UnaryExpr>(op, true, ptr);
+            continue;
+        }
+
         return ptr;
     }
     while (true);

@@ -16,12 +16,12 @@ NJS::FormatExpr::FormatExpr(
 NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder)
 {
     constexpr auto N = 1024;
-    const auto ptr = builder.CreateAlloca(builder.LLVMBuilder().getInt8Ty(), N);
+    const auto ptr = builder.CreateAlloca(builder.GetBuilder().getInt8Ty(), N);
 
     std::vector<llvm::Value*> args;
 
     args.push_back(ptr);
-    args.push_back(builder.LLVMBuilder().getInt64(N));
+    args.push_back(builder.GetBuilder().getInt64(N));
 
     for (size_t i = 0; i < Count; ++i)
     {
@@ -30,7 +30,7 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder)
             const auto value = Statics[i];
             const auto str = ConstStringExpr::GetString(builder, value);
 
-            args.push_back(builder.LLVMBuilder().getInt32(ID_STRING));
+            args.push_back(builder.GetBuilder().getInt32(ID_STRING));
             args.push_back(str);
         }
         else if (Dynamics.contains(i))
@@ -50,13 +50,13 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder)
         }
     }
 
-    args.push_back(builder.LLVMBuilder().getInt32(ID_VOID));
+    args.push_back(builder.GetBuilder().getInt32(ID_VOID));
 
     llvm::FunctionCallee format;
     builder.GetFormat(format);
-    builder.LLVMBuilder().CreateCall(format, args);
+    builder.GetBuilder().CreateCall(format, args);
 
-    return RValue::Create(builder, builder.Ctx().GetStringType(), ptr);
+    return RValue::Create(builder, builder.GetCtx().GetStringType(), ptr);
 }
 
 std::ostream& NJS::FormatExpr::Print(std::ostream& os)

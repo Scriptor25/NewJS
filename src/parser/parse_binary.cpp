@@ -3,7 +3,7 @@
 
 NJS::ExprPtr NJS::Parser::ParseBinary(ExprPtr lhs, const unsigned min_pre)
 {
-    std::map<std::string, unsigned> OPERATORS
+    static const std::map<std::string, unsigned> OPERATORS
     {
         {"=", 0},
         {"+=", 0},
@@ -40,16 +40,20 @@ NJS::ExprPtr NJS::Parser::ParseBinary(ExprPtr lhs, const unsigned min_pre)
 
     auto get_pre = [&]
     {
-        return OPERATORS[m_Token.StringValue];
+        return OPERATORS.at(m_Token.StringValue);
+    };
+    auto has_pre = [&]
+    {
+        return OPERATORS.contains(m_Token.StringValue);
     };
 
-    while (At(TokenType_Operator) && get_pre() >= min_pre)
+    while (At(TokenType_Operator) && has_pre() && get_pre() >= min_pre)
     {
+        const auto op_pre = get_pre();
         const auto op = Skip().StringValue;
-        const auto op_pre = OPERATORS[op];
 
         auto rhs = ParseOperand();
-        while (At(TokenType_Operator) && (get_pre() > op_pre || (!get_pre() && get_pre() >= op_pre)))
+        while (At(TokenType_Operator) && has_pre() && (get_pre() > op_pre || (!get_pre() && get_pre() >= op_pre)))
             rhs = ParseBinary(rhs, op_pre + (get_pre() > op_pre ? 1 : 0));
 
         if (op == "?")

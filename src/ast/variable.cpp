@@ -7,6 +7,11 @@ NJS::VariableStmt::VariableStmt(const bool is_const, ParamPtr name, ExprPtr valu
 {
 }
 
+void NJS::VariableStmt::GenLLVM(Builder& builder, const ValuePtr& value) const
+{
+    Name->CreateVars(builder, IsConst, value);
+}
+
 NJS::ValuePtr NJS::VariableStmt::GenLLVM(Builder& builder)
 {
     const auto value = Value ? Value->GenLLVM(builder) : nullptr;

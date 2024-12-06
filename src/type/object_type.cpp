@@ -27,12 +27,9 @@ NJS::ObjectType::ObjectType(const std::map<std::string, TypePtr>& element_types)
         ElementTypes.emplace_back(name, type);
 }
 
-size_t NJS::ObjectType::Size() const
+bool NJS::ObjectType::IsObject() const
 {
-    size_t size = 0;
-    for (const auto& [name, type] : ElementTypes)
-        size += type->Size();
-    return size;
+    return true;
 }
 
 NJS::TypePtr NJS::ObjectType::Member(const std::string& name)
@@ -49,10 +46,20 @@ size_t NJS::ObjectType::MemberIndex(const std::string& name)
     Error("undefined member");
 }
 
+NJS::TypePtr NJS::ObjectType::Element(const size_t i)
+{
+    return ElementTypes[i].second;
+}
+
+size_t NJS::ObjectType::NumElements() const
+{
+    return ElementTypes.size();
+}
+
 void NJS::ObjectType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
 {
-    args.push_back(builder.LLVMBuilder().getInt32(ID_OBJECT));
-    args.push_back(builder.LLVMBuilder().getInt64(ElementTypes.size()));
+    args.push_back(builder.GetBuilder().getInt32(ID_OBJECT));
+    args.push_back(builder.GetBuilder().getInt64(ElementTypes.size()));
     for (const auto& [name, element] : ElementTypes)
     {
         args.push_back(ConstStringExpr::GetString(builder, name));
@@ -60,10 +67,18 @@ void NJS::ObjectType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args
     }
 }
 
+size_t NJS::ObjectType::Bytes() const
+{
+    size_t bytes = 0;
+    for (const auto& [name, type] : ElementTypes)
+        bytes += type->Bytes();
+    return bytes;
+}
+
 llvm::Type* NJS::ObjectType::GenLLVM(Builder& builder) const
 {
     std::vector<llvm::Type*> elements;
     for (const auto& [name, element] : ElementTypes)
         elements.push_back(element->GenLLVM(builder));
-    return llvm::StructType::get(builder.LLVMContext(), elements);
+    return llvm::StructType::get(builder.GetContext(), elements);
 }

@@ -1,4 +1,4 @@
-SRC = main.njs $(foreach P,$(wildcard day_*),$(wildcard $(P)/*.njs))
+SRC = $(wildcard src/*.njs)
 OBJ = $(patsubst %.njs,%.o,$(SRC))
 
 %.o: %.ll

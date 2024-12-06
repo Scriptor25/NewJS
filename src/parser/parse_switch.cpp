@@ -5,7 +5,7 @@ NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
 {
     Expect("switch");
     Expect("(");
-    const auto switcher = ParseExpression();
+    const auto condition = ParseExpression();
     Expect(")");
 
     std::map<ExprPtr, std::vector<ExprPtr>> cases;
@@ -37,5 +37,5 @@ NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
     }
     Expect("}");
 
-    return std::make_shared<SwitchExpr>(switcher, cases, default_case);
+    return std::make_shared<SwitchExpr>(condition, cases, default_case);
 }

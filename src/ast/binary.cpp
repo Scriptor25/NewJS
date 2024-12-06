@@ -47,6 +47,9 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
         return lhs;
     }
 
+    if (lhs->GetType() != rhs->GetType())
+        Error("invalid binary operation: type mismatch, {} != {}", lhs->GetType(), rhs->GetType());
+
     if (const auto& op = ops[Op]; op)
         if (auto value = op(builder, lhs, rhs))
             return value;
