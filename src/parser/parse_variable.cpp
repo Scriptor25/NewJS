@@ -4,6 +4,7 @@
 
 NJS::VariableStmtPtr NJS::Parser::ParseVariable()
 {
+    const auto where = m_Token.Where;
     const auto is_const = NextAt("const");
     if (!is_const) Expect("let");
 
@@ -12,5 +13,7 @@ NJS::VariableStmtPtr NJS::Parser::ParseVariable()
     if ((!At("in") && !At("of") && (is_const || name->RequireValue()) && (Expect("="), true)) || NextAt("="))
         value = ParseExpression();
 
-    return std::make_shared<VariableStmt>(is_const, name, value);
+    name->CreateVars(*this, value ? value->Type : nullptr);
+
+    return std::make_shared<VariableStmt>(where, is_const, name, value);
 }

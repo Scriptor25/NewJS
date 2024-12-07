@@ -1,4 +1,5 @@
 #include <NJS/AST.hpp>
+#include <NJS/Operator.hpp>
 #include <NJS/Parser.hpp>
 
 NJS::ExprPtr NJS::Parser::ParseBinary(ExprPtr lhs, const unsigned min_pre)
@@ -50,7 +51,7 @@ NJS::ExprPtr NJS::Parser::ParseBinary(ExprPtr lhs, const unsigned min_pre)
     while (At(TokenType_Operator) && has_pre() && get_pre() >= min_pre)
     {
         const auto op_pre = get_pre();
-        const auto op = Skip().StringValue;
+        const auto [where, _1, op, _2] = Skip();
 
         auto rhs = ParseOperand();
         while (At(TokenType_Operator) && has_pre() && (get_pre() > op_pre || (!get_pre() && get_pre() >= op_pre)))
@@ -58,11 +59,16 @@ NJS::ExprPtr NJS::Parser::ParseBinary(ExprPtr lhs, const unsigned min_pre)
 
         if (op == "?")
         {
+            const auto type = rhs->Type;
             Expect(":");
             const auto else_ = ParseExpression();
-            lhs = std::make_shared<TernaryExpr>(lhs, rhs, else_);
+            lhs = std::make_shared<TernaryExpr>(where, type, lhs, rhs, else_);
         }
-        else lhs = std::make_shared<BinaryExpr>(op, lhs, rhs);
+        else
+        {
+            const auto type = OperatorType(m_Ctx, op, lhs->Type, rhs->Type);
+            lhs = std::make_shared<BinaryExpr>(where, type, op, lhs, rhs);
+        }
     }
 
     return lhs;

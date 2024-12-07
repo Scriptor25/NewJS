@@ -1,5 +1,6 @@
 #include <ostream>
 #include <NJS/NJS.hpp>
+#include <NJS/Type.hpp>
 
 unsigned depth = 0;
 
@@ -18,4 +19,9 @@ std::ostream& NJS::Spacing(std::ostream& os)
     for (unsigned i = 0; i < depth; ++i)
         os << ' ';
     return os;
+}
+
+std::string NJS::TypeString(const TypePtr& type)
+{
+    return type->String;
 }

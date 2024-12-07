@@ -8,8 +8,10 @@ std::string NJS::ArrayType::GenString(const TypePtr& element_type, const size_t 
     return element_type->String + '[' + std::to_string(element_count) + ']';
 }
 
-NJS::ArrayType::ArrayType(TypePtr element_type, const size_t element_count)
-    : Type(GenString(element_type, element_count)), ElementType(std::move(element_type)), ElementCount(element_count)
+NJS::ArrayType::ArrayType(TypeContext& ctx, TypePtr element_type, const size_t element_count)
+    : Type(ctx, GenString(element_type, element_count)),
+      ElementType(std::move(element_type)),
+      ElementCount(element_count)
 {
 }
 
@@ -18,12 +20,12 @@ bool NJS::ArrayType::IsArray() const
     return true;
 }
 
-NJS::TypePtr NJS::ArrayType::Element()
+NJS::TypePtr NJS::ArrayType::Element() const
 {
     return ElementType;
 }
 
-NJS::TypePtr NJS::ArrayType::Element(const size_t i)
+NJS::TypePtr NJS::ArrayType::Element(const size_t i) const
 {
     return ElementType;
 }

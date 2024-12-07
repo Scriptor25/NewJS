@@ -1,7 +1,6 @@
-#include <NJS/Context.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/NJS.hpp>
 #include <NJS/Parser.hpp>
+#include <NJS/TypeContext.hpp>
 
 NJS::TypePtr NJS::Parser::ParseType()
 {
@@ -21,7 +20,7 @@ NJS::TypePtr NJS::Parser::ParseType()
     {
         if (At(TokenType_Number))
         {
-            const auto count = Skip().NumberValue;
+            const auto count = static_cast<size_t>(Skip().NumberValue);
             type = m_Ctx.GetArrayType(type, count);
         }
         else type = m_Ctx.GetVectorType(type);
@@ -61,7 +60,7 @@ NJS::TypePtr NJS::Parser::ParseFunctionType()
 
 bool NJS::Parser::ParseTypeList(std::vector<TypePtr>& types, const std::string& delim)
 {
-    while (!NextAt(delim))
+    while (!At(delim) && !AtEof())
     {
         if (NextAt("."))
         {
@@ -75,12 +74,13 @@ bool NJS::Parser::ParseTypeList(std::vector<TypePtr>& types, const std::string& 
             Expect(",");
         else NextAt(",");
     }
+    Expect(delim);
     return false;
 }
 
 void NJS::Parser::ParseTypeMap(std::map<std::string, TypePtr>& types, const std::string& delim)
 {
-    while (!NextAt(delim))
+    while (!At(delim) && !AtEof())
     {
         const auto name = Expect(TokenType_Symbol).StringValue;
         Expect(":");
@@ -90,4 +90,5 @@ void NJS::Parser::ParseTypeMap(std::map<std::string, TypePtr>& types, const std:
             Expect(",");
         else NextAt(",");
     }
+    Expect(delim);
 }

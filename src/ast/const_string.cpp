@@ -1,17 +1,17 @@
+#include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Context.hpp>
 #include <NJS/Value.hpp>
 
-NJS::ConstStringExpr::ConstStringExpr(std::string value)
-    : Value(std::move(value))
+NJS::ConstStringExpr::ConstStringExpr(SourceLocation where, TypePtr type, std::string value)
+    : Expr(std::move(where), std::move(type)), Value(std::move(value))
 {
 }
 
 NJS::ValuePtr NJS::ConstStringExpr::GenLLVM(Builder& builder)
 {
     const auto ptr = GetString(builder, Value);
-    return RValue::Create(builder, builder.GetCtx().GetStringType(), ptr);
+    return RValue::Create(builder, Type, ptr);
 }
 
 std::ostream& NJS::ConstStringExpr::Print(std::ostream& os)

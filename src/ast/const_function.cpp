@@ -1,20 +1,27 @@
+#include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Param.hpp>
 #include <NJS/Type.hpp>
 
 NJS::ConstFunctionExpr::ConstFunctionExpr(
+    SourceLocation where,
+    TypePtr type,
     std::vector<ParamPtr> params,
     const bool vararg,
     TypePtr result_type,
     ScopeStmt body)
-    : Params(std::move(params)), VarArg(vararg), ResultType(std::move(result_type)), Body(std::move(body))
+    : Expr(std::move(where), std::move(type)),
+      Params(std::move(params)),
+      VarArg(vararg),
+      ResultType(std::move(result_type)),
+      Body(std::move(body))
 {
 }
 
 NJS::ValuePtr NJS::ConstFunctionExpr::GenLLVM(Builder& builder)
 {
-    Error("NJS::ConstFunctionExpr::GenLLVM");
+    Error(Where, "NJS::ConstFunctionExpr::GenLLVM");
 }
 
 std::ostream& NJS::ConstFunctionExpr::Print(std::ostream& os)

@@ -24,8 +24,12 @@ std::string NJS::FunctionType::GenString(
     return str + ") => " + result_type->String;
 }
 
-NJS::FunctionType::FunctionType(std::vector<TypePtr> param_types, TypePtr result_type, const bool vararg)
-    : Type(GenString(param_types, result_type, vararg)),
+NJS::FunctionType::FunctionType(
+    TypeContext& ctx,
+    std::vector<TypePtr> param_types,
+    TypePtr result_type,
+    const bool vararg)
+    : Type(ctx, GenString(param_types, result_type, vararg)),
       ParamTypes(std::move(param_types)),
       ResultType(std::move(result_type)),
       VarArg(vararg)
@@ -37,7 +41,7 @@ bool NJS::FunctionType::IsFunction() const
     return true;
 }
 
-NJS::TypePtr NJS::FunctionType::Result()
+NJS::TypePtr NJS::FunctionType::Result() const
 {
     return ResultType;
 }

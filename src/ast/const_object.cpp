@@ -1,34 +1,23 @@
+#include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Context.hpp>
-#include <NJS/NJS.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::ConstObjectExpr::ConstObjectExpr(std::map<std::string, ExprPtr> elements)
-    : Elements(std::move(elements))
+NJS::ConstObjectExpr::ConstObjectExpr(SourceLocation where, TypePtr type, std::map<std::string, ExprPtr> elements)
+    : Expr(std::move(where), std::move(type)), Elements(std::move(elements))
 {
 }
 
 NJS::ValuePtr NJS::ConstObjectExpr::GenLLVM(Builder& builder)
 {
-    std::vector<ValuePtr> values;
-    std::map<std::string, TypePtr> types;
+    llvm::Value* object = llvm::ConstantStruct::getNullValue(Type->GenLLVM(builder));
 
-    for (const auto& [name, element] : Elements)
-    {
-        const auto value = element->GenLLVM(builder);
-        values.push_back(value);
-        types[name] = value->GetType();
-    }
+    size_t i = 0;
+    for (const auto& [name_, element_] : Elements)
+        object = builder.GetBuilder().CreateInsertValue(object, element_->GenLLVM(builder)->Load(), i++);
 
-    const auto type = builder.GetCtx().GetObjectType(types);
-
-    llvm::Value* object = llvm::ConstantStruct::getNullValue(type->GenLLVM(builder));
-    for (size_t i = 0; i < values.size(); ++i)
-        object = builder.GetBuilder().CreateInsertValue(object, values[i]->Load(), i);
-
-    return RValue::Create(builder, type, object);
+    return RValue::Create(builder, Type, object);
 }
 
 std::ostream& NJS::ConstObjectExpr::Print(std::ostream& os)

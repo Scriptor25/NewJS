@@ -1,10 +1,15 @@
+#include <utility>
 #include <llvm/IR/BasicBlock.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Value.hpp>
 
-NJS::ForStmt::ForStmt(StmtPtr init, ExprPtr condition, StmtPtr loop, StmtPtr body)
-    : Init(std::move(init)), Condition(std::move(condition)), Loop(std::move(loop)), Body(std::move(body))
+NJS::ForStmt::ForStmt(SourceLocation where, StmtPtr init, ExprPtr condition, StmtPtr loop, StmtPtr body)
+    : Stmt(std::move(where)),
+      Init(std::move(init)),
+      Condition(std::move(condition)),
+      Loop(std::move(loop)),
+      Body(std::move(body))
 {
 }
 

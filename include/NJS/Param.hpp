@@ -14,6 +14,7 @@ namespace NJS
         virtual ~Param() = default;
 
         virtual bool RequireValue();
+        virtual void CreateVars(Parser&, const TypePtr&);
         virtual void CreateVars(Builder&, bool, const ValuePtr&);
 
         virtual std::ostream& Print(std::ostream&);
@@ -27,6 +28,7 @@ namespace NJS
         explicit DestructureObject(std::map<std::string, ParamPtr>);
 
         bool RequireValue() override;
+        void CreateVars(Parser&, const TypePtr&) override;
         void CreateVars(Builder&, bool, const ValuePtr&) override;
 
         std::ostream& Print(std::ostream&) override;
@@ -39,6 +41,7 @@ namespace NJS
         explicit DestructureArray(std::vector<ParamPtr>);
 
         bool RequireValue() override;
+        void CreateVars(Parser&, const TypePtr&) override;
         void CreateVars(Builder&, bool, const ValuePtr&) override;
 
         std::ostream& Print(std::ostream&) override;

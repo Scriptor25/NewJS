@@ -7,20 +7,24 @@ NJS::StmtPtr NJS::Parser::ParseFor()
     StmtPtr init, loop;
     ExprPtr condition;
 
-    Expect("for");
+    const auto where = Expect("for").Where;
+
     Expect("(");
+    StackPush();
     if (!NextAt(";"))
     {
         init = ParseLine();
         if (const auto of = NextAt("of"); of || NextAt("in"))
         {
             const auto var_init = std::dynamic_pointer_cast<VariableStmt>(init);
-            if (!var_init)
-                Error("for of/in requires a variable initializer");
+            if (!var_init) Error("for of/in requires a variable initializer");
             const auto value = ParseExpression();
             Expect(")");
-            auto body = ParseLine();
-            return std::make_shared<ForInOfStmt>(*var_init, of, value, body);
+
+            const auto body = ParseLine();
+
+            StackPop();
+            return std::make_shared<ForInOfStmt>(where, *var_init, of, value, body);
         }
         Expect(";");
     }
@@ -35,6 +39,8 @@ NJS::StmtPtr NJS::Parser::ParseFor()
         Expect(")");
     }
 
-    auto body = ParseLine();
-    return std::make_shared<ForStmt>(init, condition, loop, body);
+    const auto body = ParseLine();
+
+    StackPop();
+    return std::make_shared<ForStmt>(where, init, condition, loop, body);
 }

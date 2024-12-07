@@ -1,6 +1,5 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/NJS.hpp>
 #include <NJS/Param.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
@@ -15,33 +14,19 @@ bool NJS::DestructureArray::RequireValue()
     return true;
 }
 
+void NJS::DestructureArray::CreateVars(Parser& parser, const TypePtr& val_type)
+{
+    const auto type = Type ? Type : val_type;
+    for (size_t i = 0; i < Elements.size(); ++i)
+        Elements[i]->CreateVars(parser, type->Element(i));
+}
+
 void NJS::DestructureArray::CreateVars(Builder& builder, const bool is_const, const ValuePtr& value)
 {
-    const auto type = Type ? Type : value->GetType();
-
-    if (value->IsL())
+    for (size_t i = 0; i < Elements.size(); ++i)
     {
-        for (size_t i = 0; i < Elements.size(); ++i)
-        {
-            const auto element_type = type->Element(i);
-            const auto element = LValue::Create(
-                builder,
-                element_type,
-                builder.GetBuilder().CreateStructGEP(type->GenLLVM(builder), value->GetPtr(), i));
-            Elements[i]->CreateVars(builder, is_const, element);
-        }
-    }
-    else
-    {
-        for (size_t i = 0; i < Elements.size(); ++i)
-        {
-            const auto element_type = type->Element(i);
-            const auto element = RValue::Create(
-                builder,
-                element_type,
-                builder.GetBuilder().CreateExtractValue(value->Load(), i));
-            Elements[i]->CreateVars(builder, is_const, element);
-        }
+        const auto element = builder.CreateSubscript(value, i);
+        Elements[i]->CreateVars(builder, is_const, element);
     }
 }
 

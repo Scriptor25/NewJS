@@ -24,7 +24,8 @@ namespace NJS
     ValuePtr OperatorDiv(Builder&, const ValuePtr&, const ValuePtr&);
     ValuePtr OperatorRem(Builder&, const ValuePtr&, const ValuePtr&);
     ValuePtr OperatorPow(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorRoot(Builder&, const ValuePtr&, const ValuePtr&);
     ValuePtr OperatorShL(Builder&, const ValuePtr&, const ValuePtr&);
     ValuePtr OperatorShR(Builder&, const ValuePtr&, const ValuePtr&);
+
+    TypePtr OperatorType(TypeContext&, std::string, const TypePtr&, const TypePtr&);
 }

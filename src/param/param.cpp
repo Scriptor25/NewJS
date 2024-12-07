@@ -1,8 +1,8 @@
 #include <NJS/Builder.hpp>
-#include <NJS/Context.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/NJS.hpp>
 #include <NJS/Param.hpp>
+#include <NJS/Parser.hpp>
+#include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
 NJS::Param::Param(std::string name)
@@ -13,6 +13,11 @@ NJS::Param::Param(std::string name)
 bool NJS::Param::RequireValue()
 {
     return false;
+}
+
+void NJS::Param::CreateVars(Parser& parser, const TypePtr& type)
+{
+    parser.DefVar(Name) = Type ? Type : type;
 }
 
 void NJS::Param::CreateVars(Builder& builder, const bool is_const, const ValuePtr& value)

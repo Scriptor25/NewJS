@@ -1,19 +1,18 @@
+#include <utility>
 #include <llvm/IR/Value.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Context.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/NJS.hpp>
 #include <NJS/Value.hpp>
 
-NJS::UnaryExpr::UnaryExpr(std::string op, const bool op_right, ExprPtr operand)
-    : Op(std::move(op)), OpRight(op_right), Operand(std::move(operand))
+NJS::UnaryExpr::UnaryExpr(SourceLocation where, TypePtr type, std::string op, const bool op_right, ExprPtr operand)
+    : Expr(std::move(where), std::move(type)), Op(std::move(op)), OpRight(op_right), Operand(std::move(operand))
 {
 }
 
 NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder)
 {
-    const auto operand = Operand->GenLLVM(builder);
+    auto operand = Operand->GenLLVM(builder);
 
     const auto ov = operand->Load();
     const auto one = llvm::ConstantFP::get(builder.GetBuilder().getDoubleTy(), 1.0);
@@ -30,13 +29,13 @@ NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder)
         {
             operand->Store(value);
             if (OpRight)
-                return RValue::Create(builder, operand->GetType(), ov);
+                return RValue::Create(builder, Type, ov);
             return operand;
         }
-        return RValue::Create(builder, operand->GetType(), value);
+        return RValue::Create(builder, Type, value);
     }
 
-    Error("undefined unary operator {}{}", Op, operand->GetType());
+    Error(Where, "undefined unary operator {}{}", Op, Type);
 }
 
 std::ostream& NJS::UnaryExpr::Print(std::ostream& os)

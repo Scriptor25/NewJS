@@ -1,11 +1,20 @@
+#include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::SwitchExpr::SwitchExpr(ExprPtr condition, std::map<ExprPtr, std::vector<ExprPtr>> cases, ExprPtr default_case)
-    : Condition(std::move(condition)), Cases(std::move(cases)), DefaultCase(std::move(default_case))
+NJS::SwitchExpr::SwitchExpr(
+    SourceLocation where,
+    TypePtr type,
+    ExprPtr condition,
+    std::map<ExprPtr, std::vector<ExprPtr>> cases,
+    ExprPtr default_case)
+    : Expr(std::move(where), std::move(type)),
+      Condition(std::move(condition)),
+      Cases(std::move(cases)),
+      DefaultCase(std::move(default_case))
 {
 }
 
@@ -17,7 +26,7 @@ NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder& builder)
 
     const auto condition = Condition->GenLLVM(builder);
     if (!condition->GetType()->IsPrimitive(Primitive_Number))
-        Error("invalid switch condition: must be of type number, but is {}", condition->GetType());
+        Error(Where, "invalid switch condition: must be of type number, but is {}", condition->GetType());
     const auto switcher_int = builder.GetBuilder().CreateFPToSI(condition->Load(), builder.GetBuilder().getInt64Ty());
     const auto switch_inst = builder.GetBuilder().CreateSwitch(switcher_int, default_dest);
 
@@ -40,7 +49,7 @@ NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder& builder)
         {
             const auto on_val = entry->GenLLVM(builder);
             if (!on_val->GetType()->IsPrimitive(Primitive_Number))
-                Error("invalid case entry: must be of type number, but is {}", on_val->GetType());
+                Error(Where, "invalid case entry: must be of type number, but is {}", on_val->GetType());
             const auto on_val_num = llvm::dyn_cast<llvm::ConstantFP>(on_val->Load());
             const auto cast_inst = builder.GetBuilder().CreateFPToSI(on_val_num, builder.GetBuilder().getInt64Ty());
             const auto on_val_int = llvm::dyn_cast<llvm::ConstantInt>(cast_inst);
@@ -51,7 +60,7 @@ NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder& builder)
         if (case_value->IsL())
             case_value = RValue::Create(builder, case_value->GetType(), case_value->Load());
         if (case_value->GetType() != result_type)
-            Error("invalid case value: type mismatch, {} != {}", case_value->GetType(), result_type);
+            Error(Where, "invalid case value: type mismatch, {} != {}", case_value->GetType(), result_type);
         dest = builder.GetBuilder().GetInsertBlock();
         dest_blocks.emplace_back(dest, case_value);
         builder.GetBuilder().CreateBr(end_block);

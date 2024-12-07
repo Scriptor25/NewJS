@@ -4,14 +4,17 @@
 
 NJS::ImportStmtPtr NJS::Parser::ParseImport()
 {
-    Expect("import");
+    const auto where = Expect("import").Where;
     const auto mapping = ParseImportMapping();
     Expect("from");
     const auto filename = Expect(TokenType_String).StringValue;
-    const auto filepath = std::filesystem::path(m_Where.Filename).parent_path() / filename;
+    const auto filepath = std::filesystem::path(where.Filename).parent_path() / filename;
+
+    if (m_Imported)
+        return {};
 
     std::ifstream stream(filepath);
-    Parser parser(m_Ctx, stream, filepath.string());
+    Parser parser(m_Ctx, stream, filepath.string(), true);
 
     std::vector<FunctionStmtPtr> functions;
     parser.Parse([&](const StmtPtr& ptr)
@@ -23,13 +26,15 @@ NJS::ImportStmtPtr NJS::Parser::ParseImport()
         }
     });
 
-    return std::make_shared<ImportStmt>(mapping, absolute(filepath), functions);
+    mapping.MapFunctions(*this, functions);
+
+    return std::make_shared<ImportStmt>(where, mapping, absolute(filepath), functions);
 }
 
 NJS::ImportMapping NJS::Parser::ParseImportMapping()
 {
     if (At(TokenType_Symbol))
-        return {Skip().StringValue, {}, {}};
+        return {Skip().StringValue, {}};
 
     Expect("{");
     std::map<std::string, std::string> mappings;
@@ -43,5 +48,5 @@ NJS::ImportMapping NJS::Parser::ParseImportMapping()
         else NextAt(",");
     }
     Expect("}");
-    return {{}, {}, std::move(mappings)};
+    return {{}, std::move(mappings)};
 }

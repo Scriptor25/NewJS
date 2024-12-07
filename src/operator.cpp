@@ -1,16 +1,16 @@
 #include <NJS/Builder.hpp>
-#include <NJS/Context.hpp>
 #include <NJS/Operator.hpp>
+#include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
 NJS::ValuePtr NJS::OperatorEQ(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    const auto type = lhs->GetType();
     llvm::Value* value;
 
-    if (type->IsPrimitive(Primitive_Number))
+    if (lhs->GetType()->IsPrimitive(Primitive_Number) && rhs->GetType()->IsPrimitive(Primitive_Number))
         value = builder.GetBuilder().CreateFCmpOEQ(lhs->Load(), rhs->Load());
-    else if (type->IsPrimitive(Primitive_Boolean) || type->IsPrimitive(Primitive_Char))
+    else if ((lhs->GetType()->IsPrimitive(Primitive_Boolean) && rhs->GetType()->IsPrimitive(Primitive_Boolean))
+        || (lhs->GetType()->IsPrimitive(Primitive_Char) && rhs->GetType()->IsPrimitive(Primitive_Char)))
         value = builder.GetBuilder().CreateICmpEQ(lhs->Load(), rhs->Load());
     else return {};
 
@@ -19,12 +19,12 @@ NJS::ValuePtr NJS::OperatorEQ(Builder& builder, const ValuePtr& lhs, const Value
 
 NJS::ValuePtr NJS::OperatorNE(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    const auto type = lhs->GetType();
     llvm::Value* value;
 
-    if (type->IsPrimitive(Primitive_Number))
+    if (lhs->GetType()->IsPrimitive(Primitive_Number) && rhs->GetType()->IsPrimitive(Primitive_Number))
         value = builder.GetBuilder().CreateFCmpONE(lhs->Load(), rhs->Load());
-    else if (type->IsPrimitive(Primitive_Boolean) || type->IsPrimitive(Primitive_Char))
+    else if ((lhs->GetType()->IsPrimitive(Primitive_Boolean) && rhs->GetType()->IsPrimitive(Primitive_Boolean))
+        || (lhs->GetType()->IsPrimitive(Primitive_Char) && rhs->GetType()->IsPrimitive(Primitive_Char)))
         value = builder.GetBuilder().CreateICmpNE(lhs->Load(), rhs->Load());
     else return {};
 
@@ -33,7 +33,7 @@ NJS::ValuePtr NJS::OperatorNE(Builder& builder, const ValuePtr& lhs, const Value
 
 NJS::ValuePtr NJS::OperatorLT(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto value = builder.GetBuilder().CreateFCmpOLT(lhs->Load(), rhs->Load());
@@ -42,7 +42,7 @@ NJS::ValuePtr NJS::OperatorLT(Builder& builder, const ValuePtr& lhs, const Value
 
 NJS::ValuePtr NJS::OperatorLE(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto value = builder.GetBuilder().CreateFCmpOLE(lhs->Load(), rhs->Load());
@@ -51,7 +51,7 @@ NJS::ValuePtr NJS::OperatorLE(Builder& builder, const ValuePtr& lhs, const Value
 
 NJS::ValuePtr NJS::OperatorGT(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto value = builder.GetBuilder().CreateFCmpOGT(lhs->Load(), rhs->Load());
@@ -60,7 +60,7 @@ NJS::ValuePtr NJS::OperatorGT(Builder& builder, const ValuePtr& lhs, const Value
 
 NJS::ValuePtr NJS::OperatorGE(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto value = builder.GetBuilder().CreateFCmpOGE(lhs->Load(), rhs->Load());
@@ -69,7 +69,7 @@ NJS::ValuePtr NJS::OperatorGE(Builder& builder, const ValuePtr& lhs, const Value
 
 NJS::ValuePtr NJS::OperatorLOr(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Boolean))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Boolean) || !rhs->GetType()->IsPrimitive(Primitive_Boolean))
         return {};
 
     const auto value = builder.GetBuilder().CreateOr(lhs->Load(), rhs->Load());
@@ -78,7 +78,7 @@ NJS::ValuePtr NJS::OperatorLOr(Builder& builder, const ValuePtr& lhs, const Valu
 
 NJS::ValuePtr NJS::OperatorLXor(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Boolean))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Boolean) || !rhs->GetType()->IsPrimitive(Primitive_Boolean))
         return {};
 
     const auto value = builder.GetBuilder().CreateXor(lhs->Load(), rhs->Load());
@@ -87,7 +87,7 @@ NJS::ValuePtr NJS::OperatorLXor(Builder& builder, const ValuePtr& lhs, const Val
 
 NJS::ValuePtr NJS::OperatorLAnd(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Boolean))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Boolean) || !rhs->GetType()->IsPrimitive(Primitive_Boolean))
         return {};
 
     const auto value = builder.GetBuilder().CreateAnd(lhs->Load(), rhs->Load());
@@ -96,7 +96,7 @@ NJS::ValuePtr NJS::OperatorLAnd(Builder& builder, const ValuePtr& lhs, const Val
 
 NJS::ValuePtr NJS::OperatorOr(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto l = builder.GetBuilder().CreateFPToSI(lhs->Load(), builder.GetBuilder().getInt64Ty());
@@ -108,7 +108,7 @@ NJS::ValuePtr NJS::OperatorOr(Builder& builder, const ValuePtr& lhs, const Value
 
 NJS::ValuePtr NJS::OperatorXor(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto l = builder.GetBuilder().CreateFPToSI(lhs->Load(), builder.GetBuilder().getInt64Ty());
@@ -120,7 +120,7 @@ NJS::ValuePtr NJS::OperatorXor(Builder& builder, const ValuePtr& lhs, const Valu
 
 NJS::ValuePtr NJS::OperatorAnd(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto l = builder.GetBuilder().CreateFPToSI(lhs->Load(), builder.GetBuilder().getInt64Ty());
@@ -132,7 +132,7 @@ NJS::ValuePtr NJS::OperatorAnd(Builder& builder, const ValuePtr& lhs, const Valu
 
 NJS::ValuePtr NJS::OperatorAdd(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto value = builder.GetBuilder().CreateFAdd(lhs->Load(), rhs->Load());
@@ -141,7 +141,7 @@ NJS::ValuePtr NJS::OperatorAdd(Builder& builder, const ValuePtr& lhs, const Valu
 
 NJS::ValuePtr NJS::OperatorSub(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto value = builder.GetBuilder().CreateFSub(lhs->Load(), rhs->Load());
@@ -150,7 +150,7 @@ NJS::ValuePtr NJS::OperatorSub(Builder& builder, const ValuePtr& lhs, const Valu
 
 NJS::ValuePtr NJS::OperatorMul(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto value = builder.GetBuilder().CreateFMul(lhs->Load(), rhs->Load());
@@ -159,7 +159,7 @@ NJS::ValuePtr NJS::OperatorMul(Builder& builder, const ValuePtr& lhs, const Valu
 
 NJS::ValuePtr NJS::OperatorDiv(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto value = builder.GetBuilder().CreateFDiv(lhs->Load(), rhs->Load());
@@ -168,7 +168,7 @@ NJS::ValuePtr NJS::OperatorDiv(Builder& builder, const ValuePtr& lhs, const Valu
 
 NJS::ValuePtr NJS::OperatorRem(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto value = builder.GetBuilder().CreateFRem(lhs->Load(), rhs->Load());
@@ -177,27 +177,16 @@ NJS::ValuePtr NJS::OperatorRem(Builder& builder, const ValuePtr& lhs, const Valu
 
 NJS::ValuePtr NJS::OperatorPow(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto value = builder.GetBuilder().CreateBinaryIntrinsic(llvm::Intrinsic::pow, lhs->Load(), rhs->Load());
     return RValue::Create(builder, builder.GetCtx().GetNumberType(), value);
 }
 
-NJS::ValuePtr NJS::OperatorRoot(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
-{
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
-        return {};
-
-    const auto one = llvm::ConstantFP::get(builder.GetBuilder().getDoubleTy(), 1.0);
-    const auto r = builder.GetBuilder().CreateFDiv(one, rhs->Load());
-    const auto value = builder.GetBuilder().CreateBinaryIntrinsic(llvm::Intrinsic::pow, lhs->Load(), r);
-    return RValue::Create(builder, builder.GetCtx().GetNumberType(), value);
-}
-
 NJS::ValuePtr NJS::OperatorShL(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto l = builder.GetBuilder().CreateFPToSI(lhs->Load(), builder.GetBuilder().getInt64Ty());
@@ -209,7 +198,7 @@ NJS::ValuePtr NJS::OperatorShL(Builder& builder, const ValuePtr& lhs, const Valu
 
 NJS::ValuePtr NJS::OperatorShR(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    if (!lhs->GetType()->IsPrimitive(Primitive_Number))
+    if (!lhs->GetType()->IsPrimitive(Primitive_Number) || !rhs->GetType()->IsPrimitive(Primitive_Number))
         return {};
 
     const auto l = builder.GetBuilder().CreateFPToSI(lhs->Load(), builder.GetBuilder().getInt64Ty());
@@ -217,4 +206,59 @@ NJS::ValuePtr NJS::OperatorShR(Builder& builder, const ValuePtr& lhs, const Valu
     const auto result = builder.GetBuilder().CreateAShr(l, r);
     const auto value = builder.GetBuilder().CreateSIToFP(result, builder.GetBuilder().getDoubleTy());
     return RValue::Create(builder, builder.GetCtx().GetNumberType(), value);
+}
+
+NJS::TypePtr NJS::OperatorType(TypeContext& ctx, std::string op, const TypePtr& lhs, const TypePtr& rhs)
+{
+    static const auto fn_cmp_eq = [&ctx](const TypePtr&, const TypePtr&) -> TypePtr
+    {
+        return ctx.GetBooleanType();
+    };
+
+    static const auto fn_cmp = [&ctx](const TypePtr& l, const TypePtr& r) -> TypePtr
+    {
+        if (!l->IsPrimitive(Primitive_Number) || !r->IsPrimitive(Primitive_Number))
+            return {};
+        return ctx.GetBooleanType();
+    };
+
+    static const auto fn_arith = [&ctx](const TypePtr& l, const TypePtr& r) -> TypePtr
+    {
+        if (!l->IsPrimitive(Primitive_Number) || !r->IsPrimitive(Primitive_Number))
+            return {};
+        return ctx.GetNumberType();
+    };
+
+    static const std::map<std::string, std::function<TypePtr(TypePtr, TypePtr)>> ops
+    {
+        {"==", fn_cmp_eq},
+        {"!=", fn_cmp_eq},
+        {"<", fn_cmp},
+        {"<=", fn_cmp},
+        {">", fn_cmp},
+        {">=", fn_cmp},
+        {"+", fn_arith},
+        {"-", fn_arith},
+        {"*", fn_arith},
+        {"/", fn_arith},
+        {"%", fn_arith},
+        {"**", fn_arith},
+        {"|", fn_arith},
+        {"^", fn_arith},
+        {"&", fn_arith},
+        {"<<", fn_arith},
+        {">>", fn_arith},
+    };
+
+    if (ops.contains(op))
+        return ops.at(op)(lhs, rhs);
+
+    if (op.back() == '=')
+    {
+        op.pop_back();
+        if (ops.contains(op))
+            return ops.at(op)(lhs, rhs);
+    }
+
+    return {};
 }

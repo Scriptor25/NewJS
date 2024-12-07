@@ -1,5 +1,4 @@
 #include <NJS/Error.hpp>
-#include <NJS/NJS.hpp>
 #include <NJS/Value.hpp>
 
 NJS::ValuePtr NJS::RValue::Create(Builder& builder, const TypePtr& type, llvm::Value* value)

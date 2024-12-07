@@ -17,8 +17,8 @@ std::string NJS::TupleType::GenString(const std::vector<TypePtr>& element_types)
     return str + " ]";
 }
 
-NJS::TupleType::TupleType(std::vector<TypePtr> element_types)
-    : Type(GenString(element_types)), ElementTypes(std::move(element_types))
+NJS::TupleType::TupleType(TypeContext& ctx, std::vector<TypePtr> element_types)
+    : Type(ctx, GenString(element_types)), ElementTypes(std::move(element_types))
 {
 }
 
@@ -27,7 +27,7 @@ bool NJS::TupleType::IsTuple() const
     return true;
 }
 
-NJS::TypePtr NJS::TupleType::Element(const size_t i)
+NJS::TypePtr NJS::TupleType::Element(const size_t i) const
 {
     return ElementTypes[i];
 }

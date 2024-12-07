@@ -1,6 +1,5 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/NJS.hpp>
 #include <NJS/Param.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
@@ -15,35 +14,19 @@ bool NJS::DestructureObject::RequireValue()
     return true;
 }
 
+void NJS::DestructureObject::CreateVars(Parser& parser, const TypePtr& val_type)
+{
+    const auto type = Type ? Type : val_type;
+    for (const auto& [name_, element_] : Elements)
+        element_->CreateVars(parser, type->Member(name_).first);
+}
+
 void NJS::DestructureObject::CreateVars(Builder& builder, const bool is_const, const ValuePtr& value)
 {
-    const auto type = Type ? Type : value->GetType();
-
-    if (value->IsL())
+    for (const auto& [name_, element_] : Elements)
     {
-        for (const auto& [name, element] : Elements)
-        {
-            const auto member_type = type->Member(name);
-            const auto member_index = type->MemberIndex(name);
-            const auto member = LValue::Create(
-                builder,
-                member_type,
-                builder.GetBuilder().CreateStructGEP(type->GenLLVM(builder), value->GetPtr(), member_index));
-            element->CreateVars(builder, is_const, member);
-        }
-    }
-    else
-    {
-        for (const auto& [name, element] : Elements)
-        {
-            const auto member_type = type->Member(name);
-            const auto member_index = type->MemberIndex(name);
-            const auto member = RValue::Create(
-                builder,
-                member_type,
-                builder.GetBuilder().CreateExtractValue(value->Load(), member_index));
-            element->CreateVars(builder, is_const, member);
-        }
+        const auto member = builder.CreateMember(value, name_);
+        element_->CreateVars(builder, is_const, member);
     }
 }
 

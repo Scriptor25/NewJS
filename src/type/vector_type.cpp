@@ -7,8 +7,8 @@ std::string NJS::VectorType::GenString(const TypePtr& element_type)
     return element_type->String + "[]";
 }
 
-NJS::VectorType::VectorType(TypePtr element_type)
-    : Type(GenString(element_type)), ElementType(std::move(element_type))
+NJS::VectorType::VectorType(TypeContext& ctx, TypePtr element_type)
+    : Type(ctx, GenString(element_type)), ElementType(std::move(element_type))
 {
 }
 
@@ -17,12 +17,12 @@ bool NJS::VectorType::IsVector() const
     return true;
 }
 
-NJS::TypePtr NJS::VectorType::Element()
+NJS::TypePtr NJS::VectorType::Element() const
 {
     return ElementType;
 }
 
-NJS::TypePtr NJS::VectorType::Element(size_t)
+NJS::TypePtr NJS::VectorType::Element(size_t) const
 {
     return ElementType;
 }

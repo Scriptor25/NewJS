@@ -4,10 +4,10 @@
 #include <NJS/ArgParser.hpp>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Context.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Linker.hpp>
 #include <NJS/Parser.hpp>
+#include <NJS/TypeContext.hpp>
 
 enum ARG_ID
 {
@@ -38,7 +38,7 @@ static void parse(
     std::istream& input_stream,
     const std::filesystem::path& input_path)
 {
-    NJS::Context context;
+    NJS::TypeContext context;
 
     NJS::Builder builder(context, linker.LLVMContext(), module_id, is_main);
     NJS::Parser parser(context, input_stream, input_path.string());

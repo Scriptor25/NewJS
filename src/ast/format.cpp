@@ -1,15 +1,17 @@
+#include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Context.hpp>
-#include <NJS/NJS.hpp>
 #include <NJS/Std.hpp>
+#include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
 NJS::FormatExpr::FormatExpr(
+    SourceLocation where,
+    TypePtr type,
     const size_t count,
     std::map<size_t, std::string> statics,
     std::map<size_t, ExprPtr> dynamics)
-    : Count(count), Statics(std::move(statics)), Dynamics(std::move(dynamics))
+    : Expr(std::move(where), std::move(type)), Count(count), Statics(std::move(statics)), Dynamics(std::move(dynamics))
 {
 }
 

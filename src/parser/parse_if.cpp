@@ -3,7 +3,8 @@
 
 NJS::IfStmtPtr NJS::Parser::ParseIf()
 {
-    Expect("if");
+    const auto where = Expect("if").Where;
+    StackPush();
     Expect("(");
     const auto condition = ParseExpression();
     Expect(")");
@@ -11,5 +12,6 @@ NJS::IfStmtPtr NJS::Parser::ParseIf()
     StmtPtr else_;
     if (NextAt("else"))
         else_ = ParseLine();
-    return std::make_shared<IfStmt>(condition, then, else_);
+    StackPop();
+    return std::make_shared<IfStmt>(where, condition, then, else_);
 }

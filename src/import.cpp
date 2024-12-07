@@ -1,22 +1,22 @@
-#include <iostream>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Context.hpp>
 #include <NJS/Import.hpp>
 #include <NJS/Param.hpp>
+#include <NJS/Parser.hpp>
+#include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
 std::ostream& NJS::ImportMapping::Print(std::ostream& os) const
 {
-    if (!Name.empty() && SubMappings.empty())
+    if (!Name.empty() && NameMap.empty())
         return os << Name;
     if (!Name.empty())
         os << Name << ": ";
-    if (SubMappings.empty())
+    if (NameMap.empty())
         return os << "{}";
     os << "{ ";
     bool first = true;
-    for (const auto& [name_, mapping_] : SubMappings)
+    for (const auto& [name_, mapping_] : NameMap)
     {
         if (first) first = false;
         else os << ", ";
@@ -25,6 +25,35 @@ std::ostream& NJS::ImportMapping::Print(std::ostream& os) const
             os << ": " << mapping_;
     }
     return os << " }";
+}
+
+void NJS::ImportMapping::MapFunctions(Parser& parser, const std::vector<FunctionStmtPtr>& functions) const
+{
+    std::map<std::string, TypePtr> element_types;
+    for (const auto& function : functions)
+    {
+        std::vector<TypePtr> param_types;
+        for (const auto& param : function->Params)
+            param_types.push_back(param->Type);
+        const auto type = parser.m_Ctx.GetFunctionType(
+            param_types,
+            function->ResultType,
+            function->VarArg);
+        element_types[function->Name] = type;
+    }
+
+    if (!Name.empty() && NameMap.empty())
+    {
+        const auto module_type = parser.m_Ctx.GetObjectType(element_types);
+        parser.DefVar(Name) = module_type;
+        return;
+    }
+
+    for (const auto& [name_, type_] : element_types)
+    {
+        if (!NameMap.contains(name_)) continue;
+        parser.DefVar(NameMap.at(name_)) = type_;
+    }
 }
 
 void NJS::ImportMapping::MapFunctions(
@@ -39,7 +68,10 @@ void NJS::ImportMapping::MapFunctions(
         std::vector<TypePtr> param_types;
         for (const auto& param : function->Params)
             param_types.push_back(param->Type);
-        const auto type = builder.GetCtx().GetFunctionType(param_types, function->ResultType, function->VarArg);
+        const auto type = builder.GetCtx().GetFunctionType(
+            param_types,
+            function->ResultType,
+            function->VarArg);
         element_types[function->Name] = type;
         auto callee = builder.GetModule().getOrInsertFunction(
             module_id + '.' + function->Name,
@@ -47,21 +79,21 @@ void NJS::ImportMapping::MapFunctions(
         elements[function->Name] = RValue::Create(builder, type, callee.getCallee());
     }
 
-    if (!Name.empty() && SubMappings.empty())
+    if (!Name.empty() && NameMap.empty())
     {
         const auto module_type = builder.GetCtx().GetObjectType(element_types);
         llvm::Value* module = llvm::Constant::getNullValue(module_type->GenLLVM(builder));
+        size_t i = 0;
         for (const auto& [name_, value_] : elements)
-            module = builder.GetBuilder().CreateInsertValue(module, value_->Load(), module_type->MemberIndex(name_));
+            module = builder.GetBuilder().CreateInsertValue(module, value_->Load(), i++);
 
         builder.DefVar(Name) = RValue::Create(builder, module_type, module);
+        return;
     }
-    else
+
+    for (const auto& [name_, value_] : elements)
     {
-        for (const auto& [name_, value_] : elements)
-        {
-            if (!SubMappings.contains(name_)) continue;
-            builder.DefVar(SubMappings.at(name_)) = value_;
-        }
+        if (!NameMap.contains(name_)) continue;
+        builder.DefVar(NameMap.at(name_)) = value_;
     }
 }

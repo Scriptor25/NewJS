@@ -1,12 +1,17 @@
+#include <utility>
 #include <llvm/IR/DerivedTypes.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 
 NJS::ImportStmt::ImportStmt(
+    SourceLocation where,
     ImportMapping mapping,
     std::filesystem::path filepath,
     std::vector<FunctionStmtPtr> functions)
-    : Mapping(std::move(mapping)), Filepath(std::move(filepath)), Functions(std::move(functions))
+    : Stmt(std::move(where)),
+      Mapping(std::move(mapping)),
+      Filepath(std::move(filepath)),
+      Functions(std::move(functions))
 {
 }
 

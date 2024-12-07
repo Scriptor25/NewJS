@@ -1,9 +1,10 @@
+#include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Value.hpp>
 
-NJS::IfStmt::IfStmt(ExprPtr condition, StmtPtr then, StmtPtr else_)
-    : Condition(std::move(condition)), Then(std::move(then)), Else(std::move(else_))
+NJS::IfStmt::IfStmt(SourceLocation where, ExprPtr condition, StmtPtr then, StmtPtr else_)
+    : Stmt(std::move(where)), Condition(std::move(condition)), Then(std::move(then)), Else(std::move(else_))
 {
 }
 

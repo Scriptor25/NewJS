@@ -24,11 +24,11 @@ namespace NJS
     class Builder
     {
     public:
-        Builder(Context&, llvm::LLVMContext&, const std::string&, bool);
+        Builder(TypeContext&, llvm::LLVMContext&, const std::string&, bool);
 
         void Close();
 
-        [[nodiscard]] Context& GetCtx() const;
+        [[nodiscard]] TypeContext& GetCtx() const;
 
         std::unique_ptr<llvm::Module>&& MoveModule();
 
@@ -36,15 +36,25 @@ namespace NJS
         [[nodiscard]] llvm::Module& GetModule() const;
         [[nodiscard]] llvm::IRBuilder<>& GetBuilder() const;
 
-        llvm::Value* CreateMalloc(size_t) const;
-        llvm::Value* CreateRealloc(llvm::Value*, llvm::Value*) const;
-        llvm::Value* CreateMemcpy(llvm::Value*, llvm::Value*, llvm::Value*) const;
-        llvm::Value* CreateStrlen(llvm::Value*) const;
-        llvm::Value* CreateAlloca(llvm::Type*, size_t = 0) const;
+        [[nodiscard]] llvm::Value* CreateMalloc(size_t) const;
+        [[nodiscard]] llvm::Value* CreateMalloc(llvm::Value*) const;
+        [[nodiscard]] llvm::Value* CreateRealloc(llvm::Value*, llvm::Value*) const;
+        [[nodiscard]] llvm::Value* CreateMemcpy(llvm::Value*, llvm::Value*, llvm::Value*) const;
+        [[nodiscard]] llvm::Value* CreateStrlen(llvm::Value*) const;
+        [[nodiscard]] llvm::Value* CreateAlloca(llvm::Type*, size_t = 0) const;
         ValuePtr CreateAlloca(const TypePtr&, size_t = 0);
+        ValuePtr CreateGlobal(const std::string&, const TypePtr&, bool);
+
         llvm::Value* CreateEmpty(const TypePtr&);
 
+        ValuePtr CreateMember(const ValuePtr&, const std::string&);
+        ValuePtr CreateSubscript(const ValuePtr&, size_t);
         ValuePtr CreateSubscript(const ValuePtr&, llvm::Value*);
+
+        ValuePtr CreateVector(const TypePtr&, llvm::Value*, llvm::Value*);
+        bool CreateVectorStoreArray(const ValuePtr&, llvm::Value*);
+        [[nodiscard]] llvm::Value* CreatePtrToVectorPtr(llvm::Value*) const;
+        [[nodiscard]] llvm::Value* CreatePtrToVectorSize(llvm::Value*) const;
 
         void GetFormat(llvm::FunctionCallee&) const;
 
@@ -57,7 +67,7 @@ namespace NJS
         ValuePtr& GetVar(const std::string&);
 
     private:
-        Context& m_Ctx;
+        TypeContext& m_Ctx;
         llvm::LLVMContext& m_LLVMContext;
 
         std::string m_ModuleID;

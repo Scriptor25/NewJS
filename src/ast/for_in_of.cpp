@@ -1,11 +1,11 @@
+#include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Context.hpp>
-#include <NJS/Type.hpp>
+#include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::ForInOfStmt::ForInOfStmt(VariableStmt init, const bool of, ExprPtr value, StmtPtr body)
-    : Init(std::move(init)), Of(of), Value(std::move(value)), Body(std::move(body))
+NJS::ForInOfStmt::ForInOfStmt(SourceLocation where, VariableStmt init, const bool of, ExprPtr value, StmtPtr body)
+    : Stmt(std::move(where)), Init(std::move(init)), Of(of), Value(std::move(value)), Body(std::move(body))
 {
 }
 

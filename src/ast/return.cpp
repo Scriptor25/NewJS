@@ -1,10 +1,10 @@
+#include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::ReturnStmt::ReturnStmt(ExprPtr value)
-    : Value(std::move(value))
+NJS::ReturnStmt::ReturnStmt(SourceLocation where, ExprPtr value)
+    : Stmt(std::move(where)), Value(std::move(value))
 {
 }
 

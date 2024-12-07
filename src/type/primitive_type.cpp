@@ -16,8 +16,8 @@ std::string NJS::PrimitiveType::GenString(const Primitive name)
     return type_names[name];
 }
 
-NJS::PrimitiveType::PrimitiveType(const Primitive name)
-    : Type(GenString(name)), Name(name)
+NJS::PrimitiveType::PrimitiveType(TypeContext& ctx, const Primitive name)
+    : Type(ctx, GenString(name)), Name(name)
 {
 }
 

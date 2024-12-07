@@ -1,5 +1,5 @@
-#include <NJS/Context.hpp>
 #include <NJS/Parser.hpp>
+#include <NJS/TypeContext.hpp>
 
 void NJS::Parser::ParseInterface()
 {

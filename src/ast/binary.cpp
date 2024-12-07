@@ -1,13 +1,12 @@
+#include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/NJS.hpp>
 #include <NJS/Operator.hpp>
-#include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::BinaryExpr::BinaryExpr(std::string op, ExprPtr lhs, ExprPtr rhs)
-    : Op(std::move(op)), Lhs(std::move(lhs)), Rhs(std::move(rhs))
+NJS::BinaryExpr::BinaryExpr(SourceLocation where, TypePtr type, std::string op, ExprPtr lhs, ExprPtr rhs)
+    : Expr(std::move(where), std::move(type)), Op(std::move(op)), Lhs(std::move(lhs)), Rhs(std::move(rhs))
 {
 }
 
@@ -33,7 +32,6 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
         {"/", {OperatorDiv}},
         {"%", {OperatorRem}},
         {"**", {OperatorPow}},
-        {"//", {OperatorRoot}},
         {"<<", {OperatorShL}},
         {">>", {OperatorShR}},
     };
@@ -48,7 +46,7 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
     }
 
     if (lhs->GetType() != rhs->GetType())
-        Error("invalid binary operation: type mismatch, {} != {}", lhs->GetType(), rhs->GetType());
+        Error(Where, "invalid binary operation: type mismatch, {} != {}", lhs->GetType(), rhs->GetType());
 
     if (const auto& op = ops[Op]; op)
         if (auto value = op(builder, lhs, rhs))
@@ -68,7 +66,7 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
             return value;
         }
 
-    Error("undefined binary operator '{} {} {}'", lhs->GetType(), Op, rhs->GetType());
+    Error(Where, "undefined binary operator '{} {} {}'", lhs->GetType(), Op, rhs->GetType());
 }
 
 std::ostream& NJS::BinaryExpr::Print(std::ostream& os)

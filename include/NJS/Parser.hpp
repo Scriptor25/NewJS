@@ -12,8 +12,16 @@ namespace NJS
 
     class Parser
     {
+        friend Param;
+        friend ImportMapping;
+
     public:
-        Parser(Context&, std::istream&, std::string);
+        Parser(
+            TypeContext&,
+            std::istream&,
+            std::string,
+            bool = false,
+            std::vector<std::map<std::string, TypePtr>>  = {});
 
         void Parse(const Callback&);
 
@@ -71,10 +79,17 @@ namespace NJS
         ExprPtr ParseSwitchExpr();
         ExprPtr ParseScopeExpr();
 
-        Context& m_Ctx;
+        void StackPush();
+        void StackPop();
+        TypePtr& DefVar(const std::string&);
+        TypePtr GetVar(const std::string&);
+
+        TypeContext& m_Ctx;
         std::istream& m_Stream;
         int m_C;
         SourceLocation m_Where{"", 1, 1};
         Token m_Token;
+        bool m_Imported;
+        std::vector<std::map<std::string, TypePtr>> m_Stack;
     };
 }

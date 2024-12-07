@@ -1,7 +1,8 @@
 #include <NJS/Type.hpp>
+#include <NJS/TypeContext.hpp>
 
-NJS::Type::Type(std::string str)
-    : String(std::move(str))
+NJS::Type::Type(TypeContext& ctx, std::string str)
+    : Ctx(ctx), String(std::move(str))
 {
 }
 
@@ -40,29 +41,24 @@ bool NJS::Type::IsVector() const
     return false;
 }
 
-NJS::TypePtr NJS::Type::Member(const std::string&)
+NJS::MemberT NJS::Type::Member(const std::string&) const
 {
-    return {};
+    return {Ctx.GetNoType(), -1};
 }
 
-size_t NJS::Type::MemberIndex(const std::string&)
+NJS::TypePtr NJS::Type::Result() const
 {
-    return -1;
+    return Ctx.GetNoType();
 }
 
-NJS::TypePtr NJS::Type::Result()
+NJS::TypePtr NJS::Type::Element() const
 {
-    return {};
+    return Ctx.GetNoType();
 }
 
-NJS::TypePtr NJS::Type::Element()
+NJS::TypePtr NJS::Type::Element(size_t) const
 {
-    return {};
-}
-
-NJS::TypePtr NJS::Type::Element(size_t)
-{
-    return {};
+    return Ctx.GetNoType();
 }
 
 size_t NJS::Type::NumElements() const

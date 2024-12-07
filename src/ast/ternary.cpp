@@ -6,8 +6,11 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::TernaryExpr::TernaryExpr(ExprPtr condition, ExprPtr then, ExprPtr else_)
-    : Condition(std::move(condition)), Then(std::move(then)), Else(std::move(else_))
+NJS::TernaryExpr::TernaryExpr(SourceLocation where, TypePtr type, ExprPtr condition, ExprPtr then, ExprPtr else_)
+    : Expr(std::move(where), std::move(type)),
+      Condition(std::move(condition)),
+      Then(std::move(then)),
+      Else(std::move(else_))
 {
 }
 
@@ -36,7 +39,7 @@ NJS::ValuePtr NJS::TernaryExpr::GenLLVM(Builder& builder)
     builder.GetBuilder().CreateBr(end_block);
 
     if (then_value->GetType() != else_value->GetType())
-        Error("invalid ternary operands: type mismatch, {} != {}", then_value->GetType(), else_value->GetType());
+        Error(Where, "invalid ternary operands: type mismatch, {} != {}", then_value->GetType(), else_value->GetType());
 
     const auto result_type = then_value->GetType();
     const auto result_ty = result_type->GenLLVM(builder);

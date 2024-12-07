@@ -3,7 +3,7 @@
 
 NJS::ReturnStmtPtr NJS::Parser::ParseReturn()
 {
-    Expect("return");
+    const auto where = Expect("return").Where;
     const auto value = ParseExpression();
-    return std::make_shared<ReturnStmt>(value);
+    return std::make_shared<ReturnStmt>(where, value);
 }

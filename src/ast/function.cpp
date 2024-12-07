@@ -1,21 +1,22 @@
+#include <utility>
 #include <llvm/IR/Verifier.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Context.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/NJS.hpp>
 #include <NJS/Param.hpp>
-#include <NJS/Type.hpp>
+#include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
 NJS::FunctionStmt::FunctionStmt(
+    SourceLocation where,
     const bool extern_,
     std::string name,
     std::vector<ParamPtr> params,
     const bool vararg,
     TypePtr result_type,
     ScopeStmtPtr body)
-    : Extern(extern_),
+    : Stmt(std::move(where)),
+      Extern(extern_),
       Name(std::move(name)),
       Params(std::move(params)),
       VarArg(vararg),
@@ -45,7 +46,7 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
     }
 
     if (!Body) return {};
-    if (!function->empty()) Error("cannot redefine function");
+    if (!function->empty()) Error(Where, "cannot redefine function");
 
     const auto return_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
@@ -74,13 +75,13 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
             builder.GetBuilder().CreateRetVoid();
             continue;
         }
-        Error("not all code paths return a value: in function {} ({})", Name, name);
+        Error(Where, "not all code paths return a value: in function {} ({})", Name, name);
     }
 
     if (verifyFunction(*function, &llvm::errs()))
     {
         function->print(llvm::errs());
-        Error("failed to verify function {} ({})", Name, name);
+        Error(Where, "failed to verify function {} ({})", Name, name);
     }
 
     builder.GetBuilder().SetInsertPoint(return_block);
