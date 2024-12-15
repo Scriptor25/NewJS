@@ -45,7 +45,7 @@ namespace NJS
 
         TypePtr ParseType();
         TypePtr ParseTupleType();
-        TypePtr ParseObjectType();
+        TypePtr ParseStructType();
         TypePtr ParseFunctionType();
         bool ParseTypeList(std::vector<TypePtr>&, const std::string&);
         void ParseTypeMap(std::map<std::string, TypePtr>&, const std::string&);
@@ -60,7 +60,7 @@ namespace NJS
         ImportStmtPtr ParseImport();
         ImportMapping ParseImportMapping();
 
-        StmtPtr ParseLine();
+        StmtPtr ParseStmt();
         ScopeStmtPtr ParseScope();
         FunctionStmtPtr ParseFunction();
         VariableStmtPtr ParseVariable();
@@ -72,7 +72,7 @@ namespace NJS
         ExprPtr ParseBinary(ExprPtr lhs, unsigned min_pre);
         ExprPtr ParseOperand();
         ExprPtr ParsePrimary();
-        ExprPtr ParseConstObject();
+        ExprPtr ParseConstStruct();
         ExprPtr ParseConstTuple();
         ExprPtr ParseConstFunction();
         ExprPtr ParseFormat();

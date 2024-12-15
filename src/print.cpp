@@ -23,5 +23,5 @@ std::ostream& NJS::Spacing(std::ostream& os)
 
 std::string NJS::TypeString(const TypePtr& type)
 {
-    return type->String;
+    return type->GetString();
 }

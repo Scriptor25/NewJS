@@ -7,20 +7,34 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
 {
     const auto where = m_Token.Where;
 
-    if (At(TokenType_Number))
-        return std::make_shared<ConstNumberExpr>(where, m_Ctx.GetNumberType(), Skip().NumberValue);
+    if (At(TokenType_Int))
+    {
+        const auto value = Skip().IntValue;
+        const auto type = ParseType();
+        return std::make_shared<ConstIntExpr>(where, type, value);
+    }
+
+    if (At(TokenType_FP))
+    {
+        const auto value = Skip().FPValue;
+        const auto type = ParseType();
+        return std::make_shared<ConstFPExpr>(where, type, value);
+    }
 
     if (At(TokenType_String))
-        return std::make_shared<ConstStringExpr>(where, m_Ctx.GetStringType(), Skip().StringValue);
+        return std::make_shared<ConstStringExpr>(
+            where,
+            m_Ctx.GetPointerType(m_Ctx.GetIntType(8, true)),
+            Skip().StringValue);
 
     if (At(TokenType_Char))
-        return std::make_shared<ConstCharExpr>(where, m_Ctx.GetCharType(), Skip().StringValue[0]);
+        return std::make_shared<ConstCharExpr>(where, m_Ctx.GetIntType(8, true), Skip().StringValue[0]);
 
     if (NextAt("true"))
-        return std::make_shared<ConstBooleanExpr>(where, m_Ctx.GetBooleanType(), true);
+        return std::make_shared<ConstBooleanExpr>(where, m_Ctx.GetIntType(1, false), true);
 
     if (NextAt("false"))
-        return std::make_shared<ConstBooleanExpr>(where, m_Ctx.GetBooleanType(), false);
+        return std::make_shared<ConstBooleanExpr>(where, m_Ctx.GetIntType(1, false), false);
 
     if (NextAt("("))
     {
@@ -30,7 +44,7 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
     }
 
     if (At("{"))
-        return ParseConstObject();
+        return ParseConstStruct();
 
     if (At("["))
         return ParseConstTuple();

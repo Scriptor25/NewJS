@@ -53,7 +53,7 @@ namespace NJS
 
         bool Extern;
         std::string Name;
-        std::vector<ParamPtr> Params;
+        std::vector<ParamPtr> Args;
         bool VarArg;
         TypePtr ResultType;
         ScopeStmtPtr Body;
@@ -171,6 +171,16 @@ namespace NJS
         char Value;
     };
 
+    struct ConstFPExpr : Expr
+    {
+        ConstFPExpr(SourceLocation, TypePtr, double);
+
+        ValuePtr GenLLVM(Builder&) override;
+        std::ostream& Print(std::ostream&) override;
+
+        double Value;
+    };
+
     struct ConstFunctionExpr : Expr
     {
         ConstFunctionExpr(SourceLocation, TypePtr, std::vector<ParamPtr>, bool, TypePtr, ScopeStmt);
@@ -184,19 +194,19 @@ namespace NJS
         ScopeStmt Body;
     };
 
-    struct ConstNumberExpr : Expr
+    struct ConstIntExpr : Expr
     {
-        ConstNumberExpr(SourceLocation, TypePtr, double);
+        ConstIntExpr(SourceLocation, TypePtr, uint64_t);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
-        double Value;
+        uint64_t Value;
     };
 
-    struct ConstObjectExpr : Expr
+    struct ConstStructExpr : Expr
     {
-        ConstObjectExpr(SourceLocation, TypePtr, std::map<std::string, ExprPtr>);
+        ConstStructExpr(SourceLocation, TypePtr, std::map<std::string, ExprPtr>);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;

@@ -1,9 +1,9 @@
-function println(message: string)
+function println(message: i8[])
 
-function fib(n: number): number {
-    let a = 0
-    let b = 1
-    for (let i = 1; i < n; ++i) {
+function fib(n: u32): u32 {
+    let a = 0u32
+    let b = 1u32
+    for (let i = 1u32; i < n; ++i) {
         const c = a + b
         a = b
         b = c
@@ -11,6 +11,6 @@ function fib(n: number): number {
     return b
 }
 
-const n = 10
+const n = 10u32
 const f = fib(n)
 println($"fib({n}) = {f}")

@@ -18,7 +18,7 @@ NJS::FunctionStmt::FunctionStmt(
     : Stmt(std::move(where)),
       Extern(extern_),
       Name(std::move(name)),
-      Params(std::move(params)),
+      Args(std::move(params)),
       VarArg(vararg),
       ResultType(std::move(result_type)),
       Body(std::move(body))
@@ -31,13 +31,12 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
     auto function = builder.GetModule().getFunction(name);
     if (!function)
     {
-        std::vector<TypePtr> param_types;
-        for (const auto& param : Params)
-            param_types.push_back(param->Type);
-        const auto type = builder.GetCtx().GetFunctionType(param_types, ResultType, VarArg);
-        const auto llvm_type = type->GenFnLLVM(builder);
+        std::vector<TypePtr> args;
+        for (const auto& arg : Args)
+            args.push_back(arg->Type);
+        const auto type = builder.GetCtx().GetFunctionType(ResultType, args, VarArg);
         function = llvm::Function::Create(
-            llvm_type,
+            type->GetLLVM<llvm::FunctionType>(builder),
             llvm::GlobalValue::ExternalLinkage,
             name,
             builder.GetModule());
@@ -53,14 +52,14 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
     builder.GetBuilder().SetInsertPoint(entry_block);
 
     builder.Push(Name);
-    for (size_t i = 0; i < Params.size(); ++i)
+    for (size_t i = 0; i < Args.size(); ++i)
     {
-        const auto& param = Params[i];
-        const auto arg = function->getArg(i);
-        arg->setName(param->Name);
+        const auto& arg = Args[i];
+        const auto arg_type = function->getArg(i);
+        arg_type->setName(arg->Name);
 
-        const auto value = RValue::Create(builder, param->Type, arg);
-        param->CreateVars(builder, false, value);
+        const auto value = RValue::Create(builder, arg->Type, arg_type);
+        arg->CreateVars(builder, false, value);
     }
 
     Body->GenLLVM(builder);
@@ -93,14 +92,14 @@ std::ostream& NJS::FunctionStmt::Print(std::ostream& os)
     if (Extern) os << "extern";
     else os << "function";
     os << ' ' << Name << "(";
-    for (size_t i = 0; i < Params.size(); ++i)
+    for (size_t i = 0; i < Args.size(); ++i)
     {
         if (i > 0) os << ", ";
-        Params[i]->Print(os);
+        Args[i]->Print(os);
     }
     if (VarArg)
     {
-        if (!Params.empty()) os << ", ";
+        if (!Args.empty()) os << ", ";
         os << "...";
     }
     ResultType->Print(os << "): ");

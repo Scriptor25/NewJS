@@ -33,41 +33,48 @@ struct Pair
 };
 
 struct Type;
-struct PrimitiveType;
+struct VoidType;
+struct IntType;
+struct FPType;
+struct PointerType;
 struct ArrayType;
+struct StructType;
 struct TupleType;
-struct ObjectType;
 struct FunctionType;
 
-static void Primitive_AppendV(Type*, char*, uint64_t, uint64_t&, va_list&);
-static void Primitive_AppendP(Type*, char*, uint64_t, uint64_t&, char*&);
-static void Array_AppendV(Type*, char*, uint64_t, uint64_t&, va_list&);
-static void Array_AppendP(Type*, char*, uint64_t, uint64_t&, char*&);
-static void Tuple_AppendV(Type*, char*, uint64_t, uint64_t&, va_list&);
-static void Tuple_AppendP(Type*, char*, uint64_t, uint64_t&, char*&);
-static void Object_AppendV(Type*, char*, uint64_t, uint64_t&, va_list&);
-static void Object_AppendP(Type*, char*, uint64_t, uint64_t&, char*&);
-static void Function_AppendV(Type*, char*, uint64_t, uint64_t&, va_list&);
-static void Function_AppendP(Type*, char*, uint64_t, uint64_t&, char*&);
-static void Vector_AppendV(Type*, char*, uint64_t, uint64_t&, va_list&);
-static void Vector_AppendP(Type*, char*, uint64_t, uint64_t&, char*&);
+static void Void_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
+static void Void_AppendP(Type*, char*, unsigned, unsigned&, char*&);
+static void Int_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
+static void Int_AppendP(Type*, char*, unsigned, unsigned&, char*&);
+static void FP_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
+static void FP_AppendP(Type*, char*, unsigned, unsigned&, char*&);
+static void Pointer_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
+static void Pointer_AppendP(Type*, char*, unsigned, unsigned&, char*&);
+static void Array_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
+static void Array_AppendP(Type*, char*, unsigned, unsigned&, char*&);
+static void Struct_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
+static void Struct_AppendP(Type*, char*, unsigned, unsigned&, char*&);
+static void Tuple_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
+static void Tuple_AppendP(Type*, char*, unsigned, unsigned&, char*&);
+static void Function_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
+static void Function_AppendP(Type*, char*, unsigned, unsigned&, char*&);
 
 struct Type
 {
-    using AppendVProc = void(*)(Type*, char*, uint64_t, uint64_t&, va_list&);
-    using AppendPProc = void(*)(Type*, char*, uint64_t, uint64_t&, char*&);
+    using AppendVProc = void(*)(Type*, char*, unsigned, unsigned&, va_list&);
+    using AppendPProc = void(*)(Type*, char*, unsigned, unsigned&, char*&);
 
     Type(const AppendVProc append_v, const AppendPProc append_p)
         : AppendV(append_v), AppendP(append_p)
     {
     }
 
-    void Append(char* stream, const uint64_t n, uint64_t& offset, va_list& ap)
+    void Append(char* stream, const unsigned n, unsigned& offset, va_list& ap)
     {
         AppendV(this, stream, n, offset, ap);
     }
 
-    void AppendPtr(char* stream, const uint64_t n, uint64_t& offset, char*& ptr)
+    void AppendPtr(char* stream, const unsigned n, unsigned& offset, char*& ptr)
     {
         AppendP(this, stream, n, offset, ptr);
     }
@@ -76,366 +83,479 @@ struct Type
     AppendPProc AppendP;
 };
 
-struct PrimitiveType : Type
+struct VoidType : Type
 {
-    explicit PrimitiveType(const int id)
-        : Type(Primitive_AppendV, Primitive_AppendP), ID(id)
+    VoidType()
+        : Type(Void_AppendV, Void_AppendP)
+    {
+    }
+};
+
+struct IntType : Type
+{
+    IntType(const unsigned bits, const bool is_signed)
+        : Type(Int_AppendV, Int_AppendP), Bits(bits), IsSigned(is_signed)
     {
     }
 
-    int ID;
+    unsigned Bits;
+    bool IsSigned;
+};
+
+struct FPType : Type
+{
+    explicit FPType(const unsigned bits)
+        : Type(FP_AppendV, FP_AppendP), Bits(bits)
+    {
+    }
+
+    unsigned Bits;
+};
+
+struct PointerType : Type
+{
+    explicit PointerType(Type* element)
+        : Type(Pointer_AppendV, Pointer_AppendP), Element(element)
+    {
+    }
+
+    Type* Element;
 };
 
 struct ArrayType : Type
 {
-    ArrayType(Type* element_type, const size_t element_count)
-        : Type(Array_AppendV, Array_AppendP), ElementType(element_type), ElementCount(element_count)
+    ArrayType(Type* element, const unsigned element_count)
+        : Type(Array_AppendV, Array_AppendP), Element(element), ElementCount(element_count)
     {
     }
 
     ~ArrayType()
     {
-        delete ElementType;
+        delete Element;
     }
 
-    Type* ElementType;
-    size_t ElementCount;
+    Type* Element;
+    unsigned ElementCount;
 };
 
 struct TupleType : Type
 {
-    explicit TupleType(Type** element_types, const size_t element_count)
-        : Type(Tuple_AppendV, Tuple_AppendP), ElementTypes(element_types), ElementCount(element_count)
+    explicit TupleType(Type** elements, const unsigned element_count)
+        : Type(Tuple_AppendV, Tuple_AppendP), Elements(elements), ElementCount(element_count)
     {
     }
 
     ~TupleType()
     {
-        for (size_t i = 0; i < ElementCount; ++i)
-            delete ElementTypes[i];
-        delete[] ElementTypes;
+        for (unsigned i = 0; i < ElementCount; ++i)
+            delete Elements[i];
+        delete[] Elements;
     }
 
-    Type** ElementTypes;
-    size_t ElementCount;
+    Type** Elements;
+    unsigned ElementCount;
 };
 
-struct ObjectType : Type
+struct StructType : Type
 {
-    explicit ObjectType(Pair<const char*, Type*>* element_types, const size_t element_count)
-        : Type(Object_AppendV, Object_AppendP), ElementTypes(element_types), ElementCount(element_count)
+    explicit StructType(Pair<const char*, Type*>* elements, const unsigned element_count)
+        : Type(Struct_AppendV, Struct_AppendP), Elements(elements), ElementCount(element_count)
     {
     }
 
-    ~ObjectType()
+    ~StructType()
     {
-        for (size_t i = 0; i < ElementCount; ++i)
-            delete ElementTypes[i].second;
-        delete[] ElementTypes;
+        for (unsigned i = 0; i < ElementCount; ++i)
+            delete Elements[i].second;
+        delete[] Elements;
     }
 
-    Pair<const char*, Type*>* ElementTypes;
-    size_t ElementCount;
+    Pair<const char*, Type*>* Elements;
+    unsigned ElementCount;
 };
 
 struct FunctionType : Type
 {
-    FunctionType(Type* result_type, Type** param_types, const size_t param_count, const bool vararg)
+    FunctionType(Type* result, Type** args, const unsigned arg_count, const bool vararg)
         : Type(Function_AppendV, Function_AppendP),
-          ResultType(result_type),
-          ParamTypes(param_types),
-          ParamCount(param_count),
+          Result(result),
+          Args(args),
+          ArgCount(arg_count),
           VarArg(vararg)
     {
     }
 
     ~FunctionType()
     {
-        delete ResultType;
-        for (size_t i = 0; i < ParamCount; ++i)
-            delete ParamTypes[i];
-        delete[] ParamTypes;
+        delete Result;
+        for (unsigned i = 0; i < ArgCount; ++i)
+            delete Args[i];
+        delete[] Args;
     }
 
-    Type* ResultType;
-    Type** ParamTypes;
-    size_t ParamCount;
+    Type* Result;
+    Type** Args;
+    unsigned ArgCount;
     bool VarArg;
-};
-
-struct VectorType : Type
-{
-    VectorType(Type* element_type)
-        : Type(Vector_AppendV, Vector_AppendP), ElementType(element_type)
-    {
-    }
-
-    ~VectorType()
-    {
-        delete ElementType;
-    }
-
-    Type* ElementType;
 };
 
 Type* ParseType(va_list& ap)
 {
-    switch (const auto id = va_arg(ap, int))
+    switch (va_arg(ap, unsigned))
     {
-    case ID_BOOLEAN:
-    case ID_NUMBER:
-    case ID_STRING:
-        return new PrimitiveType(id);
+    case ID_VOID:
+        return new VoidType();
+
+    case ID_INT:
+        {
+            const auto bits = va_arg(ap, unsigned);
+            const auto is_signed = va_arg(ap, int);
+            return new IntType(bits, is_signed);
+        }
+
+    case ID_FP:
+        {
+            const auto bits = va_arg(ap, unsigned);
+            return new FPType(bits);
+        }
+
+    case ID_POINTER:
+        {
+            const auto element = ParseType(ap);
+            return new PointerType(element);
+        }
 
     case ID_ARRAY:
         {
-            const auto element_count = va_arg(ap, size_t);
-            const auto element_type = ParseType(ap);
-            return new ArrayType(element_type, element_count);
+            const auto element_count = va_arg(ap, unsigned);
+            const auto element = ParseType(ap);
+            return new ArrayType(element, element_count);
+        }
+
+    case ID_STRUCT:
+        {
+            const auto element_count = va_arg(ap, unsigned);
+            const auto elements = New<Pair<const char*, Type*>>(element_count);
+            for (unsigned i = 0; i < element_count; ++i)
+            {
+                const auto name = va_arg(ap, const char*);
+                const auto type = ParseType(ap);
+                elements[i] = {name, type};
+            }
+            return new StructType(elements, element_count);
         }
 
     case ID_TUPLE:
         {
-            const auto element_count = va_arg(ap, size_t);
-            const auto element_types = New<Type*>(element_count);
-            for (size_t i = 0; i < element_count; ++i)
-                element_types[i] = ParseType(ap);
-            return new TupleType(element_types, element_count);
-        }
-
-    case ID_OBJECT:
-        {
-            const auto element_count = va_arg(ap, size_t);
-            const auto element_types = New<Pair<const char*, Type*>>(element_count);
-            for (size_t i = 0; i < element_count; ++i)
-            {
-                const auto name = va_arg(ap, const char*);
-                const auto type = ParseType(ap);
-                element_types[i] = {name, type};
-            }
-            return new ObjectType(element_types, element_count);
+            const auto element_count = va_arg(ap, unsigned);
+            const auto elements = New<Type*>(element_count);
+            for (unsigned i = 0; i < element_count; ++i)
+                elements[i] = ParseType(ap);
+            return new TupleType(elements, element_count);
         }
 
     case ID_FUNCTION:
         {
-            const auto result_type = ParseType(ap);
-            const auto param_count = va_arg(ap, size_t);
-            const auto param_types = New<Type*>(param_count);
-            for (size_t i = 0; i < param_count; ++i)
-                param_types[i] = ParseType(ap);
+            const auto result = ParseType(ap);
+            const auto arg_count = va_arg(ap, unsigned);
+            const auto args = New<Type*>(arg_count);
+            for (unsigned i = 0; i < arg_count; ++i)
+                args[i] = ParseType(ap);
             const auto vararg = va_arg(ap, int);
-            return new FunctionType(result_type, param_types, param_count, vararg);
-        }
-
-    case ID_VECTOR:
-        {
-            const auto element_type = ParseType(ap);
-            return new VectorType(element_type);
+            return new FunctionType(result, args, arg_count, vararg);
         }
 
     default:
-    case ID_VOID:
         return {};
     }
 }
 
-void Primitive_AppendV(Type* type, char* stream, const uint64_t n, uint64_t& offset, va_list& ap)
+void Void_AppendV(Type*, char* stream, const unsigned n, unsigned& offset, va_list&)
 {
-    const auto self = static_cast<PrimitiveType*>(type);
-    switch (self->ID)
+    offset += snprintf(stream + offset, n - offset, "void");
+}
+
+void Void_AppendP(Type*, char* stream, const unsigned n, unsigned& offset, char*&)
+{
+    offset += snprintf(stream + offset, n - offset, "void");
+}
+
+void Int_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
+{
+    const auto self = static_cast<IntType*>(type);
+    switch (self->Bits)
     {
-    case ID_BOOLEAN:
-        offset += snprintf(stream + offset, n - offset, "%s", va_arg(ap, int) ? "true" : "false");
-        break;
-    case ID_NUMBER:
+    case 8:
+        if (self->IsSigned)
         {
-            const auto val = va_arg(ap, double);
-            offset += snprintf(stream + offset, n - offset, val == round(val) ? "%.0f" : "%f", val);
+            const auto val = va_arg(ap, int8_t);
+            offset += snprintf(stream + offset, n - offset, "%hhi", val);
+        }
+        else
+        {
+            const auto val = va_arg(ap, uint8_t);
+            offset += snprintf(stream + offset, n - offset, "%hhu", val);
         }
         break;
-    case ID_STRING:
-        offset += snprintf(stream + offset, n - offset, "%s", va_arg(ap, const char*));
+    case 16:
+        if (self->IsSigned)
+        {
+            const auto val = va_arg(ap, int16_t);
+            offset += snprintf(stream + offset, n - offset, "%hi", val);
+        }
+        else
+        {
+            const auto val = va_arg(ap, uint16_t);
+            offset += snprintf(stream + offset, n - offset, "%hu", val);
+        }
+        break;
+    case 32:
+        if (self->IsSigned)
+        {
+            const auto val = va_arg(ap, int32_t);
+            offset += snprintf(stream + offset, n - offset, "%li", val);
+        }
+        else
+        {
+            const auto val = va_arg(ap, uint32_t);
+            offset += snprintf(stream + offset, n - offset, "%lu", val);
+        }
+        break;
+    case 64:
+        if (self->IsSigned)
+        {
+            const auto val = va_arg(ap, int64_t);
+            offset += snprintf(stream + offset, n - offset, "%lli", val);
+        }
+        else
+        {
+            const auto val = va_arg(ap, uint64_t);
+            offset += snprintf(stream + offset, n - offset, "%llu", val);
+        }
         break;
     default: break;
     }
 }
 
-void Primitive_AppendP(Type* type, char* stream, const uint64_t n, uint64_t& offset, char*& ptr)
+void Int_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
 {
-    const auto self = static_cast<PrimitiveType*>(type);
-    switch (self->ID)
+    const auto self = static_cast<IntType*>(type);
+    switch (self->Bits)
     {
-    case ID_BOOLEAN:
-        offset += snprintf(stream + offset, n - offset, "%s", *reinterpret_cast<int*>(ptr) ? "true" : "false");
-        ptr += sizeof(int);
+    case 8:
+        if (self->IsSigned)
+        {
+            const auto val = *reinterpret_cast<int8_t*>(ptr);
+            offset += snprintf(stream + offset, n - offset, "%hhi", val);
+        }
+        else
+        {
+            const auto val = *reinterpret_cast<uint8_t*>(ptr);
+            offset += snprintf(stream + offset, n - offset, "%hhu", val);
+        }
+        ptr += sizeof(int8_t);
         break;
-    case ID_NUMBER:
+    case 16:
+        if (self->IsSigned)
+        {
+            const auto val = *reinterpret_cast<int16_t*>(ptr);
+            offset += snprintf(stream + offset, n - offset, "%hi", val);
+        }
+        else
+        {
+            const auto val = *reinterpret_cast<uint16_t*>(ptr);
+            offset += snprintf(stream + offset, n - offset, "%hu", val);
+        }
+        ptr += sizeof(int16_t);
+        break;
+    case 32:
+        if (self->IsSigned)
+        {
+            const auto val = *reinterpret_cast<int32_t*>(ptr);
+            offset += snprintf(stream + offset, n - offset, "%li", val);
+        }
+        else
+        {
+            const auto val = *reinterpret_cast<uint32_t*>(ptr);
+            offset += snprintf(stream + offset, n - offset, "%lu", val);
+        }
+        ptr += sizeof(int32_t);
+        break;
+    case 64:
+        if (self->IsSigned)
+        {
+            const auto val = *reinterpret_cast<int64_t*>(ptr);
+            offset += snprintf(stream + offset, n - offset, "%lli", val);
+        }
+        else
+        {
+            const auto val = *reinterpret_cast<uint64_t*>(ptr);
+            offset += snprintf(stream + offset, n - offset, "%llu", val);
+        }
+        ptr += sizeof(int64_t);
+        break;
+    default: break;
+    }
+}
+
+void FP_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
+{
+    const auto self = static_cast<FPType*>(type);
+    const auto val = va_arg(ap, double);
+    offset += snprintf(stream + offset, n - offset, "%f", val);
+
+    (void)self;
+}
+
+void FP_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
+{
+    const auto self = static_cast<FPType*>(type);
+
+    switch (self->Bits)
+    {
+    case 32:
+        {
+            const auto val = *reinterpret_cast<float*>(ptr);
+            offset += snprintf(stream + offset, n - offset, "%f", val);
+        }
+        ptr += sizeof(float);
+        break;
+    case 64:
         {
             const auto val = *reinterpret_cast<double*>(ptr);
-            offset += snprintf(stream + offset, n - offset, val == round(val) ? "%.0f" : "%f", val);
+            offset += snprintf(stream + offset, n - offset, "%f", val);
         }
         ptr += sizeof(double);
         break;
-    case ID_STRING:
-        offset += snprintf(stream + offset, n - offset, "%s", *reinterpret_cast<const char**>(ptr));
-        ptr += sizeof(const char*);
-        break;
     default: break;
     }
+
+    (void)self;
 }
 
-void Array_AppendV(Type* type, char* stream, const uint64_t n, uint64_t& offset, va_list& ap)
+void Pointer_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
 {
-    const auto self = static_cast<ArrayType*>(type);
-    auto ptr = va_arg(ap, char*);
-
-    offset += snprintf(stream + offset, n - offset, "[ ");
-    for (size_t i = 0; i < self->ElementCount; ++i)
-    {
-        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
-        self->ElementType->AppendPtr(stream, n, offset, ptr);
-    }
-    offset += snprintf(stream + offset, n - offset, " ]");
-}
-
-void Array_AppendP(Type* type, char* stream, const uint64_t n, uint64_t& offset, char*& ptr)
-{
-    const auto self = static_cast<ArrayType*>(type);
-
-    offset += snprintf(stream + offset, n - offset, "[ ");
-    for (size_t i = 0; i < self->ElementCount; ++i)
-    {
-        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
-        self->ElementType->AppendPtr(stream, n, offset, ptr);
-    }
-    offset += snprintf(stream + offset, n - offset, " ]");
-}
-
-void Tuple_AppendV(Type* type, char* stream, const uint64_t n, uint64_t& offset, va_list& ap)
-{
-    const auto self = static_cast<TupleType*>(type);
-    auto ptr = va_arg(ap, char*);
-
-    offset += snprintf(stream + offset, n - offset, "[ ");
-    for (size_t i = 0; i < self->ElementCount; ++i)
-    {
-        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
-        self->ElementTypes[i]->AppendPtr(stream, n, offset, ptr);
-    }
-    offset += snprintf(stream + offset, n - offset, " ]");
-}
-
-void Tuple_AppendP(Type* type, char* stream, const uint64_t n, uint64_t& offset, char*& ptr)
-{
-    const auto self = static_cast<TupleType*>(type);
-
-    offset += snprintf(stream + offset, n - offset, "[ ");
-    for (size_t i = 0; i < self->ElementCount; ++i)
-    {
-        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
-        self->ElementTypes[i]->AppendPtr(stream, n, offset, ptr);
-    }
-    offset += snprintf(stream + offset, n - offset, " ]");
-}
-
-void Object_AppendV(Type* type, char* stream, const uint64_t n, uint64_t& offset, va_list& ap)
-{
-    const auto self = static_cast<ObjectType*>(type);
-    auto ptr = va_arg(ap, char*);
-
-    offset += snprintf(stream + offset, n - offset, "{ ");
-    for (size_t i = 0; i < self->ElementCount; ++i)
-    {
-        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
-        offset += snprintf(stream + offset, n - offset, "%s: ", self->ElementTypes[i].first);
-        self->ElementTypes[i].second->AppendPtr(stream, n, offset, ptr);
-    }
-    offset += snprintf(stream + offset, n - offset, " }");
-}
-
-void Object_AppendP(Type* type, char* stream, const uint64_t n, uint64_t& offset, char*& ptr)
-{
-    const auto self = static_cast<ObjectType*>(type);
-
-    offset += snprintf(stream + offset, n - offset, "{ ");
-    for (size_t i = 0; i < self->ElementCount; ++i)
-    {
-        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
-        offset += snprintf(stream + offset, n - offset, "%s: ", self->ElementTypes[i].first);
-        self->ElementTypes[i].second->AppendPtr(stream, n, offset, ptr);
-    }
-    offset += snprintf(stream + offset, n - offset, " }");
-}
-
-void Function_AppendV(Type* type, char* stream, const uint64_t n, uint64_t& offset, va_list& ap)
-{
-    const auto self = static_cast<FunctionType*>(type);
+    const auto self = static_cast<PointerType*>(type);
     const auto ptr = va_arg(ap, char*);
     offset += snprintf(stream + offset, n - offset, "%p", ptr);
+
+    (void)self;
 }
 
-void Function_AppendP(Type* type, char* stream, const uint64_t n, uint64_t& offset, char*& ptr)
+void Pointer_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
+{
+    const auto self = static_cast<PointerType*>(type);
+    offset += snprintf(stream + offset, n - offset, "%p", *reinterpret_cast<char**>(ptr));
+    ptr += sizeof(char*);
+
+    (void)self;
+}
+
+void Array_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
+{
+    const auto self = static_cast<ArrayType*>(type);
+    auto ptr = va_arg(ap, char*);
+
+    offset += snprintf(stream + offset, n - offset, "[ ");
+    for (unsigned i = 0; i < self->ElementCount; ++i)
+    {
+        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
+        self->Element->AppendPtr(stream, n, offset, ptr);
+    }
+    offset += snprintf(stream + offset, n - offset, " ]");
+}
+
+void Array_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
+{
+    const auto self = static_cast<ArrayType*>(type);
+
+    offset += snprintf(stream + offset, n - offset, "[ ");
+    for (unsigned i = 0; i < self->ElementCount; ++i)
+    {
+        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
+        self->Element->AppendPtr(stream, n, offset, ptr);
+    }
+    offset += snprintf(stream + offset, n - offset, " ]");
+}
+
+void Tuple_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
+{
+    const auto self = static_cast<TupleType*>(type);
+    auto ptr = va_arg(ap, char*);
+
+    offset += snprintf(stream + offset, n - offset, "[ ");
+    for (unsigned i = 0; i < self->ElementCount; ++i)
+    {
+        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
+        self->Elements[i]->AppendPtr(stream, n, offset, ptr);
+    }
+    offset += snprintf(stream + offset, n - offset, " ]");
+}
+
+void Tuple_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
+{
+    const auto self = static_cast<TupleType*>(type);
+
+    offset += snprintf(stream + offset, n - offset, "[ ");
+    for (unsigned i = 0; i < self->ElementCount; ++i)
+    {
+        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
+        self->Elements[i]->AppendPtr(stream, n, offset, ptr);
+    }
+    offset += snprintf(stream + offset, n - offset, " ]");
+}
+
+void Struct_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
+{
+    const auto self = static_cast<StructType*>(type);
+    auto ptr = va_arg(ap, char*);
+
+    offset += snprintf(stream + offset, n - offset, "{ ");
+    for (unsigned i = 0; i < self->ElementCount; ++i)
+    {
+        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
+        offset += snprintf(stream + offset, n - offset, "%s: ", self->Elements[i].first);
+        self->Elements[i].second->AppendPtr(stream, n, offset, ptr);
+    }
+    offset += snprintf(stream + offset, n - offset, " }");
+}
+
+void Struct_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
+{
+    const auto self = static_cast<StructType*>(type);
+
+    offset += snprintf(stream + offset, n - offset, "{ ");
+    for (unsigned i = 0; i < self->ElementCount; ++i)
+    {
+        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
+        offset += snprintf(stream + offset, n - offset, "%s: ", self->Elements[i].first);
+        self->Elements[i].second->AppendPtr(stream, n, offset, ptr);
+    }
+    offset += snprintf(stream + offset, n - offset, " }");
+}
+
+void Function_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list&)
 {
     const auto self = static_cast<FunctionType*>(type);
-    offset += snprintf(stream + offset, n - offset, "%p", ptr);
-    ptr += sizeof(char*);
+    offset += snprintf(stream + offset, n - offset, "fn");
+
+    (void)self;
 }
 
-struct vector_t
+void Function_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*&)
 {
-    char* ptr;
-    uint64_t size;
-};
+    const auto self = static_cast<FunctionType*>(type);
+    offset += snprintf(stream + offset, n - offset, "fn");
 
-void Vector_AppendV(Type* type, char* stream, const uint64_t n, uint64_t& offset, va_list& ap)
-{
-    const auto self = static_cast<VectorType*>(type);
-    auto [vec_ptr, vec_size] = **va_arg(ap, vector_t**);
-
-    if (!vec_size)
-    {
-        offset += snprintf(stream + offset, n - offset, "[]");
-        return;
-    }
-
-    offset += snprintf(stream + offset, n - offset, "[ ");
-    for (size_t i = 0; i < vec_size; ++i)
-    {
-        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
-        self->ElementType->AppendPtr(stream, n, offset, vec_ptr);
-    }
-    offset += snprintf(stream + offset, n - offset, " ]");
+    (void)self;
 }
 
-void Vector_AppendP(Type* type, char* stream, const uint64_t n, uint64_t& offset, char*& ptr)
-{
-    const auto self = static_cast<VectorType*>(type);
-    auto [vec_ptr, vec_size] = **reinterpret_cast<vector_t**>(ptr);
-
-    if (!vec_size)
-    {
-        offset += snprintf(stream + offset, n - offset, "[]");
-        ptr += sizeof(vector_t**);
-        return;
-    }
-
-    offset += snprintf(stream + offset, n - offset, "[ ");
-    for (size_t i = 0; i < vec_size; ++i)
-    {
-        if (i > 0) offset += snprintf(stream + offset, n - offset, ", ");
-        self->ElementType->AppendPtr(stream, n, offset, vec_ptr);
-    }
-    offset += snprintf(stream + offset, n - offset, " ]");
-
-    ptr += sizeof(vector_t**);
-}
-
-void format(char* stream, const uint64_t n, ...)
+void format(char* stream, const unsigned n, ...)
 {
     va_list ap;
     va_start(ap, n);
 
-    uint64_t offset = 0;
+    unsigned offset = 0;
     while (auto type = ParseType(ap))
     {
         type->Append(stream, n, offset, ap);

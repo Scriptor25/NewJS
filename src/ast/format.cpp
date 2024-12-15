@@ -32,7 +32,10 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder)
             const auto value = Statics[i];
             const auto str = ConstStringExpr::GetString(builder, value);
 
-            args.push_back(builder.GetBuilder().getInt32(ID_STRING));
+            args.push_back(builder.GetBuilder().getInt32(ID_POINTER));
+            args.push_back(builder.GetBuilder().getInt32(ID_INT));
+            args.push_back(builder.GetBuilder().getInt32(8));
+            args.push_back(builder.GetBuilder().getInt32(1));
             args.push_back(str);
         }
         else if (Dynamics.contains(i))
@@ -58,7 +61,7 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder)
     builder.GetFormat(format);
     builder.GetBuilder().CreateCall(format, args);
 
-    return RValue::Create(builder, builder.GetCtx().GetStringType(), ptr);
+    return RValue::Create(builder, builder.GetCtx().GetPointerType(builder.GetCtx().GetIntType(8, true)), ptr);
 }
 
 std::ostream& NJS::FormatExpr::Print(std::ostream& os)

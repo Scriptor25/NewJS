@@ -12,7 +12,7 @@ NJS::BinaryExpr::BinaryExpr(SourceLocation where, TypePtr type, std::string op, 
 
 NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
 {
-    static std::map<std::string, std::function<ValuePtr(Builder&, const ValuePtr&, const ValuePtr&)>> ops
+    static const std::map<std::string, std::function<ValuePtr(Builder&, const ValuePtr&, const ValuePtr&)>> fns
     {
         {"==", {OperatorEQ}},
         {"!=", {OperatorNE}},
@@ -39,21 +39,22 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
     auto lhs = Lhs->GenLLVM(builder);
     const auto rhs = Rhs->GenLLVM(builder);
 
-    if (Op == "=")
+    auto op = Op;
+    if (op == "=")
     {
         lhs->Store(rhs);
         return lhs;
     }
 
-    if (const auto& op = ops[Op]; op)
-        if (auto value = op(builder, lhs, rhs))
+    if (const auto& fn = fns.at(op))
+        if (auto value = fn(builder, lhs, rhs))
             return value;
 
-    const auto assign = Op.back() == '=';
-    const auto o = assign ? Op.substr(0, Op.size() - 1) : Op;
+    const auto assign = op.back() == '=';
+    if (assign) op.pop_back();
 
-    if (const auto& op = ops[o]; op)
-        if (auto value = op(builder, lhs, rhs))
+    if (const auto& fn = fns.at(op))
+        if (auto value = fn(builder, lhs, rhs))
         {
             if (assign)
             {

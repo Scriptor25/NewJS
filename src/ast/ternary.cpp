@@ -42,7 +42,7 @@ NJS::ValuePtr NJS::TernaryExpr::GenLLVM(Builder& builder)
         Error(Where, "invalid ternary operands: type mismatch, {} != {}", then_value->GetType(), else_value->GetType());
 
     const auto result_type = then_value->GetType();
-    const auto result_ty = result_type->GenLLVM(builder);
+    const auto result_ty = result_type->GetLLVM(builder);
 
     builder.GetBuilder().SetInsertPoint(end_block);
     const auto phi_inst = builder.GetBuilder().CreatePHI(result_ty, 2);

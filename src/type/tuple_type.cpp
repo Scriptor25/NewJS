@@ -1,25 +1,18 @@
 #include <NJS/Builder.hpp>
-#include <NJS/Std.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/Type.hpp>
 
-std::string NJS::TupleType::GenString(const std::vector<TypePtr>& element_types)
-{
-    std::string str;
+#include "NJS/Std.hpp"
 
-    str += "[ ";
-    bool first = true;
-    for (const auto& type : element_types)
+std::string NJS::TupleType::GenString(const std::vector<TypePtr>& elements)
+{
+    std::string dst = "[ ";
+    for (unsigned i = 0; i < elements.size(); ++i)
     {
-        if (first) first = false;
-        else str += ", ";
-        str += type->String;
+        if (i > 0) dst += ", ";
+        dst += elements[i]->GetString();
     }
-    return str + " ]";
-}
-
-NJS::TupleType::TupleType(TypeContext& ctx, std::vector<TypePtr> element_types)
-    : Type(ctx, GenString(element_types)), ElementTypes(std::move(element_types))
-{
+    return dst += " ]";
 }
 
 bool NJS::TupleType::IsTuple() const
@@ -27,36 +20,34 @@ bool NJS::TupleType::IsTuple() const
     return true;
 }
 
-NJS::TypePtr NJS::TupleType::Element(const size_t i) const
-{
-    return ElementTypes[i];
-}
-
-size_t NJS::TupleType::NumElements() const
-{
-    return ElementTypes.size();
-}
-
 void NJS::TupleType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_TUPLE));
-    args.push_back(builder.GetBuilder().getInt64(ElementTypes.size()));
-    for (const auto& element : ElementTypes)
+    args.push_back(builder.GetBuilder().getInt32(m_Elements.size()));
+    for (const auto& element : m_Elements)
         element->TypeInfo(builder, args);
 }
 
-size_t NJS::TupleType::Bytes() const
+NJS::TupleType::TupleType(
+    TypeContext& ctx,
+    std::string string,
+    std::vector<TypePtr> elements)
+    : Type(ctx, std::move(string)), m_Elements(std::move(elements))
 {
-    size_t bytes = 0;
-    for (const auto& element : ElementTypes)
-        bytes += element->Bytes();
-    return bytes;
 }
 
-llvm::Type* NJS::TupleType::GenLLVM(Builder& builder) const
+llvm::Type* NJS::TupleType::GenLLVM(const Builder& builder) const
 {
-    std::vector<llvm::Type*> elements;
-    for (const auto& element : ElementTypes)
-        elements.push_back(element->GenLLVM(builder));
-    return llvm::StructType::get(builder.GetContext(), elements);
+    std::vector<llvm::Type*> types;
+    for (const auto& element : m_Elements)
+        types.push_back(element->GetLLVM(builder));
+    return llvm::StructType::get(builder.GetContext(), types);
+}
+
+unsigned NJS::TupleType::GenSize() const
+{
+    unsigned size = 0;
+    for (const auto& element : m_Elements)
+        size += element->GetSize();
+    return size;
 }

@@ -6,13 +6,13 @@
 NJS::FunctionStmtPtr NJS::Parser::ParseFunction()
 {
     const auto where = m_Token.Where;
-    const auto extern_ = NextAt("extern");
-    if (!extern_) Expect("function");
+    const auto is_extern = NextAt("extern");
+    if (!is_extern) Expect("function");
     const auto name = Expect(TokenType_Symbol).StringValue;
 
-    std::vector<ParamPtr> params;
+    std::vector<ParamPtr> args;
     Expect("(");
-    const auto vararg = ParseParamList(params, ")");
+    const auto vararg = ParseParamList(args, ")");
 
     TypePtr result_type;
     if (NextAt(":"))
@@ -23,19 +23,18 @@ NJS::FunctionStmtPtr NJS::Parser::ParseFunction()
 
     StackPush();
 
-    std::vector<TypePtr> param_types;
-    for (const auto& param : params)
+    std::vector<TypePtr> arg_types;
+    for (const auto& arg : args)
     {
-        param->CreateVars(*this, {});
-        param_types.push_back(param->Type);
+        arg->CreateVars(*this, {});
+        arg_types.push_back(arg->Type);
     }
-
-    type = m_Ctx.GetFunctionType(param_types, result_type, vararg);
+    type = m_Ctx.GetPointerType(m_Ctx.GetFunctionType(result_type, arg_types, vararg));
 
     ScopeStmtPtr body;
-    if (!extern_ && At("{"))
+    if (!is_extern && At("{"))
         body = ParseScope();
 
     StackPop();
-    return std::make_shared<FunctionStmt>(where, extern_, name, params, vararg, result_type, body);
+    return std::make_shared<FunctionStmt>(where, is_extern, name, args, vararg, result_type, body);
 }

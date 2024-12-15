@@ -1,78 +1,46 @@
 #include <NJS/TypeContext.hpp>
 
-NJS::TypeContext::TypeContext()
+NJS::TypePtr& NJS::TypeContext::GetType(const std::string& string)
 {
-    GetVoidType();
-    GetBooleanType();
-    GetNumberType();
-    GetStringType();
-    GetCharType();
+    return m_TypeMap[string];
 }
 
-NJS::TypePtr& NJS::TypeContext::GetType(const std::string& str)
+NJS::TypePtr NJS::TypeContext::GetVoidType()
 {
-    return m_TypeMap[str];
+    return GetType<VoidType>();
 }
 
-NJS::NoTypePtr NJS::TypeContext::GetNoType()
+NJS::TypePtr NJS::TypeContext::GetIntType(unsigned bits, bool is_signed)
 {
-    return GetType<NoType>();
+    return GetType<IntType>(bits, is_signed);
 }
 
-NJS::PrimitiveTypePtr NJS::TypeContext::GetPrimitiveType(Primitive name)
+NJS::TypePtr NJS::TypeContext::GetFPType(unsigned bits)
 {
-    return GetType<PrimitiveType>(name);
+    return GetType<FPType>(bits);
 }
 
-NJS::PrimitiveTypePtr NJS::TypeContext::GetVoidType()
+NJS::TypePtr NJS::TypeContext::GetPointerType(TypePtr element)
 {
-    return GetPrimitiveType(Primitive_Void);
+    return GetType<PointerType>(element);
 }
 
-NJS::PrimitiveTypePtr NJS::TypeContext::GetBooleanType()
+NJS::TypePtr NJS::TypeContext::GetArrayType(TypePtr element, unsigned count)
 {
-    return GetPrimitiveType(Primitive_Boolean);
+    return GetType<ArrayType>(element, count);
 }
 
-NJS::PrimitiveTypePtr NJS::TypeContext::GetNumberType()
+NJS::TypePtr NJS::TypeContext::GetStructType(std::map<std::string, TypePtr> elements)
 {
-    return GetPrimitiveType(Primitive_Number);
+    return GetType<StructType>(elements);
 }
 
-NJS::PrimitiveTypePtr NJS::TypeContext::GetStringType()
+NJS::TypePtr NJS::TypeContext::GetTupleType(std::vector<TypePtr> elements)
 {
-    return GetPrimitiveType(Primitive_String);
+    return GetType<TupleType>(elements);
 }
 
-NJS::PrimitiveTypePtr NJS::TypeContext::GetCharType()
+NJS::TypePtr NJS::TypeContext::GetFunctionType(TypePtr result, std::vector<TypePtr> args, bool vararg)
 {
-    return GetPrimitiveType(Primitive_Char);
-}
-
-NJS::TupleTypePtr NJS::TypeContext::GetTupleType(const std::vector<TypePtr>& element_types)
-{
-    return GetType<TupleType>(element_types);
-}
-
-NJS::ObjectTypePtr NJS::TypeContext::GetObjectType(const std::map<std::string, TypePtr>& element_types)
-{
-    return GetType<ObjectType>(element_types);
-}
-
-NJS::ArrayTypePtr NJS::TypeContext::GetArrayType(const TypePtr& element_type, const size_t element_count)
-{
-    return GetType<ArrayType>(element_type, element_count);
-}
-
-NJS::FunctionTypePtr NJS::TypeContext::GetFunctionType(
-    const std::vector<TypePtr>& param_types,
-    const TypePtr& result_type,
-    const bool vararg)
-{
-    return GetType<FunctionType>(param_types, result_type, vararg);
-}
-
-NJS::VectorTypePtr NJS::TypeContext::GetVectorType(const TypePtr& element_type)
-{
-    return GetType<VectorType>(element_type);
+    return GetType<FunctionType>(result, args, vararg);
 }

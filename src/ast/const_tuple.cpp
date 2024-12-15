@@ -11,7 +11,7 @@ NJS::ConstTupleExpr::ConstTupleExpr(SourceLocation where, TypePtr type, std::vec
 
 NJS::ValuePtr NJS::ConstTupleExpr::GenLLVM(Builder& builder)
 {
-    llvm::Value* value = llvm::Constant::getNullValue(Type->GenLLVM(builder));
+    llvm::Value* value = llvm::Constant::getNullValue(Type->GetLLVM<llvm::StructType>(builder));
 
     for (size_t i = 0; i < Elements.size(); ++i)
         value = builder.GetBuilder().CreateInsertValue(value, Elements[i]->GenLLVM(builder)->Load(), i);

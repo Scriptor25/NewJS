@@ -24,7 +24,7 @@ NJS::Parser::Parser(
 void NJS::Parser::Parse(const Callback& callback)
 {
     while (m_Token.Type != TokenType_EOF)
-        if (const auto ptr = ParseLine())
+        if (const auto ptr = ParseStmt())
             callback(ptr);
 }
 
@@ -113,5 +113,5 @@ NJS::TypePtr NJS::Parser::GetVar(const std::string& name)
 {
     for (const auto& frame : std::ranges::reverse_view(m_Stack))
         if (frame.contains(name)) return frame.at(name);
-    return m_Ctx.GetNoType();
+    Error("no such variable '{}'", name);
 }

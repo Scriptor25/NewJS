@@ -32,19 +32,19 @@ void NJS::ImportMapping::MapFunctions(Parser& parser, const std::vector<Function
     std::map<std::string, TypePtr> element_types;
     for (const auto& function : functions)
     {
-        std::vector<TypePtr> param_types;
-        for (const auto& param : function->Params)
-            param_types.push_back(param->Type);
+        std::vector<TypePtr> arg_types;
+        for (const auto& param : function->Args)
+            arg_types.push_back(param->Type);
         const auto type = parser.m_Ctx.GetFunctionType(
-            param_types,
             function->ResultType,
+            arg_types,
             function->VarArg);
         element_types[function->Name] = type;
     }
 
     if (!Name.empty() && NameMap.empty())
     {
-        const auto module_type = parser.m_Ctx.GetObjectType(element_types);
+        const auto module_type = parser.m_Ctx.GetStructType(element_types);
         parser.DefVar(Name) = module_type;
         return;
     }
@@ -65,24 +65,24 @@ void NJS::ImportMapping::MapFunctions(
     std::map<std::string, ValuePtr> elements;
     for (const auto& function : functions)
     {
-        std::vector<TypePtr> param_types;
-        for (const auto& param : function->Params)
-            param_types.push_back(param->Type);
+        std::vector<TypePtr> arg_types;
+        for (const auto& param : function->Args)
+            arg_types.push_back(param->Type);
         const auto type = builder.GetCtx().GetFunctionType(
-            param_types,
             function->ResultType,
+            arg_types,
             function->VarArg);
         element_types[function->Name] = type;
         auto callee = builder.GetModule().getOrInsertFunction(
             module_id + '.' + function->Name,
-            type->GenFnLLVM(builder));
+            type->GetLLVM<llvm::FunctionType>(builder));
         elements[function->Name] = RValue::Create(builder, type, callee.getCallee());
     }
 
     if (!Name.empty() && NameMap.empty())
     {
-        const auto module_type = builder.GetCtx().GetObjectType(element_types);
-        llvm::Value* module = llvm::Constant::getNullValue(module_type->GenLLVM(builder));
+        const auto module_type = builder.GetCtx().GetStructType(element_types);
+        llvm::Value* module = llvm::Constant::getNullValue(module_type->GetLLVM(builder));
         size_t i = 0;
         for (const auto& [name_, value_] : elements)
             module = builder.GetBuilder().CreateInsertValue(module, value_->Load(), i++);

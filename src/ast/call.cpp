@@ -22,16 +22,16 @@ NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder)
     for (size_t i = 0; i < Args.size(); ++i)
     {
         const auto arg = Args[i]->GenLLVM(builder);
-        if (auto param_type = callee_type->ParamTypes[i]; arg->GetType() != param_type)
-            Error(Where, "invalid arg: type mismatch, {} != {}", arg->GetType(), param_type);
+        if (auto arg_type = callee_type->Arg(i); arg->GetType() != arg_type)
+            Error(Where, "invalid arg: type mismatch, {} != {}", arg->GetType(), arg_type);
         args[i] = arg->Load();
     }
 
     const auto value = builder.GetBuilder().CreateCall(
-        callee_type->GenFnLLVM(builder),
+        callee_type->GetLLVM<llvm::FunctionType>(builder),
         callee->Load(),
         args);
-    return RValue::Create(builder, callee_type->Result(), value);
+    return RValue::Create(builder, callee_type->GetResult(), value);
 }
 
 std::ostream& NJS::CallExpr::Print(std::ostream& os)

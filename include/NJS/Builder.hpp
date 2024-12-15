@@ -36,11 +36,6 @@ namespace NJS
         [[nodiscard]] llvm::Module& GetModule() const;
         [[nodiscard]] llvm::IRBuilder<>& GetBuilder() const;
 
-        [[nodiscard]] llvm::Value* CreateMalloc(size_t) const;
-        [[nodiscard]] llvm::Value* CreateMalloc(llvm::Value*) const;
-        [[nodiscard]] llvm::Value* CreateRealloc(llvm::Value*, llvm::Value*) const;
-        [[nodiscard]] llvm::Value* CreateMemcpy(llvm::Value*, llvm::Value*, llvm::Value*) const;
-        [[nodiscard]] llvm::Value* CreateStrlen(llvm::Value*) const;
         [[nodiscard]] llvm::Value* CreateAlloca(llvm::Type*, size_t = 0) const;
         ValuePtr CreateAlloca(const TypePtr&, size_t = 0);
         ValuePtr CreateGlobal(const std::string&, const TypePtr&, bool);
@@ -50,13 +45,6 @@ namespace NJS
         ValuePtr CreateMember(const ValuePtr&, const std::string&);
         ValuePtr CreateSubscript(const ValuePtr&, size_t);
         ValuePtr CreateSubscript(const ValuePtr&, llvm::Value*);
-
-        ValuePtr CreateVector(const TypePtr&, llvm::Value*, llvm::Value*);
-        bool CreateVectorStoreArray(const ValuePtr&, llvm::Value*);
-        ValuePtr CreateVectorPush(const ValuePtr&, const ValuePtr&);
-        ValuePtr CreateVectorPop(const ValuePtr&, const ValuePtr&);
-        [[nodiscard]] llvm::Value* CreatePtrToVectorPtr(llvm::Value*) const;
-        [[nodiscard]] llvm::Value* CreatePtrToVectorSize(llvm::Value*) const;
 
         void GetFormat(llvm::FunctionCallee&) const;
 

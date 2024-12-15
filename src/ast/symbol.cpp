@@ -11,8 +11,6 @@ NJS::SymbolExpr::SymbolExpr(SourceLocation where, TypePtr type, std::string name
 
 NJS::ValuePtr NJS::SymbolExpr::GenLLVM(Builder& builder)
 {
-    if (Name == "_")
-        return RValue::Create(builder, builder.GetCtx().GetNoType(), nullptr);
     return builder.GetVar(Name);
 }
 

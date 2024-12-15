@@ -2,26 +2,26 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::ExprPtr NJS::Parser::ParseConstObject()
+NJS::ExprPtr NJS::Parser::ParseConstStruct()
 {
     const auto where = Expect("{").Where;
 
     std::map<std::string, ExprPtr> entries;
-    std::map<std::string, TypePtr> types;
+    std::map<std::string, TypePtr> elements;
     while (!At("}") && !AtEof())
     {
-        const auto [where_, type_, name_, number_] = Expect(TokenType_Symbol);
+        const auto [where_, _1, name_, _2, _3] = Expect(TokenType_Symbol);
         if (!NextAt(":"))
         {
             const auto type = GetVar(name_);
             entries[name_] = std::make_shared<SymbolExpr>(where_, type, name_);
-            types[name_] = type;
+            elements[name_] = type;
         }
         else
         {
             const auto value = ParseExpression();
             entries[name_] = value;
-            types[name_] = value->Type;
+            elements[name_] = value->Type;
         }
 
         if (!At("}"))
@@ -30,6 +30,6 @@ NJS::ExprPtr NJS::Parser::ParseConstObject()
     }
     Expect("}");
 
-    const auto type = m_Ctx.GetObjectType(types);
-    return std::make_shared<ConstObjectExpr>(where, type, entries);
+    const auto type = m_Ctx.GetStructType(elements);
+    return std::make_shared<ConstStructExpr>(where, type, entries);
 }

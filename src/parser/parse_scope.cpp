@@ -9,7 +9,7 @@ NJS::ScopeStmtPtr NJS::Parser::ParseScope()
     StackPush();
     const auto where = Expect("{").Where;
     while (!At("}") && !AtEof())
-        children.push_back(ParseLine());
+        children.push_back(ParseStmt());
     Expect("}");
     StackPop();
 
@@ -23,7 +23,7 @@ NJS::ExprPtr NJS::Parser::ParseScopeExpr()
     StackPush();
     const auto where = Expect("{").Where;
     while (!At("}") && !AtEof())
-        children.push_back(ParseLine());
+        children.push_back(ParseStmt());
     Expect("}");
     StackPop();
 

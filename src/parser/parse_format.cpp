@@ -32,6 +32,6 @@ NJS::ExprPtr NJS::Parser::ParseFormat()
     }
     if (!source.empty()) statics[index++] = source;
 
-    const auto type = m_Ctx.GetStringType();
+    const auto type = m_Ctx.GetPointerType(m_Ctx.GetIntType(8, true));
     return std::make_shared<FormatExpr>(where, type, index, statics, dynamics);
 }

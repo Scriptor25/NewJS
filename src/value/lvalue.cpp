@@ -20,12 +20,12 @@ llvm::Value* NJS::LValue::GetPtr() const
 
 llvm::Value* NJS::LValue::Load() const
 {
-    return GetBuilder().GetBuilder().CreateLoad(GetType()->GenLLVM(GetBuilder()), m_Ptr);
+    return GetBuilder().GetBuilder().CreateLoad(GetType()->GetLLVM(GetBuilder()), m_Ptr);
 }
 
 void NJS::LValue::Store(llvm::Value* value) const
 {
-    if (value->getType() != GetType()->GenLLVM(GetBuilder()))
+    if (value->getType() != GetType()->GetLLVM(GetBuilder()))
         Error("invalid store: type mismatch, <llvm type> != {}", GetType());
 
     GetBuilder().GetBuilder().CreateStore(value, m_Ptr);
@@ -33,9 +33,6 @@ void NJS::LValue::Store(llvm::Value* value) const
 
 void NJS::LValue::Store(const ValuePtr value) const
 {
-    if (GetType()->IsVector() && GetBuilder().CreateVectorStoreArray(value, Load()))
-        return;
-
     if (const auto type = value->GetType(); type != GetType())
         Error("invalid store: type mismatch, {} != {}", type, GetType());
 

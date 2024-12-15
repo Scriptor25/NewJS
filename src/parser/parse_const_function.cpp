@@ -7,10 +7,10 @@ NJS::ExprPtr NJS::Parser::ParseConstFunction()
 {
     const auto where = Expect("?").Where;
 
-    std::vector<ParamPtr> params;
+    std::vector<ParamPtr> args;
     bool vararg = false;
     if (NextAt("("))
-        vararg = ParseParamList(params, ")");
+        vararg = ParseParamList(args, ")");
 
     TypePtr result_type;
     if (NextAt(": "))
@@ -18,15 +18,15 @@ NJS::ExprPtr NJS::Parser::ParseConstFunction()
     else result_type = m_Ctx.GetVoidType();
 
     StackPush();
-    std::vector<TypePtr> param_types;
-    for (const auto& param : params)
+    std::vector<TypePtr> arg_types;
+    for (const auto& arg : args)
     {
-        param->CreateVars(*this, {});
-        param_types.push_back(param->Type);
+        arg->CreateVars(*this, {});
+        arg_types.push_back(arg->Type);
     }
     const auto body = ParseScope();
     StackPop();
 
-    const auto type = m_Ctx.GetFunctionType(param_types, result_type, vararg);
-    return std::make_shared<ConstFunctionExpr>(where, type, params, vararg, result_type, *body);
+    const auto type = m_Ctx.GetFunctionType(result_type, arg_types, vararg);
+    return std::make_shared<ConstFunctionExpr>(where, type, args, vararg, result_type, *body);
 }

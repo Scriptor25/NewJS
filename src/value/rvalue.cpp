@@ -24,17 +24,11 @@ llvm::Value* NJS::RValue::Load() const
 
 void NJS::RValue::Store(llvm::Value*) const
 {
-    if (GetType()->IsNo())
-        return;
-
     Error("cannot assign to rvalue");
 }
 
 void NJS::RValue::Store(ValuePtr) const
 {
-    if (GetType()->IsNo())
-        return;
-
     Error("cannot assign to rvalue");
 }
 

@@ -3,6 +3,7 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
+#include <NJS/Operator.hpp>
 #include <NJS/Value.hpp>
 
 NJS::UnaryExpr::UnaryExpr(SourceLocation where, TypePtr type, std::string op, const bool op_right, ExprPtr operand)
@@ -12,28 +13,30 @@ NJS::UnaryExpr::UnaryExpr(SourceLocation where, TypePtr type, std::string op, co
 
 NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder)
 {
-    auto operand = Operand->GenLLVM(builder);
-
-    const auto ov = operand->Load();
-    const auto one = llvm::ConstantFP::get(builder.GetBuilder().getDoubleTy(), 1.0);
-
-    llvm::Value* value{};
-    bool assign = false;
-    if (Op == "++") value = builder.GetBuilder().CreateFAdd(ov, one), assign = true;
-    else if (Op == "--") value = builder.GetBuilder().CreateFSub(ov, one), assign = true;
-    else if (Op == "-") value = builder.GetBuilder().CreateFNeg(ov), assign = false;
-
-    if (value)
+    static const std::map<std::string, std::function<std::pair<ValuePtr, bool>(Builder&, const ValuePtr&)>> fns
     {
-        if (assign)
+        {"++", OperatorInc},
+        {"--", OperatorDec},
+        {"-", OperatorNeg},
+        {"!", OperatorLNot},
+        {"~", OperatorNot},
+    };
+
+    auto operand = Operand->GenLLVM(builder);
+    const auto val = operand->Load();
+
+    if (const auto& fn = fns.at(Op))
+        if (const auto [value_, assign_] = fn(builder, operand); value_)
         {
-            operand->Store(value);
-            if (OpRight)
-                return RValue::Create(builder, Type, ov);
-            return operand;
+            if (assign_)
+            {
+                operand->Store(value_);
+                if (OpRight)
+                    return RValue::Create(builder, Type, val);
+                return operand;
+            }
+            return value_;
         }
-        return RValue::Create(builder, Type, value);
-    }
 
     Error(Where, "undefined unary operator {}{}", Op, Type);
 }

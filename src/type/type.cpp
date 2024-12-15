@@ -1,14 +1,42 @@
+#include <NJS/Error.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::Type::Type(TypeContext& ctx, std::string str)
-    : Ctx(ctx), String(std::move(str))
+NJS::TypePtr NJS::max(TypeContext& ctx, const TypePtr& l, const TypePtr& r)
 {
+    if (l->IsInt())
+    {
+        if (r->IsInt())
+            return ctx.GetIntType(std::max(l->GetBits(), r->GetBits()), l->IsSigned() || r->IsSigned());
+        if (r->IsFP())
+            return ctx.GetFPType(std::max(l->GetBits(), r->GetBits()));
+        Error("TODO");
+    }
+    if (l->IsFP())
+    {
+        if (r->IsInt())
+            return ctx.GetFPType(std::max(l->GetBits(), r->GetBits()));
+        if (r->IsFP())
+            return ctx.GetFPType(std::max(l->GetBits(), r->GetBits()));
+        Error("TODO");
+    }
+    Error("TODO");
 }
 
-bool NJS::Type::IsNo() const
+std::ostream& NJS::Type::Print(std::ostream& os) const
 {
-    return false;
+    return os << m_String;
+}
+
+std::string NJS::Type::GetString() const
+{
+    return m_String;
+}
+
+unsigned NJS::Type::GetSize() const
+{
+    if (m_Size != ~0u) return m_Size;
+    return m_Size;
 }
 
 bool NJS::Type::IsPrimitive() const
@@ -16,7 +44,22 @@ bool NJS::Type::IsPrimitive() const
     return false;
 }
 
-bool NJS::Type::IsPrimitive(Primitive) const
+bool NJS::Type::IsVoid() const
+{
+    return false;
+}
+
+bool NJS::Type::IsInt() const
+{
+    return false;
+}
+
+bool NJS::Type::IsFP() const
+{
+    return false;
+}
+
+bool NJS::Type::IsPointer() const
 {
     return false;
 }
@@ -26,12 +69,12 @@ bool NJS::Type::IsArray() const
     return false;
 }
 
-bool NJS::Type::IsTuple() const
+bool NJS::Type::IsStruct() const
 {
     return false;
 }
 
-bool NJS::Type::IsObject() const
+bool NJS::Type::IsTuple() const
 {
     return false;
 }
@@ -41,37 +84,37 @@ bool NJS::Type::IsFunction() const
     return false;
 }
 
-bool NJS::Type::IsVector() const
+bool NJS::Type::IsSigned() const
 {
-    return false;
+    Error("TODO");
 }
 
-NJS::MemberT NJS::Type::Member(const std::string&) const
+unsigned NJS::Type::GetBits() const
 {
-    return {Ctx.GetNoType(), ~0};
+    Error("TODO");
 }
 
-NJS::TypePtr NJS::Type::Result() const
+NJS::TypePtr NJS::Type::GetElement() const
 {
-    return Ctx.GetNoType();
+    Error("TODO");
 }
 
-NJS::TypePtr NJS::Type::Element() const
+NJS::TypePtr NJS::Type::GetElement(unsigned) const
 {
-    return Ctx.GetNoType();
+    Error("TODO");
 }
 
-NJS::TypePtr NJS::Type::Element(size_t) const
+NJS::MemberT NJS::Type::GetMember(const std::string&) const
 {
-    return Ctx.GetNoType();
+    Error("TODO");
 }
 
-size_t NJS::Type::NumElements() const
+NJS::TypePtr NJS::Type::GetResult() const
 {
-    return 0;
+    Error("TODO");
 }
 
-std::ostream& NJS::Type::Print(std::ostream& os) const
+NJS::Type::Type(TypeContext& ctx, std::string string)
+    : m_Ctx(ctx), m_String(std::move(string)), m_LLVM(nullptr), m_Size(~0u)
 {
-    return os << String;
 }

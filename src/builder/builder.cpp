@@ -14,8 +14,9 @@ NJS::Builder::Builder(TypeContext& ctx, llvm::LLVMContext& context, const std::s
 
     const auto process = DefVar("process") = CreateGlobal(
         "process",
-        m_Ctx.GetObjectType({
-            {"args", m_Ctx.GetVectorType(m_Ctx.GetStringType())},
+        m_Ctx.GetStructType({
+            {"argc", m_Ctx.GetIntType(32, true)},
+            {"argv", m_Ctx.GetPointerType(m_Ctx.GetPointerType(m_Ctx.GetIntType(8, true)))}
         }), is_main);
 
     llvm::Function* function;
@@ -32,12 +33,8 @@ NJS::Builder::Builder(TypeContext& ctx, llvm::LLVMContext& context, const std::s
             GetModule());
         GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", function));
 
-        const auto argc = function->getArg(0);
-        const auto argv = function->getArg(1);
-
-        const auto args = CreateMember(process, "args");
-        const auto argc_i64 = GetBuilder().CreateIntCast(argc, GetBuilder().getInt64Ty(), false);
-        args->Store(CreateVector(m_Ctx.GetStringType(), argv, argc_i64));
+        CreateMember(process, "argc")->Store(function->getArg(0));
+        CreateMember(process, "argv")->Store(function->getArg(1));
     }
     else
     {

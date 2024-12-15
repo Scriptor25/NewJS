@@ -3,16 +3,17 @@
 #include <cstdint>
 #include <cstdio>
 
-#define ID_VOID 0
-#define ID_BOOLEAN 1
-#define ID_NUMBER 2
-#define ID_STRING 3
-#define ID_ARRAY 4
-#define ID_TUPLE 5
-#define ID_OBJECT 6
-#define ID_FUNCTION 7
-#define ID_VECTOR 8
-#define ID_CHAR 9
+enum TypeID
+{
+    ID_VOID,
+    ID_INT,
+    ID_FP,
+    ID_POINTER,
+    ID_ARRAY,
+    ID_STRUCT,
+    ID_TUPLE,
+    ID_FUNCTION,
+};
 
 extern "C" {
 void format(char*, uint64_t, ...);

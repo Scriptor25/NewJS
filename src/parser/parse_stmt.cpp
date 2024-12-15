@@ -1,7 +1,7 @@
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::StmtPtr NJS::Parser::ParseLine()
+NJS::StmtPtr NJS::Parser::ParseStmt()
 {
     if (At("type"))
     {

@@ -12,7 +12,7 @@ NJS::ExprPtr NJS::Parser::ParseOperand()
         if (NextAt("."))
         {
             const auto name = Expect(TokenType_Symbol).StringValue;
-            const auto [type_, index_] = ptr->Type->Member(name);
+            const auto [type_, index_] = ptr->Type->GetMember(name);
             ptr = std::make_shared<MemberExpr>(where, type_, ptr, name);
             continue;
         }
@@ -26,7 +26,7 @@ NJS::ExprPtr NJS::Parser::ParseOperand()
                 if (!At(")"))
                     Expect(",");
             }
-            const auto type = ptr->Type->Result();
+            const auto type = ptr->Type->GetElement()->GetResult();
             ptr = std::make_shared<CallExpr>(where, type, ptr, args);
             continue;
         }
@@ -35,7 +35,7 @@ NJS::ExprPtr NJS::Parser::ParseOperand()
         {
             const auto index = ParseExpression();
             Expect("]");
-            const auto type = ptr->Type->Element();
+            const auto type = ptr->Type->GetElement();
             ptr = std::make_shared<SubscriptExpr>(where, type, ptr, index);
             continue;
         }

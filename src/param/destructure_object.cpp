@@ -18,7 +18,7 @@ void NJS::DestructureObject::CreateVars(Parser& parser, const TypePtr& val_type)
 {
     const auto type = Type ? Type : val_type;
     for (const auto& [name_, element_] : Elements)
-        element_->CreateVars(parser, type->Member(name_).first);
+        element_->CreateVars(parser, type->GetMember(name_).first);
 }
 
 void NJS::DestructureObject::CreateVars(Builder& builder, const bool is_const, const ValuePtr& value)

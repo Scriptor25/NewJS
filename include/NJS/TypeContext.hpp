@@ -11,32 +11,25 @@ namespace NJS
     class TypeContext
     {
     public:
-        TypeContext();
-
         TypePtr& GetType(const std::string&);
 
-        NoTypePtr GetNoType();
-
-        PrimitiveTypePtr GetPrimitiveType(Primitive);
-        PrimitiveTypePtr GetVoidType();
-        PrimitiveTypePtr GetBooleanType();
-        PrimitiveTypePtr GetNumberType();
-        PrimitiveTypePtr GetStringType();
-        PrimitiveTypePtr GetCharType();
-
-        TupleTypePtr GetTupleType(const std::vector<TypePtr>&);
-        ObjectTypePtr GetObjectType(const std::map<std::string, TypePtr>&);
-        ArrayTypePtr GetArrayType(const TypePtr&, size_t);
-        FunctionTypePtr GetFunctionType(const std::vector<TypePtr>&, const TypePtr&, bool);
-        VectorTypePtr GetVectorType(const TypePtr&);
+        TypePtr GetVoidType();
+        TypePtr GetIntType(unsigned, bool);
+        TypePtr GetFPType(unsigned);
+        TypePtr GetPointerType(TypePtr);
+        TypePtr GetArrayType(TypePtr, unsigned);
+        TypePtr GetStructType(std::map<std::string, TypePtr>);
+        TypePtr GetTupleType(std::vector<TypePtr>);
+        TypePtr GetFunctionType(TypePtr, std::vector<TypePtr>, bool);
 
     private:
         template <typename T, typename... Args>
         std::shared_ptr<T> GetType(Args&&... args)
         {
-            auto& ref = GetType(T::GenString(args...));
+            auto string = T::GenString(args...);
+            auto& ref = GetType(string);
             if (ref) return std::dynamic_pointer_cast<T>(ref);
-            auto type = std::make_shared<T>(*this, args...);
+            auto type = std::shared_ptr<T>(new T(*this, string, args...));
             ref = type;
             return type;
         }

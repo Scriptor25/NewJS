@@ -25,8 +25,6 @@ NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder& builder)
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
     const auto condition = Condition->GenLLVM(builder);
-    if (!condition->GetType()->IsPrimitive(Primitive_Number))
-        Error(Where, "invalid switch condition: must be of type number, but is {}", condition->GetType());
     const auto switcher_int = builder.GetBuilder().CreateFPToSI(condition->Load(), builder.GetBuilder().getInt64Ty());
     const auto switch_inst = builder.GetBuilder().CreateSwitch(switcher_int, default_dest);
 
@@ -48,8 +46,6 @@ NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder& builder)
         for (const auto& entry : entries_)
         {
             const auto on_val = entry->GenLLVM(builder);
-            if (!on_val->GetType()->IsPrimitive(Primitive_Number))
-                Error(Where, "invalid case entry: must be of type number, but is {}", on_val->GetType());
             const auto on_val_num = llvm::dyn_cast<llvm::ConstantFP>(on_val->Load());
             const auto cast_inst = builder.GetBuilder().CreateFPToSI(on_val_num, builder.GetBuilder().getInt64Ty());
             const auto on_val_int = llvm::dyn_cast<llvm::ConstantInt>(cast_inst);
@@ -66,7 +62,7 @@ NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder& builder)
         builder.GetBuilder().CreateBr(end_block);
     }
 
-    const auto result_ty = result_type->GenLLVM(builder);
+    const auto result_ty = result_type->GetLLVM(builder);
 
     builder.GetBuilder().SetInsertPoint(end_block);
     const auto phi_inst = builder.GetBuilder().CreatePHI(result_ty, dest_blocks.size());

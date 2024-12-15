@@ -89,11 +89,6 @@ NJS::Token& NJS::Parser::Next()
             case '}':
             case '[':
             case ']':
-                where = m_Where;
-                value += static_cast<char>(m_C);
-                Get();
-                return m_Token = {where, TokenType_Parenthesis, value};
-
             case '$':
             case '@':
             case '#':
@@ -186,13 +181,13 @@ NJS::Token& NJS::Parser::Next()
 
         case State_Bin:
             if ('0' > m_C || m_C > '1')
-                return m_Token = {where, TokenType_Number, value, static_cast<double>(std::stoll(value, nullptr, 2))};
+                return m_Token = {where, TokenType_Int, value, (std::stoull(value, nullptr, 2))};
             value += static_cast<char>(m_C);
             break;
 
         case State_Oct:
             if ('0' > m_C || m_C > '7')
-                return m_Token = {where, TokenType_Number, value, static_cast<double>(std::stoll(value, nullptr, 8))};
+                return m_Token = {where, TokenType_Int, value, (std::stoull(value, nullptr, 8))};
             value += static_cast<char>(m_C);
             break;
 
@@ -209,12 +204,12 @@ NJS::Token& NJS::Parser::Next()
                 break;
             }
             if (is_float)
-                return m_Token = {where, TokenType_Number, value, std::stod(value)};
-            return m_Token = {where, TokenType_Number, value, static_cast<double>(std::stoll(value, nullptr, 10))};
+                return m_Token = {where, TokenType_FP, value, 0, std::stod(value)};
+            return m_Token = {where, TokenType_Int, value, std::stoull(value, nullptr, 10)};
 
         case State_Hex:
             if (!isxdigit(m_C))
-                return m_Token = {where, TokenType_Number, value, static_cast<double>(std::stoll(value, nullptr, 16))};
+                return m_Token = {where, TokenType_Int, value, (std::stoull(value, nullptr, 16))};
             value += static_cast<char>(m_C);
             break;
 
