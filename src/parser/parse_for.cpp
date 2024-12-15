@@ -1,6 +1,8 @@
 #include <NJS/AST.hpp>
 #include <NJS/Error.hpp>
+#include <NJS/Param.hpp>
 #include <NJS/Parser.hpp>
+#include <NJS/Type.hpp>
 
 NJS::StmtPtr NJS::Parser::ParseFor()
 {
@@ -20,6 +22,8 @@ NJS::StmtPtr NJS::Parser::ParseFor()
             if (!var_init) Error("for of/in requires a variable initializer");
             const auto value = ParseExpression();
             Expect(")");
+
+            var_init->Name->CreateVars(*this, value->Type->Element());
 
             const auto body = ParseLine();
 

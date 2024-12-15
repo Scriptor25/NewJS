@@ -27,6 +27,7 @@ void NJS::LValue::Store(llvm::Value* value) const
 {
     if (value->getType() != GetType()->GenLLVM(GetBuilder()))
         Error("invalid store: type mismatch, <llvm type> != {}", GetType());
+
     GetBuilder().GetBuilder().CreateStore(value, m_Ptr);
 }
 
@@ -37,6 +38,7 @@ void NJS::LValue::Store(const ValuePtr value) const
 
     if (const auto type = value->GetType(); type != GetType())
         Error("invalid store: type mismatch, {} != {}", type, GetType());
+
     GetBuilder().GetBuilder().CreateStore(value->Load(), m_Ptr);
 }
 

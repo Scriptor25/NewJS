@@ -16,7 +16,7 @@ namespace NJS
         [[nodiscard]] virtual bool IsL() const = 0;
         [[nodiscard]] virtual llvm::Value* GetPtr() const = 0;
 
-        virtual llvm::Value* Load() const = 0;
+        [[nodiscard]] virtual llvm::Value* Load() const = 0;
         virtual void Store(llvm::Value*) const = 0;
         virtual void Store(ValuePtr) const = 0;
 

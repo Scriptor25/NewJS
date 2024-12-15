@@ -53,6 +53,51 @@ bool NJS::Builder::CreateVectorStoreArray(const ValuePtr& src, llvm::Value* dst)
     return true;
 }
 
+NJS::ValuePtr NJS::Builder::CreateVectorPush(const ValuePtr& vec, const ValuePtr& src)
+{
+    const auto ptr = vec->Load();
+
+    const auto ptr_to_size = CreatePtrToVectorSize(ptr);
+    const auto vec_size = GetBuilder().CreateLoad(GetBuilder().getInt64Ty(), ptr_to_size);
+    const auto new_vec_size = GetBuilder().CreateAdd(vec_size, GetBuilder().getInt64(1));
+    GetBuilder().CreateStore(new_vec_size, ptr_to_size);
+
+    const auto bytes = GetBuilder().CreateMul(new_vec_size, GetBuilder().getInt64(vec->GetType()->Element()->Bytes()));
+    const auto ptr_to_ptr = CreatePtrToVectorPtr(ptr);
+    const auto vec_ptr = GetBuilder().CreateLoad(GetBuilder().getPtrTy(), ptr_to_ptr);
+    const auto new_vec_ptr = CreateRealloc(vec_ptr, bytes);
+    GetBuilder().CreateStore(new_vec_ptr, ptr_to_ptr);
+
+    const auto gep = GetBuilder().CreateGEP(vec->GetType()->Element()->GenLLVM(*this), new_vec_ptr, {vec_size});
+    GetBuilder().CreateStore(src->Load(), gep);
+
+    return vec;
+}
+
+NJS::ValuePtr NJS::Builder::CreateVectorPop(const ValuePtr& vec, const ValuePtr& dst)
+{
+    const auto ptr = vec->Load();
+
+    const auto ptr_to_size = CreatePtrToVectorSize(ptr);
+    const auto vec_size = GetBuilder().CreateLoad(GetBuilder().getInt64Ty(), ptr_to_size);
+    const auto new_vec_size = GetBuilder().CreateSub(vec_size, GetBuilder().getInt64(1));
+    GetBuilder().CreateStore(new_vec_size, ptr_to_size);
+
+    const auto ptr_to_ptr = CreatePtrToVectorPtr(ptr);
+    const auto vec_ptr = GetBuilder().CreateLoad(GetBuilder().getPtrTy(), ptr_to_ptr);
+
+    const auto el_ty = vec->GetType()->Element()->GenLLVM(*this);
+    const auto gep = GetBuilder().CreateGEP(el_ty, vec_ptr, {new_vec_size});
+    const auto val = GetBuilder().CreateLoad(el_ty, gep);
+    dst->Store(val);
+
+    const auto bytes = GetBuilder().CreateMul(new_vec_size, GetBuilder().getInt64(vec->GetType()->Element()->Bytes()));
+    const auto new_vec_ptr = CreateRealloc(vec_ptr, bytes);
+    GetBuilder().CreateStore(new_vec_ptr, ptr_to_ptr);
+
+    return vec;
+}
+
 llvm::Value* NJS::Builder::CreatePtrToVectorPtr(llvm::Value* ptr) const
 {
     const auto vec_ty = VectorType::GenVecLLVM(*this);

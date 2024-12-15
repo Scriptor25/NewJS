@@ -6,6 +6,11 @@ NJS::Type::Type(TypeContext& ctx, std::string str)
 {
 }
 
+bool NJS::Type::IsNo() const
+{
+    return false;
+}
+
 bool NJS::Type::IsPrimitive() const
 {
     return false;
@@ -43,7 +48,7 @@ bool NJS::Type::IsVector() const
 
 NJS::MemberT NJS::Type::Member(const std::string&) const
 {
-    return {Ctx.GetNoType(), -1};
+    return {Ctx.GetNoType(), ~0};
 }
 
 NJS::TypePtr NJS::Type::Result() const

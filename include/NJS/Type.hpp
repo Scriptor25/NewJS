@@ -18,6 +18,7 @@ namespace NJS
         Type(TypeContext&, std::string);
         virtual ~Type() = default;
 
+        [[nodiscard]] virtual bool IsNo() const;
         [[nodiscard]] virtual bool IsPrimitive() const;
         [[nodiscard]] virtual bool IsPrimitive(Primitive) const;
         [[nodiscard]] virtual bool IsArray() const;
@@ -47,6 +48,8 @@ namespace NJS
         static std::string GenString();
 
         explicit NoType(TypeContext&);
+
+        [[nodiscard]] bool IsNo() const override;
 
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
         [[nodiscard]] size_t Bytes() const override;

@@ -11,6 +11,11 @@ NJS::NoType::NoType(TypeContext& ctx)
 {
 }
 
+bool NJS::NoType::IsNo() const
+{
+    return true;
+}
+
 void NJS::NoType::TypeInfo(Builder&, std::vector<llvm::Value*>&) const
 {
     Error("type has no info");

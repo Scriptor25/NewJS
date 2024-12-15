@@ -33,7 +33,7 @@ bool NJS::ObjectType::IsObject() const
 NJS::MemberT NJS::ObjectType::Member(const std::string& name) const
 {
     if (!ElementTypes.contains(name))
-        return {Ctx.GetNoType(), -1};
+        return {Ctx.GetNoType(), ~0};
 
     size_t i = 0;
     for (const auto& [name_, type_] : ElementTypes)
@@ -42,7 +42,7 @@ NJS::MemberT NJS::ObjectType::Member(const std::string& name) const
         ++i;
     }
 
-    return {Ctx.GetNoType(), -1};
+    return {Ctx.GetNoType(), ~0};
 }
 
 NJS::TypePtr NJS::ObjectType::Element(const size_t i) const

@@ -1,4 +1,5 @@
 import { day: day_1 } from "./day_1.njs"
+import { day: day_2 } from "./day_2.njs"
 
 // std
 type File = string
@@ -29,10 +30,11 @@ function day_err(input: string): number {
 
 const fn = switch (day) {
     case 1  -> day_1(part)
+    case 2  -> day_2(part)
     default -> day_err
 }
 
-const stream = file_open($"input/{day}/input.txt", "r")
+const stream = file_open($"input/{day}.txt", "r")
 const input = file_read_eof(stream)
 
 const result = fn(input)

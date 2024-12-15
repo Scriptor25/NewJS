@@ -53,6 +53,8 @@ namespace NJS
 
         ValuePtr CreateVector(const TypePtr&, llvm::Value*, llvm::Value*);
         bool CreateVectorStoreArray(const ValuePtr&, llvm::Value*);
+        ValuePtr CreateVectorPush(const ValuePtr&, const ValuePtr&);
+        ValuePtr CreateVectorPop(const ValuePtr&, const ValuePtr&);
         [[nodiscard]] llvm::Value* CreatePtrToVectorPtr(llvm::Value*) const;
         [[nodiscard]] llvm::Value* CreatePtrToVectorSize(llvm::Value*) const;
 
