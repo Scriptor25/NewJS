@@ -151,6 +151,16 @@ namespace NJS
         std::vector<ExprPtr> Args;
     };
 
+    struct CastExpr : Expr
+    {
+        CastExpr(SourceLocation, TypePtr, ExprPtr);
+
+        ValuePtr GenLLVM(Builder&) override;
+        std::ostream& Print(std::ostream&) override;
+
+        ExprPtr Value;
+    };
+
     struct ConstBooleanExpr : Expr
     {
         ConstBooleanExpr(SourceLocation, TypePtr, bool);

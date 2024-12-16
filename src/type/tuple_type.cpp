@@ -20,6 +20,11 @@ bool NJS::TupleType::IsTuple() const
     return true;
 }
 
+NJS::TypePtr NJS::TupleType::GetElement(const unsigned i) const
+{
+    return m_Elements[i];
+}
+
 void NJS::TupleType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_TUPLE));
@@ -41,7 +46,7 @@ llvm::Type* NJS::TupleType::GenLLVM(const Builder& builder) const
     std::vector<llvm::Type*> types;
     for (const auto& element : m_Elements)
         types.push_back(element->GetLLVM(builder));
-    return llvm::StructType::get(builder.GetContext(), types);
+    return llvm::StructType::get(builder.GetContext(), types, true);
 }
 
 unsigned NJS::TupleType::GenSize() const

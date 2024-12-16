@@ -28,7 +28,7 @@ NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder)
     }
 
     const auto value = builder.GetBuilder().CreateCall(
-        callee_type->GetLLVM<llvm::FunctionType>(builder),
+        callee_type->GenFnLLVM(builder),
         callee->Load(),
         args);
     return RValue::Create(builder, callee_type->GetResult(), value);

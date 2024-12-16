@@ -9,14 +9,14 @@
 
 NJS::FunctionStmt::FunctionStmt(
     SourceLocation where,
-    const bool extern_,
+    const bool is_extern,
     std::string name,
     std::vector<ParamPtr> params,
     const bool vararg,
     TypePtr result_type,
     ScopeStmtPtr body)
     : Stmt(std::move(where)),
-      Extern(extern_),
+      Extern(is_extern),
       Name(std::move(name)),
       Args(std::move(params)),
       VarArg(vararg),
@@ -36,7 +36,7 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
             args.push_back(arg->Type);
         const auto type = builder.GetCtx().GetFunctionType(ResultType, args, VarArg);
         function = llvm::Function::Create(
-            type->GetLLVM<llvm::FunctionType>(builder),
+            type->GenFnLLVM(builder),
             llvm::GlobalValue::ExternalLinkage,
             name,
             builder.GetModule());

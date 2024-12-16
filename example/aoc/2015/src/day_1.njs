@@ -1,16 +1,16 @@
 import { part_err } from "./main.njs"
 
-function part_1(input: string): number {
-    let level = 0
+function part_1(input: i8[]): u64 {
+    let level = 0i64
     for (const c of input)
         if (c == '(') ++level
         else if (c == ')') --level
-    return level
+    return level as u64
 }
 
-function part_2(input: string): number {
-    let level = 0
-    let idx = 1
+function part_2(input: i8[]): u64 {
+    let level = 0i64
+    let idx = 1u64
     for (const c of input) {
         if (c == '(') ++level
         else if (c == ')') --level
@@ -19,9 +19,9 @@ function part_2(input: string): number {
             return idx
         idx++
     }
-    return level
+    return ~0u64
 }
 
-function day(part: number): (string): number {
-    return part == 1 ? part_1 : part == 2 ? part_2 : part_err
+function day(part: u64): (i8[]): u64 {
+    return part == 1u64 ? part_1 : part == 2u64 ? part_2 : part_err
 }

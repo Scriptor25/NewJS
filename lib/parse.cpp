@@ -1,9 +1,9 @@
 #include <cstdlib>
 #include <NJS/Std.hpp>
 
-double parse_int(const char* str)
+uint64_t parse_int(const char* str)
 {
-    return static_cast<double>(atoll(str));
+    return static_cast<uint64_t>(atoll(str));
 }
 
 double parse_float(const char* str)

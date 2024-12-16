@@ -10,7 +10,10 @@ NJS::SubscriptExpr::SubscriptExpr(SourceLocation where, TypePtr type, ExprPtr ar
 
 NJS::ValuePtr NJS::SubscriptExpr::GenLLVM(Builder& builder)
 {
-    Error("TODO");
+    const auto array = Array->GenLLVM(builder);
+    const auto index = Index->GenLLVM(builder);
+
+    return builder.CreateSubscript(array, index);
 }
 
 std::ostream& NJS::SubscriptExpr::Print(std::ostream& os)

@@ -136,15 +136,15 @@ namespace NJS
         static std::string GenString(const TypePtr&);
 
         bool IsPrimitive() const override;
-        bool IsPointer() const override;
-        TypePtr GetElement() const override;
+        [[nodiscard]] bool IsPointer() const override;
+        [[nodiscard]] TypePtr GetElement() const override;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         PointerType(TypeContext&, std::string, TypePtr);
 
-        llvm::Type* GenLLVM(const Builder&) const override;
-        unsigned GenSize() const override;
+        [[nodiscard]] llvm::Type* GenLLVM(const Builder&) const override;
+        [[nodiscard]] unsigned GenSize() const override;
 
         TypePtr m_Element;
     };
@@ -156,14 +156,15 @@ namespace NJS
     public:
         static std::string GenString(const TypePtr&, unsigned);
 
-        bool IsArray() const override;
+        [[nodiscard]] bool IsArray() const override;
+        TypePtr GetElement() const override;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         ArrayType(TypeContext&, std::string, TypePtr, unsigned);
 
-        llvm::Type* GenLLVM(const Builder&) const override;
-        unsigned GenSize() const override;
+        [[nodiscard]] llvm::Type* GenLLVM(const Builder&) const override;
+        [[nodiscard]] unsigned GenSize() const override;
 
         TypePtr m_Element;
         unsigned m_Count;
@@ -176,7 +177,8 @@ namespace NJS
     public:
         static std::string GenString(const std::map<std::string, TypePtr>&);
 
-        bool IsStruct() const override;
+        [[nodiscard]] bool IsStruct() const override;
+        [[nodiscard]] MemberT GetMember(const std::string&) const override;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
@@ -196,6 +198,7 @@ namespace NJS
         static std::string GenString(const std::vector<TypePtr>&);
 
         bool IsTuple() const override;
+        TypePtr GetElement(unsigned) const override;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
@@ -214,11 +217,14 @@ namespace NJS
     public:
         static std::string GenString(const TypePtr&, const std::vector<TypePtr>&, bool);
 
+        bool IsPrimitive() const override;
         bool IsFunction() const override;
         TypePtr GetResult() const override;
         TypePtr Arg(unsigned) const;
         bool VarArg() const;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+
+        llvm::FunctionType* GenFnLLVM(const Builder&) const;
 
     protected:
         FunctionType(TypeContext&, std::string, TypePtr, std::vector<TypePtr>, bool);

@@ -26,7 +26,7 @@ NJS::ExprPtr NJS::Parser::ParseOperand()
                 if (!At(")"))
                     Expect(",");
             }
-            const auto type = ptr->Type->GetElement()->GetResult();
+            const auto type = ptr->Type->GetResult();
             ptr = std::make_shared<CallExpr>(where, type, ptr, args);
             continue;
         }
@@ -45,6 +45,13 @@ NJS::ExprPtr NJS::Parser::ParseOperand()
             const auto op = Skip().StringValue;
             const auto type = ptr->Type;
             ptr = std::make_shared<UnaryExpr>(where, type, op, true, ptr);
+            continue;
+        }
+
+        if (NextAt("as"))
+        {
+            const auto type = ParseType();
+            ptr = std::make_shared<CastExpr>(where, type, ptr);
             continue;
         }
 

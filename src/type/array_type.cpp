@@ -13,6 +13,11 @@ bool NJS::ArrayType::IsArray() const
     return true;
 }
 
+NJS::TypePtr NJS::ArrayType::GetElement() const
+{
+    return m_Element;
+}
+
 void NJS::ArrayType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_ARRAY));

@@ -16,6 +16,14 @@ namespace NJS
     struct Token;
 
     typedef std::shared_ptr<class Type> TypePtr;
+    typedef std::shared_ptr<class VoidType> VoidTypePtr;
+    typedef std::shared_ptr<class IntType> IntTypePtr;
+    typedef std::shared_ptr<class FPType> FPTypePtr;
+    typedef std::shared_ptr<class PointerType> PointerTypePtr;
+    typedef std::shared_ptr<class ArrayType> ArrayTypePtr;
+    typedef std::shared_ptr<class StructType> StructTypePtr;
+    typedef std::shared_ptr<class TupleType> TupleTypePtr;
+    typedef std::shared_ptr<class FunctionType> FunctionTypePtr;
 
     typedef std::shared_ptr<struct Param> ParamPtr;
     typedef std::shared_ptr<class Value> ValuePtr;

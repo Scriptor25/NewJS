@@ -13,14 +13,14 @@ namespace NJS
     public:
         TypePtr& GetType(const std::string&);
 
-        TypePtr GetVoidType();
-        TypePtr GetIntType(unsigned, bool);
-        TypePtr GetFPType(unsigned);
-        TypePtr GetPointerType(TypePtr);
-        TypePtr GetArrayType(TypePtr, unsigned);
-        TypePtr GetStructType(std::map<std::string, TypePtr>);
-        TypePtr GetTupleType(std::vector<TypePtr>);
-        TypePtr GetFunctionType(TypePtr, std::vector<TypePtr>, bool);
+        VoidTypePtr GetVoidType();
+        IntTypePtr GetIntType(unsigned, bool);
+        FPTypePtr GetFPType(unsigned);
+        PointerTypePtr GetPointerType(TypePtr);
+        ArrayTypePtr GetArrayType(TypePtr, unsigned);
+        StructTypePtr GetStructType(std::map<std::string, TypePtr>);
+        TupleTypePtr GetTupleType(std::vector<TypePtr>);
+        FunctionTypePtr GetFunctionType(TypePtr, std::vector<TypePtr>, bool);
 
     private:
         template <typename T, typename... Args>

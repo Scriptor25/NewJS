@@ -33,7 +33,6 @@ struct Pair
 };
 
 struct Type;
-struct VoidType;
 struct IntType;
 struct FPType;
 struct PointerType;
@@ -42,8 +41,6 @@ struct StructType;
 struct TupleType;
 struct FunctionType;
 
-static void Void_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
-static void Void_AppendP(Type*, char*, unsigned, unsigned&, char*&);
 static void Int_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
 static void Int_AppendP(Type*, char*, unsigned, unsigned&, char*&);
 static void FP_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
@@ -81,14 +78,6 @@ struct Type
 
     AppendVProc AppendV;
     AppendPProc AppendP;
-};
-
-struct VoidType : Type
-{
-    VoidType()
-        : Type(Void_AppendV, Void_AppendP)
-    {
-    }
 };
 
 struct IntType : Type
@@ -204,7 +193,7 @@ Type* ParseType(va_list& ap)
     switch (va_arg(ap, unsigned))
     {
     case ID_VOID:
-        return new VoidType();
+        return nullptr;
 
     case ID_INT:
         {
@@ -266,75 +255,22 @@ Type* ParseType(va_list& ap)
         }
 
     default:
-        return {};
+        return nullptr;
     }
-}
-
-void Void_AppendV(Type*, char* stream, const unsigned n, unsigned& offset, va_list&)
-{
-    offset += snprintf(stream + offset, n - offset, "void");
-}
-
-void Void_AppendP(Type*, char* stream, const unsigned n, unsigned& offset, char*&)
-{
-    offset += snprintf(stream + offset, n - offset, "void");
 }
 
 void Int_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
 {
     const auto self = static_cast<IntType*>(type);
-    switch (self->Bits)
+    const auto val = va_arg(ap, int);
+
+    if (self->Bits == 1)
     {
-    case 8:
-        if (self->IsSigned)
-        {
-            const auto val = va_arg(ap, int8_t);
-            offset += snprintf(stream + offset, n - offset, "%hhi", val);
-        }
-        else
-        {
-            const auto val = va_arg(ap, uint8_t);
-            offset += snprintf(stream + offset, n - offset, "%hhu", val);
-        }
-        break;
-    case 16:
-        if (self->IsSigned)
-        {
-            const auto val = va_arg(ap, int16_t);
-            offset += snprintf(stream + offset, n - offset, "%hi", val);
-        }
-        else
-        {
-            const auto val = va_arg(ap, uint16_t);
-            offset += snprintf(stream + offset, n - offset, "%hu", val);
-        }
-        break;
-    case 32:
-        if (self->IsSigned)
-        {
-            const auto val = va_arg(ap, int32_t);
-            offset += snprintf(stream + offset, n - offset, "%li", val);
-        }
-        else
-        {
-            const auto val = va_arg(ap, uint32_t);
-            offset += snprintf(stream + offset, n - offset, "%lu", val);
-        }
-        break;
-    case 64:
-        if (self->IsSigned)
-        {
-            const auto val = va_arg(ap, int64_t);
-            offset += snprintf(stream + offset, n - offset, "%lli", val);
-        }
-        else
-        {
-            const auto val = va_arg(ap, uint64_t);
-            offset += snprintf(stream + offset, n - offset, "%llu", val);
-        }
-        break;
-    default: break;
+        offset += snprintf(stream + offset, n - offset, val ? "true" : "false");
+        return;
     }
+
+    offset += snprintf(stream + offset, n - offset, self->IsSigned ? "%i" : "%u", val);
 }
 
 void Int_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
@@ -342,6 +278,18 @@ void Int_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, c
     const auto self = static_cast<IntType*>(type);
     switch (self->Bits)
     {
+    case 1:
+        if (self->IsSigned)
+        {
+            const auto val = *reinterpret_cast<int8_t*>(ptr);
+            offset += snprintf(stream + offset, n - offset, val ? "true" : "false");
+        }
+        else
+        {
+            const auto val = *reinterpret_cast<uint8_t*>(ptr);
+            offset += snprintf(stream + offset, n - offset, val ? "true" : "false");
+        }
+        break;
     case 8:
         if (self->IsSigned)
         {
@@ -353,7 +301,6 @@ void Int_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, c
             const auto val = *reinterpret_cast<uint8_t*>(ptr);
             offset += snprintf(stream + offset, n - offset, "%hhu", val);
         }
-        ptr += sizeof(int8_t);
         break;
     case 16:
         if (self->IsSigned)
@@ -366,7 +313,6 @@ void Int_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, c
             const auto val = *reinterpret_cast<uint16_t*>(ptr);
             offset += snprintf(stream + offset, n - offset, "%hu", val);
         }
-        ptr += sizeof(int16_t);
         break;
     case 32:
         if (self->IsSigned)
@@ -379,7 +325,6 @@ void Int_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, c
             const auto val = *reinterpret_cast<uint32_t*>(ptr);
             offset += snprintf(stream + offset, n - offset, "%lu", val);
         }
-        ptr += sizeof(int32_t);
         break;
     case 64:
         if (self->IsSigned)
@@ -392,15 +337,17 @@ void Int_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, c
             const auto val = *reinterpret_cast<uint64_t*>(ptr);
             offset += snprintf(stream + offset, n - offset, "%llu", val);
         }
-        ptr += sizeof(int64_t);
         break;
     default: break;
     }
+
+    ptr += self->Bits / 8;
 }
 
 void FP_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
 {
     const auto self = static_cast<FPType*>(type);
+
     const auto val = va_arg(ap, double);
     offset += snprintf(stream + offset, n - offset, "%f", val);
 
@@ -418,37 +365,46 @@ void FP_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, ch
             const auto val = *reinterpret_cast<float*>(ptr);
             offset += snprintf(stream + offset, n - offset, "%f", val);
         }
-        ptr += sizeof(float);
         break;
     case 64:
         {
             const auto val = *reinterpret_cast<double*>(ptr);
             offset += snprintf(stream + offset, n - offset, "%f", val);
         }
-        ptr += sizeof(double);
         break;
     default: break;
     }
 
-    (void)self;
+    ptr += self->Bits / 8;
 }
 
 void Pointer_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
 {
     const auto self = static_cast<PointerType*>(type);
     const auto ptr = va_arg(ap, char*);
-    offset += snprintf(stream + offset, n - offset, "%p", ptr);
 
-    (void)self;
+    if (const auto el = static_cast<IntType*>(self->Element); el && el->Bits == 8 && el->IsSigned)
+    {
+        offset += snprintf(stream + offset, n - offset, "%s", ptr);
+        return;
+    }
+
+    offset += snprintf(stream + offset, n - offset, "%p", ptr);
 }
 
 void Pointer_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
 {
     const auto self = static_cast<PointerType*>(type);
+
+    if (const auto el = static_cast<IntType*>(self->Element); el && el->Bits == 8 && el->IsSigned)
+    {
+        offset += snprintf(stream + offset, n - offset, "%s", *reinterpret_cast<char**>(ptr));
+        ptr += sizeof(char*);
+        return;
+    }
+
     offset += snprintf(stream + offset, n - offset, "%p", *reinterpret_cast<char**>(ptr));
     ptr += sizeof(char*);
-
-    (void)self;
 }
 
 void Array_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)

@@ -22,6 +22,18 @@ bool NJS::StructType::IsStruct() const
     return true;
 }
 
+NJS::MemberT NJS::StructType::GetMember(const std::string& name) const
+{
+    unsigned i = 0;
+    for (const auto& [name_, type_] : m_Elements)
+    {
+        if (name == name_)
+            return {type_, i};
+        ++i;
+    }
+    return {nullptr, ~0u};
+}
+
 void NJS::StructType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_STRUCT));
@@ -46,7 +58,7 @@ llvm::Type* NJS::StructType::GenLLVM(const Builder& builder) const
     std::vector<llvm::Type*> types;
     for (const auto& [name_, type_] : m_Elements)
         types.push_back(type_->GetLLVM(builder));
-    return llvm::StructType::get(builder.GetContext(), types);
+    return llvm::StructType::get(builder.GetContext(), types, true);
 }
 
 unsigned NJS::StructType::GenSize() const

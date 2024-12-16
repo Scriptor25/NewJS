@@ -1,4 +1,4 @@
-function println(message: i8[])
+extern println(message: i8[])
 
 function fib(n: u32): u32 {
     let a = 0u32

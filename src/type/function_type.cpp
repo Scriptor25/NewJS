@@ -22,6 +22,11 @@ std::string NJS::FunctionType::GenString(
     return dst += "): " + result->GetString();
 }
 
+bool NJS::FunctionType::IsPrimitive() const
+{
+    return true;
+}
+
 bool NJS::FunctionType::IsFunction() const
 {
     return true;
@@ -52,6 +57,14 @@ void NJS::FunctionType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& ar
     args.push_back(builder.GetBuilder().getInt32(m_VarArg ? 1 : 0));
 }
 
+llvm::FunctionType* NJS::FunctionType::GenFnLLVM(const Builder& builder) const
+{
+    std::vector<llvm::Type*> types;
+    for (const auto& arg : m_Args)
+        types.push_back(arg->GetLLVM(builder));
+    return llvm::FunctionType::get(m_Result->GetLLVM(builder), types, m_VarArg);
+}
+
 NJS::FunctionType::FunctionType(
     TypeContext& ctx,
     std::string string,
@@ -64,10 +77,7 @@ NJS::FunctionType::FunctionType(
 
 llvm::Type* NJS::FunctionType::GenLLVM(const Builder& builder) const
 {
-    std::vector<llvm::Type*> types;
-    for (const auto& arg : m_Args)
-        types.push_back(arg->GetLLVM(builder));
-    return llvm::FunctionType::get(m_Result->GetLLVM(builder), types, m_VarArg);
+    return builder.GetBuilder().getPtrTy();
 }
 
 unsigned NJS::FunctionType::GenSize() const

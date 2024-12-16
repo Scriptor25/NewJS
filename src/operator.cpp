@@ -30,6 +30,14 @@ NJS::ValuePtr NJS::OperatorLT(Builder& builder, const ValuePtr& lhs, const Value
 
 NJS::ValuePtr NJS::OperatorLE(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
+    if (lhs->GetType()->IsInt())
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetIntType(1, false),
+            lhs->GetType()->IsSigned()
+                ? builder.GetBuilder().CreateICmpSLE(lhs->Load(), rhs->Load())
+                : builder.GetBuilder().CreateICmpULE(lhs->Load(), rhs->Load()));
+
     Error("TODO");
 }
 
@@ -86,6 +94,14 @@ NJS::ValuePtr NJS::OperatorAdd(Builder& builder, const ValuePtr& lhs, const Valu
 
 NJS::ValuePtr NJS::OperatorSub(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
+    if (lhs->GetType()->IsInt())
+        return RValue::Create(
+            builder,
+            lhs->GetType(),
+            lhs->GetType()->IsSigned()
+                ? builder.GetBuilder().CreateSub(lhs->Load(), rhs->Load())
+                : builder.GetBuilder().CreateSub(lhs->Load(), rhs->Load()));
+
     Error("TODO");
 }
 

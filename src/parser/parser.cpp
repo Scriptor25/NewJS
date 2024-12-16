@@ -19,6 +19,12 @@ NJS::Parser::Parser(
     Next();
 
     StackPush();
+
+    if (m_Stack.size() == 1)
+        DefVar("process") = m_Ctx.GetStructType({
+            {"argc", m_Ctx.GetIntType(32, true)},
+            {"argv", m_Ctx.GetPointerType(m_Ctx.GetPointerType(m_Ctx.GetIntType(8, true)))},
+        });
 }
 
 void NJS::Parser::Parse(const Callback& callback)

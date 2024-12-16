@@ -43,6 +43,8 @@ namespace NJS
         llvm::Value* CreateEmpty(const TypePtr&);
 
         ValuePtr CreateMember(const ValuePtr&, const std::string&);
+
+        ValuePtr CreateSubscript(const ValuePtr&, const ValuePtr&);
         ValuePtr CreateSubscript(const ValuePtr&, size_t);
         ValuePtr CreateSubscript(const ValuePtr&, llvm::Value*);
 

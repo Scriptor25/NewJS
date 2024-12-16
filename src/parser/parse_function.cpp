@@ -19,22 +19,20 @@ NJS::FunctionStmtPtr NJS::Parser::ParseFunction()
         result_type = ParseType();
     else result_type = m_Ctx.GetVoidType();
 
-    auto& type = DefVar(name);
-
-    StackPush();
-
     std::vector<TypePtr> arg_types;
     for (const auto& arg : args)
-    {
-        arg->CreateVars(*this, {});
         arg_types.push_back(arg->Type);
-    }
-    type = m_Ctx.GetPointerType(m_Ctx.GetFunctionType(result_type, arg_types, vararg));
+    DefVar(name) = m_Ctx.GetFunctionType(result_type, arg_types, vararg);
 
     ScopeStmtPtr body;
     if (!is_extern && At("{"))
+    {
+        StackPush();
+        for (const auto& arg : args)
+            arg->CreateVars(*this, {});
         body = ParseScope();
+        StackPop();
+    }
 
-    StackPop();
     return std::make_shared<FunctionStmt>(where, is_extern, name, args, vararg, result_type, body);
 }
