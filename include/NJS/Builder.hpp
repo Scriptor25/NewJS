@@ -45,8 +45,11 @@ namespace NJS
         ValuePtr CreateMember(const ValuePtr&, const std::string&);
 
         ValuePtr CreateSubscript(const ValuePtr&, const ValuePtr&);
-        ValuePtr CreateSubscript(const ValuePtr&, size_t);
         ValuePtr CreateSubscript(const ValuePtr&, llvm::Value*);
+        ValuePtr CreateSubscript(const ValuePtr&, size_t);
+
+        ValuePtr CreateCast(const ValuePtr&, const TypePtr&);
+        llvm::Value* CreateCast(llvm::Value*, const TypePtr&, const TypePtr&) const;
 
         void GetFormat(llvm::FunctionCallee&) const;
 

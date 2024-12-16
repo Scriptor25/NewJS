@@ -1,5 +1,5 @@
 #include <NJS/AST.hpp>
-#include <NJS/Error.hpp>
+#include <NJS/Builder.hpp>
 #include <NJS/Type.hpp>
 
 NJS::CastExpr::CastExpr(SourceLocation where, TypePtr type, ExprPtr value)
@@ -9,7 +9,8 @@ NJS::CastExpr::CastExpr(SourceLocation where, TypePtr type, ExprPtr value)
 
 NJS::ValuePtr NJS::CastExpr::GenLLVM(Builder& builder)
 {
-    Error("TODO");
+    const auto value = Value->GenLLVM(builder);
+    return builder.CreateCast(value, Type);
 }
 
 std::ostream& NJS::CastExpr::Print(std::ostream& os)

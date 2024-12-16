@@ -1,46 +1,53 @@
 import { part_err } from "./main.njs"
 
-extern parse_int(str: string): number
-extern println(str: string)
+extern parse_int(str: i8[]): u64
+extern println(str: i8[])
+extern malloc(bytes: u64): void[]
+extern realloc(block: void[], bytes: u64): void[]
 
-function min(a: number, b: number): number {
+function min(a: u64, b: u64): u64 {
     return a < b ? a : b
 }
 
-function parse_input(input: string): number[3][] {
-    let sizes: number[3][]
-    sizes << [0, 0, 0]
+function parse_input(input: i8[]): [u64[3][], u64] {
+    let sizes = malloc(24u64) as u64[3][]
+    let len = 1u64
 
-    let i = 0
-    let num: char[]
+    let num: i8[512]
+    let num_len: u64
+
+    let i: u64
     for (const c of input) {
         if (c == 'x' || c == '\n') {
-            sizes[sizes.length - 1][i] = parse_int(num)
-            !num
-            i = (i + 1) % 3
-            if (c == '\n')
-                sizes << [0, 0, 0]
+            num[num_len] = '\x00'
+            sizes[len - 1u64][i] = parse_int(num)
+            num_len = 0u64
+            i = (i + 1u64) % 3u64
+            if (c == '\n') {
+                ++len
+                sizes = realloc(sizes, len * 24u64)
+            }
         } else {
-            num << c
+            num[num_len++] = c
         }
     }
 
-    sizes >> _
-    return sizes
+    return [sizes, len]
 }
 
-function part_1(input: string): number {
-    const sizes = parse_input(input)
+function part_1(input: i8[]): u64 {
+    const [sizes, len] = parse_input(input)
 
     println($"{sizes}")
 
-    let sum = 0
-    for (const size of sizes) {
-        const area1 = size[0] * size[1]
-        const area2 = size[1] * size[2]
-        const area3 = size[2] * size[0]
+    let sum = 0u64
+    for (let i: u64; i < len; ++i) {
+        const size = sizes[i]
+        const area1 = size[0u64] * size[1u64]
+        const area2 = size[1u64] * size[2u64]
+        const area3 = size[2u64] * size[0u64]
         const min = min(area1, min(area2, area3))
-        sum += area1 * 2 + area2 * 2 + area3 * 2 + min
+        sum += area1 * 2u64 + area2 * 2u64 + area3 * 2u64 + min
 
         println($"{area1} {area2} {area3}")
     }
@@ -48,10 +55,10 @@ function part_1(input: string): number {
     return sum
 }
 
-function part_2(input: string): number {
-    return 0
+function part_2(input: i8[]): u64 {
+    return 0u64
 }
 
-function day(part: number): (string): number {
-    return part == 1 ? part_1 : part == 2 ? part_2 : part_err
+function day(part: u64): (i8[]): u64 {
+    return part == 1u64 ? part_1 : part == 2u64 ? part_2 : part_err
 }

@@ -15,8 +15,8 @@ extern file_write(stream: File, buf: i8[], count: u64)
 
 println($"{process}")
 
-const day = parse_int(process.args[1u64])
-const part = parse_int(process.args[2u64])
+const day = parse_int(process.argv[1u64])
+const part = parse_int(process.argv[2u64])
 
 function part_err(input: i8[]): u64 {
     println("invalid part")

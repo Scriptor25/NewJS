@@ -15,7 +15,7 @@ function part_2(input: i8[]): u64 {
         if (c == '(') ++level
         else if (c == ')') --level
 
-        if (level == -1)
+        if (level == -1i64)
             return idx
         idx++
     }

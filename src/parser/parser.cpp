@@ -119,5 +119,5 @@ NJS::TypePtr NJS::Parser::GetVar(const std::string& name)
 {
     for (const auto& frame : std::ranges::reverse_view(m_Stack))
         if (frame.contains(name)) return frame.at(name);
-    Error("no such variable '{}'", name);
+    return m_Ctx.GetNoType();
 }

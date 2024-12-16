@@ -13,6 +13,7 @@ namespace NJS
     public:
         TypePtr& GetType(const std::string&);
 
+        NoTypePtr GetNoType();
         VoidTypePtr GetVoidType();
         IntTypePtr GetIntType(unsigned, bool);
         FPTypePtr GetFPType(unsigned);

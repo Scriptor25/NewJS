@@ -75,7 +75,7 @@ void NJS::ImportMapping::MapFunctions(
         element_types[function->Name] = type;
         auto callee = builder.GetModule().getOrInsertFunction(
             module_id + '.' + function->Name,
-            type->GetLLVM<llvm::FunctionType>(builder));
+            type->GenFnLLVM(builder));
         elements[function->Name] = RValue::Create(builder, type, callee.getCallee());
     }
 

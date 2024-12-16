@@ -31,7 +31,7 @@ NJS::MemberT NJS::StructType::GetMember(const std::string& name) const
             return {type_, i};
         ++i;
     }
-    return {nullptr, ~0u};
+    Error("no member '{}' in {}", name, m_String);
 }
 
 void NJS::StructType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const

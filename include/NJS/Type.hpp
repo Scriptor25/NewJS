@@ -66,6 +66,23 @@ namespace NJS
         unsigned m_Size;
     };
 
+    class NoType : public Type
+    {
+        friend TypeContext;
+
+    public:
+        static std::string GenString();
+
+        TypePtr GetResult() const override;
+        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+
+    protected:
+        NoType(TypeContext&, std::string);
+
+        llvm::Type* GenLLVM(const Builder&) const override;
+        unsigned GenSize() const override;
+    };
+
     class VoidType : public Type
     {
         friend TypeContext;
@@ -198,6 +215,7 @@ namespace NJS
         static std::string GenString(const std::vector<TypePtr>&);
 
         bool IsTuple() const override;
+        TypePtr GetElement() const override;
         TypePtr GetElement(unsigned) const override;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 

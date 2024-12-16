@@ -5,6 +5,11 @@ NJS::TypePtr& NJS::TypeContext::GetType(const std::string& string)
     return m_TypeMap[string];
 }
 
+NJS::NoTypePtr NJS::TypeContext::GetNoType()
+{
+    return GetType<NoType>();
+}
+
 NJS::VoidTypePtr NJS::TypeContext::GetVoidType()
 {
     return GetType<VoidType>();

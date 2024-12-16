@@ -161,7 +161,10 @@ NJS::TypePtr NJS::OperatorType(TypeContext& ctx, std::string op, const TypePtr& 
         op == "^" ||
         op == "&" ||
         op == "<<" ||
-        op == ">>")
+        op == ">>" ||
+        op == "||" ||
+        op == "^^" ||
+        op == "&&")
         return NJS::max(ctx, lhs, rhs);
 
     Error("TODO");

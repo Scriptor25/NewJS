@@ -3,6 +3,7 @@
 #include <NJS/Type.hpp>
 
 #include "NJS/Std.hpp"
+#include "NJS/TypeContext.hpp"
 
 std::string NJS::TupleType::GenString(const std::vector<TypePtr>& elements)
 {
@@ -18,6 +19,11 @@ std::string NJS::TupleType::GenString(const std::vector<TypePtr>& elements)
 bool NJS::TupleType::IsTuple() const
 {
     return true;
+}
+
+NJS::TypePtr NJS::TupleType::GetElement() const
+{
+    return m_Ctx.GetNoType();
 }
 
 NJS::TypePtr NJS::TupleType::GetElement(const unsigned i) const

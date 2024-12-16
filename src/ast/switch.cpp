@@ -25,8 +25,7 @@ NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder& builder)
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
     const auto condition = Condition->GenLLVM(builder);
-    const auto switcher_int = builder.GetBuilder().CreateFPToSI(condition->Load(), builder.GetBuilder().getInt64Ty());
-    const auto switch_inst = builder.GetBuilder().CreateSwitch(switcher_int, default_dest);
+    const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(), default_dest);
 
     std::vector<std::pair<llvm::BasicBlock*, ValuePtr>> dest_blocks;
     TypePtr result_type;
@@ -46,9 +45,7 @@ NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder& builder)
         for (const auto& entry : entries_)
         {
             const auto on_val = entry->GenLLVM(builder);
-            const auto on_val_num = llvm::dyn_cast<llvm::ConstantFP>(on_val->Load());
-            const auto cast_inst = builder.GetBuilder().CreateFPToSI(on_val_num, builder.GetBuilder().getInt64Ty());
-            const auto on_val_int = llvm::dyn_cast<llvm::ConstantInt>(cast_inst);
+            const auto on_val_int = llvm::dyn_cast<llvm::ConstantInt>(on_val->Load());
             switch_inst->addCase(on_val_int, dest);
         }
         builder.GetBuilder().SetInsertPoint(dest);
