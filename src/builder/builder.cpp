@@ -5,7 +5,7 @@
 #include <NJS/Value.hpp>
 
 NJS::Builder::Builder(TypeContext& ctx, llvm::LLVMContext& context, const std::string& module_id, const bool is_main)
-    : m_Ctx(ctx), m_LLVMContext(context), m_ModuleID(module_id)
+    : m_Ctx(ctx), m_LLVMContext(context), m_ModuleID(module_id), m_IsMain(is_main)
 {
     m_LLVMModule = std::make_unique<llvm::Module>(module_id, m_LLVMContext);
     m_LLVMBuilder = std::make_unique<llvm::IRBuilder<>>(m_LLVMContext);
@@ -38,7 +38,7 @@ NJS::Builder::Builder(TypeContext& ctx, llvm::LLVMContext& context, const std::s
     }
     else
     {
-        const auto type = llvm::FunctionType::get(GetBuilder().getInt32Ty(), false);
+        const auto type = llvm::FunctionType::get(GetBuilder().getVoidTy(), false);
         function = llvm::Function::Create(
             type,
             llvm::GlobalValue::ExternalLinkage,
@@ -50,7 +50,9 @@ NJS::Builder::Builder(TypeContext& ctx, llvm::LLVMContext& context, const std::s
 
 void NJS::Builder::Close()
 {
-    GetBuilder().CreateRet(GetBuilder().getInt32(0));
+    if (m_IsMain)
+        GetBuilder().CreateRet(GetBuilder().getInt32(0));
+    else GetBuilder().CreateRetVoid();
     Pop();
 }
 

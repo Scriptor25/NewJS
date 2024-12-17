@@ -4,6 +4,7 @@ extern parse_int(str: i8[]): u64
 extern println(str: i8[])
 extern malloc(bytes: u64): void[]
 extern realloc(block: void[], bytes: u64): void[]
+extern strlen(str: i8[]): u64
 
 function min(a: u64, b: u64): u64 {
     return a < b ? a : b
@@ -11,37 +12,39 @@ function min(a: u64, b: u64): u64 {
 
 function parse_input(input: i8[]): [u64[3][], u64] {
     let sizes = malloc(24u64) as u64[3][]
-    let len = 1u64
+    let sizes_len = 1u64
 
     let num: i8[512]
     let num_len: u64
 
+    const input_len = strlen(input)
     let i: u64
-    for (const c of input) {
+    for (let k: u64; k < input_len; ++k) {
+        const c = input[k]
         if (c == 'x' || c == '\n') {
             num[num_len] = '\x00'
-            sizes[len - 1u64][i] = parse_int(num)
+            sizes[sizes_len - 1u64][i] = parse_int(&num[0u64])
             num_len = 0u64
             i = (i + 1u64) % 3u64
             if (c == '\n') {
-                ++len
-                sizes = realloc(sizes, len * 24u64)
+                ++sizes_len
+                sizes = realloc(sizes as void[], sizes_len * 24u64) as u64[3][]
             }
         } else {
             num[num_len++] = c
         }
     }
 
-    return [sizes, len]
+    return [sizes, sizes_len]
 }
 
 function part_1(input: i8[]): u64 {
-    const [sizes, len] = parse_input(input)
+    const [sizes, sizes_len] = parse_input(input)
 
     println($"{sizes}")
 
     let sum = 0u64
-    for (let i: u64; i < len; ++i) {
+    for (let i: u64; i < sizes_len; ++i) {
         const size = sizes[i]
         const area1 = size[0u64] * size[1u64]
         const area2 = size[1u64] * size[2u64]

@@ -40,8 +40,6 @@ namespace NJS
         ValuePtr CreateAlloca(const TypePtr&, size_t = 0);
         ValuePtr CreateGlobal(const std::string&, const TypePtr&, bool);
 
-        llvm::Value* CreateEmpty(const TypePtr&);
-
         ValuePtr CreateMember(const ValuePtr&, const std::string&);
 
         ValuePtr CreateSubscript(const ValuePtr&, const ValuePtr&);
@@ -66,6 +64,7 @@ namespace NJS
         llvm::LLVMContext& m_LLVMContext;
 
         std::string m_ModuleID;
+        bool m_IsMain;
 
         std::unique_ptr<llvm::Module> m_LLVMModule;
         std::unique_ptr<llvm::IRBuilder<>> m_LLVMBuilder;

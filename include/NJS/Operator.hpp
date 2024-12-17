@@ -34,4 +34,5 @@ namespace NJS
     std::pair<ValuePtr, bool> OperatorNeg(Builder&, const ValuePtr&);
     std::pair<ValuePtr, bool> OperatorLNot(Builder&, const ValuePtr&);
     std::pair<ValuePtr, bool> OperatorNot(Builder&, const ValuePtr&);
+    std::pair<ValuePtr, bool> OperatorRef(Builder&, const ValuePtr&);
 }

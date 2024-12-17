@@ -46,15 +46,15 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
         return lhs;
     }
 
-    if (const auto& fn = fns.at(op))
-        if (auto value = fn(builder, lhs, rhs))
+    if (fns.contains(op))
+        if (auto value = fns.at(op)(builder, lhs, rhs))
             return value;
 
     const auto assign = op.back() == '=';
     if (assign) op.pop_back();
 
-    if (const auto& fn = fns.at(op))
-        if (auto value = fn(builder, lhs, rhs))
+    if (fns.contains(op))
+        if (auto value = fns.at(op)(builder, lhs, rhs))
         {
             if (assign)
             {

@@ -20,13 +20,14 @@ NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder)
         {"-", OperatorNeg},
         {"!", OperatorLNot},
         {"~", OperatorNot},
+        {"&", OperatorRef},
     };
 
     auto operand = Operand->GenLLVM(builder);
     const auto val = operand->Load();
 
-    if (const auto& fn = fns.at(Op))
-        if (const auto [value_, assign_] = fn(builder, operand); value_)
+    if (fns.contains(Op))
+        if (const auto [value_, assign_] = fns.at(Op)(builder, operand); value_)
         {
             if (assign_)
             {

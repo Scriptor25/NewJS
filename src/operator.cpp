@@ -7,12 +7,18 @@
 
 NJS::ValuePtr NJS::OperatorEQ(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    if (lhs->GetType()->IsInt())
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetIntType(1, false),
+            builder.GetBuilder().CreateICmpEQ(lhs->Load(), rhs->Load()));
+
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorNE(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorLT(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
@@ -25,7 +31,7 @@ NJS::ValuePtr NJS::OperatorLT(Builder& builder, const ValuePtr& lhs, const Value
                 ? builder.GetBuilder().CreateICmpSLT(lhs->Load(), rhs->Load())
                 : builder.GetBuilder().CreateICmpULT(lhs->Load(), rhs->Load()));
 
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorLE(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
@@ -38,47 +44,50 @@ NJS::ValuePtr NJS::OperatorLE(Builder& builder, const ValuePtr& lhs, const Value
                 ? builder.GetBuilder().CreateICmpSLE(lhs->Load(), rhs->Load())
                 : builder.GetBuilder().CreateICmpULE(lhs->Load(), rhs->Load()));
 
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorGT(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorGE(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorLOr(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    return RValue::Create(
+        builder,
+        builder.GetCtx().GetIntType(1, false),
+        builder.GetBuilder().CreateOr(lhs->Load(), rhs->Load()));
 }
 
 NJS::ValuePtr NJS::OperatorLXor(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorLAnd(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorOr(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorXor(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorAnd(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorAdd(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
@@ -89,7 +98,7 @@ NJS::ValuePtr NJS::OperatorAdd(Builder& builder, const ValuePtr& lhs, const Valu
             lhs->GetType(),
             builder.GetBuilder().CreateAdd(lhs->Load(), rhs->Load()));
 
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorSub(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
@@ -98,41 +107,53 @@ NJS::ValuePtr NJS::OperatorSub(Builder& builder, const ValuePtr& lhs, const Valu
         return RValue::Create(
             builder,
             lhs->GetType(),
-            lhs->GetType()->IsSigned()
-                ? builder.GetBuilder().CreateSub(lhs->Load(), rhs->Load())
-                : builder.GetBuilder().CreateSub(lhs->Load(), rhs->Load()));
+            builder.GetBuilder().CreateSub(lhs->Load(), rhs->Load()));
 
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorMul(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    if (lhs->GetType()->IsInt())
+        return RValue::Create(
+            builder,
+            lhs->GetType(),
+            builder.GetBuilder().CreateMul(lhs->Load(), rhs->Load()));
+
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorDiv(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorRem(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    if (lhs->GetType()->IsInt())
+        return RValue::Create(
+            builder,
+            lhs->GetType(),
+            lhs->GetType()->IsSigned()
+                ? builder.GetBuilder().CreateSRem(lhs->Load(), rhs->Load())
+                : builder.GetBuilder().CreateURem(lhs->Load(), rhs->Load()));
+
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorPow(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorShL(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorShR(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-    Error("TODO");
+    return {};
 }
 
 NJS::TypePtr NJS::OperatorType(TypeContext& ctx, std::string op, const TypePtr& lhs, const TypePtr& rhs)
@@ -183,25 +204,50 @@ std::pair<NJS::ValuePtr, bool> NJS::OperatorInc(Builder& builder, const ValuePtr
             true,
         };
 
-    Error("TODO");
+    return {nullptr, false};
 }
 
 std::pair<NJS::ValuePtr, bool> NJS::OperatorDec(Builder& builder, const ValuePtr& val)
 {
-    Error("TODO");
+    if (val->GetType()->IsInt())
+        return {
+            RValue::Create(
+                builder,
+                val->GetType(),
+                builder.GetBuilder().CreateSub(
+                    val->Load(),
+                    llvm::ConstantInt::get(val->GetType()->GetLLVM(builder), 1, val->GetType()->IsSigned()))),
+            true,
+        };
+
+    return {nullptr, false};
 }
 
 std::pair<NJS::ValuePtr, bool> NJS::OperatorNeg(Builder& builder, const ValuePtr& val)
 {
-    Error("TODO");
+    if (val->GetType()->IsInt())
+        return {
+            RValue::Create(
+                builder,
+                val->GetType(),
+                builder.GetBuilder().CreateNeg(val->Load())),
+            false,
+        };
+
+    return {nullptr, false};
 }
 
 std::pair<NJS::ValuePtr, bool> NJS::OperatorLNot(Builder& builder, const ValuePtr& val)
 {
-    Error("TODO");
+    return {nullptr, false};
 }
 
 std::pair<NJS::ValuePtr, bool> NJS::OperatorNot(Builder& builder, const ValuePtr& val)
 {
-    Error("TODO");
+    return {nullptr, false};
+}
+
+std::pair<NJS::ValuePtr, bool> NJS::OperatorRef(Builder& builder, const ValuePtr& val)
+{
+    return {RValue::Create(builder, builder.GetCtx().GetPointerType(val->GetType()), val->GetPtr()), false};
 }
