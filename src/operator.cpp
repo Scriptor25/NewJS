@@ -49,11 +49,27 @@ NJS::ValuePtr NJS::OperatorLE(Builder& builder, const ValuePtr& lhs, const Value
 
 NJS::ValuePtr NJS::OperatorGT(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
+    if (lhs->GetType()->IsInt())
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetIntType(1, false),
+            lhs->GetType()->IsSigned()
+                ? builder.GetBuilder().CreateICmpSGT(lhs->Load(), rhs->Load())
+                : builder.GetBuilder().CreateICmpUGT(lhs->Load(), rhs->Load()));
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorGE(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
+    if (lhs->GetType()->IsInt())
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetIntType(1, false),
+            lhs->GetType()->IsSigned()
+                ? builder.GetBuilder().CreateICmpSGE(lhs->Load(), rhs->Load())
+                : builder.GetBuilder().CreateICmpUGE(lhs->Load(), rhs->Load()));
+
     return {};
 }
 

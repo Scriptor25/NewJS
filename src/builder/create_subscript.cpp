@@ -25,11 +25,12 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const ValuePtr& array, llvm::Value* 
 
     if (array_type->IsPointer())
     {
+        const auto element_type = array_type->GetElement();
         const auto ptr = GetBuilder().CreateGEP(
-            array_type->GetLLVM(*this),
+            element_type->GetLLVM(*this),
             array->Load(),
             {index});
-        return LValue::Create(*this, array_type->GetElement(), ptr);
+        return LValue::Create(*this, element_type, ptr);
     }
 
     if (array->IsL())

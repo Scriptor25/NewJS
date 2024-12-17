@@ -1,6 +1,7 @@
 import { part_err } from "./main.njs"
 
 extern strlen(str: i8[]): u64
+extern println(str: i8[])
 
 function part_1(input: i8[]): u64 {
     let level: i64
