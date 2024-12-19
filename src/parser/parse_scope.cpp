@@ -2,7 +2,7 @@
 #include <NJS/Parser.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::ScopeStmtPtr NJS::Parser::ParseScope()
+NJS::StmtPtr NJS::Parser::ParseScopeStmt()
 {
     std::vector<StmtPtr> children;
 

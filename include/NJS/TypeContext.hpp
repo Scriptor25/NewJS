@@ -17,11 +17,15 @@ namespace NJS
         VoidTypePtr GetVoidType();
         IntTypePtr GetIntType(unsigned, bool);
         FPTypePtr GetFPType(unsigned);
-        PointerTypePtr GetPointerType(TypePtr);
-        ArrayTypePtr GetArrayType(TypePtr, unsigned);
-        StructTypePtr GetStructType(std::map<std::string, TypePtr>);
-        TupleTypePtr GetTupleType(std::vector<TypePtr>);
-        FunctionTypePtr GetFunctionType(TypePtr, std::vector<TypePtr>, bool);
+        PtrTypePtr GetPointerType(const TypePtr&);
+        RefTypePtr GetRefType(TypePtr);
+        ArrayTypePtr GetArrayType(const TypePtr&, unsigned);
+        StructTypePtr GetStructType(const std::map<std::string, TypePtr>&);
+        TupleTypePtr GetTupleType(const std::vector<TypePtr>&);
+        FunctionTypePtr GetFunctionType(const TypePtr&, const std::vector<TypePtr>&, bool);
+
+        IntTypePtr GetBoolType();
+        PtrTypePtr GetStringType();
 
     private:
         template <typename T, typename... Args>

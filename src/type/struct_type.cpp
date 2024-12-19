@@ -40,7 +40,7 @@ void NJS::StructType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args
     args.push_back(builder.GetBuilder().getInt32(m_Elements.size()));
     for (const auto& [name_, type_] : m_Elements)
     {
-        args.push_back(ConstStringExpr::GetString(builder, name_));
+        args.push_back(StringExpr::GetString(builder, name_));
         type_->TypeInfo(builder, args);
     }
 }

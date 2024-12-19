@@ -2,7 +2,7 @@
 #include <NJS/Param.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::VariableStmtPtr NJS::Parser::ParseVariable()
+NJS::StmtPtr NJS::Parser::ParseDefStmt()
 {
     const auto where = m_Token.Where;
     const auto is_const = NextAt("const");
@@ -11,7 +11,7 @@ NJS::VariableStmtPtr NJS::Parser::ParseVariable()
     const auto name = ParseParam();
     ExprPtr value;
     if ((!At("in") && !At("of") && (is_const || name->RequireValue()) && (Expect("="), true)) || NextAt("="))
-        value = ParseExpression();
+        value = ParseExpr();
 
     name->CreateVars(*this, value ? value->Type : nullptr);
 

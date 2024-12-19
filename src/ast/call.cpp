@@ -19,12 +19,15 @@ NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder)
         Error(Where, "invalid callee: callee is not a function");
 
     std::vector<llvm::Value*> args(Args.size());
-    for (size_t i = 0; i < Args.size(); ++i)
+    for (unsigned i = 0; i < Args.size(); ++i)
     {
         const auto arg = Args[i]->GenLLVM(builder);
-        if (auto arg_type = callee_type->Arg(i); arg->GetType() != arg_type)
+        auto arg_type = callee_type->Arg(i);
+        const auto ref = arg_type->IsRef();
+        if (ref) arg_type = arg_type->GetElement();
+        if (arg->GetType() != arg_type)
             Error(Where, "invalid arg: type mismatch, {} != {}", arg->GetType(), arg_type);
-        args[i] = arg->Load();
+        args[i] = ref ? arg->GetPtr() : arg->Load();
     }
 
     const auto value = builder.GetBuilder().CreateCall(
@@ -37,7 +40,7 @@ NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder)
 std::ostream& NJS::CallExpr::Print(std::ostream& os)
 {
     Callee->Print(os) << '(';
-    for (size_t i = 0; i < Args.size(); ++i)
+    for (unsigned i = 0; i < Args.size(); ++i)
     {
         if (i > 0) os << ", ";
         Args[i]->Print(os);

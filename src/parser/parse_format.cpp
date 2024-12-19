@@ -3,15 +3,15 @@
 #include <NJS/Parser.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::ExprPtr NJS::Parser::ParseFormat()
+NJS::ExprPtr NJS::Parser::ParseFormatExpr()
 {
     const auto where = Expect("$").Where;
     auto source = Expect(TokenType_String).StringValue;
 
-    std::map<size_t, std::string> statics;
-    std::map<size_t, ExprPtr> dynamics;
+    std::map<unsigned, std::string> statics;
+    std::map<unsigned, ExprPtr> dynamics;
 
-    size_t index = 0;
+    unsigned index = 0;
     for (size_t beg; (beg = source.find('{')) != std::string::npos;)
     {
         if (source[beg + 1] == '{')
@@ -26,12 +26,12 @@ NJS::ExprPtr NJS::Parser::ParseFormat()
 
         std::stringstream stream(source);
         Parser parser(m_Ctx, stream, "<dynamic>", false, m_Stack);
-        dynamics[index++] = parser.ParseExpression();
+        dynamics[index++] = parser.ParseExpr();
 
-        source.erase(0, static_cast<size_t>(stream.tellg()) - 1);
+        source.erase(0, static_cast<unsigned>(stream.tellg()) - 1);
     }
     if (!source.empty()) statics[index++] = source;
 
-    const auto type = m_Ctx.GetPointerType(m_Ctx.GetIntType(8, true));
+    const auto type = m_Ctx.GetStringType();
     return std::make_shared<FormatExpr>(where, type, index, statics, dynamics);
 }

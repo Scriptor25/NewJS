@@ -16,7 +16,12 @@ bool NJS::DestructureObject::RequireValue()
 
 void NJS::DestructureObject::CreateVars(Parser& parser, const TypePtr& val_type)
 {
-    const auto type = Type ? Type : val_type;
+    const auto type = Type
+                          ? Type->IsRef()
+                                ? Type->GetElement()
+                                : Type
+                          : val_type;
+
     for (const auto& [name_, element_] : Elements)
         element_->CreateVars(parser, type->GetMember(name_).first);
 }

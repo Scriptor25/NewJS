@@ -1,16 +1,15 @@
+#include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Operator.hpp>
 #include <NJS/TypeContext.hpp>
-
-#include "NJS/Builder.hpp"
-#include "NJS/Value.hpp"
+#include <NJS/Value.hpp>
 
 NJS::ValuePtr NJS::OperatorEQ(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
     if (lhs->GetType()->IsInt())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetIntType(1, false),
+            builder.GetCtx().GetBoolType(),
             builder.GetBuilder().CreateICmpEQ(lhs->Load(), rhs->Load()));
 
     return {};
@@ -26,7 +25,7 @@ NJS::ValuePtr NJS::OperatorLT(Builder& builder, const ValuePtr& lhs, const Value
     if (lhs->GetType()->IsInt())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetIntType(1, false),
+            builder.GetCtx().GetBoolType(),
             lhs->GetType()->IsSigned()
                 ? builder.GetBuilder().CreateICmpSLT(lhs->Load(), rhs->Load())
                 : builder.GetBuilder().CreateICmpULT(lhs->Load(), rhs->Load()));
@@ -39,7 +38,7 @@ NJS::ValuePtr NJS::OperatorLE(Builder& builder, const ValuePtr& lhs, const Value
     if (lhs->GetType()->IsInt())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetIntType(1, false),
+            builder.GetCtx().GetBoolType(),
             lhs->GetType()->IsSigned()
                 ? builder.GetBuilder().CreateICmpSLE(lhs->Load(), rhs->Load())
                 : builder.GetBuilder().CreateICmpULE(lhs->Load(), rhs->Load()));
@@ -52,7 +51,7 @@ NJS::ValuePtr NJS::OperatorGT(Builder& builder, const ValuePtr& lhs, const Value
     if (lhs->GetType()->IsInt())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetIntType(1, false),
+            builder.GetCtx().GetBoolType(),
             lhs->GetType()->IsSigned()
                 ? builder.GetBuilder().CreateICmpSGT(lhs->Load(), rhs->Load())
                 : builder.GetBuilder().CreateICmpUGT(lhs->Load(), rhs->Load()));
@@ -65,7 +64,7 @@ NJS::ValuePtr NJS::OperatorGE(Builder& builder, const ValuePtr& lhs, const Value
     if (lhs->GetType()->IsInt())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetIntType(1, false),
+            builder.GetCtx().GetBoolType(),
             lhs->GetType()->IsSigned()
                 ? builder.GetBuilder().CreateICmpSGE(lhs->Load(), rhs->Load())
                 : builder.GetBuilder().CreateICmpUGE(lhs->Load(), rhs->Load()));
@@ -77,7 +76,7 @@ NJS::ValuePtr NJS::OperatorLOr(Builder& builder, const ValuePtr& lhs, const Valu
 {
     return RValue::Create(
         builder,
-        builder.GetCtx().GetIntType(1, false),
+        builder.GetCtx().GetBoolType(),
         builder.GetBuilder().CreateOr(lhs->Load(), rhs->Load()));
 }
 
@@ -180,7 +179,7 @@ NJS::TypePtr NJS::OperatorType(TypeContext& ctx, std::string op, const TypePtr& 
         op == ">" ||
         op == "<=" ||
         op == ">=")
-        return ctx.GetIntType(1, false);
+        return ctx.GetBoolType();
 
     if (op == "=")
         return lhs;
@@ -204,7 +203,7 @@ NJS::TypePtr NJS::OperatorType(TypeContext& ctx, std::string op, const TypePtr& 
         op == "&&")
         return NJS::max(ctx, lhs, rhs);
 
-    Error("TODO");
+    return {};
 }
 
 std::pair<NJS::ValuePtr, bool> NJS::OperatorInc(Builder& builder, const ValuePtr& val)

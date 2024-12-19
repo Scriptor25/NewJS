@@ -41,7 +41,7 @@ llvm::Type* NJS::FPType::GenLLVM(const Builder& builder) const
     case 16: return builder.GetBuilder().getHalfTy();
     case 32: return builder.GetBuilder().getFloatTy();
     case 64: return builder.GetBuilder().getDoubleTy();
-    default: return {};
+    default: Error("no llvm representation for floating point type {}", m_String);
     }
 }
 

@@ -1,12 +1,12 @@
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::IfStmtPtr NJS::Parser::ParseIf()
+NJS::StmtPtr NJS::Parser::ParseIfStmt()
 {
     const auto where = Expect("if").Where;
     StackPush();
     Expect("(");
-    const auto condition = ParseExpression();
+    const auto condition = ParseExpr();
     Expect(")");
     const auto then = ParseStmt();
     StmtPtr else_;

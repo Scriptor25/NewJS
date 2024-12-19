@@ -2,9 +2,9 @@
 #include <NJS/Parser.hpp>
 #include <NJS/Type.hpp>
 
-NJS::ExprPtr NJS::Parser::ParseOperand()
+NJS::ExprPtr NJS::Parser::ParseOperandExpr()
 {
-    auto ptr = ParsePrimary();
+    auto ptr = ParsePrimaryExpr();
     do
     {
         const auto where = m_Token.Where;
@@ -22,7 +22,7 @@ NJS::ExprPtr NJS::Parser::ParseOperand()
             std::vector<ExprPtr> args;
             while (!NextAt(")"))
             {
-                args.push_back(ParseExpression());
+                args.push_back(ParseExpr());
                 if (!At(")"))
                     Expect(",");
             }
@@ -33,7 +33,7 @@ NJS::ExprPtr NJS::Parser::ParseOperand()
 
         if (NextAt("["))
         {
-            const auto index = ParseExpression();
+            const auto index = ParseExpr();
             Expect("]");
             const auto type = ptr->Type->GetElement();
             ptr = std::make_shared<SubscriptExpr>(where, type, ptr, index);

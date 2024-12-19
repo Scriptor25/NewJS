@@ -25,27 +25,45 @@ NJS::FPTypePtr NJS::TypeContext::GetFPType(unsigned bits)
     return GetType<FPType>(bits);
 }
 
-NJS::PointerTypePtr NJS::TypeContext::GetPointerType(TypePtr element)
+NJS::PtrTypePtr NJS::TypeContext::GetPointerType(const TypePtr& element)
 {
-    return GetType<PointerType>(element);
+    return GetType<PtrType>(element);
 }
 
-NJS::ArrayTypePtr NJS::TypeContext::GetArrayType(TypePtr element, unsigned count)
+NJS::RefTypePtr NJS::TypeContext::GetRefType(TypePtr element)
+{
+    return GetType<RefType>(element);
+}
+
+NJS::ArrayTypePtr NJS::TypeContext::GetArrayType(const TypePtr& element, unsigned count)
 {
     return GetType<ArrayType>(element, count);
 }
 
-NJS::StructTypePtr NJS::TypeContext::GetStructType(std::map<std::string, TypePtr> elements)
+NJS::StructTypePtr NJS::TypeContext::GetStructType(const std::map<std::string, TypePtr>& elements)
 {
     return GetType<StructType>(elements);
 }
 
-NJS::TupleTypePtr NJS::TypeContext::GetTupleType(std::vector<TypePtr> elements)
+NJS::TupleTypePtr NJS::TypeContext::GetTupleType(const std::vector<TypePtr>& elements)
 {
     return GetType<TupleType>(elements);
 }
 
-NJS::FunctionTypePtr NJS::TypeContext::GetFunctionType(TypePtr result, std::vector<TypePtr> args, bool vararg)
+NJS::FunctionTypePtr NJS::TypeContext::GetFunctionType(
+    const TypePtr& result,
+    const std::vector<TypePtr>& args,
+    bool vararg)
 {
     return GetType<FunctionType>(result, args, vararg);
+}
+
+NJS::IntTypePtr NJS::TypeContext::GetBoolType()
+{
+    return GetIntType(1, false);
+}
+
+NJS::PtrTypePtr NJS::TypeContext::GetStringType()
+{
+    return GetPointerType(GetIntType(8, true));
 }

@@ -8,9 +8,9 @@
 NJS::FormatExpr::FormatExpr(
     SourceLocation where,
     TypePtr type,
-    const size_t count,
-    std::map<size_t, std::string> statics,
-    std::map<size_t, ExprPtr> dynamics)
+    const unsigned count,
+    std::map<unsigned, std::string> statics,
+    std::map<unsigned, ExprPtr> dynamics)
     : Expr(std::move(where), std::move(type)), Count(count), Statics(std::move(statics)), Dynamics(std::move(dynamics))
 {
 }
@@ -25,12 +25,12 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder)
     args.push_back(ptr);
     args.push_back(builder.GetBuilder().getInt64(N));
 
-    for (size_t i = 0; i < Count; ++i)
+    for (unsigned i = 0; i < Count; ++i)
     {
         if (Statics.contains(i))
         {
             const auto value = Statics[i];
-            const auto str = ConstStringExpr::GetString(builder, value);
+            const auto str = StringExpr::GetString(builder, value);
 
             args.push_back(builder.GetBuilder().getInt32(ID_POINTER));
             args.push_back(builder.GetBuilder().getInt32(ID_INT));
@@ -61,13 +61,13 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder)
     builder.GetFormat(format);
     builder.GetBuilder().CreateCall(format, args);
 
-    return RValue::Create(builder, builder.GetCtx().GetPointerType(builder.GetCtx().GetIntType(8, true)), ptr);
+    return RValue::Create(builder, builder.GetCtx().GetStringType(), ptr);
 }
 
 std::ostream& NJS::FormatExpr::Print(std::ostream& os)
 {
     os << "$\"";
-    for (size_t i = 0; i < Count; ++i)
+    for (unsigned i = 0; i < Count; ++i)
     {
         if (Statics.contains(i)) os << Statics[i];
         else if (Dynamics.contains(i)) Dynamics[i]->Print(os << '{') << '}';

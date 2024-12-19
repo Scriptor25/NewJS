@@ -7,7 +7,7 @@ namespace NJS
     struct SourceLocation
     {
         std::string Filename;
-        size_t Row = 0;
-        size_t Col = 0;
+        unsigned Row = 0;
+        unsigned Col = 0;
     };
 }

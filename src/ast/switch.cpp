@@ -5,6 +5,74 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
+NJS::SwitchStmt::SwitchStmt(
+    SourceLocation where,
+    ExprPtr condition,
+    std::map<StmtPtr, std::vector<ExprPtr>> cases,
+    StmtPtr default_case)
+    : Stmt(std::move(where)),
+      Condition(std::move(condition)),
+      Cases(std::move(cases)),
+      DefaultCase(std::move(default_case))
+{
+}
+
+NJS::ValuePtr NJS::SwitchStmt::GenLLVM(Builder& builder)
+{
+    const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
+    const auto default_dest = llvm::BasicBlock::Create(builder.GetContext(), "default", parent);
+    const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
+
+    const auto condition = Condition->GenLLVM(builder);
+    const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(), default_dest);
+
+    builder.GetBuilder().SetInsertPoint(default_dest);
+    DefaultCase->GenLLVM(builder);
+    builder.GetBuilder().CreateBr(end_block);
+
+    for (const auto& [case_, entries_] : Cases)
+    {
+        const auto dest = llvm::BasicBlock::Create(builder.GetContext(), "case", parent);
+        for (const auto& entry : entries_)
+        {
+            const auto on_val = entry->GenLLVM(builder);
+            const auto on_val_int = llvm::dyn_cast<llvm::ConstantInt>(on_val->Load());
+            switch_inst->addCase(on_val_int, dest);
+        }
+        builder.GetBuilder().SetInsertPoint(dest);
+        case_->GenLLVM(builder);
+        builder.GetBuilder().CreateBr(end_block);
+    }
+
+    builder.GetBuilder().SetInsertPoint(end_block);
+    return {};
+}
+
+std::ostream& NJS::SwitchStmt::Print(std::ostream& os)
+{
+    Condition->Print(os << "switch (") << ") {" << std::endl;
+    Indent();
+    for (const auto& [case_, entries_] : Cases)
+    {
+        Spacing(os) << "case ";
+        for (unsigned i = 0; i < entries_.size(); ++i)
+        {
+            if (i > 0) os << ", ";
+            entries_[i]->Print(os);
+        }
+        if (const auto p = std::dynamic_pointer_cast<ScopeStmt>(case_))
+            case_->Print(os << ' ');
+        else case_->Print(os << " -> ");
+        os << std::endl;
+    }
+    Spacing(os) << "default";
+    if (const auto p = std::dynamic_pointer_cast<ScopeStmt>(DefaultCase))
+        DefaultCase->Print(os << ' ');
+    else DefaultCase->Print(os << " -> ");
+    Exdent();
+    return Spacing(os << std::endl) << '}';
+}
+
 NJS::SwitchExpr::SwitchExpr(
     SourceLocation where,
     TypePtr type,
@@ -76,7 +144,7 @@ std::ostream& NJS::SwitchExpr::Print(std::ostream& os)
     for (const auto& [case_, entries_] : Cases)
     {
         Spacing(os) << "case ";
-        for (size_t i = 0; i < entries_.size(); ++i)
+        for (unsigned i = 0; i < entries_.size(); ++i)
         {
             if (i > 0) os << ", ";
             entries_[i]->Print(os);

@@ -23,15 +23,27 @@ NJS::TypePtr NJS::Parser::ParseType()
     if (!type)
         Error(where, "expected a valid typename here");
 
-    while (NextAt("["))
+    while (true)
     {
-        if (At(TokenType_Int))
+        if (NextAt("["))
         {
-            const auto count = Skip().IntValue;
-            type = m_Ctx.GetArrayType(type, count);
+            if (At(TokenType_Int))
+            {
+                const auto count = Skip().IntValue;
+                type = m_Ctx.GetArrayType(type, count);
+            }
+            else type = m_Ctx.GetPointerType(type);
+            Expect("]");
+            continue;
         }
-        else type = m_Ctx.GetPointerType(type);
-        Expect("]");
+
+        if (NextAt("&"))
+        {
+            type = m_Ctx.GetRefType(type);
+            continue;
+        }
+
+        break;
     }
 
     return type;

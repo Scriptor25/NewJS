@@ -10,14 +10,15 @@ NJS::StmtPtr NJS::Parser::ParseStmt()
     }
 
     if (At("import"))
-        return ParseImport();
+        return ParseImportStmt();
 
-    if (At("{")) return ParseScope();
-    if (At("function") || At("extern")) return ParseFunction();
-    if (At("let") || At("const")) return ParseVariable();
-    if (At("if")) return ParseIf();
-    if (At("for")) return ParseFor();
-    if (At("return")) return ParseReturn();
+    if (At("{")) return ParseScopeStmt();
+    if (At("function") || At("extern")) return ParseFunctionStmt();
+    if (At("let") || At("const")) return ParseDefStmt();
+    if (At("if")) return ParseIfStmt();
+    if (At("for")) return ParseForStmt();
+    if (At("return")) return ParseReturnStmt();
+    if (At("switch")) return ParseSwitchStmt();
 
-    return ParseExpression();
+    return ParseExpr();
 }

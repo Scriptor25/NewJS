@@ -7,7 +7,7 @@ NJS::ImportStmt::ImportStmt(
     SourceLocation where,
     ImportMapping mapping,
     std::filesystem::path filepath,
-    std::vector<FunctionStmtPtr> functions)
+    std::vector<StmtPtr> functions)
     : Stmt(std::move(where)),
       Mapping(std::move(mapping)),
       Filepath(std::move(filepath)),

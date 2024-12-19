@@ -3,7 +3,7 @@
 #include <NJS/Parser.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::ExprPtr NJS::Parser::ParsePrimary()
+NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
 {
     const auto where = m_Token.Where;
 
@@ -11,49 +11,49 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
     {
         const auto value = Skip().IntValue;
         const auto type = ParseType();
-        return std::make_shared<ConstIntExpr>(where, type, value);
+        return std::make_shared<IntExpr>(where, type, value);
     }
 
     if (At(TokenType_FP))
     {
         const auto value = Skip().FPValue;
         const auto type = ParseType();
-        return std::make_shared<ConstFPExpr>(where, type, value);
+        return std::make_shared<FPExpr>(where, type, value);
     }
 
     if (At(TokenType_String))
-        return std::make_shared<ConstStringExpr>(
+        return std::make_shared<StringExpr>(
             where,
-            m_Ctx.GetPointerType(m_Ctx.GetIntType(8, true)),
+            m_Ctx.GetStringType(),
             Skip().StringValue);
 
     if (At(TokenType_Char))
-        return std::make_shared<ConstCharExpr>(where, m_Ctx.GetIntType(8, true), Skip().StringValue[0]);
+        return std::make_shared<CharExpr>(where, m_Ctx.GetIntType(8, true), Skip().StringValue[0]);
 
     if (NextAt("true"))
-        return std::make_shared<ConstBooleanExpr>(where, m_Ctx.GetIntType(1, false), true);
+        return std::make_shared<BoolExpr>(where, m_Ctx.GetBoolType(), true);
 
     if (NextAt("false"))
-        return std::make_shared<ConstBooleanExpr>(where, m_Ctx.GetIntType(1, false), false);
+        return std::make_shared<BoolExpr>(where, m_Ctx.GetBoolType(), false);
 
     if (NextAt("("))
     {
-        const auto ptr = ParseExpression();
+        const auto ptr = ParseExpr();
         Expect(")");
         return ptr;
     }
 
     if (At("{"))
-        return ParseConstStruct();
+        return ParseStructExpr();
 
     if (At("["))
-        return ParseConstTuple();
+        return ParseTupleExpr();
 
     if (At("?"))
-        return ParseConstFunction();
+        return ParseFunctionExpr();
 
     if (At("$"))
-        return ParseFormat();
+        return ParseFormatExpr();
 
     if (At("switch"))
         return ParseSwitchExpr();
@@ -68,7 +68,7 @@ NJS::ExprPtr NJS::Parser::ParsePrimary()
     if (At(TokenType_Operator))
     {
         const auto op = Skip().StringValue;
-        const auto operand = ParseOperand();
+        const auto operand = ParseOperandExpr();
         const auto type = operand->Type;
         return std::make_shared<UnaryExpr>(where, type, op, false, operand);
     }

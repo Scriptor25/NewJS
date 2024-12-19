@@ -23,7 +23,7 @@ NJS::Parser::Parser(
     if (m_Stack.size() == 1)
         DefVar("process") = m_Ctx.GetStructType({
             {"argc", m_Ctx.GetIntType(32, true)},
-            {"argv", m_Ctx.GetPointerType(m_Ctx.GetPointerType(m_Ctx.GetIntType(8, true)))},
+            {"argv", m_Ctx.GetPointerType(m_Ctx.GetStringType())},
         });
 }
 

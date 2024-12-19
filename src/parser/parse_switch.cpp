@@ -1,12 +1,53 @@
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
 
+NJS::StmtPtr NJS::Parser::ParseSwitchStmt()
+{
+    StackPush();
+    const auto where = Expect("switch").Where;
+    Expect("(");
+    const auto condition = ParseExpr();
+    Expect(")");
+
+    std::map<StmtPtr, std::vector<ExprPtr>> cases;
+    StmtPtr default_case;
+
+    Expect("{");
+    while (!At("}") && !AtEof())
+    {
+        if (!default_case && NextAt("default"))
+        {
+            if (NextAt("->"))
+                default_case = ParseStmt();
+            else default_case = ParseScopeStmt();
+            continue;
+        }
+
+        Expect("case");
+
+        std::vector<ExprPtr> case_entries;
+        do case_entries.push_back(ParsePrimaryExpr());
+        while (NextAt(","));
+
+        StmtPtr value;
+        if (NextAt("->"))
+            value = ParseStmt();
+        else value = ParseScopeStmt();
+
+        cases[value] = case_entries;
+    }
+    Expect("}");
+    StackPop();
+
+    return std::make_shared<SwitchStmt>(where, condition, cases, default_case);
+}
+
 NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
 {
     StackPush();
     const auto where = Expect("switch").Where;
     Expect("(");
-    const auto condition = ParseExpression();
+    const auto condition = ParseExpr();
     Expect(")");
 
     std::map<ExprPtr, std::vector<ExprPtr>> cases;
@@ -18,7 +59,7 @@ NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
         if (!default_case && NextAt("default"))
         {
             if (NextAt("->"))
-                default_case = ParseExpression();
+                default_case = ParseExpr();
             else default_case = ParseScopeExpr();
             continue;
         }
@@ -26,12 +67,12 @@ NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
         Expect("case");
 
         std::vector<ExprPtr> case_entries;
-        do case_entries.push_back(ParsePrimary());
+        do case_entries.push_back(ParsePrimaryExpr());
         while (NextAt(","));
 
         ExprPtr value;
         if (NextAt("->"))
-            value = ParseExpression();
+            value = ParseExpr();
         else value = ParseScopeExpr();
 
         cases[value] = case_entries;

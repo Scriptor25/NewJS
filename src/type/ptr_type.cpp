@@ -3,43 +3,43 @@
 #include <NJS/Std.hpp>
 #include <NJS/Type.hpp>
 
-std::string NJS::PointerType::GenString(const TypePtr& element)
+std::string NJS::PtrType::GenString(const TypePtr& element)
 {
     return element->GetString() + "[]";
 }
 
-bool NJS::PointerType::IsPrimitive() const
+bool NJS::PtrType::IsPrimitive() const
 {
     return true;
 }
 
-bool NJS::PointerType::IsPointer() const
+bool NJS::PtrType::IsPtr() const
 {
     return true;
 }
 
-NJS::TypePtr NJS::PointerType::GetElement() const
+NJS::TypePtr NJS::PtrType::GetElement() const
 {
     return m_Element;
 }
 
-void NJS::PointerType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::PtrType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_POINTER));
     m_Element->TypeInfo(builder, args);
 }
 
-NJS::PointerType::PointerType(TypeContext& ctx, std::string string, TypePtr element)
+NJS::PtrType::PtrType(TypeContext& ctx, std::string string, TypePtr element)
     : Type(ctx, std::move(string)), m_Element(std::move(element))
 {
 }
 
-llvm::Type* NJS::PointerType::GenLLVM(const Builder& builder) const
+llvm::Type* NJS::PtrType::GenLLVM(const Builder& builder) const
 {
     return llvm::PointerType::get(m_Element->GetLLVM(builder), 0);
 }
 
-unsigned NJS::PointerType::GenSize() const
+unsigned NJS::PtrType::GenSize() const
 {
     return 8;
 }

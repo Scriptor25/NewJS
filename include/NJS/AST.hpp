@@ -22,31 +22,22 @@ namespace NJS
         SourceLocation Where;
     };
 
-    struct ImportStmt : Stmt
+    struct ForStmt : Stmt
     {
-        ImportStmt(SourceLocation, ImportMapping, std::filesystem::path, std::vector<FunctionStmtPtr>);
+        ForStmt(SourceLocation, StmtPtr, ExprPtr, StmtPtr, StmtPtr);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
-        ImportMapping Mapping;
-        std::filesystem::path Filepath;
-        std::vector<FunctionStmtPtr> Functions;
-    };
-
-    struct ScopeStmt : Stmt
-    {
-        ScopeStmt(SourceLocation, std::vector<StmtPtr>);
-
-        ValuePtr GenLLVM(Builder&) override;
-        std::ostream& Print(std::ostream&) override;
-
-        std::vector<StmtPtr> Children;
+        StmtPtr Init;
+        ExprPtr Condition;
+        StmtPtr Loop;
+        StmtPtr Body;
     };
 
     struct FunctionStmt : Stmt
     {
-        FunctionStmt(SourceLocation, bool, std::string, std::vector<ParamPtr>, bool, TypePtr, ScopeStmtPtr);
+        FunctionStmt(SourceLocation, bool, std::string, std::vector<ParamPtr>, bool, TypePtr, StmtPtr);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -56,7 +47,7 @@ namespace NJS
         std::vector<ParamPtr> Args;
         bool VarArg;
         TypePtr ResultType;
-        ScopeStmtPtr Body;
+        StmtPtr Body;
     };
 
     struct IfStmt : Stmt
@@ -71,17 +62,48 @@ namespace NJS
         StmtPtr Else;
     };
 
-    struct ForStmt : Stmt
+    struct ImportStmt : Stmt
     {
-        ForStmt(SourceLocation, StmtPtr, ExprPtr, StmtPtr, StmtPtr);
+        ImportStmt(SourceLocation, ImportMapping, std::filesystem::path, std::vector<StmtPtr>);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
-        StmtPtr Init;
+        ImportMapping Mapping;
+        std::filesystem::path Filepath;
+        std::vector<StmtPtr> Functions;
+    };
+
+    struct ReturnStmt : Stmt
+    {
+        ReturnStmt(SourceLocation, ExprPtr);
+
+        ValuePtr GenLLVM(Builder&) override;
+        std::ostream& Print(std::ostream&) override;
+
+        ExprPtr Value;
+    };
+
+    struct ScopeStmt : Stmt
+    {
+        ScopeStmt(SourceLocation, std::vector<StmtPtr>);
+
+        ValuePtr GenLLVM(Builder&) override;
+        std::ostream& Print(std::ostream&) override;
+
+        std::vector<StmtPtr> Children;
+    };
+
+    struct SwitchStmt : Stmt
+    {
+        SwitchStmt(SourceLocation, ExprPtr, std::map<StmtPtr, std::vector<ExprPtr>>, StmtPtr);
+
+        ValuePtr GenLLVM(Builder&) override;
+        std::ostream& Print(std::ostream&) override;
+
         ExprPtr Condition;
-        StmtPtr Loop;
-        StmtPtr Body;
+        std::map<StmtPtr, std::vector<ExprPtr>> Cases;
+        StmtPtr DefaultCase;
     };
 
     struct VariableStmt : Stmt
@@ -95,29 +117,6 @@ namespace NJS
 
         bool IsConst;
         ParamPtr Name;
-        ExprPtr Value;
-    };
-
-    struct ForInOfStmt : Stmt
-    {
-        ForInOfStmt(SourceLocation, VariableStmt, bool, ExprPtr, StmtPtr);
-
-        ValuePtr GenLLVM(Builder&) override;
-        std::ostream& Print(std::ostream&) override;
-
-        VariableStmt Init;
-        bool Of;
-        ExprPtr Value;
-        StmtPtr Body;
-    };
-
-    struct ReturnStmt : Stmt
-    {
-        ReturnStmt(SourceLocation, ExprPtr);
-
-        ValuePtr GenLLVM(Builder&) override;
-        std::ostream& Print(std::ostream&) override;
-
         ExprPtr Value;
     };
 
@@ -161,9 +160,9 @@ namespace NJS
         ExprPtr Value;
     };
 
-    struct ConstBooleanExpr : Expr
+    struct BoolExpr : Expr
     {
-        ConstBooleanExpr(SourceLocation, TypePtr, bool);
+        BoolExpr(SourceLocation, TypePtr, bool);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -171,9 +170,9 @@ namespace NJS
         bool Value;
     };
 
-    struct ConstCharExpr : Expr
+    struct CharExpr : Expr
     {
-        ConstCharExpr(SourceLocation, TypePtr, char);
+        CharExpr(SourceLocation, TypePtr, char);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -181,9 +180,9 @@ namespace NJS
         char Value;
     };
 
-    struct ConstFPExpr : Expr
+    struct FPExpr : Expr
     {
-        ConstFPExpr(SourceLocation, TypePtr, double);
+        FPExpr(SourceLocation, TypePtr, double);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -191,22 +190,22 @@ namespace NJS
         double Value;
     };
 
-    struct ConstFunctionExpr : Expr
+    struct FunctionExpr : Expr
     {
-        ConstFunctionExpr(SourceLocation, TypePtr, std::vector<ParamPtr>, bool, TypePtr, ScopeStmt);
+        FunctionExpr(SourceLocation, TypePtr, std::vector<ParamPtr>, bool, TypePtr, StmtPtr);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
-        std::vector<ParamPtr> Params;
+        std::vector<ParamPtr> Args;
         bool VarArg;
         TypePtr ResultType;
-        ScopeStmt Body;
+        StmtPtr Body;
     };
 
-    struct ConstIntExpr : Expr
+    struct IntExpr : Expr
     {
-        ConstIntExpr(SourceLocation, TypePtr, uint64_t);
+        IntExpr(SourceLocation, TypePtr, uint64_t);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -214,9 +213,9 @@ namespace NJS
         uint64_t Value;
     };
 
-    struct ConstStructExpr : Expr
+    struct StructExpr : Expr
     {
-        ConstStructExpr(SourceLocation, TypePtr, std::map<std::string, ExprPtr>);
+        StructExpr(SourceLocation, TypePtr, std::map<std::string, ExprPtr>);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -224,9 +223,9 @@ namespace NJS
         std::map<std::string, ExprPtr> Elements;
     };
 
-    struct ConstStringExpr : Expr
+    struct StringExpr : Expr
     {
-        ConstStringExpr(SourceLocation, TypePtr, std::string);
+        StringExpr(SourceLocation, TypePtr, std::string);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -236,9 +235,9 @@ namespace NJS
         static llvm::Constant* GetString(const Builder&, const std::string&);
     };
 
-    struct ConstTupleExpr : Expr
+    struct TupleExpr : Expr
     {
-        ConstTupleExpr(SourceLocation, TypePtr, std::vector<ExprPtr>);
+        TupleExpr(SourceLocation, TypePtr, std::vector<ExprPtr>);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
@@ -248,14 +247,14 @@ namespace NJS
 
     struct FormatExpr : Expr
     {
-        FormatExpr(SourceLocation, TypePtr, size_t, std::map<size_t, std::string>, std::map<size_t, ExprPtr>);
+        FormatExpr(SourceLocation, TypePtr, unsigned, std::map<unsigned, std::string>, std::map<unsigned, ExprPtr>);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
-        size_t Count;
-        std::map<size_t, std::string> Statics;
-        std::map<size_t, ExprPtr> Dynamics;
+        unsigned Count;
+        std::map<unsigned, std::string> Statics;
+        std::map<unsigned, ExprPtr> Dynamics;
     };
 
     struct MemberExpr : Expr

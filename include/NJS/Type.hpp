@@ -24,7 +24,7 @@ namespace NJS
 
         std::ostream& Print(std::ostream&) const;
 
-        std::string GetString() const;
+        [[nodiscard]] std::string GetString() const;
 
         template <typename T = llvm::Type>
         T* GetLLVM(const Builder& builder)
@@ -34,31 +34,32 @@ namespace NJS
             return llvm::dyn_cast<T>(m_LLVM = GenLLVM(builder));
         }
 
-        unsigned GetSize() const;
+        unsigned GetSize();
 
-        virtual bool IsPrimitive() const;
-        virtual bool IsVoid() const;
-        virtual bool IsInt() const;
-        virtual bool IsFP() const;
-        virtual bool IsPointer() const;
-        virtual bool IsArray() const;
-        virtual bool IsStruct() const;
-        virtual bool IsTuple() const;
-        virtual bool IsFunction() const;
-        virtual bool IsSigned() const;
-        virtual unsigned GetBits() const;
-        virtual TypePtr GetElement() const;
-        virtual TypePtr GetElement(unsigned) const;
-        virtual MemberT GetMember(const std::string&) const;
-        virtual TypePtr GetResult() const;
+        [[nodiscard]] virtual bool IsPrimitive() const;
+        [[nodiscard]] virtual bool IsVoid() const;
+        [[nodiscard]] virtual bool IsInt() const;
+        [[nodiscard]] virtual bool IsFP() const;
+        [[nodiscard]] virtual bool IsPtr() const;
+        [[nodiscard]] virtual bool IsRef() const;
+        [[nodiscard]] virtual bool IsArray() const;
+        [[nodiscard]] virtual bool IsStruct() const;
+        [[nodiscard]] virtual bool IsTuple() const;
+        [[nodiscard]] virtual bool IsFunction() const;
+        [[nodiscard]] virtual bool IsSigned() const;
+        [[nodiscard]] virtual unsigned GetBits() const;
+        [[nodiscard]] virtual TypePtr GetElement() const;
+        [[nodiscard]] virtual TypePtr GetElement(unsigned) const;
+        [[nodiscard]] virtual MemberT GetMember(const std::string&) const;
+        [[nodiscard]] virtual TypePtr GetResult() const;
 
         virtual void TypeInfo(Builder&, std::vector<llvm::Value*>&) const = 0;
 
     protected:
         Type(TypeContext&, std::string);
 
-        virtual llvm::Type* GenLLVM(const Builder&) const = 0;
-        virtual unsigned GenSize() const = 0;
+        [[nodiscard]] virtual llvm::Type* GenLLVM(const Builder&) const = 0;
+        [[nodiscard]] virtual unsigned GenSize() const = 0;
 
         TypeContext& m_Ctx;
         std::string m_String;
@@ -73,14 +74,14 @@ namespace NJS
     public:
         static std::string GenString();
 
-        TypePtr GetResult() const override;
+        [[nodiscard]] TypePtr GetResult() const override;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         NoType(TypeContext&, std::string);
 
-        llvm::Type* GenLLVM(const Builder&) const override;
-        unsigned GenSize() const override;
+        [[nodiscard]] llvm::Type* GenLLVM(const Builder&) const override;
+        [[nodiscard]] unsigned GenSize() const override;
     };
 
     class VoidType : public Type
@@ -90,15 +91,15 @@ namespace NJS
     public:
         static std::string GenString();
 
-        bool IsPrimitive() const override;
-        bool IsVoid() const override;
+        [[nodiscard]] bool IsPrimitive() const override;
+        [[nodiscard]] bool IsVoid() const override;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         VoidType(TypeContext&, std::string);
 
-        llvm::Type* GenLLVM(const Builder&) const override;
-        unsigned GenSize() const override;
+        [[nodiscard]] llvm::Type* GenLLVM(const Builder&) const override;
+        [[nodiscard]] unsigned GenSize() const override;
     };
 
     class IntType : public Type
@@ -108,17 +109,17 @@ namespace NJS
     public:
         static std::string GenString(unsigned, bool);
 
-        bool IsPrimitive() const override;
-        bool IsInt() const override;
-        bool IsSigned() const override;
-        unsigned GetBits() const override;
+        [[nodiscard]] bool IsPrimitive() const override;
+        [[nodiscard]] bool IsInt() const override;
+        [[nodiscard]] bool IsSigned() const override;
+        [[nodiscard]] unsigned GetBits() const override;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         IntType(TypeContext&, std::string, unsigned, bool);
 
-        llvm::Type* GenLLVM(const Builder&) const override;
-        unsigned GenSize() const override;
+        [[nodiscard]] llvm::Type* GenLLVM(const Builder&) const override;
+        [[nodiscard]] unsigned GenSize() const override;
 
         unsigned m_Bits;
         bool m_IsSigned;
@@ -131,34 +132,55 @@ namespace NJS
     public:
         static std::string GenString(unsigned);
 
-        bool IsPrimitive() const override;
-        bool IsFP() const override;
-        unsigned GetBits() const override;
+        [[nodiscard]] bool IsPrimitive() const override;
+        [[nodiscard]] bool IsFP() const override;
+        [[nodiscard]] unsigned GetBits() const override;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         FPType(TypeContext&, std::string, unsigned);
 
-        llvm::Type* GenLLVM(const Builder&) const override;
-        unsigned GenSize() const override;
+        [[nodiscard]] llvm::Type* GenLLVM(const Builder&) const override;
+        [[nodiscard]] unsigned GenSize() const override;
 
         unsigned m_Bits;
     };
 
-    class PointerType : public Type
+    class PtrType : public Type
     {
         friend TypeContext;
 
     public:
         static std::string GenString(const TypePtr&);
 
-        bool IsPrimitive() const override;
-        [[nodiscard]] bool IsPointer() const override;
+        [[nodiscard]] bool IsPrimitive() const override;
+        [[nodiscard]] bool IsPtr() const override;
         [[nodiscard]] TypePtr GetElement() const override;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
-        PointerType(TypeContext&, std::string, TypePtr);
+        PtrType(TypeContext&, std::string, TypePtr);
+
+        [[nodiscard]] llvm::Type* GenLLVM(const Builder&) const override;
+        [[nodiscard]] unsigned GenSize() const override;
+
+        TypePtr m_Element;
+    };
+
+    class RefType : public Type
+    {
+        friend TypeContext;
+
+    public:
+        static std::string GenString(const TypePtr&);
+
+        [[nodiscard]] bool IsPrimitive() const override;
+        [[nodiscard]] bool IsRef() const override;
+        [[nodiscard]] TypePtr GetElement() const override;
+        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+
+    protected:
+        RefType(TypeContext&, std::string, TypePtr);
 
         [[nodiscard]] llvm::Type* GenLLVM(const Builder&) const override;
         [[nodiscard]] unsigned GenSize() const override;
@@ -174,7 +196,7 @@ namespace NJS
         static std::string GenString(const TypePtr&, unsigned);
 
         [[nodiscard]] bool IsArray() const override;
-        TypePtr GetElement() const override;
+        [[nodiscard]] TypePtr GetElement() const override;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
@@ -201,8 +223,8 @@ namespace NJS
     protected:
         StructType(TypeContext&, std::string, std::map<std::string, TypePtr>);
 
-        llvm::Type* GenLLVM(const Builder&) const override;
-        unsigned GenSize() const override;
+        [[nodiscard]] llvm::Type* GenLLVM(const Builder&) const override;
+        [[nodiscard]] unsigned GenSize() const override;
 
         std::map<std::string, TypePtr> m_Elements;
     };
@@ -214,16 +236,16 @@ namespace NJS
     public:
         static std::string GenString(const std::vector<TypePtr>&);
 
-        bool IsTuple() const override;
-        TypePtr GetElement() const override;
-        TypePtr GetElement(unsigned) const override;
+        [[nodiscard]] bool IsTuple() const override;
+        [[nodiscard]] TypePtr GetElement() const override;
+        [[nodiscard]] TypePtr GetElement(unsigned) const override;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         TupleType(TypeContext&, std::string, std::vector<TypePtr>);
 
-        llvm::Type* GenLLVM(const Builder&) const override;
-        unsigned GenSize() const override;
+        [[nodiscard]] llvm::Type* GenLLVM(const Builder&) const override;
+        [[nodiscard]] unsigned GenSize() const override;
 
         std::vector<TypePtr> m_Elements;
     };
@@ -235,20 +257,20 @@ namespace NJS
     public:
         static std::string GenString(const TypePtr&, const std::vector<TypePtr>&, bool);
 
-        bool IsPrimitive() const override;
-        bool IsFunction() const override;
-        TypePtr GetResult() const override;
-        TypePtr Arg(unsigned) const;
-        bool VarArg() const;
+        [[nodiscard]] bool IsPrimitive() const override;
+        [[nodiscard]] bool IsFunction() const override;
+        [[nodiscard]] TypePtr GetResult() const override;
+        [[nodiscard]] TypePtr Arg(unsigned) const;
+        [[nodiscard]] bool VarArg() const;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 
-        llvm::FunctionType* GenFnLLVM(const Builder&) const;
+        [[nodiscard]] llvm::FunctionType* GenFnLLVM(const Builder&) const;
 
     protected:
         FunctionType(TypeContext&, std::string, TypePtr, std::vector<TypePtr>, bool);
 
-        llvm::Type* GenLLVM(const Builder&) const override;
-        unsigned GenSize() const override;
+        [[nodiscard]] llvm::Type* GenLLVM(const Builder&) const override;
+        [[nodiscard]] unsigned GenSize() const override;
 
         TypePtr m_Result;
         std::vector<TypePtr> m_Args;

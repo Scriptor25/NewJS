@@ -2,7 +2,7 @@
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::ImportStmtPtr NJS::Parser::ParseImport()
+NJS::StmtPtr NJS::Parser::ParseImportStmt()
 {
     const auto where = Expect("import").Where;
     const auto mapping = ParseImportMapping();
@@ -16,7 +16,7 @@ NJS::ImportStmtPtr NJS::Parser::ParseImport()
     std::ifstream stream(filepath);
     Parser parser(m_Ctx, stream, filepath.string(), true);
 
-    std::vector<FunctionStmtPtr> functions;
+    std::vector<StmtPtr> functions;
     parser.Parse([&](const StmtPtr& ptr)
     {
         if (const auto function = std::dynamic_pointer_cast<FunctionStmt>(ptr))

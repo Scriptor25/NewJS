@@ -1,9 +1,9 @@
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::ReturnStmtPtr NJS::Parser::ParseReturn()
+NJS::StmtPtr NJS::Parser::ParseReturnStmt()
 {
     const auto where = Expect("return").Where;
-    const auto value = ParseExpression();
+    const auto value = ParseExpr();
     return std::make_shared<ReturnStmt>(where, value);
 }

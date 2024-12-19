@@ -39,20 +39,18 @@ function parse_input(input: i8[]): [u64[3][], u64] {
     return [sizes, sizes_len - 1u64]
 }
 
-function swap(size: u64[3], a: u64, b: u64): u64[3] {
+function swap(size: u64[3]&, a: u64, b: u64) {
     const t = size[a]
     size[a] = size[b]
     size[b] = t
-    return size
 }
 
-function order(size: u64[3]): u64[3] {
+function order(size: u64[3]&) {
     for (let i: u64; i < 2u64; ++i)
     for (let j: u64; j < 2u64; ++j)
     if (size[j] > size[j + 1u64]) {
-        size = swap(size, j, j + 1u64)
+        swap(size, j, j + 1u64)
     }
-    return size
 }
 
 function part_1(input: i8[]): u64 {
@@ -78,7 +76,7 @@ function part_2(input: i8[]): u64 {
     let sum: u64
     for (let i: u64; i < sizes_len; ++i) {
         let size = sizes[i]
-        size = order(size)
+        order(size)
         sum += size[0u64] * 2u64 + size[1u64] * 2u64 + size[0u64] * size[1u64] * size[2u64]
     }
 

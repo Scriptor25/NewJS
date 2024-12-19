@@ -10,8 +10,8 @@ namespace NJS
     struct ImportMapping
     {
         std::ostream& Print(std::ostream&) const;
-        void MapFunctions(Parser&, const std::vector<FunctionStmtPtr>&) const;
-        void MapFunctions(Builder&, const std::string&, const std::vector<FunctionStmtPtr>&) const;
+        void MapFunctions(Parser&, const std::vector<StmtPtr>&) const;
+        void MapFunctions(Builder&, const std::string&, const std::vector<StmtPtr>&) const;
 
         std::string Name;
         std::map<std::string, std::string> NameMap;

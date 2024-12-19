@@ -4,23 +4,23 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::ConstStructExpr::ConstStructExpr(SourceLocation where, TypePtr type, std::map<std::string, ExprPtr> elements)
+NJS::StructExpr::StructExpr(SourceLocation where, TypePtr type, std::map<std::string, ExprPtr> elements)
     : Expr(std::move(where), std::move(type)), Elements(std::move(elements))
 {
 }
 
-NJS::ValuePtr NJS::ConstStructExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::StructExpr::GenLLVM(Builder& builder)
 {
     llvm::Value* object = llvm::ConstantStruct::getNullValue(Type->GetLLVM<llvm::StructType>(builder));
 
-    size_t i = 0;
+    unsigned i = 0;
     for (const auto& [name_, element_] : Elements)
         object = builder.GetBuilder().CreateInsertValue(object, element_->GenLLVM(builder)->Load(), i++);
 
     return RValue::Create(builder, Type, object);
 }
 
-std::ostream& NJS::ConstStructExpr::Print(std::ostream& os)
+std::ostream& NJS::StructExpr::Print(std::ostream& os)
 {
     if (Elements.empty()) return os << "{}";
 

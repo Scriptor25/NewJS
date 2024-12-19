@@ -57,27 +57,28 @@ namespace NJS
         void ParseTypeAlias();
         void ParseInterface();
 
-        ImportStmtPtr ParseImport();
+        StmtPtr ParseImportStmt();
         ImportMapping ParseImportMapping();
 
         StmtPtr ParseStmt();
-        ScopeStmtPtr ParseScope();
-        FunctionStmtPtr ParseFunction();
-        VariableStmtPtr ParseVariable();
-        IfStmtPtr ParseIf();
-        StmtPtr ParseFor();
-        ReturnStmtPtr ParseReturn();
+        StmtPtr ParseDefStmt();
+        StmtPtr ParseForStmt();
+        StmtPtr ParseFunctionStmt();
+        StmtPtr ParseIfStmt();
+        StmtPtr ParseReturnStmt();
+        StmtPtr ParseScopeStmt();
+        StmtPtr ParseSwitchStmt();
 
-        ExprPtr ParseExpression();
-        ExprPtr ParseBinary(ExprPtr lhs, unsigned min_pre);
-        ExprPtr ParseOperand();
-        ExprPtr ParsePrimary();
-        ExprPtr ParseConstStruct();
-        ExprPtr ParseConstTuple();
-        ExprPtr ParseConstFunction();
-        ExprPtr ParseFormat();
-        ExprPtr ParseSwitchExpr();
+        ExprPtr ParseExpr();
+        ExprPtr ParseBinaryExpr(ExprPtr lhs, unsigned min_pre);
+        ExprPtr ParseFormatExpr();
+        ExprPtr ParseFunctionExpr();
+        ExprPtr ParseOperandExpr();
+        ExprPtr ParsePrimaryExpr();
         ExprPtr ParseScopeExpr();
+        ExprPtr ParseStructExpr();
+        ExprPtr ParseSwitchExpr();
+        ExprPtr ParseTupleExpr();
 
         void StackPush();
         void StackPop();

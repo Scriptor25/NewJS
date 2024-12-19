@@ -36,15 +36,15 @@ namespace NJS
         [[nodiscard]] llvm::Module& GetModule() const;
         [[nodiscard]] llvm::IRBuilder<>& GetBuilder() const;
 
-        [[nodiscard]] llvm::Value* CreateAlloca(llvm::Type*, size_t = 0) const;
-        ValuePtr CreateAlloca(const TypePtr&, size_t = 0);
+        [[nodiscard]] llvm::Value* CreateAlloca(llvm::Type*, unsigned = 0) const;
+        ValuePtr CreateAlloca(const TypePtr&, unsigned = 0);
         ValuePtr CreateGlobal(const std::string&, const TypePtr&, bool);
 
         ValuePtr CreateMember(const ValuePtr&, const std::string&);
 
         ValuePtr CreateSubscript(const ValuePtr&, const ValuePtr&);
         ValuePtr CreateSubscript(const ValuePtr&, llvm::Value*);
-        ValuePtr CreateSubscript(const ValuePtr&, size_t);
+        ValuePtr CreateSubscript(const ValuePtr&, unsigned);
 
         ValuePtr CreateCast(const ValuePtr&, const TypePtr&);
         llvm::Value* CreateCast(llvm::Value*, const TypePtr&, const TypePtr&) const;

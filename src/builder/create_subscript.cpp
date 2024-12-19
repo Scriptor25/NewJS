@@ -9,7 +9,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const ValuePtr& array, const ValuePt
     return CreateSubscript(array, index->Load());
 }
 
-NJS::ValuePtr NJS::Builder::CreateSubscript(const ValuePtr& array, const size_t index)
+NJS::ValuePtr NJS::Builder::CreateSubscript(const ValuePtr& array, const unsigned index)
 {
     return CreateSubscript(
         array,
@@ -23,7 +23,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const ValuePtr& array, llvm::Value* 
 {
     const auto array_type = array->GetType();
 
-    if (array_type->IsPointer())
+    if (array_type->IsPtr())
     {
         const auto element_type = array_type->GetElement();
         const auto ptr = GetBuilder().CreateGEP(

@@ -27,11 +27,14 @@ std::ostream& NJS::ImportMapping::Print(std::ostream& os) const
     return os << " }";
 }
 
-void NJS::ImportMapping::MapFunctions(Parser& parser, const std::vector<FunctionStmtPtr>& functions) const
+void NJS::ImportMapping::MapFunctions(Parser& parser, const std::vector<StmtPtr>& functions) const
 {
     std::map<std::string, TypePtr> element_types;
-    for (const auto& function : functions)
+
+    for (const auto& ptr : functions)
     {
+        const auto function = std::dynamic_pointer_cast<FunctionStmt>(ptr);
+
         std::vector<TypePtr> arg_types;
         for (const auto& param : function->Args)
             arg_types.push_back(param->Type);
@@ -41,7 +44,6 @@ void NJS::ImportMapping::MapFunctions(Parser& parser, const std::vector<Function
             function->VarArg);
         element_types[function->Name] = type;
     }
-
     if (!Name.empty() && NameMap.empty())
     {
         const auto module_type = parser.m_Ctx.GetStructType(element_types);
@@ -59,12 +61,14 @@ void NJS::ImportMapping::MapFunctions(Parser& parser, const std::vector<Function
 void NJS::ImportMapping::MapFunctions(
     Builder& builder,
     const std::string& module_id,
-    const std::vector<FunctionStmtPtr>& functions) const
+    const std::vector<StmtPtr>& functions) const
 {
     std::map<std::string, TypePtr> element_types;
     std::map<std::string, ValuePtr> elements;
-    for (const auto& function : functions)
+    for (const auto& ptr : functions)
     {
+        const auto function = std::dynamic_pointer_cast<FunctionStmt>(ptr);
+
         std::vector<TypePtr> arg_types;
         for (const auto& param : function->Args)
             arg_types.push_back(param->Type);
@@ -83,7 +87,7 @@ void NJS::ImportMapping::MapFunctions(
     {
         const auto module_type = builder.GetCtx().GetStructType(element_types);
         llvm::Value* module = llvm::Constant::getNullValue(module_type->GetLLVM(builder));
-        size_t i = 0;
+        unsigned i = 0;
         for (const auto& [name_, value_] : elements)
             module = builder.GetBuilder().CreateInsertValue(module, value_->Load(), i++);
 

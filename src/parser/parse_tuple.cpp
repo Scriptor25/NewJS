@@ -2,7 +2,7 @@
 #include <NJS/Parser.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::ExprPtr NJS::Parser::ParseConstTuple()
+NJS::ExprPtr NJS::Parser::ParseTupleExpr()
 {
     const auto where = Expect("[").Where;
 
@@ -12,7 +12,7 @@ NJS::ExprPtr NJS::Parser::ParseConstTuple()
 
     while (!At("]") && !AtEof())
     {
-        const auto value = ParseExpression();
+        const auto value = ParseExpr();
         entries.push_back(value);
         types.push_back(value->Type);
 
@@ -29,5 +29,5 @@ NJS::ExprPtr NJS::Parser::ParseConstTuple()
     if (is_tuple) type = m_Ctx.GetTupleType(types);
     else type = m_Ctx.GetArrayType(types.front(), types.size());
 
-    return std::make_shared<ConstTupleExpr>(where, type, entries);
+    return std::make_shared<TupleExpr>(where, type, entries);
 }

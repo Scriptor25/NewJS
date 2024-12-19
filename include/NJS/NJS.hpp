@@ -20,7 +20,8 @@ namespace NJS
     typedef std::shared_ptr<class VoidType> VoidTypePtr;
     typedef std::shared_ptr<class IntType> IntTypePtr;
     typedef std::shared_ptr<class FPType> FPTypePtr;
-    typedef std::shared_ptr<class PointerType> PointerTypePtr;
+    typedef std::shared_ptr<class PtrType> PtrTypePtr;
+    typedef std::shared_ptr<class RefType> RefTypePtr;
     typedef std::shared_ptr<class ArrayType> ArrayTypePtr;
     typedef std::shared_ptr<class StructType> StructTypePtr;
     typedef std::shared_ptr<class TupleType> TupleTypePtr;
@@ -31,14 +32,6 @@ namespace NJS
 
     typedef std::shared_ptr<struct Stmt> StmtPtr;
     typedef std::shared_ptr<struct Expr> ExprPtr;
-    typedef std::shared_ptr<struct ImportStmt> ImportStmtPtr;
-    typedef std::shared_ptr<struct ScopeStmt> ScopeStmtPtr;
-    typedef std::shared_ptr<struct FunctionStmt> FunctionStmtPtr;
-    typedef std::shared_ptr<struct VariableStmt> VariableStmtPtr;
-    typedef std::shared_ptr<struct IfStmt> IfStmtPtr;
-    typedef std::shared_ptr<struct ForStmt> ForStmtPtr;
-    typedef std::shared_ptr<struct ForInOfStmt> ForInOfStmtPtr;
-    typedef std::shared_ptr<struct ReturnStmt> ReturnStmtPtr;
 
     void Indent();
     void Exdent();

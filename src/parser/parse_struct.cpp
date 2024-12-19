@@ -2,7 +2,7 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::ExprPtr NJS::Parser::ParseConstStruct()
+NJS::ExprPtr NJS::Parser::ParseStructExpr()
 {
     const auto where = Expect("{").Where;
 
@@ -19,7 +19,7 @@ NJS::ExprPtr NJS::Parser::ParseConstStruct()
         }
         else
         {
-            const auto value = ParseExpression();
+            const auto value = ParseExpr();
             entries[name_] = value;
             elements[name_] = value->Type;
         }
@@ -31,5 +31,5 @@ NJS::ExprPtr NJS::Parser::ParseConstStruct()
     Expect("}");
 
     const auto type = m_Ctx.GetStructType(elements);
-    return std::make_shared<ConstStructExpr>(where, type, entries);
+    return std::make_shared<StructExpr>(where, type, entries);
 }

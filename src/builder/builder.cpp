@@ -16,7 +16,7 @@ NJS::Builder::Builder(TypeContext& ctx, llvm::LLVMContext& context, const std::s
         "process",
         m_Ctx.GetStructType({
             {"argc", m_Ctx.GetIntType(32, true)},
-            {"argv", m_Ctx.GetPointerType(m_Ctx.GetPointerType(m_Ctx.GetIntType(8, true)))}
+            {"argv", m_Ctx.GetPointerType(m_Ctx.GetStringType())}
         }), is_main);
 
     llvm::Function* function;

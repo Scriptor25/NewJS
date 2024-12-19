@@ -1,8 +1,9 @@
 #include <NJS/AST.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/Operator.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::ExprPtr NJS::Parser::ParseBinary(ExprPtr lhs, const unsigned min_pre)
+NJS::ExprPtr NJS::Parser::ParseBinaryExpr(ExprPtr lhs, const unsigned min_pre)
 {
     static const std::map<std::string, unsigned> OPERATORS
     {
@@ -51,24 +52,25 @@ NJS::ExprPtr NJS::Parser::ParseBinary(ExprPtr lhs, const unsigned min_pre)
     while (At(TokenType_Operator) && has_pre() && get_pre() >= min_pre)
     {
         const auto op_pre = get_pre();
-        const auto [where_, _1, op_, _2, _3] = Skip();
+        const auto [where_, type_, op_, int_, fp_] = Skip();
 
-        auto rhs = ParseOperand();
+        auto rhs = ParseOperandExpr();
         while (At(TokenType_Operator) && has_pre() && (get_pre() > op_pre || (!get_pre() && get_pre() >= op_pre)))
-            rhs = ParseBinary(rhs, op_pre + (get_pre() > op_pre ? 1 : 0));
+            rhs = ParseBinaryExpr(rhs, op_pre + (get_pre() > op_pre ? 1 : 0));
 
         if (op_ == "?")
         {
             const auto type = rhs->Type;
             Expect(":");
-            const auto else_ = ParseExpression();
+            const auto else_ = ParseExpr();
             lhs = std::make_shared<TernaryExpr>(where_, type, lhs, rhs, else_);
+            continue;
         }
-        else
-        {
-            const auto type = OperatorType(m_Ctx, op_, lhs->Type, rhs->Type);
-            lhs = std::make_shared<BinaryExpr>(where_, type, op_, lhs, rhs);
-        }
+
+        const auto type = OperatorType(m_Ctx, op_, lhs->Type, rhs->Type);
+        if (!type)
+            Error("undefined binary operator '{} {} {}'", lhs->Type, op_, rhs->Type);
+        lhs = std::make_shared<BinaryExpr>(where_, type, op_, lhs, rhs);
     }
 
     return lhs;

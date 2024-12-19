@@ -21,7 +21,7 @@ llvm::Value* NJS::Builder::CreateCast(llvm::Value* val, const TypePtr& src_type,
             return GetBuilder().CreateIntCast(val, ty, dst_type->IsSigned());
         if (dst_type->IsFP())
             return src_type->IsSigned() ? GetBuilder().CreateSIToFP(val, ty) : GetBuilder().CreateUIToFP(val, ty);
-        if (dst_type->IsPointer())
+        if (dst_type->IsPtr())
             return GetBuilder().CreateIntToPtr(val, ty);
     }
     if (src_type->IsFP())
@@ -31,13 +31,13 @@ llvm::Value* NJS::Builder::CreateCast(llvm::Value* val, const TypePtr& src_type,
         if (dst_type->IsFP())
             return GetBuilder().CreateFPCast(val, ty);
     }
-    if (src_type->IsPointer())
+    if (src_type->IsPtr())
     {
         if (dst_type->IsInt())
             return GetBuilder().CreatePtrToInt(val, ty);
-        if (dst_type->IsPointer())
+        if (dst_type->IsPtr())
             return GetBuilder().CreatePointerCast(val, ty);
     }
 
-    Error("TODO");
+    Error("cannot cast value of type {} to type {}", src_type, dst_type);
 }

@@ -7,14 +7,14 @@ type User = {
     type: i8[],
 }
 
-const u1: User = {
+let u1: User = {
     name: "Felix",
     surname: "Schreiber",
     age: 18u32,
     type: "App Development"
 }
 
-function printUser({ name: n, surname: s, age: a, type: t }: User) {
+function printUser({ name: n, surname: s, age: a, type: t }: User&) {
     println($"{n} {s} {a} {t}")
 }
 
@@ -25,12 +25,12 @@ function recurse(n: u32): u32 {
     return recurse(n - 1u32) + recurse(n - 2u32)
 }
 
-const n = 10u32
-const r = recurse(n)
+let n = 10u32
+let r = recurse(n)
 println($"recurse({n}) = {r}")
 
-const a1 = [1u32, 2u32, 3u32]
-const t1 = ["Felix", u1, a1]
+let a1 = [1u32, 2u32, 3u32]
+let t1 = ["Felix", u1, a1]
 
 function printArray(array: u32[3]) {
     println($"{array}")
@@ -38,7 +38,7 @@ function printArray(array: u32[3]) {
 
 printArray(a1)
 
-for (let i = 0u32; i < 3u32; ++i)
+for (let i: u32; i < 3u32; ++i)
     println($"a1[{i}] = {a1[i]}")
 
 function foo(): (): u32 {
@@ -51,7 +51,7 @@ function foo(): (): u32 {
 println($"foo() = {foo()}")
 println($"foo()() = {foo()()}")
 
-const [name1, {name, surname, age, type}] = ["Felix", u1]
+let [name1, {name, surname, age, type}] = ["Felix", u1]
 
 println($"{name1} {name} {surname} {age} {type} {[4u32, 5u32, 6u32]}")
 println($"t1 = {t1}")

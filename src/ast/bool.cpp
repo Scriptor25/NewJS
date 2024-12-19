@@ -3,18 +3,18 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Value.hpp>
 
-NJS::ConstBooleanExpr::ConstBooleanExpr(SourceLocation where, TypePtr type, const bool value)
+NJS::BoolExpr::BoolExpr(SourceLocation where, TypePtr type, const bool value)
     : Expr(std::move(where), std::move(type)), Value(value)
 {
 }
 
-NJS::ValuePtr NJS::ConstBooleanExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::BoolExpr::GenLLVM(Builder& builder)
 {
     const auto value = builder.GetBuilder().getInt1(Value);
     return RValue::Create(builder, Type, value);
 }
 
-std::ostream& NJS::ConstBooleanExpr::Print(std::ostream& os)
+std::ostream& NJS::BoolExpr::Print(std::ostream& os)
 {
     return os << (Value ? "true" : "false");
 }
