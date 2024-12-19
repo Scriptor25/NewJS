@@ -15,9 +15,10 @@ let u1: User = {
 }
 
 function printUser({ name: n, surname: s, age: a, type: t }: User&) {
-    println($"{n} {s} {a} {t}")
+    println($" - {n} {s} ({a}), {t}")
 }
 
+println("IT WORKS!")
 printUser(u1)
 
 function recurse(n: u32): u32 {

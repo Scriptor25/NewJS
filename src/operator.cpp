@@ -135,11 +135,31 @@ NJS::ValuePtr NJS::OperatorMul(Builder& builder, const ValuePtr& lhs, const Valu
             lhs->GetType(),
             builder.GetBuilder().CreateMul(lhs->Load(), rhs->Load()));
 
+    if (lhs->GetType()->IsFP())
+        return RValue::Create(
+            builder,
+            lhs->GetType(),
+            builder.GetBuilder().CreateFMul(lhs->Load(), rhs->Load()));
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorDiv(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
+    if (lhs->GetType()->IsInt())
+        return RValue::Create(
+            builder,
+            lhs->GetType(),
+            lhs->GetType()->IsSigned()
+                ? builder.GetBuilder().CreateSDiv(lhs->Load(), rhs->Load())
+                : builder.GetBuilder().CreateUDiv(lhs->Load(), rhs->Load()));
+
+    if (lhs->GetType()->IsFP())
+        return RValue::Create(
+            builder,
+            lhs->GetType(),
+            builder.GetBuilder().CreateFDiv(lhs->Load(), rhs->Load()));
+
     return {};
 }
 
@@ -259,6 +279,15 @@ std::pair<NJS::ValuePtr, bool> NJS::OperatorLNot(Builder& builder, const ValuePt
 
 std::pair<NJS::ValuePtr, bool> NJS::OperatorNot(Builder& builder, const ValuePtr& val)
 {
+    if (val->GetType()->IsInt())
+        return {
+            RValue::Create(
+                builder,
+                val->GetType(),
+                builder.GetBuilder().CreateNot(val->Load())),
+            false,
+        };
+
     return {nullptr, false};
 }
 

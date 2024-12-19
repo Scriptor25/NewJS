@@ -11,11 +11,11 @@
 
 enum ARG_ID
 {
-    ARG_ID_HELP,
-    ARG_ID_VERSION,
+    ARG_ID_MAIN,
     ARG_ID_OUTPUT,
     ARG_ID_TYPE,
-    ARG_ID_MAIN,
+    ARG_ID_HELP,
+    ARG_ID_VERSION,
 };
 
 static llvm::CodeGenFileType to_type(const std::string& str)
@@ -43,9 +43,7 @@ static void parse(
     NJS::Builder builder(context, linker.LLVMContext(), module_id, is_main);
     NJS::Parser parser(context, input_stream, input_path.string());
     parser.Parse([&](const NJS::StmtPtr& ptr) { ptr->GenLLVM(builder); });
-
     builder.Close();
-    // builder.LLVMModule().print(llvm::errs(), {});
     linker.Link(builder.MoveModule());
 }
 
@@ -59,6 +57,16 @@ int main(const int argc, const char** argv)
         {ARG_ID_MAIN, {"--main", "-m"}, false},
     });
     args.Parse(argc, argv);
+
+    if (args.IsEmpty() || args.Flag(ARG_ID_HELP))
+    {
+        std::cerr << "NewJS [v1.0.0]" << std::endl;
+        args.Print();
+        return args.IsEmpty() ? 1 : 0;
+    }
+
+    if (args.Flag(ARG_ID_VERSION))
+        std::cerr << "NewJS [v1.0.0]" << std::endl;
 
     std::vector<std::string> input_filenames;
     args.Values(input_filenames);

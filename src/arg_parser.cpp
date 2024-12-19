@@ -1,3 +1,4 @@
+#include <iostream>
 #include <NJS/ArgParser.hpp>
 
 NJS::ArgParser::ArgParser(const std::vector<Arg>& args)
@@ -58,4 +59,46 @@ void NJS::ArgParser::Option(const ID id, std::string& option, const std::string&
         return;
     }
     option = alt;
+}
+
+void NJS::ArgParser::Print() const
+{
+    std::map<ID, std::vector<std::string>> options;
+    std::map<ID, std::vector<std::string>> flags;
+
+    for (const auto& [pat_, arg_] : m_Args)
+    {
+        if (arg_.second)
+            flags[arg_.first].push_back(pat_);
+        else options[arg_.first].push_back(pat_);
+    }
+
+    std::cerr << m_Executable << " [OPTION|FLAG|VALUE]..." << std::endl;
+    std::cerr << "OPTION" << std::endl;
+    for (const auto& [id_, pat_] : options)
+    {
+        for (unsigned i = 0; i < pat_.size(); ++i)
+        {
+            if (i > 0) std::cerr << ", ";
+            std::cerr << pat_[i];
+        }
+        std::cerr << std::endl;
+    }
+    std::cerr << "FLAG" << std::endl;
+    for (const auto& [id_, pat_] : flags)
+    {
+        for (unsigned i = 0; i < pat_.size(); ++i)
+        {
+            if (i > 0) std::cerr << ", ";
+            std::cerr << pat_[i];
+        }
+        std::cerr << std::endl;
+    }
+}
+
+bool NJS::ArgParser::IsEmpty() const
+{
+    return m_Options.empty()
+        && m_Flags.empty()
+        && m_Values.empty();
 }

@@ -14,10 +14,13 @@ NJS::TypePtr NJS::Parser::ParseType()
     else
     {
         const auto sym = Expect(TokenType_Symbol).StringValue;
-        if (sym[0] == 'i') type = m_Ctx.GetIntType(std::stoull(sym.substr(1)), true);
-        else if (sym[0] == 'u') type = m_Ctx.GetIntType(std::stoull(sym.substr(1)), false);
-        else if (sym[0] == 'f') type = m_Ctx.GetFPType(std::stoull(sym.substr(1)));
-        else type = m_Ctx.GetType(sym);
+        type = m_Ctx.GetType(sym);
+        if (!type)
+        {
+            if (sym[0] == 'i') type = m_Ctx.GetIntType(std::stoull(sym.substr(1)), true);
+            else if (sym[0] == 'u') type = m_Ctx.GetIntType(std::stoull(sym.substr(1)), false);
+            else if (sym[0] == 'f') type = m_Ctx.GetFPType(std::stoull(sym.substr(1)));
+        }
     }
 
     if (!type)

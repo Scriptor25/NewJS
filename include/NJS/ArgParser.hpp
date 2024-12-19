@@ -27,6 +27,9 @@ namespace NJS
         [[nodiscard]] bool Flag(ID) const;
         void Option(ID, std::string&, const std::string& = {}) const;
 
+        void Print() const;
+        [[nodiscard]] bool IsEmpty() const;
+
     private:
         std::map<std::string, std::pair<ID, bool>> m_Args;
 

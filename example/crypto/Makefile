@@ -5,10 +5,10 @@ OBJ = $(patsubst %.njs,%.o,$(SRC))
 	llc -o $@ --filetype=obj $<
 
 %.ll: %.njs
-	../../../build/NewJS -o $@ $<
+	../../build/NewJS -o $@ $<
 
 main.exe: $(OBJ)
-	gcc -o $@ $^ -L../../../build -lStdNewJS
+	gcc -o $@ $^ -L../../build -lStdNewJS
 
 launch: main.exe
 	main.exe
