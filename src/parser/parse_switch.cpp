@@ -26,7 +26,7 @@ NJS::StmtPtr NJS::Parser::ParseSwitchStmt()
         Expect("case");
 
         std::vector<ExprPtr> case_entries;
-        do case_entries.push_back(ParsePrimaryExpr());
+        do case_entries.push_back(ParseExpr());
         while (NextAt(","));
 
         StmtPtr value;
@@ -67,7 +67,7 @@ NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
         Expect("case");
 
         std::vector<ExprPtr> case_entries;
-        do case_entries.push_back(ParsePrimaryExpr());
+        do case_entries.push_back(ParseExpr());
         while (NextAt(","));
 
         ExprPtr value;

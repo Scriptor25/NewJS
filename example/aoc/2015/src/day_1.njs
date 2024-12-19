@@ -5,9 +5,9 @@ extern println(str: i8[])
 
 function part_1(input: i8[]): u64 {
     let level: i64
-    const input_len = strlen(input)
+    let input_len = strlen(input)
     for (let i: u64; i < input_len; ++i) {
-        const c = input[i]
+        let c = input[i]
         if (c == '(') ++level
         else if (c == ')') --level
     }
@@ -16,9 +16,9 @@ function part_1(input: i8[]): u64 {
 
 function part_2(input: i8[]): u64 {
     let level: i64
-    const input_len = strlen(input)
+    let input_len = strlen(input)
     for (let i: u64; i < input_len; ++i) {
-        const c = input[i]
+        let c = input[i]
         if (c == '(') ++level
         else if (c == ')') --level
 

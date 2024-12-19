@@ -15,8 +15,8 @@ extern file_write(stream: File, buf: i8[], count: u64)
 
 println($"{process}")
 
-const day = parse_int(process.argv[1u64])
-const part = parse_int(process.argv[2u64])
+let day = parse_int(process.argv[1u64])
+let part = parse_int(process.argv[2u64])
 
 function part_err(input: i8[]): u64 {
     println("invalid part")
@@ -28,16 +28,16 @@ function day_err(input: i8[]): u64 {
     return 0u64
 }
 
-const fn = switch (day) {
+let fn = switch (day) {
     case 1u64  -> day_1(part)
     case 2u64  -> day_2(part)
     default -> day_err
 }
 
-const stream = file_open($"input/{day}.txt", "r")
-const input = file_read_eof(stream)
+let stream = file_open($"input/{day}.txt", "r")
+let input = file_read_eof(stream)
 
-const result = fn(input)
+let result = fn(input)
 println($"result: {result}")
 
 file_read_free(input)
