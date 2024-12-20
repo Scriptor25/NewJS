@@ -1,13 +1,13 @@
-import { random } from "./random.njs"
+import { random_key } from "./key.njs"
 
 type user_t = {
-    pvt: u64,
-    pub: u64,
-    res: u64,
+    pvt: i8[16],
+    pub: i8[16],
+    key: i8[16],
 }
 
 function create_user(): user_t {
     let user: user_t
-    user.pvt = random()
+    random_key(user.pvt, 4u64)
     return user
 }

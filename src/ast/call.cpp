@@ -4,6 +4,7 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Type.hpp>
+#include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
 NJS::CallExpr::CallExpr(SourceLocation where, TypePtr type, ExprPtr callee, std::vector<ExprPtr> args)
@@ -21,10 +22,20 @@ NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder)
     std::vector<llvm::Value*> args(Args.size());
     for (unsigned i = 0; i < Args.size(); ++i)
     {
-        const auto arg = Args[i]->GenLLVM(builder);
+        auto arg = Args[i]->GenLLVM(builder);
         auto arg_type = callee_type->Arg(i);
+
         const auto ref = arg_type->IsRef();
         if (ref) arg_type = arg_type->GetElement();
+
+        if (arg_type->IsPtr() && arg->GetType()->IsArray() &&
+            arg_type->GetElement() == arg->GetType()->GetElement())
+        {
+            const auto ptr = arg->GetPtr();
+            const auto gep = builder.GetBuilder().CreateConstGEP2_64(arg->GetType()->GetLLVM(builder), ptr, 0, 0);
+            arg = RValue::Create(builder, builder.GetCtx().GetPointerType(arg->GetType()->GetElement()), gep);
+        }
+
         if (arg->GetType() != arg_type)
             Error(Where, "invalid arg: type mismatch, {} != {}", arg->GetType(), arg_type);
         args[i] = ref ? arg->GetPtr() : arg->Load();

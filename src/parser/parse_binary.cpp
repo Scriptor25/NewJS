@@ -38,6 +38,7 @@ NJS::ExprPtr NJS::Parser::ParseBinaryExpr(ExprPtr lhs, const unsigned min_pre)
         {"*", 11},
         {"/", 11},
         {"%", 11},
+        {"**", 12},
     };
 
     auto get_pre = [&]

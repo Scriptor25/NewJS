@@ -92,16 +92,34 @@ NJS::ValuePtr NJS::OperatorLAnd(Builder& builder, const ValuePtr& lhs, const Val
 
 NJS::ValuePtr NJS::OperatorOr(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
+    if (lhs->GetType()->IsInt())
+        return RValue::Create(
+            builder,
+            lhs->GetType(),
+            builder.GetBuilder().CreateOr(lhs->Load(), rhs->Load()));
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorXor(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
+    if (lhs->GetType()->IsInt())
+        return RValue::Create(
+            builder,
+            lhs->GetType(),
+            builder.GetBuilder().CreateXor(lhs->Load(), rhs->Load()));
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorAnd(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
+    if (lhs->GetType()->IsInt())
+        return RValue::Create(
+            builder,
+            lhs->GetType(),
+            builder.GetBuilder().CreateAnd(lhs->Load(), rhs->Load()));
+
     return {};
 }
 
@@ -178,16 +196,49 @@ NJS::ValuePtr NJS::OperatorRem(Builder& builder, const ValuePtr& lhs, const Valu
 
 NJS::ValuePtr NJS::OperatorPow(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
+    if (lhs->GetType()->IsInt())
+    {
+        const auto dst_ty = builder.GetCtx().GetFPType(lhs->GetType()->GetBits())->GetLLVM(builder);
+        const auto src_ty = lhs->GetType()->GetLLVM(builder);
+        const auto l = lhs->GetType()->IsSigned()
+                           ? builder.GetBuilder().CreateSIToFP(lhs->Load(), dst_ty)
+                           : builder.GetBuilder().CreateUIToFP(lhs->Load(), dst_ty);
+        const auto r = lhs->GetType()->IsSigned()
+                           ? builder.GetBuilder().CreateSIToFP(rhs->Load(), dst_ty)
+                           : builder.GetBuilder().CreateUIToFP(rhs->Load(), dst_ty);
+        const auto val = builder.GetBuilder().CreateBinaryIntrinsic(llvm::Intrinsic::pow, l, r);
+        return RValue::Create(
+            builder,
+            lhs->GetType(),
+            lhs->GetType()->IsSigned()
+                ? builder.GetBuilder().CreateFPToSI(val, src_ty)
+                : builder.GetBuilder().CreateFPToUI(val, src_ty));
+    }
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorShL(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
+    if (lhs->GetType()->IsInt())
+        return RValue::Create(
+            builder,
+            lhs->GetType(),
+            builder.GetBuilder().CreateShl(lhs->Load(), rhs->Load()));
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorShR(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
+    if (lhs->GetType()->IsInt())
+        return RValue::Create(
+            builder,
+            lhs->GetType(),
+            lhs->GetType()->IsSigned()
+                ? builder.GetBuilder().CreateAShr(lhs->Load(), rhs->Load())
+                : builder.GetBuilder().CreateLShr(lhs->Load(), rhs->Load()));
+
     return {};
 }
 
