@@ -106,6 +106,24 @@ std::string NJS::Builder::GetName(const std::string& name) const
     return m_Stack.back().ValueName(name);
 }
 
+void NJS::Builder::DefOp(
+    const std::string& sym,
+    const TypePtr& lhs,
+    const TypePtr& rhs,
+    const TypePtr& result,
+    llvm::Function* callee)
+{
+    m_BinOps[sym][lhs][rhs] = {result, callee};
+}
+
+std::pair<NJS::TypePtr, llvm::Function*> NJS::Builder::GetOp(
+    const std::string& sym,
+    const TypePtr& lhs,
+    const TypePtr& rhs)
+{
+    return m_BinOps[sym][lhs][rhs];
+}
+
 NJS::ValuePtr& NJS::Builder::DefVar(const std::string& name)
 {
     auto& stack = m_Stack.back();
@@ -113,9 +131,9 @@ NJS::ValuePtr& NJS::Builder::DefVar(const std::string& name)
     return stack[name];
 }
 
-NJS::ValuePtr& NJS::Builder::GetVar(const std::string& name)
+NJS::ValuePtr& NJS::Builder::GetVar(const SourceLocation& where, const std::string& name)
 {
     for (auto& stack : std::ranges::reverse_view(m_Stack))
         if (stack.contains(name)) return stack[name];
-    Error("undefined symbol '{}'", name);
+    Error(where, "undefined symbol '{}'", name);
 }

@@ -44,6 +44,7 @@ void NJS::ImportMapping::MapFunctions(Parser& parser, const std::vector<StmtPtr>
             function->VarArg);
         element_types[function->Name] = type;
     }
+
     if (!Name.empty() && NameMap.empty())
     {
         const auto module_type = parser.m_Ctx.GetStructType(element_types);
@@ -77,9 +78,21 @@ void NJS::ImportMapping::MapFunctions(
             arg_types,
             function->VarArg);
         element_types[function->Name] = type;
-        auto callee = builder.GetModule().getOrInsertFunction(
-            module_id + '.' + function->Name,
-            type->GenFnLLVM(builder));
+
+        std::string name;
+        switch (function->Fn)
+        {
+        case FnType_Function:
+            name = module_id + '.' + function->Name;
+            break;
+        case FnType_Extern:
+            name = function->Name;
+            break;
+        case FnType_Operator:
+            break;
+        }
+
+        auto callee = builder.GetModule().getOrInsertFunction(name, type->GenFnLLVM(builder));
         elements[function->Name] = RValue::Create(builder, type, callee.getCallee());
     }
 

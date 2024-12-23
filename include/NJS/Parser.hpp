@@ -55,7 +55,6 @@ namespace NJS
         void ParseParamMap(std::map<std::string, ParamPtr>&, const std::string&);
 
         void ParseTypeAlias();
-        void ParseInterface();
 
         StmtPtr ParseImportStmt();
         ImportMapping ParseImportMapping();
@@ -80,6 +79,8 @@ namespace NJS
         ExprPtr ParseSwitchExpr();
         ExprPtr ParseTupleExpr();
 
+        void DefOp(const std::string&, const TypePtr&, const TypePtr&, const TypePtr&);
+
         void StackPush();
         void StackPop();
         TypePtr& DefVar(const std::string&);
@@ -87,10 +88,15 @@ namespace NJS
 
         TypeContext& m_Ctx;
         std::istream& m_Stream;
+
         int m_C;
         SourceLocation m_Where{"", 1, 1};
         Token m_Token;
+
         bool m_Imported;
+
+        std::map<std::string, std::map<TypePtr, std::map<TypePtr, TypePtr>>> m_BinOps;
+
         std::vector<std::map<std::string, TypePtr>> m_Stack;
     };
 }

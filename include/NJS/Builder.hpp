@@ -56,8 +56,11 @@ namespace NJS
 
         [[nodiscard]] std::string GetName(const std::string&) const;
 
+        void DefOp(const std::string&, const TypePtr&, const TypePtr&, const TypePtr&, llvm::Function*);
+        std::pair<TypePtr, llvm::Function*> GetOp(const std::string&, const TypePtr&, const TypePtr&);
+
         ValuePtr& DefVar(const std::string&);
-        ValuePtr& GetVar(const std::string&);
+        ValuePtr& GetVar(const SourceLocation&, const std::string&);
 
     private:
         TypeContext& m_Ctx;
@@ -68,6 +71,8 @@ namespace NJS
 
         std::unique_ptr<llvm::Module> m_LLVMModule;
         std::unique_ptr<llvm::IRBuilder<>> m_LLVMBuilder;
+
+        std::map<std::string, std::map<TypePtr, std::map<TypePtr, std::pair<TypePtr, llvm::Function*>>>> m_BinOps;
 
         std::vector<StackFrame> m_Stack;
     };

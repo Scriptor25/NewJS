@@ -11,6 +11,13 @@
 
 namespace NJS
 {
+    enum FnType
+    {
+        FnType_Function,
+        FnType_Extern,
+        FnType_Operator,
+    };
+
     struct Stmt
     {
         explicit Stmt(SourceLocation);
@@ -37,12 +44,12 @@ namespace NJS
 
     struct FunctionStmt : Stmt
     {
-        FunctionStmt(SourceLocation, bool, std::string, std::vector<ParamPtr>, bool, TypePtr, StmtPtr);
+        FunctionStmt(SourceLocation, FnType, std::string, std::vector<ParamPtr>, bool, TypePtr, StmtPtr);
 
         ValuePtr GenLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
-        bool Extern;
+        FnType Fn;
         std::string Name;
         std::vector<ParamPtr> Args;
         bool VarArg;

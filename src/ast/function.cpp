@@ -9,14 +9,14 @@
 
 NJS::FunctionStmt::FunctionStmt(
     SourceLocation where,
-    const bool is_extern,
+    const FnType fn,
     std::string name,
     std::vector<ParamPtr> args,
     const bool vararg,
     TypePtr result_type,
     StmtPtr body)
     : Stmt(std::move(where)),
-      Extern(is_extern),
+      Fn(fn),
       Name(std::move(name)),
       Args(std::move(args)),
       VarArg(vararg),
@@ -27,7 +27,20 @@ NJS::FunctionStmt::FunctionStmt(
 
 NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
 {
-    const auto name = Extern ? Name : builder.GetName(Name);
+    std::string name;
+    switch (Fn)
+    {
+    case FnType_Function:
+        name = builder.GetName(Name);
+        break;
+    case FnType_Extern:
+        name = Name;
+        break;
+    case FnType_Operator:
+        name = builder.GetName(Args[0]->Type->GetString() + Name + Args[1]->Type->GetString());
+        break;
+    }
+
     auto function = builder.GetModule().getFunction(name);
     if (!function)
     {
@@ -41,7 +54,16 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
             name,
             builder.GetModule());
 
-        builder.DefVar(Name) = RValue::Create(builder, type, function);
+        switch (Fn)
+        {
+        case FnType_Function:
+        case FnType_Extern:
+            builder.DefVar(Name) = RValue::Create(builder, type, function);
+            break;
+        case FnType_Operator:
+            builder.DefOp(Name, Args[0]->Type, Args[1]->Type, ResultType, function);
+            break;
+        }
     }
 
     if (!Body) return {};
@@ -92,9 +114,19 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
 
 std::ostream& NJS::FunctionStmt::Print(std::ostream& os)
 {
-    if (Extern) os << "extern";
-    else os << "function";
-    os << ' ' << Name << "(";
+    switch (Fn)
+    {
+    case FnType_Function:
+        os << "function ";
+        break;
+    case FnType_Extern:
+        os << "extern ";
+        break;
+    case FnType_Operator:
+        os << "operator";
+        break;
+    }
+    os << Name << "(";
     for (unsigned i = 0; i < Args.size(); ++i)
     {
         if (i > 0) os << ", ";

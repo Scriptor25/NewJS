@@ -261,7 +261,7 @@ Type* ParseType(va_list& ap)
 
 void Int_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
 {
-    const auto self = static_cast<IntType*>(type);
+    const auto self = reinterpret_cast<IntType*>(type);
     const auto val = va_arg(ap, int);
 
     if (self->Bits == 1)
@@ -275,7 +275,7 @@ void Int_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, v
 
 void Int_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
 {
-    const auto self = static_cast<IntType*>(type);
+    const auto self = reinterpret_cast<IntType*>(type);
     switch (self->Bits)
     {
     case 1:
@@ -346,7 +346,7 @@ void Int_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, c
 
 void FP_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
 {
-    const auto self = static_cast<FPType*>(type);
+    const auto self = reinterpret_cast<FPType*>(type);
 
     const auto val = va_arg(ap, double);
     offset += snprintf(stream + offset, n - offset, "%f", val);
@@ -356,7 +356,7 @@ void FP_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va
 
 void FP_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
 {
-    const auto self = static_cast<FPType*>(type);
+    const auto self = reinterpret_cast<FPType*>(type);
 
     switch (self->Bits)
     {
@@ -380,10 +380,10 @@ void FP_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, ch
 
 void Pointer_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
 {
-    const auto self = static_cast<PointerType*>(type);
+    const auto self = reinterpret_cast<PointerType*>(type);
     const auto ptr = va_arg(ap, char*);
 
-    if (const auto el = static_cast<IntType*>(self->Element); el && el->Bits == 8 && el->IsSigned)
+    if (const auto el = reinterpret_cast<IntType*>(self->Element); el->Bits == 8 && el->IsSigned)
     {
         offset += snprintf(stream + offset, n - offset, "%s", ptr);
         return;
@@ -394,25 +394,25 @@ void Pointer_AppendV(Type* type, char* stream, const unsigned n, unsigned& offse
 
 void Pointer_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
 {
-    const auto self = static_cast<PointerType*>(type);
+    const auto self = reinterpret_cast<PointerType*>(type);
 
-    if (const auto el = static_cast<IntType*>(self->Element); el && el->Bits == 8 && el->IsSigned)
+    if (const auto el = reinterpret_cast<IntType*>(self->Element); el->Bits == 8 && el->IsSigned)
     {
-        offset += snprintf(stream + offset, n - offset, "%s", ptr);
+        offset += snprintf(stream + offset, n - offset, "%s", *reinterpret_cast<char**>(ptr));
         ptr += sizeof(char*);
         return;
     }
 
-    offset += snprintf(stream + offset, n - offset, "%p", ptr);
+    offset += snprintf(stream + offset, n - offset, "%p", *reinterpret_cast<char**>(ptr));
     ptr += sizeof(char*);
 }
 
 void Array_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
 {
-    const auto self = static_cast<ArrayType*>(type);
+    const auto self = reinterpret_cast<ArrayType*>(type);
     auto ptr = va_arg(ap, char*);
 
-    if (const auto el = static_cast<IntType*>(self->Element); el && el->Bits == 8 && el->IsSigned)
+    if (const auto el = reinterpret_cast<IntType*>(self->Element); el->Bits == 8 && el->IsSigned)
     {
         offset += snprintf(stream + offset, n - offset, "%.*s", self->ElementCount, ptr);
         return;
@@ -429,9 +429,9 @@ void Array_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset,
 
 void Array_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
 {
-    const auto self = static_cast<ArrayType*>(type);
+    const auto self = reinterpret_cast<ArrayType*>(type);
 
-    if (const auto el = static_cast<IntType*>(self->Element); el && el->Bits == 8 && el->IsSigned)
+    if (const auto el = reinterpret_cast<IntType*>(self->Element); el->Bits == 8 && el->IsSigned)
     {
         offset += snprintf(stream + offset, n - offset, "%.*s", self->ElementCount, ptr);
         ptr += self->ElementCount;
@@ -449,7 +449,7 @@ void Array_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset,
 
 void Tuple_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
 {
-    const auto self = static_cast<TupleType*>(type);
+    const auto self = reinterpret_cast<TupleType*>(type);
     auto ptr = va_arg(ap, char*);
 
     offset += snprintf(stream + offset, n - offset, "[ ");
@@ -463,7 +463,7 @@ void Tuple_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset,
 
 void Tuple_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
 {
-    const auto self = static_cast<TupleType*>(type);
+    const auto self = reinterpret_cast<TupleType*>(type);
 
     offset += snprintf(stream + offset, n - offset, "[ ");
     for (unsigned i = 0; i < self->ElementCount; ++i)
@@ -476,7 +476,7 @@ void Tuple_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset,
 
 void Struct_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list& ap)
 {
-    const auto self = static_cast<StructType*>(type);
+    const auto self = reinterpret_cast<StructType*>(type);
     auto ptr = va_arg(ap, char*);
 
     offset += snprintf(stream + offset, n - offset, "{ ");
@@ -491,7 +491,7 @@ void Struct_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset
 
 void Struct_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
 {
-    const auto self = static_cast<StructType*>(type);
+    const auto self = reinterpret_cast<StructType*>(type);
 
     offset += snprintf(stream + offset, n - offset, "{ ");
     for (unsigned i = 0; i < self->ElementCount; ++i)
@@ -505,7 +505,7 @@ void Struct_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset
 
 void Function_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list&)
 {
-    const auto self = static_cast<FunctionType*>(type);
+    const auto self = reinterpret_cast<FunctionType*>(type);
     offset += snprintf(stream + offset, n - offset, "fn");
 
     (void)self;
@@ -513,7 +513,7 @@ void Function_AppendV(Type* type, char* stream, const unsigned n, unsigned& offs
 
 void Function_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*&)
 {
-    const auto self = static_cast<FunctionType*>(type);
+    const auto self = reinterpret_cast<FunctionType*>(type);
     offset += snprintf(stream + offset, n - offset, "fn");
 
     (void)self;

@@ -19,7 +19,8 @@ NJS::StmtPtr NJS::Parser::ParseImportStmt()
     std::vector<StmtPtr> functions;
     parser.Parse([&](const StmtPtr& ptr)
     {
-        if (const auto function = std::dynamic_pointer_cast<FunctionStmt>(ptr))
+        if (const auto function = std::dynamic_pointer_cast<FunctionStmt>(ptr);
+            function && function->Fn == FnType_Function)
         {
             function->Body = {};
             functions.push_back(function);

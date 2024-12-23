@@ -1,4 +1,5 @@
 #include <NJS/AST.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/Param.hpp>
 #include <NJS/Parser.hpp>
 #include <NJS/TypeContext.hpp>
@@ -6,9 +7,16 @@
 NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
 {
     const auto where = m_Token.Where;
+
+    FnType fn = FnType_Function;
     const auto is_extern = NextAt("extern");
-    if (!is_extern) Expect("function");
-    const auto name = Expect(TokenType_Symbol).StringValue;
+    if (is_extern)
+        fn = FnType_Extern;
+    else if (NextAt("operator"))
+        fn = FnType_Operator;
+    else Expect("function");
+
+    const auto name = (fn == FnType_Operator ? Expect(TokenType_Operator) : Expect(TokenType_Symbol)).StringValue;
 
     std::vector<ParamPtr> args;
     Expect("(");
@@ -22,7 +30,19 @@ NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
     std::vector<TypePtr> arg_types;
     for (const auto& arg : args)
         arg_types.push_back(arg->Type);
-    DefVar(name) = m_Ctx.GetFunctionType(result_type, arg_types, vararg);
+
+    const auto type = m_Ctx.GetFunctionType(result_type, arg_types, vararg);
+    if (fn == FnType_Operator)
+    {
+        if (vararg)
+            Error(where, "operator must have a fixed number of args");
+        if (result_type->IsVoid())
+            Error(where, "operator must return something");
+        if (arg_types.size() == 2)
+            DefOp(name, arg_types[0], arg_types[1], result_type);
+        else Error(where, "operator must have 2 args");
+    }
+    else DefVar(name) = type;
 
     StmtPtr body;
     if (!is_extern && At("{"))
@@ -34,7 +54,7 @@ NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
         StackPop();
     }
 
-    return std::make_shared<FunctionStmt>(where, is_extern, name, args, vararg, result_type, body);
+    return std::make_shared<FunctionStmt>(where, fn, name, args, vararg, result_type, body);
 }
 
 NJS::ExprPtr NJS::Parser::ParseFunctionExpr()

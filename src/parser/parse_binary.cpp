@@ -68,9 +68,9 @@ NJS::ExprPtr NJS::Parser::ParseBinaryExpr(ExprPtr lhs, const unsigned min_pre)
             continue;
         }
 
-        const auto type = OperatorType(m_Ctx, op_, lhs->Type, rhs->Type);
-        if (!type)
-            Error("undefined binary operator '{} {} {}'", lhs->Type, op_, rhs->Type);
+        auto type = m_BinOps[op_][lhs->Type][rhs->Type];
+        if (!type) type = OperatorType(m_Ctx, op_, lhs->Type, rhs->Type);
+        if (!type) Error("undefined binary operator '{} {} {}'", lhs->Type, op_, rhs->Type);
         lhs = std::make_shared<BinaryExpr>(where_, type, op_, lhs, rhs);
     }
 

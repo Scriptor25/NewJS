@@ -13,7 +13,7 @@ NJS::StmtPtr NJS::Parser::ParseStmt()
         return ParseImportStmt();
 
     if (At("{")) return ParseScopeStmt();
-    if (At("function") || At("extern")) return ParseFunctionStmt();
+    if (At("function") || At("extern") || At("operator")) return ParseFunctionStmt();
     if (At("let") || At("const")) return ParseDefStmt();
     if (At("if")) return ParseIfStmt();
     if (At("for")) return ParseForStmt();

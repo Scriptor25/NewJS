@@ -24,7 +24,7 @@ void NJS::Param::CreateVars(Parser& parser, const TypePtr& val_type)
                               : val_type;
 }
 
-void NJS::Param::CreateVars(Builder& builder, const bool is_const, const ValuePtr& value)
+void NJS::Param::CreateVars(Builder& builder, const bool /*is_const*/, const ValuePtr& value)
 {
     const auto type = Type
                           ? Type->IsRef()

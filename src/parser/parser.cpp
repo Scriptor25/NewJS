@@ -100,6 +100,11 @@ NJS::Token NJS::Parser::Expect(const std::string& value)
     Error(m_Token.Where, "unexpected token {}, expected '{}'", m_Token, value);
 }
 
+void NJS::Parser::DefOp(const std::string& sym, const TypePtr& lhs, const TypePtr& rhs, const TypePtr& result)
+{
+    m_BinOps[sym][lhs][rhs] = result;
+}
+
 void NJS::Parser::StackPush()
 {
     m_Stack.emplace_back();

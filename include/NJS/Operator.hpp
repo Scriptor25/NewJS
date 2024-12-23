@@ -4,28 +4,28 @@
 
 namespace NJS
 {
-    ValuePtr OperatorEQ(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorNE(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorLT(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorLE(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorGT(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorGE(Builder&, const ValuePtr&, const ValuePtr&);
+    ValuePtr OperatorEQ(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorNE(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorLT(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorLE(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorGT(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorGE(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
 
-    ValuePtr OperatorLOr(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorLXor(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorLAnd(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorOr(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorXor(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorAnd(Builder&, const ValuePtr&, const ValuePtr&);
+    ValuePtr OperatorLOr(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorLXor(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorLAnd(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorOr(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorXor(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorAnd(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
 
-    ValuePtr OperatorAdd(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorSub(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorMul(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorDiv(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorRem(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorPow(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorShL(Builder&, const ValuePtr&, const ValuePtr&);
-    ValuePtr OperatorShR(Builder&, const ValuePtr&, const ValuePtr&);
+    ValuePtr OperatorAdd(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorSub(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorMul(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorDiv(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorRem(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorPow(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorShL(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
+    ValuePtr OperatorShR(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
 
     TypePtr OperatorType(TypeContext&, std::string, const TypePtr&, const TypePtr&);
 
