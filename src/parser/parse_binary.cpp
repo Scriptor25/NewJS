@@ -5,7 +5,7 @@
 
 NJS::ExprPtr NJS::Parser::ParseBinaryExpr(ExprPtr lhs, const unsigned min_pre)
 {
-    static const std::map<std::string, unsigned> OPERATORS
+    static const std::map<std::string, unsigned> OPS
     {
         {"=", 0},
         {"+=", 0},
@@ -43,11 +43,11 @@ NJS::ExprPtr NJS::Parser::ParseBinaryExpr(ExprPtr lhs, const unsigned min_pre)
 
     auto get_pre = [&]
     {
-        return OPERATORS.at(m_Token.StringValue);
+        return OPS.at(m_Token.StringValue);
     };
     auto has_pre = [&]
     {
-        return OPERATORS.contains(m_Token.StringValue);
+        return OPS.contains(m_Token.StringValue);
     };
 
     while (At(TokenType_Operator) && has_pre() && get_pre() >= min_pre)
@@ -61,17 +61,13 @@ NJS::ExprPtr NJS::Parser::ParseBinaryExpr(ExprPtr lhs, const unsigned min_pre)
 
         if (op_ == "?")
         {
-            const auto type = rhs->Type;
             Expect(":");
             const auto else_ = ParseExpr();
-            lhs = std::make_shared<TernaryExpr>(where_, type, lhs, rhs, else_);
+            lhs = std::make_shared<TernaryExpr>(where_, lhs, rhs, else_);
             continue;
         }
 
-        auto type = m_BinOps[op_][lhs->Type][rhs->Type];
-        if (!type) type = OperatorType(m_Ctx, op_, lhs->Type, rhs->Type);
-        if (!type) Error("undefined binary operator '{} {} {}'", lhs->Type, op_, rhs->Type);
-        lhs = std::make_shared<BinaryExpr>(where_, type, op_, lhs, rhs);
+        lhs = std::make_shared<BinaryExpr>(where_, op_, lhs, rhs);
     }
 
     return lhs;

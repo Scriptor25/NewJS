@@ -39,9 +39,8 @@ static void parse(
     const std::filesystem::path& input_path)
 {
     NJS::TypeContext context;
-
-    NJS::Builder builder(context, linker.LLVMContext(), module_id, is_main);
     NJS::Parser parser(context, input_stream, input_path.string());
+    NJS::Builder builder(context, linker.LLVMContext(), module_id, is_main);
     parser.Parse([&](const NJS::StmtPtr& ptr) { ptr->GenLLVM(builder); });
     builder.Close();
     linker.Link(builder.MoveModule());

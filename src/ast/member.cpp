@@ -3,8 +3,8 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Type.hpp>
 
-NJS::MemberExpr::MemberExpr(SourceLocation where, TypePtr type, ExprPtr object, std::string member)
-    : Expr(std::move(where), std::move(type)), Object(std::move(object)), Member(std::move(member))
+NJS::MemberExpr::MemberExpr(SourceLocation where, ExprPtr object, std::string member)
+    : Expr(std::move(where)), Object(std::move(object)), Member(std::move(member))
 {
 }
 

@@ -1,7 +1,9 @@
 #pragma once
 
+#include <filesystem>
 #include <functional>
 #include <memory>
+#include <set>
 #include <NJS/Import.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Token.hpp>
@@ -21,7 +23,7 @@ namespace NJS
             std::istream&,
             std::string,
             bool = false,
-            std::vector<std::map<std::string, TypePtr>>  = {});
+            std::set<std::filesystem::path>  = {});
 
         void Parse(const Callback&);
 
@@ -79,24 +81,13 @@ namespace NJS
         ExprPtr ParseSwitchExpr();
         ExprPtr ParseTupleExpr();
 
-        void DefOp(const std::string&, const TypePtr&, const TypePtr&, const TypePtr&);
-
-        void StackPush();
-        void StackPop();
-        TypePtr& DefVar(const std::string&);
-        TypePtr GetVar(const std::string&);
-
         TypeContext& m_Ctx;
         std::istream& m_Stream;
+        bool m_Imported;
+        std::set<std::filesystem::path> m_Parsed;
 
         int m_C;
         SourceLocation m_Where{"", 1, 1};
         Token m_Token;
-
-        bool m_Imported;
-
-        std::map<std::string, std::map<TypePtr, std::map<TypePtr, TypePtr>>> m_BinOps;
-
-        std::vector<std::map<std::string, TypePtr>> m_Stack;
     };
 }

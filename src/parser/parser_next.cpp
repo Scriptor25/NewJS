@@ -78,6 +78,7 @@ NJS::Token& NJS::Parser::Next()
             case '<':
             case '>':
             case '=':
+            case '$':
                 where = m_Where;
                 value += static_cast<char>(m_C);
                 state = State_Operator;
@@ -89,7 +90,6 @@ NJS::Token& NJS::Parser::Next()
             case '}':
             case '[':
             case ']':
-            case '$':
             case '@':
             case '#':
             case ',':

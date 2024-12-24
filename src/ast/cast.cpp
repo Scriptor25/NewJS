@@ -3,7 +3,7 @@
 #include <NJS/Type.hpp>
 
 NJS::CastExpr::CastExpr(SourceLocation where, TypePtr type, ExprPtr value)
-    : Expr(std::move(where), std::move(type)), Value(std::move(value))
+    : Expr(std::move(where)), Type(std::move(type)), Value(std::move(value))
 {
 }
 

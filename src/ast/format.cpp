@@ -7,11 +7,10 @@
 
 NJS::FormatExpr::FormatExpr(
     SourceLocation where,
-    TypePtr type,
     const unsigned count,
     std::map<unsigned, std::string> statics,
     std::map<unsigned, ExprPtr> dynamics)
-    : Expr(std::move(where), std::move(type)), Count(count), Statics(std::move(statics)), Dynamics(std::move(dynamics))
+    : Expr(std::move(where)), Count(count), Statics(std::move(statics)), Dynamics(std::move(dynamics))
 {
 }
 

@@ -27,32 +27,9 @@ NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
         result_type = ParseType();
     else result_type = m_Ctx.GetVoidType();
 
-    std::vector<TypePtr> arg_types;
-    for (const auto& arg : args)
-        arg_types.push_back(arg->Type);
-
-    const auto type = m_Ctx.GetFunctionType(result_type, arg_types, vararg);
-    if (fn == FnType_Operator)
-    {
-        if (vararg)
-            Error(where, "operator must have a fixed number of args");
-        if (result_type->IsVoid())
-            Error(where, "operator must return something");
-        if (arg_types.size() == 2)
-            DefOp(name, arg_types[0], arg_types[1], result_type);
-        else Error(where, "operator must have 2 args");
-    }
-    else DefVar(name) = type;
-
     StmtPtr body;
     if (!is_extern && At("{"))
-    {
-        StackPush();
-        for (const auto& arg : args)
-            arg->CreateVars(*this, {});
         body = ParseScopeStmt();
-        StackPop();
-    }
 
     return std::make_shared<FunctionStmt>(where, fn, name, args, vararg, result_type, body);
 }
@@ -71,16 +48,11 @@ NJS::ExprPtr NJS::Parser::ParseFunctionExpr()
         result_type = ParseType();
     else result_type = m_Ctx.GetVoidType();
 
-    StackPush();
     std::vector<TypePtr> arg_types;
     for (const auto& arg : args)
-    {
-        arg->CreateVars(*this, {});
         arg_types.push_back(arg->Type);
-    }
-    const auto body = ParseScopeStmt();
-    StackPop();
 
-    const auto type = m_Ctx.GetFunctionType(result_type, arg_types, vararg);
-    return std::make_shared<FunctionExpr>(where, type, args, vararg, result_type, body);
+    const auto body = ParseScopeStmt();
+
+    return std::make_shared<FunctionExpr>(where, args, vararg, result_type, body);
 }

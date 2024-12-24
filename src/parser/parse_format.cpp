@@ -25,13 +25,12 @@ NJS::ExprPtr NJS::Parser::ParseFormatExpr()
         source.erase(0, beg + 1);
 
         std::stringstream stream(source);
-        Parser parser(m_Ctx, stream, "<dynamic>", false, m_Stack);
+        Parser parser(m_Ctx, stream, "<dynamic>");
         dynamics[index++] = parser.ParseExpr();
 
         source.erase(0, static_cast<unsigned>(stream.tellg()) - 1);
     }
     if (!source.empty()) statics[index++] = source;
 
-    const auto type = m_Ctx.GetStringType();
-    return std::make_shared<FormatExpr>(where, type, index, statics, dynamics);
+    return std::make_shared<FormatExpr>(where, index, statics, dynamics);
 }

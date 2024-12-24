@@ -13,7 +13,5 @@ NJS::StmtPtr NJS::Parser::ParseDefStmt()
     if ((!At("in") && !At("of") && (is_const || name->RequireValue()) && (Expect("="), true)) || NextAt("="))
         value = ParseExpr();
 
-    name->CreateVars(*this, value ? value->Type : nullptr);
-
     return std::make_shared<VariableStmt>(where, is_const, name, value);
 }

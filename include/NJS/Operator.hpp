@@ -27,8 +27,6 @@ namespace NJS
     ValuePtr OperatorShL(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
     ValuePtr OperatorShR(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
 
-    TypePtr OperatorType(TypeContext&, std::string, const TypePtr&, const TypePtr&);
-
     std::pair<ValuePtr, bool> OperatorInc(Builder&, const ValuePtr&);
     std::pair<ValuePtr, bool> OperatorDec(Builder&, const ValuePtr&);
     std::pair<ValuePtr, bool> OperatorNeg(Builder&, const ValuePtr&);

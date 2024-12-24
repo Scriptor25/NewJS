@@ -255,41 +255,6 @@ NJS::ValuePtr NJS::OperatorShR(Builder& builder, const TypePtr& type, llvm::Valu
     return {};
 }
 
-NJS::TypePtr NJS::OperatorType(TypeContext& ctx, std::string op, const TypePtr& lhs, const TypePtr& rhs)
-{
-    if (op == "==" ||
-        op == "!=" ||
-        op == "<" ||
-        op == ">" ||
-        op == "<=" ||
-        op == ">=")
-        return ctx.GetBoolType();
-
-    if (op == "=")
-        return lhs;
-
-    if (op.back() == '=')
-        op.pop_back();
-
-    if (op == "+" ||
-        op == "-" ||
-        op == "*" ||
-        op == "/" ||
-        op == "%" ||
-        op == "**" ||
-        op == "|" ||
-        op == "^" ||
-        op == "&" ||
-        op == "<<" ||
-        op == ">>" ||
-        op == "||" ||
-        op == "^^" ||
-        op == "&&")
-        return lhs;
-
-    return {};
-}
-
 std::pair<NJS::ValuePtr, bool> NJS::OperatorInc(Builder& builder, const ValuePtr& val)
 {
     if (val->GetType()->IsInt())

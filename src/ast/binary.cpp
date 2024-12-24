@@ -1,20 +1,21 @@
+#include <set>
 #include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Operator.hpp>
+#include <NJS/Type.hpp>
+#include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-#include "NJS/Type.hpp"
-
-NJS::BinaryExpr::BinaryExpr(SourceLocation where, TypePtr type, std::string op, ExprPtr lhs, ExprPtr rhs)
-    : Expr(std::move(where), std::move(type)), Op(std::move(op)), Lhs(std::move(lhs)), Rhs(std::move(rhs))
+NJS::BinaryExpr::BinaryExpr(SourceLocation where, std::string op, ExprPtr lhs, ExprPtr rhs)
+    : Expr(std::move(where)), Op(std::move(op)), Lhs(std::move(lhs)), Rhs(std::move(rhs))
 {
 }
 
 NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
 {
-    static const std::map<std::string, std::function<ValuePtr(Builder&, const TypePtr&, llvm::Value*, llvm::Value*)>>
+    static const std::map<std::string, BinOp>
         fns
         {
             {"==", {OperatorEQ}},
@@ -39,22 +40,58 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
             {">>", {OperatorShR}},
         };
 
+    static const std::set<std::string> is_assign
+    {
+        "||=",
+        "^^=",
+        "&&=",
+        "|=",
+        "^=",
+        "&=",
+        "+=",
+        "-=",
+        "*=",
+        "/=",
+        "%=",
+        "**=",
+        "<<=",
+        ">>=",
+    };
+
     auto lhs = Lhs->GenLLVM(builder);
     const auto rhs = Rhs->GenLLVM(builder);
 
-    if (auto [result_, callee_] = builder.GetOp(Op, lhs->GetType(), rhs->GetType());
-        result_ && callee_)
+    const auto lty = lhs->GetType();
+    const auto rty = rhs->GetType();
+
+    if (is_assign.contains(Op))
     {
-        const auto fn_type = llvm::FunctionType::get(
-            result_->GetLLVM(builder),
-            {lhs->GetType()->GetLLVM(builder), rhs->GetType()->GetLLVM(builder),},
-            false);
-        const auto value = builder.GetBuilder().CreateCall(fn_type, callee_, {lhs->Load(), rhs->Load()});
-        return RValue::Create(builder, result_, value);
+        const auto ref_lty = builder.GetCtx().GetRefType(lty);
+        if (auto [result_, callee_] = builder.GetOp(Op, ref_lty, rty); result_ && callee_)
+        {
+            const auto fn_type = llvm::FunctionType::get(
+                result_->GetLLVM(builder),
+                {ref_lty->GetLLVM(builder), rty->GetLLVM(builder),},
+                false);
+            const auto ptr = builder.GetBuilder().CreateCall(fn_type, callee_, {lhs->GetPtr(), rhs->Load()});
+            return LValue::Create(builder, result_->GetElement(), ptr);
+        }
+    }
+    else
+    {
+        if (auto [result_, callee_] = builder.GetOp(Op, lty, rty); result_ && callee_)
+        {
+            const auto fn_type = llvm::FunctionType::get(
+                result_->GetLLVM(builder),
+                {lty->GetLLVM(builder), rty->GetLLVM(builder),},
+                false);
+            const auto value = builder.GetBuilder().CreateCall(fn_type, callee_, {lhs->Load(), rhs->Load()});
+            return RValue::Create(builder, result_, value);
+        }
     }
 
-    if (lhs->GetType() != rhs->GetType())
-        Error("invalid binary operation: type mismatch, {} != {}", lhs->GetType(), rhs->GetType());
+    if (lty != rty)
+        Error(Where, "undefined binary operator '{} {} {}'", lty, Op, rty);
 
     auto op = Op;
     if (op == "=")
@@ -64,14 +101,14 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
     }
 
     if (fns.contains(op))
-        if (auto value = fns.at(op)(builder, lhs->GetType(), lhs->Load(), rhs->Load()))
+        if (auto value = fns.at(op)(builder, lty, lhs->Load(), rhs->Load()))
             return value;
 
     const auto assign = op.back() == '=';
     if (assign) op.pop_back();
 
     if (fns.contains(op))
-        if (auto value = fns.at(op)(builder, lhs->GetType(), lhs->Load(), rhs->Load()))
+        if (auto value = fns.at(op)(builder, lty, lhs->Load(), rhs->Load()))
         {
             if (assign)
             {
@@ -81,7 +118,7 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
             return value;
         }
 
-    Error(Where, "undefined binary operator '{} {} {}'", lhs->GetType(), Op, rhs->GetType());
+    Error(Where, "undefined binary operator '{} {} {}'", lty, Op, rty);
 }
 
 std::ostream& NJS::BinaryExpr::Print(std::ostream& os)

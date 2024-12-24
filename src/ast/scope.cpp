@@ -28,8 +28,8 @@ std::ostream& NJS::ScopeStmt::Print(std::ostream& os)
     return Spacing(os) << '}';
 }
 
-NJS::ScopeExpr::ScopeExpr(SourceLocation where, TypePtr type, std::vector<StmtPtr> children, ExprPtr last)
-    : Expr(std::move(where), std::move(type)), Children(std::move(children)), Last(std::move(last))
+NJS::ScopeExpr::ScopeExpr(SourceLocation where, std::vector<StmtPtr> children, ExprPtr last)
+    : Expr(std::move(where)), Children(std::move(children)), Last(std::move(last))
 {
 }
 

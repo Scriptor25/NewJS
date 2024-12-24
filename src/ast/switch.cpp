@@ -75,11 +75,10 @@ std::ostream& NJS::SwitchStmt::Print(std::ostream& os)
 
 NJS::SwitchExpr::SwitchExpr(
     SourceLocation where,
-    TypePtr type,
     ExprPtr condition,
     std::map<ExprPtr, std::vector<ExprPtr>> cases,
     ExprPtr default_case)
-    : Expr(std::move(where), std::move(type)),
+    : Expr(std::move(where)),
       Condition(std::move(condition)),
       Cases(std::move(cases)),
       DefaultCase(std::move(default_case))

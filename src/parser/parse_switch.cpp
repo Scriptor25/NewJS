@@ -3,10 +3,12 @@
 
 NJS::StmtPtr NJS::Parser::ParseSwitchStmt()
 {
-    StackPush();
     const auto where = Expect("switch").Where;
+
     Expect("(");
+
     const auto condition = ParseExpr();
+
     Expect(")");
 
     std::map<StmtPtr, std::vector<ExprPtr>> cases;
@@ -37,17 +39,18 @@ NJS::StmtPtr NJS::Parser::ParseSwitchStmt()
         cases[value] = case_entries;
     }
     Expect("}");
-    StackPop();
 
     return std::make_shared<SwitchStmt>(where, condition, cases, default_case);
 }
 
 NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
 {
-    StackPush();
     const auto where = Expect("switch").Where;
+
     Expect("(");
+
     const auto condition = ParseExpr();
+
     Expect(")");
 
     std::map<ExprPtr, std::vector<ExprPtr>> cases;
@@ -78,8 +81,6 @@ NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
         cases[value] = case_entries;
     }
     Expect("}");
-    StackPop();
 
-    const auto type = default_case->Type;
-    return std::make_shared<SwitchExpr>(where, type, condition, cases, default_case);
+    return std::make_shared<SwitchExpr>(where, condition, cases, default_case);
 }

@@ -6,7 +6,7 @@
 #include "NJS/Type.hpp"
 
 NJS::IntExpr::IntExpr(SourceLocation where, TypePtr type, const uint64_t value)
-    : Expr(std::move(where), std::move(type)), Value(value)
+    : Expr(std::move(where)), Type(std::move(type)), Value(value)
 {
 }
 

@@ -1,6 +1,7 @@
 #include <ranges>
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
+#include <NJS/SourceLocation.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
@@ -12,12 +13,13 @@ NJS::Builder::Builder(TypeContext& ctx, llvm::LLVMContext& context, const std::s
 
     Push(m_ModuleID);
 
-    const auto process = DefVar("process") = CreateGlobal(
+    const auto process = DefVar(SourceLocation(), "process") = CreateGlobal(
         "process",
         m_Ctx.GetStructType({
             {"argc", m_Ctx.GetIntType(32, true)},
             {"argv", m_Ctx.GetPointerType(m_Ctx.GetStringType())}
-        }), is_main);
+        }),
+        is_main);
 
     llvm::Function* function;
     if (is_main)
@@ -106,28 +108,36 @@ std::string NJS::Builder::GetName(const std::string& name) const
     return m_Stack.back().ValueName(name);
 }
 
+void NJS::Builder::DefOp(const std::string& sym, const TypePtr& val, const TypePtr& result, llvm::Value* callee)
+{
+    m_UnOps[sym][val] = {result, callee};
+}
+
 void NJS::Builder::DefOp(
     const std::string& sym,
     const TypePtr& lhs,
     const TypePtr& rhs,
     const TypePtr& result,
-    llvm::Function* callee)
+    llvm::Value* callee)
 {
     m_BinOps[sym][lhs][rhs] = {result, callee};
 }
 
-std::pair<NJS::TypePtr, llvm::Function*> NJS::Builder::GetOp(
-    const std::string& sym,
-    const TypePtr& lhs,
-    const TypePtr& rhs)
+NJS::OpRef NJS::Builder::GetOp(const std::string& sym, const TypePtr& val)
+{
+    return m_UnOps[sym][val];
+}
+
+NJS::OpRef NJS::Builder::GetOp(const std::string& sym, const TypePtr& lhs, const TypePtr& rhs)
 {
     return m_BinOps[sym][lhs][rhs];
 }
 
-NJS::ValuePtr& NJS::Builder::DefVar(const std::string& name)
+NJS::ValuePtr& NJS::Builder::DefVar(const SourceLocation& where, const std::string& name)
 {
     auto& stack = m_Stack.back();
-    if (stack.contains(name)) Error("cannot redefine symbol '{}'", name);
+    if (stack.contains(name))
+        Error(where, "cannot redefine symbol '{}'", name);
     return stack[name];
 }
 
@@ -136,4 +146,9 @@ NJS::ValuePtr& NJS::Builder::GetVar(const SourceLocation& where, const std::stri
     for (auto& stack : std::ranges::reverse_view(m_Stack))
         if (stack.contains(name)) return stack[name];
     Error(where, "undefined symbol '{}'", name);
+}
+
+NJS::TypePtr& NJS::Builder::ResultType()
+{
+    return m_ResultType;
 }

@@ -6,7 +6,7 @@ NJS::Stmt::Stmt(SourceLocation where)
 {
 }
 
-NJS::Expr::Expr(SourceLocation where, TypePtr type)
-    : Stmt(std::move(where)), Type(std::move(type))
+NJS::Expr::Expr(SourceLocation where)
+    : Stmt(std::move(where))
 {
 }

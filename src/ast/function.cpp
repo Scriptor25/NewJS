@@ -37,7 +37,17 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
         name = Name;
         break;
     case FnType_Operator:
-        name = builder.GetName(Args[0]->Type->GetString() + Name + Args[1]->Type->GetString());
+        switch (Args.size())
+        {
+        case 1:
+            name = builder.GetName(Args[0]->Type->GetString() + Name);
+            break;
+        case 2:
+            name = builder.GetName(Args[0]->Type->GetString() + Name + Args[1]->Type->GetString());
+            break;
+        default:
+            break;
+        }
         break;
     }
 
@@ -58,10 +68,20 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
         {
         case FnType_Function:
         case FnType_Extern:
-            builder.DefVar(Name) = RValue::Create(builder, type, function);
+            builder.DefVar(Where, Name) = RValue::Create(builder, type, function);
             break;
         case FnType_Operator:
-            builder.DefOp(Name, Args[0]->Type, Args[1]->Type, ResultType, function);
+            switch (Args.size())
+            {
+            case 1:
+                builder.DefOp(Name, Args[0]->Type, ResultType, function);
+                break;
+            case 2:
+                builder.DefOp(Name, Args[0]->Type, Args[1]->Type, ResultType, function);
+                break;
+            default:
+                break;
+            }
             break;
         }
     }
@@ -74,6 +94,7 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
     builder.GetBuilder().SetInsertPoint(entry_block);
 
     builder.Push(Name);
+    builder.ResultType() = ResultType;
     for (unsigned i = 0; i < Args.size(); ++i)
     {
         const auto& arg = Args[i];
@@ -84,7 +105,7 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
         if (arg->Type->IsRef())
             value = LValue::Create(builder, arg->Type->GetElement(), ir_arg);
         else value = RValue::Create(builder, arg->Type, ir_arg);
-        arg->CreateVars(builder, false, value);
+        arg->CreateVars(builder, Where, false, value);
     }
 
     Body->GenLLVM(builder);
@@ -144,12 +165,11 @@ std::ostream& NJS::FunctionStmt::Print(std::ostream& os)
 
 NJS::FunctionExpr::FunctionExpr(
     SourceLocation where,
-    TypePtr type,
     std::vector<ParamPtr> args,
     const bool vararg,
     TypePtr result_type,
     StmtPtr body)
-    : Expr(std::move(where), std::move(type)),
+    : Expr(std::move(where)),
       Args(std::move(args)),
       VarArg(vararg),
       ResultType(std::move(result_type)),

@@ -26,7 +26,7 @@ NJS::ValuePtr NJS::ImportStmt::GenLLVM(Builder& builder)
         builder.GetBuilder().CreateCall(callee);
     }
 
-    Mapping.MapFunctions(builder, module_id, Functions);
+    Mapping.MapFunctions(builder, Where, module_id, Functions);
     return {};
 }
 

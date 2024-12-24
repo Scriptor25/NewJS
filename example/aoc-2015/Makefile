@@ -8,7 +8,7 @@ OBJ = $(patsubst %.njs,%.o,$(SRC))
 	../../build/NewJS -o $@ $<
 
 main.exe: $(OBJ)
-	gcc -o $@ $^ -L../../../build -lStdNewJS
+	gcc -o $@ $^ -L../../build -lStdNewJS
 
 launch: main.exe
 	main.exe

@@ -63,6 +63,11 @@ NJS::IntTypePtr NJS::TypeContext::GetBoolType()
     return GetIntType(1, false);
 }
 
+NJS::IntTypePtr NJS::TypeContext::GetCharType()
+{
+    return GetIntType(8, true);
+}
+
 NJS::PtrTypePtr NJS::TypeContext::GetStringType()
 {
     return GetPointerType(GetIntType(8, true));

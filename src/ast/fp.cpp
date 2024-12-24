@@ -5,7 +5,7 @@
 #include <NJS/Value.hpp>
 
 NJS::FPExpr::FPExpr(SourceLocation where, TypePtr type, const double value)
-    : Expr(std::move(where), std::move(type)), Value(value)
+    : Expr(std::move(where)), Type(std::move(type)), Value(value)
 {
 }
 

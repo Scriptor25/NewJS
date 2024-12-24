@@ -1,7 +1,6 @@
 #include <NJS/AST.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Parser.hpp>
-#include <NJS/TypeContext.hpp>
 
 NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
 {
@@ -22,19 +21,16 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
     }
 
     if (At(TokenType_String))
-        return std::make_shared<StringExpr>(
-            where,
-            m_Ctx.GetStringType(),
-            Skip().StringValue);
+        return std::make_shared<StringExpr>(where, Skip().StringValue);
 
     if (At(TokenType_Char))
-        return std::make_shared<CharExpr>(where, m_Ctx.GetIntType(8, true), Skip().StringValue[0]);
+        return std::make_shared<CharExpr>(where, Skip().StringValue[0]);
 
     if (NextAt("true"))
-        return std::make_shared<BoolExpr>(where, m_Ctx.GetBoolType(), true);
+        return std::make_shared<BoolExpr>(where, true);
 
     if (NextAt("false"))
-        return std::make_shared<BoolExpr>(where, m_Ctx.GetBoolType(), false);
+        return std::make_shared<BoolExpr>(where, false);
 
     if (NextAt("("))
     {
@@ -61,16 +57,14 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
     if (At(TokenType_Symbol))
     {
         const auto name = Skip().StringValue;
-        const auto type = GetVar(name);
-        return std::make_shared<SymbolExpr>(where, type, name);
+        return std::make_shared<SymbolExpr>(where, name);
     }
 
     if (At(TokenType_Operator))
     {
         const auto op = Skip().StringValue;
         const auto operand = ParseOperandExpr();
-        const auto type = operand->Type;
-        return std::make_shared<UnaryExpr>(where, type, op, false, operand);
+        return std::make_shared<UnaryExpr>(where, op, false, operand);
     }
 
     Error(m_Token.Where, "unused token {}", m_Token);

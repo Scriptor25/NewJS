@@ -21,6 +21,9 @@ namespace NJS
         std::map<std::string, ValuePtr> Values;
     };
 
+    typedef std::pair<TypePtr, llvm::Value*> OpRef;
+    typedef std::function<ValuePtr(Builder&, const TypePtr&, llvm::Value*, llvm::Value*)> BinOp;
+
     class Builder
     {
     public:
@@ -56,11 +59,15 @@ namespace NJS
 
         [[nodiscard]] std::string GetName(const std::string&) const;
 
-        void DefOp(const std::string&, const TypePtr&, const TypePtr&, const TypePtr&, llvm::Function*);
-        std::pair<TypePtr, llvm::Function*> GetOp(const std::string&, const TypePtr&, const TypePtr&);
+        void DefOp(const std::string&, const TypePtr&, const TypePtr&, llvm::Value*);
+        void DefOp(const std::string&, const TypePtr&, const TypePtr&, const TypePtr&, llvm::Value*);
+        OpRef GetOp(const std::string&, const TypePtr&);
+        OpRef GetOp(const std::string&, const TypePtr&, const TypePtr&);
 
-        ValuePtr& DefVar(const std::string&);
+        ValuePtr& DefVar(const SourceLocation&, const std::string&);
         ValuePtr& GetVar(const SourceLocation&, const std::string&);
+
+        TypePtr& ResultType();
 
     private:
         TypeContext& m_Ctx;
@@ -72,8 +79,10 @@ namespace NJS
         std::unique_ptr<llvm::Module> m_LLVMModule;
         std::unique_ptr<llvm::IRBuilder<>> m_LLVMBuilder;
 
-        std::map<std::string, std::map<TypePtr, std::map<TypePtr, std::pair<TypePtr, llvm::Function*>>>> m_BinOps;
+        std::map<std::string, std::map<TypePtr, OpRef>> m_UnOps;
+        std::map<std::string, std::map<TypePtr, std::map<TypePtr, OpRef>>> m_BinOps;
 
         std::vector<StackFrame> m_Stack;
+        TypePtr m_ResultType;
     };
 }

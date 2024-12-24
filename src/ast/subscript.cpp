@@ -3,8 +3,8 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
 
-NJS::SubscriptExpr::SubscriptExpr(SourceLocation where, TypePtr type, ExprPtr array, ExprPtr index)
-    : Expr(std::move(where), std::move(type)), Array(std::move(array)), Index(std::move(index))
+NJS::SubscriptExpr::SubscriptExpr(SourceLocation where, ExprPtr array, ExprPtr index)
+    : Expr(std::move(where)), Array(std::move(array)), Index(std::move(index))
 {
 }
 

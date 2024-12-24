@@ -2,21 +2,39 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Type.hpp>
+#include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::TupleExpr::TupleExpr(SourceLocation where, TypePtr type, std::vector<ExprPtr> elements)
-    : Expr(std::move(where), std::move(type)), Elements(std::move(elements))
+NJS::TupleExpr::TupleExpr(SourceLocation where, std::vector<ExprPtr> elements)
+    : Expr(std::move(where)), Elements(std::move(elements))
 {
 }
 
 NJS::ValuePtr NJS::TupleExpr::GenLLVM(Builder& builder)
 {
-    llvm::Value* value = llvm::Constant::getNullValue(Type->GetLLVM(builder));
+    std::vector<ValuePtr> elements;
+    std::vector<TypePtr> element_types;
+    bool is_array = true;
+    for (const auto& element : Elements)
+    {
+        const auto value = element->GenLLVM(builder);
+        elements.push_back(value);
+        element_types.push_back(value->GetType());
 
-    for (unsigned i = 0; i < Elements.size(); ++i)
-        value = builder.GetBuilder().CreateInsertValue(value, Elements[i]->GenLLVM(builder)->Load(), i);
+        is_array = is_array && element_types.front() == element_types.back();
+    }
 
-    return RValue::Create(builder, Type, value);
+    TypePtr type;
+    if (is_array)
+        type = builder.GetCtx().GetArrayType(element_types.front(), element_types.size());
+    else type = builder.GetCtx().GetTupleType(element_types);
+
+    llvm::Value* value = llvm::Constant::getNullValue(type->GetLLVM(builder));
+
+    for (unsigned i = 0; i < elements.size(); ++i)
+        value = builder.GetBuilder().CreateInsertValue(value, elements[i]->Load(), i);
+
+    return RValue::Create(builder, type, value);
 }
 
 std::ostream& NJS::TupleExpr::Print(std::ostream& os)

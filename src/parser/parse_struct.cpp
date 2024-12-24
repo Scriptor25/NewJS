@@ -6,22 +6,19 @@ NJS::ExprPtr NJS::Parser::ParseStructExpr()
 {
     const auto where = Expect("{").Where;
 
-    std::map<std::string, ExprPtr> entries;
-    std::map<std::string, TypePtr> elements;
+    std::map<std::string, ExprPtr> elements;
     while (!At("}") && !AtEof())
     {
-        const auto [where_, _1, name_, _2, _3] = Expect(TokenType_Symbol);
+        const auto [where_, type_, name_, int_, fp_] = Expect(TokenType_Symbol);
         if (!NextAt(":"))
         {
-            const auto type = GetVar(name_);
-            entries[name_] = std::make_shared<SymbolExpr>(where_, type, name_);
-            elements[name_] = type;
+            const auto value = std::make_shared<SymbolExpr>(where_, name_);
+            elements[name_] = value;
         }
         else
         {
             const auto value = ParseExpr();
-            entries[name_] = value;
-            elements[name_] = value->Type;
+            elements[name_] = value;
         }
 
         if (!At("}"))
@@ -30,6 +27,5 @@ NJS::ExprPtr NJS::Parser::ParseStructExpr()
     }
     Expect("}");
 
-    const auto type = m_Ctx.GetStructType(elements);
-    return std::make_shared<StructExpr>(where, type, entries);
+    return std::make_shared<StructExpr>(where, elements);
 }

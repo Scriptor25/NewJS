@@ -2,7 +2,6 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Import.hpp>
 #include <NJS/Param.hpp>
-#include <NJS/Parser.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
@@ -27,76 +26,80 @@ std::ostream& NJS::ImportMapping::Print(std::ostream& os) const
     return os << " }";
 }
 
-void NJS::ImportMapping::MapFunctions(Parser& parser, const std::vector<StmtPtr>& functions) const
-{
-    std::map<std::string, TypePtr> element_types;
-
-    for (const auto& ptr : functions)
-    {
-        const auto function = std::dynamic_pointer_cast<FunctionStmt>(ptr);
-
-        std::vector<TypePtr> arg_types;
-        for (const auto& param : function->Args)
-            arg_types.push_back(param->Type);
-        const auto type = parser.m_Ctx.GetFunctionType(
-            function->ResultType,
-            arg_types,
-            function->VarArg);
-        element_types[function->Name] = type;
-    }
-
-    if (!Name.empty() && NameMap.empty())
-    {
-        const auto module_type = parser.m_Ctx.GetStructType(element_types);
-        parser.DefVar(Name) = module_type;
-        return;
-    }
-
-    for (const auto& [name_, type_] : element_types)
-    {
-        if (!NameMap.contains(name_)) continue;
-        parser.DefVar(NameMap.at(name_)) = type_;
-    }
-}
-
 void NJS::ImportMapping::MapFunctions(
     Builder& builder,
+    const SourceLocation& where,
     const std::string& module_id,
     const std::vector<StmtPtr>& functions) const
 {
     std::map<std::string, TypePtr> element_types;
     std::map<std::string, ValuePtr> elements;
+
     for (const auto& ptr : functions)
     {
-        const auto function = std::dynamic_pointer_cast<FunctionStmt>(ptr);
-
-        std::vector<TypePtr> arg_types;
-        for (const auto& param : function->Args)
-            arg_types.push_back(param->Type);
-        const auto type = builder.GetCtx().GetFunctionType(
-            function->ResultType,
-            arg_types,
-            function->VarArg);
-        element_types[function->Name] = type;
+        const auto& fn = *std::dynamic_pointer_cast<FunctionStmt>(ptr);
 
         std::string name;
-        switch (function->Fn)
+        switch (fn.Fn)
         {
         case FnType_Function:
-            name = module_id + '.' + function->Name;
-            break;
-        case FnType_Extern:
-            name = function->Name;
+            name = module_id + '.' + fn.Name;
             break;
         case FnType_Operator:
+            switch (fn.Args.size())
+            {
+            case 1:
+                name = module_id + '.' + fn.Args[0]->Type->GetString() + fn.Name;
+                break;
+            case 2:
+                name = module_id + '.' + fn.Args[0]->Type->GetString() + fn.Name + fn.Args[1]->Type->GetString();
+                break;
+            default:
+                break;
+            }
             break;
+        default:
+            continue;
         }
 
+        std::vector<TypePtr> arg_types;
+        for (const auto& param : fn.Args)
+            arg_types.push_back(param->Type);
+
+        const auto type = builder.GetCtx().GetFunctionType(
+            fn.ResultType,
+            arg_types,
+            fn.VarArg);
+
         auto callee = builder.GetModule().getOrInsertFunction(name, type->GenFnLLVM(builder));
-        elements[function->Name] = RValue::Create(builder, type, callee.getCallee());
+        const auto value = RValue::Create(builder, type, callee.getCallee());
+
+        if (fn.Fn == FnType_Operator)
+        {
+            switch (fn.Args.size())
+            {
+            case 1:
+                builder.DefOp(fn.Name, fn.Args[0]->Type, fn.ResultType, callee.getCallee());
+                break;
+            case 2:
+                builder.DefOp(fn.Name, fn.Args[0]->Type, fn.Args[1]->Type, fn.ResultType, callee.getCallee());
+                break;
+            default:
+                break;
+            }
+        }
+        else if (NameMap.contains(fn.Name))
+        {
+            builder.DefVar(where, NameMap.at(fn.Name)) = value;
+        }
+        else
+        {
+            elements[fn.Name] = value;
+            element_types[fn.Name] = type;
+        }
     }
 
-    if (!Name.empty() && NameMap.empty())
+    if (!Name.empty())
     {
         const auto module_type = builder.GetCtx().GetStructType(element_types);
         llvm::Value* module = llvm::Constant::getNullValue(module_type->GetLLVM(builder));
@@ -104,13 +107,6 @@ void NJS::ImportMapping::MapFunctions(
         for (const auto& [name_, value_] : elements)
             module = builder.GetBuilder().CreateInsertValue(module, value_->Load(), i++);
 
-        builder.DefVar(Name) = RValue::Create(builder, module_type, module);
-        return;
-    }
-
-    for (const auto& [name_, value_] : elements)
-    {
-        if (!NameMap.contains(name_)) continue;
-        builder.DefVar(NameMap.at(name_)) = value_;
+        builder.DefVar(where, Name) = RValue::Create(builder, module_type, module);
     }
 }

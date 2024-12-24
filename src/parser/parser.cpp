@@ -1,5 +1,3 @@
-#include <iostream>
-#include <ranges>
 #include <utility>
 #include <NJS/Error.hpp>
 #include <NJS/Param.hpp>
@@ -11,20 +9,15 @@ NJS::Parser::Parser(
     std::istream& stream,
     std::string filename,
     const bool imported,
-    std::vector<std::map<std::string, TypePtr>> inherit_stack)
-    : m_Ctx(ctx), m_Stream(stream), m_Imported(imported), m_Stack(std::move(inherit_stack))
+    std::set<std::filesystem::path> parsed)
+    : m_Ctx(ctx), m_Stream(stream), m_Imported(imported), m_Parsed(std::move(parsed))
 {
+    if (!filename.empty() && std::filesystem::exists(filename))
+        m_Parsed.insert(std::filesystem::canonical(filename));
+
     m_Where.Filename = std::move(filename);
     m_C = m_Stream.get();
     Next();
-
-    StackPush();
-
-    if (m_Stack.size() == 1)
-        DefVar("process") = m_Ctx.GetStructType({
-            {"argc", m_Ctx.GetIntType(32, true)},
-            {"argv", m_Ctx.GetPointerType(m_Ctx.GetStringType())},
-        });
 }
 
 void NJS::Parser::Parse(const Callback& callback)
@@ -98,31 +91,4 @@ NJS::Token NJS::Parser::Expect(const std::string& value)
 {
     if (At(value)) return Skip();
     Error(m_Token.Where, "unexpected token {}, expected '{}'", m_Token, value);
-}
-
-void NJS::Parser::DefOp(const std::string& sym, const TypePtr& lhs, const TypePtr& rhs, const TypePtr& result)
-{
-    m_BinOps[sym][lhs][rhs] = result;
-}
-
-void NJS::Parser::StackPush()
-{
-    m_Stack.emplace_back();
-}
-
-void NJS::Parser::StackPop()
-{
-    m_Stack.pop_back();
-}
-
-NJS::TypePtr& NJS::Parser::DefVar(const std::string& name)
-{
-    return m_Stack.back()[name];
-}
-
-NJS::TypePtr NJS::Parser::GetVar(const std::string& name)
-{
-    for (const auto& frame : std::ranges::reverse_view(m_Stack))
-        if (frame.contains(name)) return frame.at(name);
-    return m_Ctx.GetNoType();
 }

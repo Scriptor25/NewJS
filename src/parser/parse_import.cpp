@@ -8,28 +8,32 @@ NJS::StmtPtr NJS::Parser::ParseImportStmt()
     const auto mapping = ParseImportMapping();
     Expect("from");
     const auto filename = Expect(TokenType_String).StringValue;
-    const auto filepath = std::filesystem::path(where.Filename).parent_path() / filename;
+    const auto filepath = canonical(std::filesystem::path(where.Filename).parent_path() / filename);
 
-    if (m_Imported)
+    if (m_Parsed.contains(filepath))
         return {};
 
     std::ifstream stream(filepath);
-    Parser parser(m_Ctx, stream, filepath.string(), true);
+    Parser parser(m_Ctx, stream, filepath.string(), true, m_Parsed);
 
     std::vector<StmtPtr> functions;
     parser.Parse([&](const StmtPtr& ptr)
     {
-        if (const auto function = std::dynamic_pointer_cast<FunctionStmt>(ptr);
-            function && function->Fn == FnType_Function)
-        {
-            function->Body = {};
-            functions.push_back(function);
-        }
+        if (m_Imported)
+            return;
+
+        const auto function = std::dynamic_pointer_cast<FunctionStmt>(ptr);
+        if (!function)
+            return;
+
+        if (function->Fn == FnType_Extern)
+            return;
+
+        function->Body = {};
+        functions.push_back(function);
     });
 
-    mapping.MapFunctions(*this, functions);
-
-    return std::make_shared<ImportStmt>(where, mapping, absolute(filepath), functions);
+    return std::make_shared<ImportStmt>(where, mapping, filepath, functions);
 }
 
 NJS::ImportMapping NJS::Parser::ParseImportMapping()
@@ -37,17 +41,29 @@ NJS::ImportMapping NJS::Parser::ParseImportMapping()
     if (At(TokenType_Symbol))
         return {Skip().StringValue, {}};
 
-    Expect("{");
+    std::string overflow;
     std::map<std::string, std::string> mappings;
+
+    Expect("{");
     while (!At("}") && !AtEof())
     {
-        const auto name_ = Expect(TokenType_Symbol).StringValue;
-        const auto mapping_ = NextAt(":") ? Expect(TokenType_Symbol).StringValue : name_;
-        mappings[name_] = mapping_;
+        if (NextAt("."))
+        {
+            Expect(".");
+            Expect(".");
+            overflow = Expect(TokenType_Symbol).StringValue;
+            break;
+        }
+
+        const auto name = Expect(TokenType_Symbol).StringValue;
+        const auto mapping = NextAt(":") ? Expect(TokenType_Symbol).StringValue : name;
+        mappings[name] = mapping;
+
         if (!At("}"))
             Expect(",");
         else NextAt(",");
     }
     Expect("}");
-    return {{}, std::move(mappings)};
+
+    return {std::move(overflow), std::move(mappings)};
 }

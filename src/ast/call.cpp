@@ -7,8 +7,8 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::CallExpr::CallExpr(SourceLocation where, TypePtr type, ExprPtr callee, std::vector<ExprPtr> args)
-    : Expr(std::move(where), std::move(type)), Callee(std::move(callee)), Args(std::move(args))
+NJS::CallExpr::CallExpr(SourceLocation where, ExprPtr callee, std::vector<ExprPtr> args)
+    : Expr(std::move(where)), Callee(std::move(callee)), Args(std::move(args))
 {
 }
 

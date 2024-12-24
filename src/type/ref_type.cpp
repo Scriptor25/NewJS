@@ -38,5 +38,5 @@ llvm::Type* NJS::RefType::GenLLVM(const Builder& builder) const
 
 unsigned NJS::RefType::GenSize() const
 {
-    return m_Element->GetSize();
+    return 8;
 }

@@ -25,6 +25,7 @@ namespace NJS
         FunctionTypePtr GetFunctionType(const TypePtr&, const std::vector<TypePtr>&, bool);
 
         IntTypePtr GetBoolType();
+        IntTypePtr GetCharType();
         PtrTypePtr GetStringType();
 
     private:

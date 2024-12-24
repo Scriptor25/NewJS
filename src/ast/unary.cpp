@@ -6,8 +6,8 @@
 #include <NJS/Operator.hpp>
 #include <NJS/Value.hpp>
 
-NJS::UnaryExpr::UnaryExpr(SourceLocation where, TypePtr type, std::string op, const bool op_right, ExprPtr operand)
-    : Expr(std::move(where), std::move(type)), Op(std::move(op)), OpRight(op_right), Operand(std::move(operand))
+NJS::UnaryExpr::UnaryExpr(SourceLocation where, std::string op, const bool op_right, ExprPtr operand)
+    : Expr(std::move(where)), Op(std::move(op)), OpRight(op_right), Operand(std::move(operand))
 {
 }
 
@@ -33,13 +33,13 @@ NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder)
             {
                 operand->Store(value_);
                 if (OpRight)
-                    return RValue::Create(builder, Type, val);
+                    return RValue::Create(builder, operand->GetType(), val);
                 return operand;
             }
             return value_;
         }
 
-    Error(Where, "undefined unary operator {}{}", Op, Type);
+    Error(Where, "undefined unary operator {}{}", Op, operand->GetType());
 }
 
 std::ostream& NJS::UnaryExpr::Print(std::ostream& os)

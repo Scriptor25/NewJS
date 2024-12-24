@@ -14,24 +14,16 @@ bool NJS::DestructureObject::RequireValue()
     return true;
 }
 
-void NJS::DestructureObject::CreateVars(Parser& parser, const TypePtr& val_type)
-{
-    const auto type = Type
-                          ? Type->IsRef()
-                                ? Type->GetElement()
-                                : Type
-                          : val_type;
-
-    for (const auto& [name_, element_] : Elements)
-        element_->CreateVars(parser, type->GetMember(name_).first);
-}
-
-void NJS::DestructureObject::CreateVars(Builder& builder, const bool is_const, const ValuePtr& value)
+void NJS::DestructureObject::CreateVars(
+    Builder& builder,
+    const SourceLocation& where,
+    const bool is_const,
+    const ValuePtr& value)
 {
     for (const auto& [name_, element_] : Elements)
     {
         const auto member = builder.CreateMember(value, name_);
-        element_->CreateVars(builder, is_const, member);
+        element_->CreateVars(builder, where, is_const, member);
     }
 }
 

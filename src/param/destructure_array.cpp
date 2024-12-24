@@ -14,24 +14,16 @@ bool NJS::DestructureArray::RequireValue()
     return true;
 }
 
-void NJS::DestructureArray::CreateVars(Parser& parser, const TypePtr& val_type)
-{
-    const auto type = Type
-                          ? Type->IsRef()
-                                ? Type->GetElement()
-                                : Type
-                          : val_type;
-
-    for (unsigned i = 0; i < Elements.size(); ++i)
-        Elements[i]->CreateVars(parser, type->GetElement(i));
-}
-
-void NJS::DestructureArray::CreateVars(Builder& builder, const bool is_const, const ValuePtr& value)
+void NJS::DestructureArray::CreateVars(
+    Builder& builder,
+    const SourceLocation& where,
+    const bool is_const,
+    const ValuePtr& value)
 {
     for (unsigned i = 0; i < Elements.size(); ++i)
     {
         const auto element = builder.CreateSubscript(value, i);
-        Elements[i]->CreateVars(builder, is_const, element);
+        Elements[i]->CreateVars(builder, where, is_const, element);
     }
 }
 

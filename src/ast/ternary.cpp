@@ -6,8 +6,8 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::TernaryExpr::TernaryExpr(SourceLocation where, TypePtr type, ExprPtr condition, ExprPtr then, ExprPtr else_)
-    : Expr(std::move(where), std::move(type)),
+NJS::TernaryExpr::TernaryExpr(SourceLocation where, ExprPtr condition, ExprPtr then, ExprPtr else_)
+    : Expr(std::move(where)),
       Condition(std::move(condition)),
       Then(std::move(then)),
       Else(std::move(else_))

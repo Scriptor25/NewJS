@@ -2,8 +2,8 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 
-NJS::SymbolExpr::SymbolExpr(SourceLocation where, TypePtr type, std::string name)
-    : Expr(std::move(where), std::move(type)), Name(std::move(name))
+NJS::SymbolExpr::SymbolExpr(SourceLocation where, std::string name)
+    : Expr(std::move(where)), Name(std::move(name))
 {
 }
 
