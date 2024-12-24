@@ -92,10 +92,11 @@ void NJS::Builder::GetFormat(llvm::FunctionCallee& ref) const
     ref = GetModule().getOrInsertFunction("format", type);
 }
 
-void NJS::Builder::Push(const std::string& name)
+void NJS::Builder::Push(const std::string& name, const TypePtr& result_type)
 {
     const auto frame_name = m_Stack.empty() ? name : m_Stack.back().ValueName(name);
-    m_Stack.emplace_back(frame_name);
+    const auto frame_result_type = result_type ? result_type : m_Stack.empty() ? nullptr : m_Stack.back().ResultType;
+    m_Stack.emplace_back(frame_name, frame_result_type);
 }
 
 void NJS::Builder::Pop()
@@ -150,5 +151,5 @@ NJS::ValuePtr& NJS::Builder::GetVar(const SourceLocation& where, const std::stri
 
 NJS::TypePtr& NJS::Builder::ResultType()
 {
-    return m_ResultType;
+    return m_Stack.back().ResultType;
 }

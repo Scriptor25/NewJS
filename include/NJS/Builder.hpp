@@ -18,6 +18,7 @@ namespace NJS
         [[nodiscard]] std::string ValueName(const std::string&) const;
 
         std::string ParentName;
+        TypePtr ResultType;
         std::map<std::string, ValuePtr> Values;
     };
 
@@ -54,7 +55,7 @@ namespace NJS
 
         void GetFormat(llvm::FunctionCallee&) const;
 
-        void Push(const std::string& = {});
+        void Push(const std::string& = {}, const TypePtr& = {});
         void Pop();
 
         [[nodiscard]] std::string GetName(const std::string&) const;
@@ -83,6 +84,5 @@ namespace NJS
         std::map<std::string, std::map<TypePtr, std::map<TypePtr, OpRef>>> m_BinOps;
 
         std::vector<StackFrame> m_Stack;
-        TypePtr m_ResultType;
     };
 }

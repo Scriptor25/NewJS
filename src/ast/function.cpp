@@ -93,8 +93,7 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
     builder.GetBuilder().SetInsertPoint(entry_block);
 
-    builder.Push(Name);
-    builder.ResultType() = ResultType;
+    builder.Push(Name, ResultType);
     for (unsigned i = 0; i < Args.size(); ++i)
     {
         const auto& arg = Args[i];
