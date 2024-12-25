@@ -3,8 +3,15 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Param.hpp>
 
-NJS::VariableStmt::VariableStmt(SourceLocation where, const bool is_const, ParamPtr name, ExprPtr value)
-    : Stmt(std::move(where)), IsConst(is_const), Name(std::move(name)), Value(std::move(value))
+NJS::VariableStmt::VariableStmt(
+    SourceLocation where,
+    const bool is_const,
+    ParamPtr name,
+    ExprPtr value)
+    : Stmt(std::move(where)),
+      IsConst(is_const),
+      Name(std::move(name)),
+      Value(std::move(value))
 {
 }
 

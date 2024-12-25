@@ -1,12 +1,12 @@
 #include <cstdlib>
 #include <NJS/Std.hpp>
 
-uint64_t parse_int(const char* str)
+int64_t parse_int(const char* str)
 {
-    return static_cast<uint64_t>(atoll(str));
+    return strtoll(str, nullptr, 10);
 }
 
 double parse_float(const char* str)
 {
-    return atof(str);
+    return strtod(str, nullptr);
 }

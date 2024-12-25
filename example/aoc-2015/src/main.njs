@@ -4,7 +4,7 @@ import { day: day_2 } from "./day_2.njs"
 // std
 type File = i8[]
 extern println(message: i8[])
-extern parse_int(str: i8[]): u64
+extern parse_int(str: i8[]): i64
 extern parse_float(str: i8[]): u64
 extern file_open(filename: i8[], flags: i8[]): File
 extern file_close(stream: File)

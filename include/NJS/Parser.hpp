@@ -12,6 +12,11 @@ namespace NJS
 {
     typedef std::function<void(const StmtPtr&)> Callback;
 
+    struct Macro
+    {
+        std::string Source;
+    };
+
     class Parser
     {
         friend Param;
@@ -22,6 +27,7 @@ namespace NJS
             TypeContext&,
             std::istream&,
             std::string,
+            std::map<std::string, Macro>&,
             bool = false,
             std::set<std::filesystem::path>  = {});
 
@@ -83,6 +89,7 @@ namespace NJS
 
         TypeContext& m_Ctx;
         std::istream& m_Stream;
+        std::map<std::string, Macro>& m_Macros;
         bool m_Imported;
         std::set<std::filesystem::path> m_Parsed;
 

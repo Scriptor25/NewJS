@@ -1,7 +1,6 @@
 #include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Error.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 

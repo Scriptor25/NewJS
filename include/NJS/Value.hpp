@@ -16,7 +16,7 @@ namespace NJS
         [[nodiscard]] virtual bool IsL() const = 0;
         [[nodiscard]] virtual llvm::Value* GetPtr(const SourceLocation&) const = 0;
 
-        virtual llvm::Value* Load() const = 0;
+        [[nodiscard]] virtual llvm::Value* Load() const = 0;
         virtual void Store(const SourceLocation&, llvm::Value*) const = 0;
         virtual void Store(const SourceLocation&, ValuePtr) const = 0;
 
@@ -28,7 +28,7 @@ namespace NJS
         TypePtr m_Type;
     };
 
-    class RValue : public Value
+    class RValue final : public Value
     {
     public:
         static ValuePtr Create(Builder&, const TypePtr&, llvm::Value*);
@@ -36,7 +36,7 @@ namespace NJS
         [[nodiscard]] bool IsL() const override;
         [[nodiscard]] llvm::Value* GetPtr(const SourceLocation&) const override;
 
-        llvm::Value* Load() const override;
+        [[nodiscard]] llvm::Value* Load() const override;
         void Store(const SourceLocation&, llvm::Value*) const override;
         void Store(const SourceLocation&, ValuePtr) const override;
 
@@ -46,7 +46,7 @@ namespace NJS
         llvm::Value* m_Value;
     };
 
-    class LValue : public Value
+    class LValue final : public Value
     {
     public:
         static ValuePtr Create(Builder&, const TypePtr&, llvm::Value*);
@@ -54,7 +54,7 @@ namespace NJS
         [[nodiscard]] bool IsL() const override;
         [[nodiscard]] llvm::Value* GetPtr(const SourceLocation&) const override;
 
-        llvm::Value* Load() const override;
+        [[nodiscard]] llvm::Value* Load() const override;
         void Store(const SourceLocation&, llvm::Value*) const override;
         void Store(const SourceLocation&, ValuePtr) const override;
 

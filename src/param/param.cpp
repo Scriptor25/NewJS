@@ -21,15 +21,21 @@ void NJS::Param::CreateVars(
     const bool is_const,
     const ValuePtr& value)
 {
-    const auto type = Type
-                          ? Type->IsRef()
-                                ? Type->GetElement()
-                                : Type
-                          : value->GetType();
+    const auto type = !Type
+                          ? value->GetType()
+                          : Type->IsRef()
+                          ? Type->GetElement()
+                          : Type;
 
     auto& var = builder.DefVar(where, Name);
     if (Type && Type->IsRef())
-        var = value;
+    {
+        var = LValue::Create(builder, type, value->GetPtr(where));
+    }
+    else if (is_const)
+    {
+        var = RValue::Create(builder, type, value->Load());
+    }
     else
     {
         var = builder.CreateAlloca(type);

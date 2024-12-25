@@ -2,7 +2,6 @@
 #include <llvm/IR/BasicBlock.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Error.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>

@@ -27,6 +27,6 @@ char* file_read_eof(FILE*);
 void file_read_free(char*);
 void file_write(FILE*, const char*, uint64_t);
 
-uint64_t parse_int(const char*);
+int64_t parse_int(const char*);
 double parse_float(const char*);
 }

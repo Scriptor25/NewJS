@@ -14,7 +14,7 @@ NJS::StmtPtr NJS::Parser::ParseImportStmt()
         return {};
 
     std::ifstream stream(filepath);
-    Parser parser(m_Ctx, stream, filepath.string(), true, m_Parsed);
+    Parser parser(m_Ctx, stream, filepath.string(), m_Macros, true, m_Parsed);
 
     std::vector<StmtPtr> functions;
     parser.Parse([&](const StmtPtr& ptr)
@@ -38,8 +38,11 @@ NJS::StmtPtr NJS::Parser::ParseImportStmt()
 
 NJS::ImportMapping NJS::Parser::ParseImportMapping()
 {
+    if (NextAt("*"))
+        return {true};
+
     if (At(TokenType_Symbol))
-        return {Skip().StringValue, {}};
+        return {false, Skip().StringValue, {}};
 
     std::string overflow;
     std::map<std::string, std::string> mappings;
@@ -65,5 +68,5 @@ NJS::ImportMapping NJS::Parser::ParseImportMapping()
     }
     Expect("}");
 
-    return {std::move(overflow), std::move(mappings)};
+    return {false, std::move(overflow), std::move(mappings)};
 }

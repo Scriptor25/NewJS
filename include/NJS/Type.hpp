@@ -17,8 +17,6 @@ namespace NJS
 
     class Type
     {
-        friend TypeContext;
-
     public:
         virtual ~Type() = default;
 
@@ -67,7 +65,7 @@ namespace NJS
         unsigned m_Size;
     };
 
-    class NoType : public Type
+    class NoType final : public Type
     {
         friend TypeContext;
 
@@ -84,7 +82,7 @@ namespace NJS
         [[nodiscard]] unsigned GenSize() const override;
     };
 
-    class VoidType : public Type
+    class VoidType final : public Type
     {
         friend TypeContext;
 
@@ -102,7 +100,7 @@ namespace NJS
         [[nodiscard]] unsigned GenSize() const override;
     };
 
-    class IntType : public Type
+    class IntType final : public Type
     {
         friend TypeContext;
 
@@ -125,7 +123,7 @@ namespace NJS
         bool m_IsSigned;
     };
 
-    class FPType : public Type
+    class FPType final : public Type
     {
         friend TypeContext;
 
@@ -146,7 +144,7 @@ namespace NJS
         unsigned m_Bits;
     };
 
-    class PtrType : public Type
+    class PtrType final : public Type
     {
         friend TypeContext;
 
@@ -167,7 +165,7 @@ namespace NJS
         TypePtr m_Element;
     };
 
-    class RefType : public Type
+    class RefType final : public Type
     {
         friend TypeContext;
 
@@ -188,7 +186,7 @@ namespace NJS
         TypePtr m_Element;
     };
 
-    class ArrayType : public Type
+    class ArrayType final : public Type
     {
         friend TypeContext;
 
@@ -210,7 +208,7 @@ namespace NJS
         unsigned m_Count;
     };
 
-    class StructType : public Type
+    class StructType final : public Type
     {
         friend TypeContext;
 
@@ -230,7 +228,7 @@ namespace NJS
         std::map<std::string, TypePtr> m_Elements;
     };
 
-    class TupleType : public Type
+    class TupleType final : public Type
     {
         friend TypeContext;
 
@@ -251,7 +249,7 @@ namespace NJS
         std::vector<TypePtr> m_Elements;
     };
 
-    class FunctionType : public Type
+    class FunctionType final : public Type
     {
         friend TypeContext;
 

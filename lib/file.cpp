@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include <cstdlib>
 #include <NJS/Std.hpp>
 
 FILE* file_open(const char* filename, const char* mode)
@@ -19,7 +19,8 @@ char* file_read(FILE* stream, uint64_t count)
 
     const auto buf_size = fread(buf, 1, count, stream);
     static_cast<char*>(buf)[buf_size] = 0;
-    buf = realloc(buf, buf_size + 1);
+    if (const auto new_buf = realloc(buf, buf_size + 1))
+        buf = new_buf;
 
     return static_cast<char*>(buf);
 }
@@ -35,7 +36,8 @@ char* file_read_eof(FILE* stream)
 
     const auto buf_size = fread(buf, 1, count, stream);
     static_cast<char*>(buf)[buf_size] = 0;
-    buf = realloc(buf, buf_size + 1);
+    if (const auto new_buf = realloc(buf, buf_size + 1))
+        buf = new_buf;
 
     return static_cast<char*>(buf);
 }

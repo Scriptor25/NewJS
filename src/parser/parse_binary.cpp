@@ -1,6 +1,5 @@
 #include <NJS/AST.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/Operator.hpp>
 #include <NJS/Parser.hpp>
 
 NJS::ExprPtr NJS::Parser::ParseBinaryExpr(ExprPtr lhs, const unsigned min_pre)

@@ -57,6 +57,11 @@ llvm::Value* NJS::Builder::CreateCast(
         if (dst_type->IsPtr() && src_type->GetElement() == dst_type->GetElement())
             return GetBuilder().CreateConstGEP2_64(src_type->GetLLVM(*this), ptr, 0, 0);
     }
+    if (src_type->IsFunction())
+    {
+        if (dst_type->IsFunction())
+            return GetBuilder().CreatePointerCast(val, ty);
+    }
 
     Error(where, "no cast from value of type {} to {}", src_type, dst_type);
 }

@@ -1,6 +1,6 @@
 import { part_err } from "./main.njs"
 
-extern parse_int(str: i8[]): u64
+extern parse_int(str: i8[]): i64
 extern println(str: i8[])
 extern malloc(bytes: u64): void[]
 extern realloc(block: void[], bytes: u64): void[]

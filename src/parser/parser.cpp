@@ -8,9 +8,14 @@ NJS::Parser::Parser(
     TypeContext& ctx,
     std::istream& stream,
     std::string filename,
+    std::map<std::string, Macro>& macros,
     const bool imported,
     std::set<std::filesystem::path> parsed)
-    : m_Ctx(ctx), m_Stream(stream), m_Imported(imported), m_Parsed(std::move(parsed))
+    : m_Ctx(ctx),
+      m_Stream(stream),
+      m_Macros(macros),
+      m_Imported(imported),
+      m_Parsed(std::move(parsed))
 {
     if (!filename.empty() && std::filesystem::exists(filename))
         m_Parsed.insert(std::filesystem::canonical(filename));

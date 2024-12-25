@@ -22,7 +22,7 @@ namespace NJS
         TypePtr Type;
     };
 
-    struct DestructureObject : Param
+    struct DestructureObject final : Param
     {
         explicit DestructureObject(std::map<std::string, ParamPtr>);
 
@@ -34,7 +34,7 @@ namespace NJS
         std::map<std::string, ParamPtr> Elements;
     };
 
-    struct DestructureArray : Param
+    struct DestructureArray final : Param
     {
         explicit DestructureArray(std::vector<ParamPtr>);
 

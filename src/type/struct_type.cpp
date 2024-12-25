@@ -1,3 +1,4 @@
+#include <ranges>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
@@ -56,7 +57,7 @@ NJS::StructType::StructType(
 llvm::Type* NJS::StructType::GenLLVM(const Builder& builder) const
 {
     std::vector<llvm::Type*> types;
-    for (const auto& [name_, type_] : m_Elements)
+    for (const auto& type_ : m_Elements | std::ranges::views::values)
         types.push_back(type_->GetLLVM(builder));
     return llvm::StructType::get(builder.GetContext(), types, true);
 }
@@ -64,7 +65,7 @@ llvm::Type* NJS::StructType::GenLLVM(const Builder& builder) const
 unsigned NJS::StructType::GenSize() const
 {
     unsigned size = 0;
-    for (const auto& [name_, type_] : m_Elements)
+    for (const auto& type_ : m_Elements | std::ranges::views::values)
         size += type_->GetSize();
     return size;
 }

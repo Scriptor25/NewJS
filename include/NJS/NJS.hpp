@@ -41,15 +41,12 @@ namespace NJS
     std::string TypeString(const TypePtr&);
 }
 
-namespace std
+template <>
+struct std::formatter<NJS::TypePtr> : formatter<string>
 {
-    template <>
-    struct formatter<NJS::TypePtr> : formatter<string>
+    template <typename FormatContext>
+    auto format(const NJS::TypePtr& type, FormatContext& ctx) const
     {
-        template <typename FormatContext>
-        auto format(const NJS::TypePtr& type, FormatContext& ctx) const
-        {
-            return formatter<string>::format(TypeString(type), ctx);
-        }
-    };
-}
+        return formatter<string>::format(TypeString(type), ctx);
+    }
+};

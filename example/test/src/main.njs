@@ -1,25 +1,29 @@
-type GLFWmonitor
-type GLFWwindow
+import glfw from "./glfw3.njs"
+import   gl from    "./gl.njs"
 
-extern glfwInit()
-extern glfwTerminate()
-extern glfwCreateWindow(width: i32, height: i32, title: i8[], monitor: GLFWmonitor[], share: GLFWwindow[]): GLFWwindow[]
-extern glfwDestroyWindow(window: GLFWwindow[])
-extern glfwMakeContextCurrent(window: GLFWwindow[])
-extern glfwSwapInterval(interval: i32)
-extern glfwWindowShouldClose(window: GLFWwindow[]): i32
-extern glfwPollEvents()
-extern glfwSwapBuffers(window: GLFWwindow[])
+glfw.init()
+let window = glfw.createWindow(800, 600, "Test", 0, 0)
+glfw.makeContextCurrent(window)
+glfw.swapInterval(1)
+glfw.setKeyCallback(window, ?(window: GLFWwindow[], key: i32, scancode: i32, action: i32, mods: i32) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
+        glfw.setWindowShouldClose(window, GLFW_TRUE)
+})
 
-glfwInit()
-let window = glfwCreateWindow(800, 600, "Test", 0, 0)
-glfwMakeContextCurrent(window)
-glfwSwapInterval(1)
+gl.clearColor(0.2, 0.3, 1.0, 1.0)
 
-for (; glfwWindowShouldClose(window) != 1; ) {
-    glfwPollEvents()
-    glfwSwapBuffers(window)
+for (; glfw.windowShouldClose(window) != GLFW_TRUE; ) {
+    glfw.pollEvents()
+
+    let width: i32
+    let height: i32
+    glfw.getFramebufferSize(window, &width, &height)
+
+    gl.viewport(0, 0, width, height)
+    gl.clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    glfw.swapBuffers(window)
 }
 
-glfwDestroyWindow(window)
-glfwTerminate()
+glfw.destroyWindow(window)
+glfw.terminate()

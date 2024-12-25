@@ -177,7 +177,60 @@ NJS::FunctionExpr::FunctionExpr(
 
 NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&)
 {
-    Error(Where, "NJS::ConstFunctionExpr::GenLLVM");
+    static unsigned id = 0;
+    const auto name = std::to_string(id++);
+
+    std::vector<TypePtr> args;
+    for (const auto& arg : Args)
+        args.push_back(arg->Type);
+    const auto type = builder.GetCtx().GetFunctionType(ResultType, args, VarArg);
+    const auto function = llvm::Function::Create(
+        type->GenFnLLVM(builder),
+        llvm::GlobalValue::InternalLinkage,
+        builder.GetName(name),
+        builder.GetModule());
+
+    const auto end_block = builder.GetBuilder().GetInsertBlock();
+    const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
+    builder.GetBuilder().SetInsertPoint(entry_block);
+
+    builder.Push(name, ResultType);
+    for (unsigned i = 0; i < Args.size(); ++i)
+    {
+        const auto& arg = Args[i];
+        const auto ir_arg = function->getArg(i);
+        ir_arg->setName(arg->Name);
+
+        ValuePtr value;
+        if (arg->Type->IsRef())
+            value = LValue::Create(builder, arg->Type->GetElement(), ir_arg);
+        else value = RValue::Create(builder, arg->Type, ir_arg);
+        arg->CreateVars(builder, Where, false, value);
+    }
+
+    Body->GenVoidLLVM(builder);
+    builder.Pop();
+
+    for (auto& block : *function)
+    {
+        if (block.getTerminator()) continue;
+        if (function->getReturnType()->isVoidTy())
+        {
+            builder.GetBuilder().SetInsertPoint(&block);
+            builder.GetBuilder().CreateRetVoid();
+            continue;
+        }
+        Error(Where, "not all code paths return a value: in function lambda ({})", name);
+    }
+
+    if (verifyFunction(*function, &llvm::errs()))
+    {
+        function->print(llvm::errs());
+        Error(Where, "failed to verify function lambda ({})", name);
+    }
+
+    builder.GetBuilder().SetInsertPoint(end_block);
+    return RValue::Create(builder, type, function);
 }
 
 std::ostream& NJS::FunctionExpr::Print(std::ostream& os)

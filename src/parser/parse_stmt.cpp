@@ -3,6 +3,14 @@
 
 NJS::StmtPtr NJS::Parser::ParseStmt()
 {
+    if (NextAt("#"))
+    {
+        const auto name = Expect(TokenType_Symbol).StringValue;
+        const auto value = Expect(TokenType_String).StringValue;
+        m_Macros[name] = {value};
+        return {};
+    }
+
     if (At("type"))
     {
         ParseTypeAlias();

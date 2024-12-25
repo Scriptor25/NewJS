@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ranges>
 #include <NJS/ArgParser.hpp>
 
 NJS::ArgParser::ArgParser(const std::vector<Arg>& args)
@@ -75,7 +76,7 @@ void NJS::ArgParser::Print() const
 
     std::cerr << m_Executable << " [OPTION|FLAG|VALUE]..." << std::endl;
     std::cerr << "OPTION" << std::endl;
-    for (const auto& [id_, pat_] : options)
+    for (const auto& pat_ : options | std::ranges::views::values)
     {
         for (unsigned i = 0; i < pat_.size(); ++i)
         {
@@ -85,7 +86,7 @@ void NJS::ArgParser::Print() const
         std::cerr << std::endl;
     }
     std::cerr << "FLAG" << std::endl;
-    for (const auto& [id_, pat_] : flags)
+    for (const auto& pat_ : flags | std::ranges::views::values)
     {
         for (unsigned i = 0; i < pat_.size(); ++i)
         {

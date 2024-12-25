@@ -21,7 +21,7 @@ void operator delete(void* ptr, size_t) noexcept
 template <typename T>
 static T* New(const size_t count)
 {
-    const auto ptr = malloc(count * sizeof(T));
+    const auto ptr = malloc(count * sizeof(T)); // NOLINT(*-sizeof-expression)
     return static_cast<T*>(ptr);
 }
 
@@ -525,7 +525,7 @@ void format(char* stream, const unsigned n, ...)
     va_start(ap, n);
 
     unsigned offset = 0;
-    while (auto type = ParseType(ap))
+    while (const auto type = ParseType(ap))
     {
         type->Append(stream, n, offset, ap);
         delete type;

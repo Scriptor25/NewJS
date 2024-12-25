@@ -1,7 +1,20 @@
 #include <NJS/AST.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Parser.hpp>
-#include <NJS/TypeContext.hpp>
+
+static std::string to_upper(const std::string& src)
+{
+    std::string res;
+    for (const auto c : src)
+        res += static_cast<char>(std::toupper(c));
+    return res;
+}
+
+static void replace_all(std::string& src, const std::string& find, const std::string& replace)
+{
+    for (size_t pos; (pos = src.find(find)) != std::string::npos;)
+        src.replace(pos, find.size(), replace);
+}
 
 NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
 {
@@ -62,6 +75,37 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
     if (At(TokenType_Symbol))
     {
         const auto name = Skip().StringValue;
+        if (m_Macros.contains(name))
+        {
+            auto [source_] = m_Macros[name];
+
+            if (NextAt("!"))
+            {
+                unsigned i = 0;
+
+                Expect("(");
+                while (!At(")") && !AtEof())
+                {
+                    std::string arg;
+                    while (!At(",") && !At(")") && !AtEof())
+                        arg += Skip().StringValue + " ";
+                    arg.pop_back();
+
+                    const auto id = std::to_string(i++);
+                    replace_all(source_, "$$" + id, to_upper(arg));
+                    replace_all(source_, "$" + id, arg);
+
+                    if (!At(")"))
+                        Expect(",");
+                }
+                Expect(")");
+            }
+
+            std::stringstream stream(source_);
+            Parser parser(m_Ctx, stream, "<macro>", m_Macros);
+            return parser.ParseExpr();
+        }
+
         return std::make_shared<SymbolExpr>(where, name);
     }
 

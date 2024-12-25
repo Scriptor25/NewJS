@@ -11,8 +11,8 @@ namespace NJS
     public:
         explicit Linker(const std::string&);
 
-        llvm::LLVMContext& LLVMContext() const;
-        llvm::Module& LLVMModule() const;
+        [[nodiscard]] llvm::LLVMContext& LLVMContext() const;
+        [[nodiscard]] llvm::Module& LLVMModule() const;
 
         void Link(std::unique_ptr<llvm::Module>&&) const;
         void Emit(llvm::raw_ostream&, llvm::CodeGenFileType) const;

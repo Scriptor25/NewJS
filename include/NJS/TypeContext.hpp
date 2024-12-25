@@ -35,7 +35,8 @@ namespace NJS
             auto string = T::GenString(args...);
             auto& ref = GetType(string);
             if (ref) return std::dynamic_pointer_cast<T>(ref);
-            auto type = std::shared_ptr<T>(new T(*this, string, args...));
+            const auto ptr = new T(*this, string, args...);
+            auto type = std::shared_ptr<T>(ptr);
             ref = type;
             return type;
         }

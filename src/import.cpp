@@ -1,3 +1,4 @@
+#include <ranges>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Import.hpp>
@@ -88,6 +89,10 @@ void NJS::ImportMapping::MapFunctions(
                 break;
             }
         }
+        else if (All)
+        {
+            builder.DefVar(where, fn.Name) = value;
+        }
         else if (NameMap.contains(fn.Name))
         {
             builder.DefVar(where, NameMap.at(fn.Name)) = value;
@@ -104,7 +109,7 @@ void NJS::ImportMapping::MapFunctions(
         const auto module_type = builder.GetCtx().GetStructType(element_types);
         llvm::Value* module = llvm::Constant::getNullValue(module_type->GetLLVM(builder));
         unsigned i = 0;
-        for (const auto& [name_, value_] : elements)
+        for (const auto& value_ : elements | std::ranges::views::values)
             module = builder.GetBuilder().CreateInsertValue(module, value_->Load(), i++);
 
         builder.DefVar(where, Name) = RValue::Create(builder, module_type, module);

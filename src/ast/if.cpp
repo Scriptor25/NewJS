@@ -28,7 +28,7 @@ void NJS::IfStmt::GenVoidLLVM(Builder& builder)
     if (!then_terminator)
         builder.GetBuilder().CreateBr(end_bb);
 
-    llvm::Instruction* else_terminator{};
+    const llvm::Instruction* else_terminator{};
     if (Else)
     {
         builder.GetBuilder().SetInsertPoint(else_bb);

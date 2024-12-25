@@ -52,7 +52,7 @@ namespace NJS
         ValuePtr CreateSubscript(const SourceLocation&, const ValuePtr&, unsigned);
 
         ValuePtr CreateCast(const SourceLocation&, const ValuePtr&, const TypePtr&);
-        llvm::Value* CreateCast(const SourceLocation&, ValRef, const TypePtr&, const TypePtr&) const;
+        [[nodiscard]] llvm::Value* CreateCast(const SourceLocation&, ValRef, const TypePtr&, const TypePtr&) const;
 
         void GetFormat(llvm::FunctionCallee&) const;
 

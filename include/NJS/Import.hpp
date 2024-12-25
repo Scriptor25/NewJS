@@ -12,6 +12,7 @@ namespace NJS
         std::ostream& Print(std::ostream&) const;
         void MapFunctions(Builder&, const SourceLocation&, const std::string&, const std::vector<StmtPtr>&) const;
 
+        bool All;
         std::string Name;
         std::map<std::string, std::string> NameMap;
     };

@@ -29,7 +29,7 @@ namespace NJS
         SourceLocation Where;
     };
 
-    struct ForStmt : Stmt
+    struct ForStmt final : Stmt
     {
         ForStmt(SourceLocation, StmtPtr, ExprPtr, StmtPtr, StmtPtr);
 
@@ -42,7 +42,7 @@ namespace NJS
         StmtPtr Body;
     };
 
-    struct FunctionStmt : Stmt
+    struct FunctionStmt final : Stmt
     {
         FunctionStmt(SourceLocation, FnType, std::string, std::vector<ParamPtr>, bool, TypePtr, StmtPtr);
 
@@ -57,7 +57,7 @@ namespace NJS
         StmtPtr Body;
     };
 
-    struct IfStmt : Stmt
+    struct IfStmt final : Stmt
     {
         IfStmt(SourceLocation, ExprPtr, StmtPtr, StmtPtr);
 
@@ -69,7 +69,7 @@ namespace NJS
         StmtPtr Else;
     };
 
-    struct ImportStmt : Stmt
+    struct ImportStmt final : Stmt
     {
         ImportStmt(SourceLocation, ImportMapping, std::filesystem::path, std::vector<StmtPtr>);
 
@@ -81,7 +81,7 @@ namespace NJS
         std::vector<StmtPtr> Functions;
     };
 
-    struct ReturnStmt : Stmt
+    struct ReturnStmt final : Stmt
     {
         ReturnStmt(SourceLocation, ExprPtr);
 
@@ -91,7 +91,7 @@ namespace NJS
         ExprPtr Value;
     };
 
-    struct ScopeStmt : Stmt
+    struct ScopeStmt final : Stmt
     {
         ScopeStmt(SourceLocation, std::vector<StmtPtr>);
 
@@ -101,7 +101,7 @@ namespace NJS
         std::vector<StmtPtr> Children;
     };
 
-    struct SwitchStmt : Stmt
+    struct SwitchStmt final : Stmt
     {
         SwitchStmt(SourceLocation, ExprPtr, std::map<StmtPtr, std::vector<ExprPtr>>, StmtPtr);
 
@@ -113,7 +113,7 @@ namespace NJS
         StmtPtr DefaultCase;
     };
 
-    struct VariableStmt : Stmt
+    struct VariableStmt final : Stmt
     {
         VariableStmt(SourceLocation, bool, ParamPtr, ExprPtr);
 
@@ -133,7 +133,7 @@ namespace NJS
         virtual ValuePtr GenLLVM(Builder&, const TypePtr&) = 0;
     };
 
-    struct BinaryExpr : Expr
+    struct BinaryExpr final : Expr
     {
         BinaryExpr(SourceLocation, std::string, ExprPtr, ExprPtr);
 
@@ -145,7 +145,7 @@ namespace NJS
         ExprPtr Rhs;
     };
 
-    struct CallExpr : Expr
+    struct CallExpr final : Expr
     {
         CallExpr(SourceLocation, ExprPtr, std::vector<ExprPtr>);
 
@@ -156,7 +156,7 @@ namespace NJS
         std::vector<ExprPtr> Args;
     };
 
-    struct CastExpr : Expr
+    struct CastExpr final : Expr
     {
         CastExpr(SourceLocation, TypePtr, ExprPtr);
 
@@ -167,7 +167,7 @@ namespace NJS
         ExprPtr Value;
     };
 
-    struct BoolExpr : Expr
+    struct BoolExpr final : Expr
     {
         BoolExpr(SourceLocation, bool);
 
@@ -177,7 +177,7 @@ namespace NJS
         bool Value;
     };
 
-    struct CharExpr : Expr
+    struct CharExpr final : Expr
     {
         CharExpr(SourceLocation, char);
 
@@ -187,7 +187,7 @@ namespace NJS
         char Value;
     };
 
-    struct FPExpr : Expr
+    struct FPExpr final : Expr
     {
         FPExpr(SourceLocation, TypePtr, double);
 
@@ -198,7 +198,7 @@ namespace NJS
         double Value;
     };
 
-    struct FunctionExpr : Expr
+    struct FunctionExpr final : Expr
     {
         FunctionExpr(SourceLocation, std::vector<ParamPtr>, bool, TypePtr, StmtPtr);
 
@@ -211,7 +211,7 @@ namespace NJS
         StmtPtr Body;
     };
 
-    struct IntExpr : Expr
+    struct IntExpr final : Expr
     {
         IntExpr(SourceLocation, TypePtr, uint64_t);
 
@@ -222,7 +222,7 @@ namespace NJS
         uint64_t Value;
     };
 
-    struct StructExpr : Expr
+    struct StructExpr final : Expr
     {
         StructExpr(SourceLocation, std::map<std::string, ExprPtr>);
 
@@ -232,7 +232,7 @@ namespace NJS
         std::map<std::string, ExprPtr> Elements;
     };
 
-    struct StringExpr : Expr
+    struct StringExpr final : Expr
     {
         StringExpr(SourceLocation, std::string);
 
@@ -244,7 +244,7 @@ namespace NJS
         static llvm::Constant* GetString(const Builder&, const std::string&);
     };
 
-    struct TupleExpr : Expr
+    struct TupleExpr final : Expr
     {
         TupleExpr(SourceLocation, std::vector<ExprPtr>);
 
@@ -254,7 +254,7 @@ namespace NJS
         std::vector<ExprPtr> Elements;
     };
 
-    struct FormatExpr : Expr
+    struct FormatExpr final : Expr
     {
         FormatExpr(SourceLocation, unsigned, std::map<unsigned, std::string>, std::map<unsigned, ExprPtr>);
 
@@ -266,7 +266,7 @@ namespace NJS
         std::map<unsigned, ExprPtr> Dynamics;
     };
 
-    struct MemberExpr : Expr
+    struct MemberExpr final : Expr
     {
         MemberExpr(SourceLocation, ExprPtr, std::string);
 
@@ -277,7 +277,7 @@ namespace NJS
         std::string Member;
     };
 
-    struct ScopeExpr : Expr
+    struct ScopeExpr final : Expr
     {
         ScopeExpr(SourceLocation, std::vector<StmtPtr>, ExprPtr);
 
@@ -288,7 +288,7 @@ namespace NJS
         ExprPtr Last;
     };
 
-    struct SubscriptExpr : Expr
+    struct SubscriptExpr final : Expr
     {
         SubscriptExpr(SourceLocation, ExprPtr, ExprPtr);
 
@@ -299,7 +299,7 @@ namespace NJS
         ExprPtr Index;
     };
 
-    struct SwitchExpr : Expr
+    struct SwitchExpr final : Expr
     {
         SwitchExpr(SourceLocation, ExprPtr, std::map<ExprPtr, std::vector<ExprPtr>>, ExprPtr);
 
@@ -311,7 +311,7 @@ namespace NJS
         ExprPtr DefaultCase;
     };
 
-    struct SymbolExpr : Expr
+    struct SymbolExpr final : Expr
     {
         SymbolExpr(SourceLocation, std::string);
 
@@ -321,7 +321,7 @@ namespace NJS
         std::string Name;
     };
 
-    struct TernaryExpr : Expr
+    struct TernaryExpr final : Expr
     {
         TernaryExpr(SourceLocation, ExprPtr, ExprPtr, ExprPtr);
 
@@ -333,7 +333,7 @@ namespace NJS
         ExprPtr Else;
     };
 
-    struct UnaryExpr : Expr
+    struct UnaryExpr final : Expr
     {
         UnaryExpr(SourceLocation, std::string, bool, ExprPtr);
 

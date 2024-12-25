@@ -1,7 +1,6 @@
 #include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Error.hpp>
 
 NJS::SubscriptExpr::SubscriptExpr(SourceLocation where, ExprPtr array, ExprPtr index)
     : Expr(std::move(where)), Array(std::move(array)), Index(std::move(index))
