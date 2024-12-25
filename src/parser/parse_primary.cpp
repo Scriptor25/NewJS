@@ -1,6 +1,7 @@
 #include <NJS/AST.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Parser.hpp>
+#include <NJS/TypeContext.hpp>
 
 NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
 {
@@ -9,14 +10,18 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
     if (At(TokenType_Int))
     {
         const auto value = Skip().IntValue;
-        const auto type = ParseType();
+        TypePtr type;
+        if (NextAt(":"))
+            type = ParseType();
         return std::make_shared<IntExpr>(where, type, value);
     }
 
     if (At(TokenType_FP))
     {
         const auto value = Skip().FPValue;
-        const auto type = ParseType();
+        TypePtr type;
+        if (NextAt(":"))
+            type = ParseType();
         return std::make_shared<FPExpr>(where, type, value);
     }
 

@@ -14,7 +14,7 @@ NJS::FormatExpr::FormatExpr(
 {
 }
 
-NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder, const TypePtr&)
 {
     constexpr auto N = 1024;
     const auto ptr = builder.CreateAlloca(builder.GetBuilder().getInt8Ty(), N);
@@ -39,17 +39,17 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder)
         }
         else if (Dynamics.contains(i))
         {
-            const auto value = Dynamics[i]->GenLLVM(builder);
+            const auto value = Dynamics[i]->GenLLVM(builder, {});
             value->GetType()->TypeInfo(builder, args);
             if (value->GetType()->IsPrimitive())
                 args.push_back(value->Load());
             else if (value->IsL())
-                args.push_back(value->GetPtr());
+                args.push_back(value->GetPtr(Where));
             else
             {
                 const auto tmp = builder.CreateAlloca(value->GetType());
-                tmp->Store(value);
-                args.push_back(tmp->GetPtr());
+                tmp->Store(Where, value);
+                args.push_back(tmp->GetPtr(Where));
             }
         }
     }

@@ -2,6 +2,7 @@
 #include <llvm/IR/BasicBlock.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
 NJS::ForStmt::ForStmt(SourceLocation where, StmtPtr init, ExprPtr condition, StmtPtr loop, StmtPtr body)
@@ -13,7 +14,7 @@ NJS::ForStmt::ForStmt(SourceLocation where, StmtPtr init, ExprPtr condition, Stm
 {
 }
 
-NJS::ValuePtr NJS::ForStmt::GenLLVM(Builder& builder)
+void NJS::ForStmt::GenVoidLLVM(Builder& builder)
 {
     builder.Push();
 
@@ -22,25 +23,24 @@ NJS::ValuePtr NJS::ForStmt::GenLLVM(Builder& builder)
     const auto loop = llvm::BasicBlock::Create(builder.GetContext(), "loop", parent);
     const auto end = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
-    if (Init) Init->GenLLVM(builder);
+    if (Init) Init->GenVoidLLVM(builder);
     builder.GetBuilder().CreateBr(head);
 
     builder.GetBuilder().SetInsertPoint(head);
     if (Condition)
     {
-        const auto condition = Condition->GenLLVM(builder);
+        const auto condition = Condition->GenLLVM(builder, builder.GetCtx().GetBoolType());
         builder.GetBuilder().CreateCondBr(condition->Load(), loop, end);
     }
     else builder.GetBuilder().CreateBr(loop);
 
     builder.GetBuilder().SetInsertPoint(loop);
-    Body->GenLLVM(builder);
-    if (Loop) Loop->GenLLVM(builder);
+    Body->GenVoidLLVM(builder);
+    if (Loop) Loop->GenVoidLLVM(builder);
     builder.GetBuilder().CreateBr(head);
 
     builder.GetBuilder().SetInsertPoint(end);
     builder.Pop();
-    return {};
 }
 
 std::ostream& NJS::ForStmt::Print(std::ostream& os)

@@ -13,7 +13,7 @@ bool NJS::LValue::IsL() const
     return true;
 }
 
-llvm::Value* NJS::LValue::GetPtr() const
+llvm::Value* NJS::LValue::GetPtr(const SourceLocation&) const
 {
     return m_Ptr;
 }
@@ -23,19 +23,17 @@ llvm::Value* NJS::LValue::Load() const
     return GetBuilder().GetBuilder().CreateLoad(GetType()->GetLLVM(GetBuilder()), m_Ptr);
 }
 
-void NJS::LValue::Store(llvm::Value* value) const
+void NJS::LValue::Store(const SourceLocation& where, llvm::Value* value) const
 {
     if (value->getType() != GetType()->GetLLVM(GetBuilder()))
-        Error("invalid store: type mismatch, <llvm type> != {}", GetType());
+        Error(where, "invalid store: type mismatch, <llvm type> != {}", GetType());
 
     GetBuilder().GetBuilder().CreateStore(value, m_Ptr);
 }
 
-void NJS::LValue::Store(const ValuePtr value) const
+void NJS::LValue::Store(const SourceLocation& where, ValuePtr value) const
 {
-    if (const auto type = value->GetType(); type != GetType())
-        Error("invalid store: type mismatch, {} != {}", type, GetType());
-
+    value = GetBuilder().CreateCast(where, value, GetType());
     GetBuilder().GetBuilder().CreateStore(value->Load(), m_Ptr);
 }
 

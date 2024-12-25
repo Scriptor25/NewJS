@@ -9,7 +9,7 @@ NJS::BoolExpr::BoolExpr(SourceLocation where, const bool value)
 {
 }
 
-NJS::ValuePtr NJS::BoolExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::BoolExpr::GenLLVM(Builder& builder, const TypePtr&)
 {
     const auto type = builder.GetCtx().GetBoolType();
     const auto value = builder.GetBuilder().getInt1(Value);

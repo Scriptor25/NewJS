@@ -8,11 +8,10 @@ NJS::VariableStmt::VariableStmt(SourceLocation where, const bool is_const, Param
 {
 }
 
-NJS::ValuePtr NJS::VariableStmt::GenLLVM(Builder& builder)
+void NJS::VariableStmt::GenVoidLLVM(Builder& builder)
 {
-    const auto value = Value ? Value->GenLLVM(builder) : nullptr;
+    const auto value = Value ? Value->GenLLVM(builder, Name->Type) : nullptr;
     Name->CreateVars(builder, Where, IsConst, value);
-    return {};
 }
 
 std::ostream& NJS::VariableStmt::Print(std::ostream& os)

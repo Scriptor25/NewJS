@@ -18,6 +18,13 @@ NJS::TypePtr NJS::ArrayType::GetElement() const
     return m_Element;
 }
 
+NJS::TypePtr NJS::ArrayType::GetElement(const unsigned i) const
+{
+    if (i >= m_Count)
+        Error("array index out of bounds: {} !E [0,{})", i, m_Count);
+    return m_Element;
+}
+
 void NJS::ArrayType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_ARRAY));

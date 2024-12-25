@@ -197,6 +197,7 @@ namespace NJS
 
         [[nodiscard]] bool IsArray() const override;
         [[nodiscard]] TypePtr GetElement() const override;
+        [[nodiscard]] TypePtr GetElement(unsigned) const override;
         void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:

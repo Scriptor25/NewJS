@@ -8,6 +8,6 @@ type user_t = {
 
 function create_user(): user_t {
     let user: user_t
-    random_key(user.pvt, 4u64)
+    random_key(user.pvt, 4)
     return user
 }

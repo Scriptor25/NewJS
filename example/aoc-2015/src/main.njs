@@ -15,22 +15,22 @@ extern file_write(stream: File, buf: i8[], count: u64)
 
 println($"{process}")
 
-let day = parse_int(process.argv[1u64])
-let part = parse_int(process.argv[2u64])
+let day = parse_int(process.argv[1])
+let part = parse_int(process.argv[2])
 
 function part_err(input: i8[]): u64 {
     println("invalid part")
-    return 0u64
+    return 0
 }
 
 function day_err(input: i8[]): u64 {
     println("invalid day")
-    return 0u64
+    return 0
 }
 
 let fn = switch (day) {
-    case 1u64  -> day_1(part)
-    case 2u64  -> day_2(part)
+    case 1  -> day_1(part)
+    case 2  -> day_2(part)
     default -> day_err
 }
 

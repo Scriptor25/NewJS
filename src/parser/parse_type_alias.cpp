@@ -5,6 +5,10 @@ void NJS::Parser::ParseTypeAlias()
 {
     Expect("type");
     const auto name = Expect(TokenType_Symbol).StringValue;
-    Expect("=");
-    m_Ctx.GetType(name) = ParseType();
+
+    TypePtr type;
+    if (NextAt("="))
+        type = ParseType();
+    else type = m_Ctx.GetNoType();
+    m_Ctx.GetType(name) = type;
 }

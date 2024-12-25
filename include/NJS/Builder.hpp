@@ -22,6 +22,7 @@ namespace NJS
         std::map<std::string, ValuePtr> Values;
     };
 
+    typedef std::pair<llvm::Value*, llvm::Value*> ValRef;
     typedef std::pair<TypePtr, llvm::Value*> OpRef;
     typedef std::function<ValuePtr(Builder&, const TypePtr&, llvm::Value*, llvm::Value*)> BinOp;
 
@@ -44,14 +45,14 @@ namespace NJS
         ValuePtr CreateAlloca(const TypePtr&, unsigned = 0);
         ValuePtr CreateGlobal(const std::string&, const TypePtr&, bool);
 
-        ValuePtr CreateMember(const ValuePtr&, const std::string&);
+        ValuePtr CreateMember(const SourceLocation&, const ValuePtr&, const std::string&);
 
-        ValuePtr CreateSubscript(const ValuePtr&, const ValuePtr&);
-        ValuePtr CreateSubscript(const ValuePtr&, llvm::Value*);
-        ValuePtr CreateSubscript(const ValuePtr&, unsigned);
+        ValuePtr CreateSubscript(const SourceLocation&, const ValuePtr&, const ValuePtr&);
+        ValuePtr CreateSubscript(const SourceLocation&, const ValuePtr&, llvm::Value*);
+        ValuePtr CreateSubscript(const SourceLocation&, const ValuePtr&, unsigned);
 
-        ValuePtr CreateCast(const ValuePtr&, const TypePtr&);
-        llvm::Value* CreateCast(llvm::Value*, const TypePtr&, const TypePtr&) const;
+        ValuePtr CreateCast(const SourceLocation&, const ValuePtr&, const TypePtr&);
+        llvm::Value* CreateCast(const SourceLocation&, ValRef, const TypePtr&, const TypePtr&) const;
 
         void GetFormat(llvm::FunctionCallee&) const;
 

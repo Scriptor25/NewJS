@@ -33,8 +33,8 @@ void NJS::Param::CreateVars(
     else
     {
         var = builder.CreateAlloca(type);
-        if (value) var->Store(value);
-        else var->Store(llvm::Constant::getNullValue(type->GetLLVM(builder)));
+        if (value) var->Store(where, value);
+        else var->Store(where, llvm::Constant::getNullValue(type->GetLLVM(builder)));
     }
 }
 

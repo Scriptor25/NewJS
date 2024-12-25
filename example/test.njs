@@ -10,7 +10,7 @@ type User = {
 let u1: User = {
     name: "Felix",
     surname: "Schreiber",
-    age: 18u32,
+    age: 18,
     type: "App Development"
 }
 
@@ -22,15 +22,15 @@ println("IT WORKS!")
 printUser(u1)
 
 function recurse(n: u32): u32 {
-    if (n <= 1u32) return n
-    return recurse(n - 1u32) + recurse(n - 2u32)
+    if (n <= 1) return n
+    return recurse(n - 1) + recurse(n - 2)
 }
 
-let n = 10u32
+let n: u32 = 10
 let r = recurse(n)
 println($"recurse({n}) = {r}")
 
-let a1 = [1u32, 2u32, 3u32]
+let a1: u32[3] = [1, 2, 3]
 let t1 = ["Felix", u1, a1]
 
 function printArray(array: u32[3]) {
@@ -39,12 +39,12 @@ function printArray(array: u32[3]) {
 
 printArray(a1)
 
-for (let i: u32; i < 3u32; ++i)
+for (let i: u32; i < 3; ++i)
     println($"a1[{i}] = {a1[i]}")
 
 function foo(): (): u32 {
     function bar(): u32 {
-        return 123u32
+        return 123
     }
     return bar
 }
@@ -54,5 +54,5 @@ println($"foo()() = {foo()()}")
 
 let [name1, {name, surname, age, type}] = ["Felix", u1]
 
-println($"{name1} {name} {surname} {age} {type} {[4u32, 5u32, 6u32]}")
+println($"{name1} {name} {surname} {age} {type} {[4:u32, 5:u32, 6:u32]}")
 println($"t1 = {t1}")

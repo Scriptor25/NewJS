@@ -5,31 +5,31 @@ type mat4 = f64[4][4]
 
 function new(): mat4 {
     return [
-        [1.f64, 0.f64, 0.f64, 0.f64],
-        [0.f64, 1.f64, 0.f64, 0.f64],
-        [0.f64, 0.f64, 1.f64, 0.f64],
-        [0.f64, 0.f64, 0.f64, 1.f64],
+        [1., 0., 0., 0.],
+        [0., 1., 0., 0.],
+        [0., 0., 1., 0.],
+        [0., 0., 0., 1.],
     ]
 }
 
 function ident(self: mat4&): mat4& {
-    self[0u64][0u64] =
-    self[1u64][1u64] =
-    self[2u64][2u64] =
-    self[3u64][3u64] = 1.f64
+    self[0][0] =
+    self[1][1] =
+    self[2][2] =
+    self[3][3] = 1.
     return self
 }
 
 function translate(self: mat4&, v: vec3): mat4& {
-    self[0u64][3u64] += v[0u64]
-    self[1u64][3u64] += v[1u64]
-    self[2u64][3u64] += v[2u64]
+    self[0][3] += v[0]
+    self[1][3] += v[1]
+    self[2][3] += v[2]
     return self
 }
 
 function scale(self: mat4&, v: vec3): mat4& {
-    self[0u64][0u64] += v[0u64]
-    self[1u64][1u64] += v[1u64]
-    self[2u64][2u64] += v[2u64]
+    self[0][0] += v[0]
+    self[1][1] += v[1]
+    self[2][2] += v[2]
     return self
 }

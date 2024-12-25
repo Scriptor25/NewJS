@@ -4,14 +4,15 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::ValuePtr NJS::Builder::CreateSubscript(const ValuePtr& array, const ValuePtr& index)
+NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation& where, const ValuePtr& array, const ValuePtr& index)
 {
-    return CreateSubscript(array, index->Load());
+    return CreateSubscript(where, array, index->Load());
 }
 
-NJS::ValuePtr NJS::Builder::CreateSubscript(const ValuePtr& array, const unsigned index)
+NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation& where, const ValuePtr& array, const unsigned index)
 {
     return CreateSubscript(
+        where,
         array,
         RValue::Create(
             *this,
@@ -19,7 +20,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const ValuePtr& array, const unsigne
             GetBuilder().getInt64(index)));
 }
 
-NJS::ValuePtr NJS::Builder::CreateSubscript(const ValuePtr& array, llvm::Value* index)
+NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation& where, const ValuePtr& array, llvm::Value* index)
 {
     const auto array_type = array->GetType();
 
@@ -39,7 +40,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const ValuePtr& array, llvm::Value* 
         const auto zero = llvm::Constant::getNullValue(index_type);
         const auto ptr = GetBuilder().CreateGEP(
             array_type->GetLLVM(*this),
-            array->GetPtr(),
+            array->GetPtr(where),
             {zero, index});
 
         TypePtr type;

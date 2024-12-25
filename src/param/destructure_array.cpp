@@ -2,7 +2,6 @@
 #include <NJS/Error.hpp>
 #include <NJS/Param.hpp>
 #include <NJS/Type.hpp>
-#include <NJS/Value.hpp>
 
 NJS::DestructureArray::DestructureArray(std::vector<ParamPtr> elements)
     : Param(""), Elements(std::move(elements))
@@ -22,7 +21,7 @@ void NJS::DestructureArray::CreateVars(
 {
     for (unsigned i = 0; i < Elements.size(); ++i)
     {
-        const auto element = builder.CreateSubscript(value, i);
+        const auto element = builder.CreateSubscript(where, value, i);
         Elements[i]->CreateVars(builder, where, is_const, element);
     }
 }

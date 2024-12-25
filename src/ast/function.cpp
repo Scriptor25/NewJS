@@ -25,7 +25,7 @@ NJS::FunctionStmt::FunctionStmt(
 {
 }
 
-NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
+void NJS::FunctionStmt::GenVoidLLVM(Builder& builder)
 {
     std::string name;
     switch (Fn)
@@ -86,7 +86,7 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
         }
     }
 
-    if (!Body) return {};
+    if (!Body) return;
     if (!function->empty()) Error(Where, "redefining function {} ({})", Name, name);
 
     const auto end_block = builder.GetBuilder().GetInsertBlock();
@@ -107,7 +107,7 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
         arg->CreateVars(builder, Where, false, value);
     }
 
-    Body->GenLLVM(builder);
+    Body->GenVoidLLVM(builder);
     builder.Pop();
 
     for (auto& block : *function)
@@ -129,7 +129,6 @@ NJS::ValuePtr NJS::FunctionStmt::GenLLVM(Builder& builder)
     }
 
     builder.GetBuilder().SetInsertPoint(end_block);
-    return {};
 }
 
 std::ostream& NJS::FunctionStmt::Print(std::ostream& os)
@@ -176,7 +175,7 @@ NJS::FunctionExpr::FunctionExpr(
 {
 }
 
-NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&)
 {
     Error(Where, "NJS::ConstFunctionExpr::GenLLVM");
 }

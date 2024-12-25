@@ -27,10 +27,12 @@ namespace NJS
     ValuePtr OperatorShL(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
     ValuePtr OperatorShR(Builder&, const TypePtr&, llvm::Value*, llvm::Value*);
 
-    std::pair<ValuePtr, bool> OperatorInc(Builder&, const ValuePtr&);
-    std::pair<ValuePtr, bool> OperatorDec(Builder&, const ValuePtr&);
-    std::pair<ValuePtr, bool> OperatorNeg(Builder&, const ValuePtr&);
-    std::pair<ValuePtr, bool> OperatorLNot(Builder&, const ValuePtr&);
-    std::pair<ValuePtr, bool> OperatorNot(Builder&, const ValuePtr&);
-    std::pair<ValuePtr, bool> OperatorRef(Builder&, const ValuePtr&);
+    typedef std::pair<ValuePtr, bool> UnaryResult;
+
+    UnaryResult OperatorInc(Builder&, const SourceLocation&, const ValuePtr&);
+    UnaryResult OperatorDec(Builder&, const SourceLocation&, const ValuePtr&);
+    UnaryResult OperatorNeg(Builder&, const SourceLocation&, const ValuePtr&);
+    UnaryResult OperatorLNot(Builder&, const SourceLocation&, const ValuePtr&);
+    UnaryResult OperatorNot(Builder&, const SourceLocation&, const ValuePtr&);
+    UnaryResult OperatorRef(Builder&, const SourceLocation&, const ValuePtr&);
 }

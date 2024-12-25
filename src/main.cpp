@@ -41,7 +41,7 @@ static void parse(
     NJS::TypeContext context;
     NJS::Parser parser(context, input_stream, input_path.string());
     NJS::Builder builder(context, linker.LLVMContext(), module_id, is_main);
-    parser.Parse([&](const NJS::StmtPtr& ptr) { ptr->GenLLVM(builder); });
+    parser.Parse([&](const NJS::StmtPtr& ptr) { ptr->GenVoidLLVM(builder); });
     builder.Close();
     linker.Link(builder.MoveModule());
 }
@@ -57,15 +57,14 @@ int main(const int argc, const char** argv)
     });
     args.Parse(argc, argv);
 
-    if (args.IsEmpty() || args.Flag(ARG_ID_HELP))
-    {
-        std::cerr << "NewJS [v1.0.0]" << std::endl;
-        args.Print();
-        return args.IsEmpty() ? 1 : 0;
-    }
-
     if (args.Flag(ARG_ID_VERSION))
         std::cerr << "NewJS [v1.0.0]" << std::endl;
+
+    if (args.IsEmpty() || args.Flag(ARG_ID_HELP))
+    {
+        args.Print();
+        return 0;
+    }
 
     std::vector<std::string> input_filenames;
     args.Values(input_filenames);
@@ -84,7 +83,7 @@ int main(const int argc, const char** argv)
     }
 
     const auto output_module_id = std::filesystem::path(output_filename).filename().replace_extension().string();
-    const NJS::Linker linker(output_filename.empty() ? "module" : output_module_id);
+    const NJS::Linker linker(output_module_id.empty() ? "module" : output_module_id);
 
     if (input_filenames.empty())
         parse(linker, "main", true, std::cin, {});

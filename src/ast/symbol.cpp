@@ -7,7 +7,7 @@ NJS::SymbolExpr::SymbolExpr(SourceLocation where, std::string name)
 {
 }
 
-NJS::ValuePtr NJS::SymbolExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::SymbolExpr::GenLLVM(Builder& builder, const TypePtr&)
 {
     return builder.GetVar(Where, Name);
 }

@@ -33,7 +33,7 @@ NJS::RefType::RefType(TypeContext& ctx, std::string string, TypePtr element)
 
 llvm::Type* NJS::RefType::GenLLVM(const Builder& builder) const
 {
-    return llvm::PointerType::get(m_Element->GetLLVM(builder), 0);
+    return llvm::PointerType::get(builder.GetContext(), 0u);
 }
 
 unsigned NJS::RefType::GenSize() const

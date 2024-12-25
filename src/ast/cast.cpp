@@ -7,10 +7,10 @@ NJS::CastExpr::CastExpr(SourceLocation where, TypePtr type, ExprPtr value)
 {
 }
 
-NJS::ValuePtr NJS::CastExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::CastExpr::GenLLVM(Builder& builder, const TypePtr&)
 {
-    const auto value = Value->GenLLVM(builder);
-    return builder.CreateCast(value, Type);
+    const auto value = Value->GenLLVM(builder, Type);
+    return builder.CreateCast(Where, value, Type);
 }
 
 std::ostream& NJS::CastExpr::Print(std::ostream& os)

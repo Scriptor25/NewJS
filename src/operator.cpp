@@ -17,6 +17,12 @@ NJS::ValuePtr NJS::OperatorEQ(Builder& builder, const TypePtr& type, llvm::Value
 
 NJS::ValuePtr NJS::OperatorNE(Builder& builder, const TypePtr& type, llvm::Value* lhs, llvm::Value* rhs)
 {
+    if (type->IsInt())
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetBoolType(),
+            builder.GetBuilder().CreateICmpNE(lhs, rhs));
+
     return {};
 }
 
@@ -255,7 +261,7 @@ NJS::ValuePtr NJS::OperatorShR(Builder& builder, const TypePtr& type, llvm::Valu
     return {};
 }
 
-std::pair<NJS::ValuePtr, bool> NJS::OperatorInc(Builder& builder, const ValuePtr& val)
+NJS::UnaryResult NJS::OperatorInc(Builder& builder, const SourceLocation&, const ValuePtr& val)
 {
     if (val->GetType()->IsInt())
         return {
@@ -271,7 +277,7 @@ std::pair<NJS::ValuePtr, bool> NJS::OperatorInc(Builder& builder, const ValuePtr
     return {nullptr, false};
 }
 
-std::pair<NJS::ValuePtr, bool> NJS::OperatorDec(Builder& builder, const ValuePtr& val)
+NJS::UnaryResult NJS::OperatorDec(Builder& builder, const SourceLocation&, const ValuePtr& val)
 {
     if (val->GetType()->IsInt())
         return {
@@ -287,7 +293,7 @@ std::pair<NJS::ValuePtr, bool> NJS::OperatorDec(Builder& builder, const ValuePtr
     return {nullptr, false};
 }
 
-std::pair<NJS::ValuePtr, bool> NJS::OperatorNeg(Builder& builder, const ValuePtr& val)
+NJS::UnaryResult NJS::OperatorNeg(Builder& builder, const SourceLocation&, const ValuePtr& val)
 {
     if (val->GetType()->IsInt())
         return {
@@ -310,12 +316,12 @@ std::pair<NJS::ValuePtr, bool> NJS::OperatorNeg(Builder& builder, const ValuePtr
     return {nullptr, false};
 }
 
-std::pair<NJS::ValuePtr, bool> NJS::OperatorLNot(Builder& builder, const ValuePtr& val)
+NJS::UnaryResult NJS::OperatorLNot(Builder& builder, const SourceLocation&, const ValuePtr& val)
 {
     return {nullptr, false};
 }
 
-std::pair<NJS::ValuePtr, bool> NJS::OperatorNot(Builder& builder, const ValuePtr& val)
+NJS::UnaryResult NJS::OperatorNot(Builder& builder, const SourceLocation&, const ValuePtr& val)
 {
     if (val->GetType()->IsInt())
         return {
@@ -329,7 +335,7 @@ std::pair<NJS::ValuePtr, bool> NJS::OperatorNot(Builder& builder, const ValuePtr
     return {nullptr, false};
 }
 
-std::pair<NJS::ValuePtr, bool> NJS::OperatorRef(Builder& builder, const ValuePtr& val)
+NJS::UnaryResult NJS::OperatorRef(Builder& builder, const SourceLocation& where, const ValuePtr& val)
 {
-    return {RValue::Create(builder, builder.GetCtx().GetPointerType(val->GetType()), val->GetPtr()), false};
+    return {RValue::Create(builder, builder.GetCtx().GetPointerType(val->GetType()), val->GetPtr(where)), false};
 }

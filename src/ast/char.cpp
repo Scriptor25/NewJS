@@ -9,7 +9,7 @@ NJS::CharExpr::CharExpr(SourceLocation where, const char value)
 {
 }
 
-NJS::ValuePtr NJS::CharExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::CharExpr::GenLLVM(Builder& builder, const TypePtr&)
 {
     const auto type = builder.GetCtx().GetCharType();
     const auto value = builder.GetBuilder().getInt8(Value);

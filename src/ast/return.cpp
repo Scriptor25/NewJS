@@ -1,7 +1,6 @@
 #include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Error.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
@@ -10,19 +9,18 @@ NJS::ReturnStmt::ReturnStmt(SourceLocation where, ExprPtr value)
 {
 }
 
-NJS::ValuePtr NJS::ReturnStmt::GenLLVM(Builder& builder)
+void NJS::ReturnStmt::GenVoidLLVM(Builder& builder)
 {
-    const auto type = builder.ResultType();
-    const auto value = Value->GenLLVM(builder);
+    auto type = builder.ResultType();
+    const auto ref = type->IsRef();
+    if (ref) type = type->GetElement();
 
-    if ((type->IsRef() && type->GetElement() != value->GetType()) || (!type->IsRef() && type != value->GetType()))
-        Error(Where, "invalid return value: type mismatch, {} != {}", value->GetType(), type);
+    auto value = Value->GenLLVM(builder, type);
+    value = builder.CreateCast(Where, value, type);
 
-    if (type->IsRef())
-        builder.GetBuilder().CreateRet(value->GetPtr());
+    if (ref)
+        builder.GetBuilder().CreateRet(value->GetPtr(Where));
     else builder.GetBuilder().CreateRet(value->Load());
-
-    return {};
 }
 
 std::ostream& NJS::ReturnStmt::Print(std::ostream& os)

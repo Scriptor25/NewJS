@@ -10,14 +10,15 @@ NJS::TupleExpr::TupleExpr(SourceLocation where, std::vector<ExprPtr> elements)
 {
 }
 
-NJS::ValuePtr NJS::TupleExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::TupleExpr::GenLLVM(Builder& builder, const TypePtr& expected)
 {
     std::vector<ValuePtr> elements;
     std::vector<TypePtr> element_types;
     bool is_array = true;
-    for (const auto& element : Elements)
+    for (unsigned i = 0; i < Elements.size(); ++i)
     {
-        const auto value = element->GenLLVM(builder);
+        const auto type = expected ? expected->GetElement(i) : nullptr;
+        const auto value = Elements[i]->GenLLVM(builder, type);
         elements.push_back(value);
         element_types.push_back(value->GetType());
 
@@ -25,14 +26,19 @@ NJS::ValuePtr NJS::TupleExpr::GenLLVM(Builder& builder)
     }
 
     TypePtr type;
-    if (is_array)
+    if (expected)
+        type = expected;
+    else if (is_array)
         type = builder.GetCtx().GetArrayType(element_types.front(), element_types.size());
     else type = builder.GetCtx().GetTupleType(element_types);
 
     llvm::Value* value = llvm::Constant::getNullValue(type->GetLLVM(builder));
 
     for (unsigned i = 0; i < elements.size(); ++i)
-        value = builder.GetBuilder().CreateInsertValue(value, elements[i]->Load(), i);
+    {
+        const auto el = builder.CreateCast(Where, elements[i], type->GetElement(i));
+        value = builder.GetBuilder().CreateInsertValue(value, el->Load(), i);
+    }
 
     return RValue::Create(builder, type, value);
 }

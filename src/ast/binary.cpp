@@ -13,7 +13,7 @@ NJS::BinaryExpr::BinaryExpr(SourceLocation where, std::string op, ExprPtr lhs, E
 {
 }
 
-NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder, const TypePtr& expected)
 {
     static const std::map<std::string, BinOp>
         fns
@@ -40,6 +40,16 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
             {">>", {OperatorShR}},
         };
 
+    static const std::set<std::string> is_cmp
+    {
+        "==",
+        "!=",
+        "<",
+        "<=",
+        ">",
+        ">=",
+    };
+
     static const std::set<std::string> is_assign
     {
         "||=",
@@ -58,8 +68,12 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
         ">>=",
     };
 
-    auto lhs = Lhs->GenLLVM(builder);
-    const auto rhs = Rhs->GenLLVM(builder);
+    const auto cmp = is_cmp.contains(Op);
+
+    auto lhs = Lhs->GenLLVM(builder, !cmp ? expected : nullptr);
+    auto rhs = Rhs->GenLLVM(builder, !cmp ? expected : nullptr);
+
+    auto dst = lhs;
 
     const auto lty = lhs->GetType();
     const auto rty = rhs->GetType();
@@ -71,9 +85,9 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
         {
             const auto fn_type = llvm::FunctionType::get(
                 result_->GetLLVM(builder),
-                {ref_lty->GetLLVM(builder), rty->GetLLVM(builder),},
+                {ref_lty->GetLLVM(builder), rty->GetLLVM(builder)},
                 false);
-            const auto ptr = builder.GetBuilder().CreateCall(fn_type, callee_, {lhs->GetPtr(), rhs->Load()});
+            const auto ptr = builder.GetBuilder().CreateCall(fn_type, callee_, {lhs->GetPtr(Where), rhs->Load()});
             return LValue::Create(builder, result_->GetElement(), ptr);
         }
     }
@@ -90,35 +104,36 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder)
         }
     }
 
-    if (lty != rty)
-        Error(Where, "undefined binary operator '{} {} {}'", lty, Op, rty);
-
     auto op = Op;
     if (op == "=")
     {
-        lhs->Store(rhs);
-        return lhs;
+        dst->Store(Where, rhs);
+        return dst;
     }
 
+    const auto ty = max(builder.GetCtx(), lty, rty);
+    lhs = builder.CreateCast(Where, lhs, ty);
+    rhs = builder.CreateCast(Where, rhs, ty);
+
     if (fns.contains(op))
-        if (auto value = fns.at(op)(builder, lty, lhs->Load(), rhs->Load()))
+        if (auto value = fns.at(op)(builder, ty, lhs->Load(), rhs->Load()))
             return value;
 
     const auto assign = op.back() == '=';
     if (assign) op.pop_back();
 
     if (fns.contains(op))
-        if (auto value = fns.at(op)(builder, lty, lhs->Load(), rhs->Load()))
+        if (auto value = fns.at(op)(builder, ty, lhs->Load(), rhs->Load()))
         {
             if (assign)
             {
-                lhs->Store(value);
-                return lhs;
+                dst->Store(Where, value);
+                return dst;
             }
             return value;
         }
 
-    Error(Where, "undefined binary operator '{} {} {}'", lty, Op, rty);
+    Error(Where, "undefined binary operator '{} {} {}'", ty, Op, ty);
 }
 
 std::ostream& NJS::BinaryExpr::Print(std::ostream& os)

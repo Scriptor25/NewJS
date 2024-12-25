@@ -2,6 +2,7 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Type.hpp>
+#include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
 NJS::FPExpr::FPExpr(SourceLocation where, TypePtr type, const double value)
@@ -9,10 +10,15 @@ NJS::FPExpr::FPExpr(SourceLocation where, TypePtr type, const double value)
 {
 }
 
-NJS::ValuePtr NJS::FPExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::FPExpr::GenLLVM(Builder& builder, const TypePtr& expected)
 {
-    const auto value = llvm::ConstantFP::get(Type->GetLLVM(builder), Value);
-    return RValue::Create(builder, Type, value);
+    const auto type = Type
+                          ? Type
+                          : expected && expected->IsFP()
+                          ? expected
+                          : builder.GetCtx().GetFPType(64);
+    const auto value = llvm::ConstantFP::get(type->GetLLVM(builder), Value);
+    return RValue::Create(builder, type, value);
 }
 
 std::ostream& NJS::FPExpr::Print(std::ostream& os)

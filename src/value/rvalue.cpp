@@ -12,9 +12,9 @@ bool NJS::RValue::IsL() const
     return false;
 }
 
-llvm::Value* NJS::RValue::GetPtr() const
+llvm::Value* NJS::RValue::GetPtr(const SourceLocation& where) const
 {
-    Error("cannot get pointer to rvalue");
+    Error(where, "cannot get pointer to rvalue");
 }
 
 llvm::Value* NJS::RValue::Load() const
@@ -22,14 +22,14 @@ llvm::Value* NJS::RValue::Load() const
     return m_Value;
 }
 
-void NJS::RValue::Store(llvm::Value*) const
+void NJS::RValue::Store(const SourceLocation& where, llvm::Value*) const
 {
-    Error("cannot assign to rvalue");
+    Error(where, "cannot assign to rvalue");
 }
 
-void NJS::RValue::Store(ValuePtr) const
+void NJS::RValue::Store(const SourceLocation& where, ValuePtr) const
 {
-    Error("cannot assign to rvalue");
+    Error(where, "cannot assign to rvalue");
 }
 
 NJS::RValue::RValue(Builder& builder, TypePtr type, llvm::Value* value)

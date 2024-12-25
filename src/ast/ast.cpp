@@ -10,3 +10,8 @@ NJS::Expr::Expr(SourceLocation where)
     : Stmt(std::move(where))
 {
 }
+
+void NJS::Expr::GenVoidLLVM(Builder& builder)
+{
+    (void)GenLLVM(builder, {});
+}

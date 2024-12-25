@@ -13,7 +13,7 @@ NJS::Builder::Builder(TypeContext& ctx, llvm::LLVMContext& context, const std::s
 
     Push(m_ModuleID);
 
-    const auto process = DefVar(SourceLocation(), "process") = CreateGlobal(
+    const auto process = DefVar({}, "process") = CreateGlobal(
         "process",
         m_Ctx.GetStructType({
             {"argc", m_Ctx.GetIntType(32, true)},
@@ -35,8 +35,8 @@ NJS::Builder::Builder(TypeContext& ctx, llvm::LLVMContext& context, const std::s
             GetModule());
         GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", function));
 
-        CreateMember(process, "argc")->Store(function->getArg(0));
-        CreateMember(process, "argv")->Store(function->getArg(1));
+        CreateMember({}, process, "argc")->Store({}, function->getArg(0));
+        CreateMember({}, process, "argv")->Store({}, function->getArg(1));
     }
     else
     {

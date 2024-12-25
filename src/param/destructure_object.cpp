@@ -2,7 +2,6 @@
 #include <NJS/Error.hpp>
 #include <NJS/Param.hpp>
 #include <NJS/Type.hpp>
-#include <NJS/Value.hpp>
 
 NJS::DestructureObject::DestructureObject(std::map<std::string, ParamPtr> elements)
     : Param(""), Elements(std::move(elements))
@@ -22,7 +21,7 @@ void NJS::DestructureObject::CreateVars(
 {
     for (const auto& [name_, element_] : Elements)
     {
-        const auto member = builder.CreateMember(value, name_);
+        const auto member = builder.CreateMember(where, value, name_);
         element_->CreateVars(builder, where, is_const, member);
     }
 }

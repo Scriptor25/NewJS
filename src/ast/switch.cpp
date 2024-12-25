@@ -17,17 +17,17 @@ NJS::SwitchStmt::SwitchStmt(
 {
 }
 
-NJS::ValuePtr NJS::SwitchStmt::GenLLVM(Builder& builder)
+void NJS::SwitchStmt::GenVoidLLVM(Builder& builder)
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     const auto default_dest = llvm::BasicBlock::Create(builder.GetContext(), "default", parent);
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
-    const auto condition = Condition->GenLLVM(builder);
+    const auto condition = Condition->GenLLVM(builder, {});
     const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(), default_dest);
 
     builder.GetBuilder().SetInsertPoint(default_dest);
-    DefaultCase->GenLLVM(builder);
+    DefaultCase->GenVoidLLVM(builder);
     builder.GetBuilder().CreateBr(end_block);
 
     for (const auto& [case_, entries_] : Cases)
@@ -35,17 +35,16 @@ NJS::ValuePtr NJS::SwitchStmt::GenLLVM(Builder& builder)
         const auto dest = llvm::BasicBlock::Create(builder.GetContext(), "case", parent);
         for (const auto& entry : entries_)
         {
-            const auto on_val = entry->GenLLVM(builder);
+            const auto on_val = entry->GenLLVM(builder, condition->GetType());
             const auto on_val_int = llvm::dyn_cast<llvm::ConstantInt>(on_val->Load());
             switch_inst->addCase(on_val_int, dest);
         }
         builder.GetBuilder().SetInsertPoint(dest);
-        case_->GenLLVM(builder);
+        case_->GenVoidLLVM(builder);
         builder.GetBuilder().CreateBr(end_block);
     }
 
     builder.GetBuilder().SetInsertPoint(end_block);
-    return {};
 }
 
 std::ostream& NJS::SwitchStmt::Print(std::ostream& os)
@@ -85,23 +84,24 @@ NJS::SwitchExpr::SwitchExpr(
 {
 }
 
-NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder& builder, const TypePtr& expected)
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto default_dest = llvm::BasicBlock::Create(builder.GetContext(), "default", parent);
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
-    const auto condition = Condition->GenLLVM(builder);
+    const auto condition = Condition->GenLLVM(builder, {});
     const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(), default_dest);
 
     std::vector<std::pair<llvm::BasicBlock*, ValuePtr>> dest_blocks;
     TypePtr result_type;
     {
         builder.GetBuilder().SetInsertPoint(default_dest);
-        auto default_value = DefaultCase->GenLLVM(builder);
+        auto default_value = DefaultCase->GenLLVM(builder, expected);
         if (default_value->IsL())
             default_value = RValue::Create(builder, default_value->GetType(), default_value->Load());
-        result_type = default_value->GetType();
+        result_type = expected ? expected : default_value->GetType();
+        default_value = builder.CreateCast(Where, default_value, result_type);
         default_dest = builder.GetBuilder().GetInsertBlock();
         dest_blocks.emplace_back(default_dest, default_value);
         builder.GetBuilder().CreateBr(end_block);
@@ -111,16 +111,15 @@ NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder& builder)
         auto dest = llvm::BasicBlock::Create(builder.GetContext(), "case", parent);
         for (const auto& entry : entries_)
         {
-            const auto on_val = entry->GenLLVM(builder);
+            const auto on_val = entry->GenLLVM(builder, condition->GetType());
             const auto on_val_int = llvm::dyn_cast<llvm::ConstantInt>(on_val->Load());
             switch_inst->addCase(on_val_int, dest);
         }
         builder.GetBuilder().SetInsertPoint(dest);
-        auto case_value = case_->GenLLVM(builder);
+        auto case_value = case_->GenLLVM(builder, result_type);
         if (case_value->IsL())
             case_value = RValue::Create(builder, case_value->GetType(), case_value->Load());
-        if (case_value->GetType() != result_type)
-            Error(Where, "invalid case value: type mismatch, {} != {}", case_value->GetType(), result_type);
+        case_value = builder.CreateCast(Where, case_value, result_type);
         dest = builder.GetBuilder().GetInsertBlock();
         dest_blocks.emplace_back(dest, case_value);
         builder.GetBuilder().CreateBr(end_block);

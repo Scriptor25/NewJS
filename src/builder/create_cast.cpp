@@ -3,13 +3,27 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::ValuePtr NJS::Builder::CreateCast(const ValuePtr& value, const TypePtr& type)
+NJS::ValuePtr NJS::Builder::CreateCast(const SourceLocation& where, const ValuePtr& value, const TypePtr& type)
 {
-    return RValue::Create(*this, type, CreateCast(value->Load(), value->GetType(), type));
+    if (value->GetType() == type)
+        return value;
+
+    const auto result = CreateCast(
+        where,
+        {value->Load(), value->IsL() ? value->GetPtr(where) : nullptr},
+        value->GetType(),
+        type);
+    return RValue::Create(*this, type, result);
 }
 
-llvm::Value* NJS::Builder::CreateCast(llvm::Value* val, const TypePtr& src_type, const TypePtr& dst_type) const
+llvm::Value* NJS::Builder::CreateCast(
+    const SourceLocation& where,
+    ValRef ref,
+    const TypePtr& src_type,
+    const TypePtr& dst_type) const
 {
+    const auto [val, ptr] = ref;
+
     if (src_type == dst_type)
         return val;
 
@@ -38,6 +52,11 @@ llvm::Value* NJS::Builder::CreateCast(llvm::Value* val, const TypePtr& src_type,
         if (dst_type->IsPtr())
             return GetBuilder().CreatePointerCast(val, ty);
     }
+    if (ptr && src_type->IsArray())
+    {
+        if (dst_type->IsPtr() && src_type->GetElement() == dst_type->GetElement())
+            return GetBuilder().CreateConstGEP2_64(src_type->GetLLVM(*this), ptr, 0, 0);
+    }
 
-    Error("cannot cast value of type {} to type {}", src_type, dst_type);
+    Error(where, "no cast from value of type {} to {}", src_type, dst_type);
 }

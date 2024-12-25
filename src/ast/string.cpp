@@ -9,7 +9,7 @@ NJS::StringExpr::StringExpr(SourceLocation where, std::string value)
 {
 }
 
-NJS::ValuePtr NJS::StringExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::StringExpr::GenLLVM(Builder& builder, const TypePtr&)
 {
     const auto type = builder.GetCtx().GetStringType();
     const auto value = GetString(builder, Value);

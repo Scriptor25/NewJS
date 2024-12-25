@@ -15,7 +15,7 @@ NJS::ImportStmt::ImportStmt(
 {
 }
 
-NJS::ValuePtr NJS::ImportStmt::GenLLVM(Builder& builder)
+void NJS::ImportStmt::GenVoidLLVM(Builder& builder)
 {
     const auto module_id = Filepath.filename().replace_extension().string();
     if (module_id != "main")
@@ -27,7 +27,6 @@ NJS::ValuePtr NJS::ImportStmt::GenLLVM(Builder& builder)
     }
 
     Mapping.MapFunctions(builder, Where, module_id, Functions);
-    return {};
 }
 
 std::ostream& NJS::ImportStmt::Print(std::ostream& os)

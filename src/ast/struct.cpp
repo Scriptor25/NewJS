@@ -10,23 +10,29 @@ NJS::StructExpr::StructExpr(SourceLocation where, std::map<std::string, ExprPtr>
 {
 }
 
-NJS::ValuePtr NJS::StructExpr::GenLLVM(Builder& builder)
+NJS::ValuePtr NJS::StructExpr::GenLLVM(Builder& builder, const TypePtr& expected)
 {
     std::map<std::string, ValuePtr> elements;
     std::map<std::string, TypePtr> element_types;
+
     for (const auto& [name_, element_] : Elements)
     {
-        const auto value = element_->GenLLVM(builder);
+        const auto type = expected ? expected->GetMember(name_).first : nullptr;
+        const auto value = element_->GenLLVM(builder, type);
         elements[name_] = value;
         element_types[name_] = value->GetType();
     }
-    const auto type = builder.GetCtx().GetStructType(element_types);
+
+    const auto type = expected ? expected : builder.GetCtx().GetStructType(element_types);
 
     llvm::Value* object = llvm::ConstantStruct::getNullValue(type->GetLLVM<llvm::StructType>(builder));
 
-    unsigned i = 0;
-    for (const auto& [name_, value_] : elements)
-        object = builder.GetBuilder().CreateInsertValue(object, value_->Load(), i++);
+    for (auto [name_, value_] : elements)
+    {
+        const auto [type_, index_] = type->GetMember(name_);
+        value_ = builder.CreateCast(Where, value_, type_);
+        object = builder.GetBuilder().CreateInsertValue(object, value_->Load(), index_);
+    }
 
     return RValue::Create(builder, type, object);
 }
