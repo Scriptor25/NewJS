@@ -29,13 +29,16 @@ NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder, const TypePtr& expected)
 
         arg = builder.CreateCast(Where, arg, arg_type);
 
-        args[i] = ref ? arg->GetPtr(Where) : arg->Load();
+        args[i] = ref ? arg->GetPtr(Where) : arg->Load(Where);
     }
 
     const auto value = builder.GetBuilder().CreateCall(
-        callee_type->GenFnLLVM(builder),
-        callee->Load(),
+        callee_type->GenFnLLVM(Where, builder),
+        callee->Load(Where),
         args);
+
+    if (callee_type->GetResult()->IsRef())
+        return LValue::Create(builder, callee_type->GetResult()->GetElement(), value);
 
     return RValue::Create(builder, callee_type->GetResult(), value);
 }

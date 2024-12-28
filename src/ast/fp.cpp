@@ -17,7 +17,7 @@ NJS::ValuePtr NJS::FPExpr::GenLLVM(Builder& builder, const TypePtr& expected)
                           : expected && expected->IsFP()
                           ? expected
                           : builder.GetCtx().GetFPType(64);
-    const auto value = llvm::ConstantFP::get(type->GetLLVM(builder), Value);
+    const auto value = llvm::ConstantFP::get(type->GetLLVM(Where, builder), Value);
     return RValue::Create(builder, type, value);
 }
 

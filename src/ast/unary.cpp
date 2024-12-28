@@ -24,7 +24,7 @@ NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder, const TypePtr& expected)
     };
 
     auto operand = Operand->GenLLVM(builder, expected);
-    const auto val = operand->Load();
+    const auto val = operand->Load(Where);
 
     if (fns.contains(Op))
         if (const auto [value_, assign_] = fns.at(Op)(builder, Where, operand); value_)

@@ -11,15 +11,19 @@ llvm::Value* NJS::Builder::CreateAlloca(llvm::Type* type, const unsigned size) c
     return ptr;
 }
 
-NJS::ValuePtr NJS::Builder::CreateAlloca(const TypePtr& type, const unsigned size)
+NJS::ValuePtr NJS::Builder::CreateAlloca(const SourceLocation& where, const TypePtr& type, const unsigned size)
 {
-    const auto ptr = CreateAlloca(type->GetLLVM(*this), size);
+    const auto ptr = CreateAlloca(type->GetLLVM(where, *this), size);
     return LValue::Create(*this, type, ptr);
 }
 
-NJS::ValuePtr NJS::Builder::CreateGlobal(const std::string& name, const TypePtr& type, const bool init)
+NJS::ValuePtr NJS::Builder::CreateGlobal(
+    const SourceLocation& where,
+    const std::string& name,
+    const TypePtr& type,
+    const bool init)
 {
-    const auto ty = type->GetLLVM(*this);
+    const auto ty = type->GetLLVM(where, *this);
     const auto global = new llvm::GlobalVariable(
         GetModule(),
         ty,

@@ -16,6 +16,7 @@ namespace NJS
         FnType_Function,
         FnType_Extern,
         FnType_Operator,
+        FnType_Template,
     };
 
     struct Stmt
@@ -44,11 +45,12 @@ namespace NJS
 
     struct FunctionStmt final : Stmt
     {
-        FunctionStmt(SourceLocation, FnType, std::string, std::vector<ParamPtr>, bool, TypePtr, StmtPtr);
+        FunctionStmt(SourceLocation, bool, FnType, std::string, std::vector<ParamPtr>, bool, TypePtr, StmtPtr);
 
         void GenVoidLLVM(Builder&) override;
         std::ostream& Print(std::ostream&) override;
 
+        bool Absolute;
         FnType Fn;
         std::string Name;
         std::vector<ParamPtr> Args;

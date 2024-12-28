@@ -84,10 +84,10 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder, const TypePtr& expected
         if (auto [result_, callee_] = builder.GetOp(Op, ref_lty, rty); result_ && callee_)
         {
             const auto fn_type = llvm::FunctionType::get(
-                result_->GetLLVM(builder),
-                {ref_lty->GetLLVM(builder), rty->GetLLVM(builder)},
+                result_->GetLLVM(Where, builder),
+                {ref_lty->GetLLVM(Where, builder), rty->GetLLVM(Where, builder)},
                 false);
-            const auto ptr = builder.GetBuilder().CreateCall(fn_type, callee_, {lhs->GetPtr(Where), rhs->Load()});
+            const auto ptr = builder.GetBuilder().CreateCall(fn_type, callee_, {lhs->GetPtr(Where), rhs->Load(Where)});
             return LValue::Create(builder, result_->GetElement(), ptr);
         }
     }
@@ -96,10 +96,10 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder, const TypePtr& expected
         if (auto [result_, callee_] = builder.GetOp(Op, lty, rty); result_ && callee_)
         {
             const auto fn_type = llvm::FunctionType::get(
-                result_->GetLLVM(builder),
-                {lty->GetLLVM(builder), rty->GetLLVM(builder),},
+                result_->GetLLVM(Where, builder),
+                {lty->GetLLVM(Where, builder), rty->GetLLVM(Where, builder),},
                 false);
-            const auto value = builder.GetBuilder().CreateCall(fn_type, callee_, {lhs->Load(), rhs->Load()});
+            const auto value = builder.GetBuilder().CreateCall(fn_type, callee_, {lhs->Load(Where), rhs->Load(Where)});
             return RValue::Create(builder, result_, value);
         }
     }
@@ -116,14 +116,14 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder, const TypePtr& expected
     rhs = builder.CreateCast(Where, rhs, ty);
 
     if (fns.contains(op))
-        if (auto value = fns.at(op)(builder, ty, lhs->Load(), rhs->Load()))
+        if (auto value = fns.at(op)(builder, Where, ty, lhs->Load(Where), rhs->Load(Where)))
             return value;
 
     const auto assign = op.back() == '=';
     if (assign) op.pop_back();
 
     if (fns.contains(op))
-        if (auto value = fns.at(op)(builder, ty, lhs->Load(), rhs->Load()))
+        if (auto value = fns.at(op)(builder, Where, ty, lhs->Load(Where), rhs->Load(Where)))
         {
             if (assign)
             {

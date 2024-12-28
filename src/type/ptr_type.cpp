@@ -34,7 +34,7 @@ NJS::PtrType::PtrType(TypeContext& ctx, std::string string, TypePtr element)
 {
 }
 
-llvm::Type* NJS::PtrType::GenLLVM(const Builder& builder) const
+llvm::Type* NJS::PtrType::GenLLVM(const SourceLocation&, const Builder& builder) const
 {
     return llvm::PointerType::get(builder.GetContext(), 0u);
 }

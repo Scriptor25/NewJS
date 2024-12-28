@@ -72,7 +72,7 @@ void NJS::ImportMapping::MapFunctions(
             arg_types,
             fn.VarArg);
 
-        auto callee = builder.GetModule().getOrInsertFunction(name, type->GenFnLLVM(builder));
+        auto callee = builder.GetModule().getOrInsertFunction(name, type->GenFnLLVM(where, builder));
         const auto value = RValue::Create(builder, type, callee.getCallee());
 
         if (fn.Fn == FnType_Operator)
@@ -107,10 +107,10 @@ void NJS::ImportMapping::MapFunctions(
     if (!Name.empty())
     {
         const auto module_type = builder.GetCtx().GetStructType(element_types);
-        llvm::Value* module = llvm::Constant::getNullValue(module_type->GetLLVM(builder));
+        llvm::Value* module = llvm::Constant::getNullValue(module_type->GetLLVM(where, builder));
         unsigned i = 0;
         for (const auto& value_ : elements | std::ranges::views::values)
-            module = builder.GetBuilder().CreateInsertValue(module, value_->Load(), i++);
+            module = builder.GetBuilder().CreateInsertValue(module, value_->Load(where), i++);
 
         builder.DefVar(where, Name) = RValue::Create(builder, module_type, module);
     }

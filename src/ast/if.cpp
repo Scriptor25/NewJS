@@ -19,7 +19,7 @@ void NJS::IfStmt::GenVoidLLVM(Builder& builder)
     const auto end_bb = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
     const auto condition = Condition->GenLLVM(builder, builder.GetCtx().GetBoolType());
-    builder.GetBuilder().CreateCondBr(condition->Load(), then_bb, else_bb ? else_bb : end_bb);
+    builder.GetBuilder().CreateCondBr(condition->Load(Where), then_bb, else_bb ? else_bb : end_bb);
 
     builder.GetBuilder().SetInsertPoint(then_bb);
     Then->GenVoidLLVM(builder);

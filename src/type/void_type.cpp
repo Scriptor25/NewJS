@@ -28,7 +28,7 @@ NJS::VoidType::VoidType(TypeContext& ctx, std::string string)
 {
 }
 
-llvm::Type* NJS::VoidType::GenLLVM(const Builder& builder) const
+llvm::Type* NJS::VoidType::GenLLVM(const SourceLocation&, const Builder& builder) const
 {
     return builder.GetBuilder().getVoidTy();
 }

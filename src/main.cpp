@@ -7,6 +7,7 @@
 #include <NJS/Error.hpp>
 #include <NJS/Linker.hpp>
 #include <NJS/Parser.hpp>
+#include <NJS/TemplateContext.hpp>
 #include <NJS/TypeContext.hpp>
 
 enum ARG_ID
@@ -38,11 +39,15 @@ static void parse(
     std::istream& input_stream,
     const std::filesystem::path& input_path)
 {
-    NJS::TypeContext context;
+    NJS::TypeContext type_ctx;
+    NJS::Builder builder(type_ctx, linker.LLVMContext(), module_id, is_main);
+
+    NJS::TemplateContext template_ctx(builder);
     std::map<std::string, NJS::Macro> macros;
-    NJS::Parser parser(context, input_stream, input_path.string(), macros);
-    NJS::Builder builder(context, linker.LLVMContext(), module_id, is_main);
+    NJS::Parser parser(type_ctx, template_ctx, input_stream, NJS::SourceLocation(input_path.string()), macros);
+
     parser.Parse([&](const NJS::StmtPtr& ptr) { ptr->GenVoidLLVM(builder); });
+
     builder.Close();
     linker.Link(builder.MoveModule());
 }

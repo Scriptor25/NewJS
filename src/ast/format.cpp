@@ -42,12 +42,12 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder, const TypePtr&)
             const auto value = Dynamics[i]->GenLLVM(builder, {});
             value->GetType()->TypeInfo(builder, args);
             if (value->GetType()->IsPrimitive())
-                args.push_back(value->Load());
+                args.push_back(value->Load(Where));
             else if (value->IsL())
                 args.push_back(value->GetPtr(Where));
             else
             {
-                const auto tmp = builder.CreateAlloca(value->GetType());
+                const auto tmp = builder.CreateAlloca(Where, value->GetType());
                 tmp->Store(Where, value);
                 args.push_back(tmp->GetPtr(Where));
             }

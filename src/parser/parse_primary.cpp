@@ -1,6 +1,9 @@
 #include <NJS/AST.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Parser.hpp>
+#include <NJS/TemplateContext.hpp>
+#include <NJS/Type.hpp>
+#include <NJS/TypeContext.hpp>
 
 static std::string to_upper(const std::string& src)
 {
@@ -72,9 +75,18 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
     if (At("switch"))
         return ParseSwitchExpr();
 
+    if (NextAt("sizeof"))
+    {
+        Expect("(");
+        const auto type = ParseType();
+        Expect(")");
+        return std::make_shared<IntExpr>(where, m_TypeCtx.GetIntType(64, false), type->GetSize());
+    }
+
     if (At(TokenType_Symbol))
     {
         const auto name = Skip().StringValue;
+
         if (m_Macros.contains(name))
         {
             auto [source_] = m_Macros[name];
@@ -102,8 +114,29 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
             }
 
             std::stringstream stream(source_);
-            Parser parser(m_Ctx, stream, "<macro>", m_Macros);
+            Parser parser(m_TypeCtx, m_TemplateCtx, stream, SourceLocation("<macro>"), m_Macros);
             return parser.ParseExpr();
+        }
+
+        if (m_TemplateCtx.HasFunction(name))
+        {
+            std::vector<TypePtr> args;
+
+            Expect("<");
+            while (!At(">") && !AtEof())
+            {
+                args.push_back(ParseType());
+
+                if (!At(">"))
+                    Expect(",");
+            }
+            Expect(">");
+
+            std::string inflated_name;
+            if (!m_IsTemplate)
+                inflated_name = m_TemplateCtx.InflateFunctionTemplate(*this, name, args);
+            else inflated_name = name;
+            return std::make_shared<SymbolExpr>(where, inflated_name);
         }
 
         return std::make_shared<SymbolExpr>(where, name);

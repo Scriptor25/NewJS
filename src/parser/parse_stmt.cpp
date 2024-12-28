@@ -6,8 +6,8 @@ NJS::StmtPtr NJS::Parser::ParseStmt()
     if (NextAt("#"))
     {
         const auto name = Expect(TokenType_Symbol).StringValue;
-        const auto value = Expect(TokenType_String).StringValue;
-        m_Macros[name] = {value};
+        const auto source = Expect(TokenType_String).StringValue;
+        m_Macros[name] = {source};
         return {};
     }
 
@@ -21,8 +21,8 @@ NJS::StmtPtr NJS::Parser::ParseStmt()
         return ParseImportStmt();
 
     if (At("{")) return ParseScopeStmt();
-    if (At("function") || At("extern") || At("operator")) return ParseFunctionStmt();
-    if (At("let") || At("const")) return ParseDefStmt();
+    if (At("function") || At("extern") || At("operator") || At("template")) return ParseFunctionStmt();
+    if (At("let") || At("const")) return ParseVariableStmt();
     if (At("if")) return ParseIfStmt();
     if (At("for")) return ParseForStmt();
     if (At("return")) return ParseReturnStmt();

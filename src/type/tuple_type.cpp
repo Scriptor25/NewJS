@@ -47,11 +47,11 @@ NJS::TupleType::TupleType(
 {
 }
 
-llvm::Type* NJS::TupleType::GenLLVM(const Builder& builder) const
+llvm::Type* NJS::TupleType::GenLLVM(const SourceLocation& where, const Builder& builder) const
 {
     std::vector<llvm::Type*> types;
     for (const auto& element : m_Elements)
-        types.push_back(element->GetLLVM(builder));
+        types.push_back(element->GetLLVM(where, builder));
     return llvm::StructType::get(builder.GetContext(), types, true);
 }
 

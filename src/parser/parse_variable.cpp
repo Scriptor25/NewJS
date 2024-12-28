@@ -2,7 +2,7 @@
 #include <NJS/Param.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::StmtPtr NJS::Parser::ParseDefStmt()
+NJS::StmtPtr NJS::Parser::ParseVariableStmt()
 {
     const auto where = m_Token.Where;
     const auto is_const = NextAt("const");

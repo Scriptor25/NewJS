@@ -34,7 +34,7 @@ NJS::FPType::FPType(TypeContext& ctx, std::string string, const unsigned bits)
 {
 }
 
-llvm::Type* NJS::FPType::GenLLVM(const Builder& builder) const
+llvm::Type* NJS::FPType::GenLLVM(const SourceLocation&, const Builder& builder) const
 {
     switch (m_Bits)
     {

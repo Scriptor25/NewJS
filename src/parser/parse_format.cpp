@@ -25,7 +25,7 @@ NJS::ExprPtr NJS::Parser::ParseFormatExpr()
         source.erase(0, beg + 1);
 
         std::stringstream stream(source);
-        Parser parser(m_Ctx, stream, "<dynamic>", m_Macros);
+        Parser parser(m_TypeCtx, m_TemplateCtx, stream, SourceLocation("<dynamic>"), m_Macros);
         dynamics[index++] = parser.ParseExpr();
 
         source.erase(0, static_cast<unsigned>(stream.tellg()) - 1);

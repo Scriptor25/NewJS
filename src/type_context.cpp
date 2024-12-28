@@ -2,7 +2,9 @@
 
 NJS::TypePtr& NJS::TypeContext::GetType(const std::string& string)
 {
-    return m_TypeMap[string];
+    if (!m_TemplateStack.empty())
+        return m_TemplateStack.back()[string];
+    return m_Types[string];
 }
 
 NJS::NoTypePtr NJS::TypeContext::GetNoType()
@@ -30,7 +32,7 @@ NJS::PtrTypePtr NJS::TypeContext::GetPointerType(const TypePtr& element)
     return GetType<PtrType>(element);
 }
 
-NJS::RefTypePtr NJS::TypeContext::GetRefType(TypePtr element)
+NJS::RefTypePtr NJS::TypeContext::GetRefType(const TypePtr& element)
 {
     return GetType<RefType>(element);
 }
@@ -71,4 +73,17 @@ NJS::IntTypePtr NJS::TypeContext::GetCharType()
 NJS::PtrTypePtr NJS::TypeContext::GetStringType()
 {
     return GetPointerType(GetIntType(8, true));
+}
+
+void NJS::TypeContext::PushTemplate(const std::vector<std::string>& names, const std::vector<TypePtr>& types)
+{
+    auto copy = m_TemplateStack.empty() ? m_Types : m_TemplateStack.back();
+    auto& map = m_TemplateStack.emplace_back(copy);
+    for (unsigned i = 0; i < names.size(); ++i)
+        map[names[i]] = types[i];
+}
+
+void NJS::TypeContext::PopTemplate()
+{
+    m_TemplateStack.pop_back();
 }

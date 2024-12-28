@@ -30,7 +30,7 @@ void NJS::ForStmt::GenVoidLLVM(Builder& builder)
     if (Condition)
     {
         const auto condition = Condition->GenLLVM(builder, builder.GetCtx().GetBoolType());
-        builder.GetBuilder().CreateCondBr(condition->Load(), loop, end);
+        builder.GetBuilder().CreateCondBr(condition->Load(Where), loop, end);
     }
     else builder.GetBuilder().CreateBr(loop);
 

@@ -32,12 +32,12 @@ NJS::ValuePtr NJS::TupleExpr::GenLLVM(Builder& builder, const TypePtr& expected)
         type = builder.GetCtx().GetArrayType(element_types.front(), element_types.size());
     else type = builder.GetCtx().GetTupleType(element_types);
 
-    llvm::Value* value = llvm::Constant::getNullValue(type->GetLLVM(builder));
+    llvm::Value* value = llvm::Constant::getNullValue(type->GetLLVM(Where, builder));
 
     for (unsigned i = 0; i < elements.size(); ++i)
     {
         const auto el = builder.CreateCast(Where, elements[i], type->GetElement(i));
-        value = builder.GetBuilder().CreateInsertValue(value, el->Load(), i);
+        value = builder.GetBuilder().CreateInsertValue(value, el->Load(Where), i);
     }
 
     return RValue::Create(builder, type, value);

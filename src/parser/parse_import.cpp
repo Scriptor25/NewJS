@@ -14,7 +14,7 @@ NJS::StmtPtr NJS::Parser::ParseImportStmt()
         return {};
 
     std::ifstream stream(filepath);
-    Parser parser(m_Ctx, stream, filepath.string(), m_Macros, true, m_Parsed);
+    Parser parser(m_TypeCtx, m_TemplateCtx, stream, SourceLocation(filepath.string()), m_Macros, true, m_Parsed);
 
     std::vector<StmtPtr> functions;
     parser.Parse([&](const StmtPtr& ptr)

@@ -34,13 +34,13 @@ void NJS::Param::CreateVars(
     }
     else if (is_const)
     {
-        var = RValue::Create(builder, type, value->Load());
+        var = RValue::Create(builder, type, value->Load(where));
     }
     else
     {
-        var = builder.CreateAlloca(type);
+        var = builder.CreateAlloca(where, type);
         if (value) var->Store(where, value);
-        else var->Store(where, llvm::Constant::getNullValue(type->GetLLVM(builder)));
+        else var->Store(where, llvm::Constant::getNullValue(type->GetLLVM(where, builder)));
     }
 }
 

@@ -41,9 +41,9 @@ NJS::ArrayType::ArrayType(
 {
 }
 
-llvm::Type* NJS::ArrayType::GenLLVM(const Builder& builder) const
+llvm::Type* NJS::ArrayType::GenLLVM(const SourceLocation& where, const Builder& builder) const
 {
-    return llvm::ArrayType::get(m_Element->GetLLVM(builder), m_Count);
+    return llvm::ArrayType::get(m_Element->GetLLVM(where, builder), m_Count);
 }
 
 unsigned NJS::ArrayType::GenSize() const

@@ -10,7 +10,7 @@ NJS::ValuePtr NJS::Builder::CreateCast(const SourceLocation& where, const ValueP
 
     const auto result = CreateCast(
         where,
-        {value->Load(), value->IsL() ? value->GetPtr(where) : nullptr},
+        {value->Load(where), value->IsL() ? value->GetPtr(where) : nullptr},
         value->GetType(),
         type);
     return RValue::Create(*this, type, result);
@@ -27,7 +27,7 @@ llvm::Value* NJS::Builder::CreateCast(
     if (src_type == dst_type)
         return val;
 
-    const auto ty = dst_type->GetLLVM(*this);
+    const auto ty = dst_type->GetLLVM(where, *this);
 
     if (src_type->IsInt())
     {
@@ -55,7 +55,7 @@ llvm::Value* NJS::Builder::CreateCast(
     if (ptr && src_type->IsArray())
     {
         if (dst_type->IsPtr() && src_type->GetElement() == dst_type->GetElement())
-            return GetBuilder().CreateConstGEP2_64(src_type->GetLLVM(*this), ptr, 0, 0);
+            return GetBuilder().CreateConstGEP2_64(src_type->GetLLVM(where, *this), ptr, 0, 0);
     }
     if (src_type->IsFunction())
     {

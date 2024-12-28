@@ -40,7 +40,7 @@ NJS::IntType::IntType(TypeContext& ctx, std::string string, const unsigned bits,
 {
 }
 
-llvm::Type* NJS::IntType::GenLLVM(const Builder& builder) const
+llvm::Type* NJS::IntType::GenLLVM(const SourceLocation&, const Builder& builder) const
 {
     return builder.GetBuilder().getIntNTy(m_Bits);
 }

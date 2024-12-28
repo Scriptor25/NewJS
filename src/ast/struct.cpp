@@ -25,13 +25,13 @@ NJS::ValuePtr NJS::StructExpr::GenLLVM(Builder& builder, const TypePtr& expected
 
     const auto type = expected ? expected : builder.GetCtx().GetStructType(element_types);
 
-    llvm::Value* object = llvm::ConstantStruct::getNullValue(type->GetLLVM<llvm::StructType>(builder));
+    llvm::Value* object = llvm::ConstantStruct::getNullValue(type->GetLLVM<llvm::StructType>(Where, builder));
 
     for (auto [name_, value_] : elements)
     {
         const auto [type_, index_] = type->GetMember(name_);
         value_ = builder.CreateCast(Where, value_, type_);
-        object = builder.GetBuilder().CreateInsertValue(object, value_->Load(), index_);
+        object = builder.GetBuilder().CreateInsertValue(object, value_->Load(Where), index_);
     }
 
     return RValue::Create(builder, type, object);

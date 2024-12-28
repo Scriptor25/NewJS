@@ -1,30 +1,55 @@
 #include <NJS/Error.hpp>
 #include <NJS/Parser.hpp>
+#include <NJS/TemplateContext.hpp>
 #include <NJS/TypeContext.hpp>
 
 NJS::TypePtr NJS::Parser::ParseType()
 {
-    TypePtr type;
-
     const auto where = m_Token.Where;
 
+    TypePtr type;
     if (At("[")) type = ParseTupleType();
     else if (At("{")) type = ParseStructType();
     else if (At("(")) type = ParseFunctionType();
     else
     {
         const auto sym = Expect(TokenType_Symbol).StringValue;
-        type = m_Ctx.GetType(sym);
-        if (!type)
+        if (m_TemplateCtx.HasType(sym))
         {
-            if (sym[0] == 'i') type = m_Ctx.GetIntType(std::stoull(sym.substr(1)), true);
-            else if (sym[0] == 'u') type = m_Ctx.GetIntType(std::stoull(sym.substr(1)), false);
-            else if (sym[0] == 'f') type = m_Ctx.GetFPType(std::stoull(sym.substr(1)));
+            std::vector<TypePtr> args;
+
+            Expect("<");
+            while (!At(">") && !AtEof())
+            {
+                args.push_back(ParseType());
+                if (!At(">"))
+                    Expect(",");
+            }
+            Expect(">");
+
+            if (!m_IsTemplate)
+                type = m_TemplateCtx.InflateType(*this, sym, args);
+            else type = m_TypeCtx.GetNoType();
+        }
+        else
+        {
+            type = m_TypeCtx.GetType(sym);
+            if (!type)
+            {
+                if (sym == "void") type = m_TypeCtx.GetVoidType();
+                else if (sym[0] == 'i') type = m_TypeCtx.GetIntType(std::stoull(sym.substr(1)), true);
+                else if (sym[0] == 'u') type = m_TypeCtx.GetIntType(std::stoull(sym.substr(1)), false);
+                else if (sym[0] == 'f') type = m_TypeCtx.GetFPType(std::stoull(sym.substr(1)));
+            }
         }
     }
 
     if (!type)
-        Error(where, "expected a valid typename here");
+    {
+        if (!m_IsTemplate)
+            Error(where, "expected a valid typename here");
+        type = m_TypeCtx.GetNoType();
+    }
 
     while (true)
     {
@@ -33,16 +58,16 @@ NJS::TypePtr NJS::Parser::ParseType()
             if (At(TokenType_Int))
             {
                 const auto count = Skip().IntValue;
-                type = m_Ctx.GetArrayType(type, count);
+                type = m_TypeCtx.GetArrayType(type, count);
             }
-            else type = m_Ctx.GetPointerType(type);
+            else type = m_TypeCtx.GetPointerType(type);
             Expect("]");
             continue;
         }
 
         if (NextAt("&"))
         {
-            type = m_Ctx.GetRefType(type);
+            type = m_TypeCtx.GetRefType(type);
             continue;
         }
 
@@ -57,7 +82,7 @@ NJS::TypePtr NJS::Parser::ParseTupleType()
     Expect("[");
     std::vector<TypePtr> types;
     ParseTypeList(types, "]");
-    return m_Ctx.GetTupleType(types);
+    return m_TypeCtx.GetTupleType(types);
 }
 
 NJS::TypePtr NJS::Parser::ParseStructType()
@@ -65,7 +90,7 @@ NJS::TypePtr NJS::Parser::ParseStructType()
     Expect("{");
     std::map<std::string, TypePtr> types;
     ParseTypeMap(types, "}");
-    return m_Ctx.GetStructType(types);
+    return m_TypeCtx.GetStructType(types);
 }
 
 NJS::TypePtr NJS::Parser::ParseFunctionType()
@@ -76,8 +101,8 @@ NJS::TypePtr NJS::Parser::ParseFunctionType()
     TypePtr result;
     if (NextAt(":"))
         result = ParseType();
-    else result = m_Ctx.GetVoidType();
-    return m_Ctx.GetFunctionType(result, args, vararg);
+    else result = m_TypeCtx.GetVoidType();
+    return m_TypeCtx.GetFunctionType(result, args, vararg);
 }
 
 bool NJS::Parser::ParseTypeList(std::vector<TypePtr>& types, const std::string& delim)

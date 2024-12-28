@@ -6,6 +6,7 @@
 namespace NJS
 {
     class TypeContext;
+    class TemplateContext;
     class Parser;
     class Builder;
     class Linker;

@@ -9,6 +9,7 @@
 
 NJS::FunctionStmt::FunctionStmt(
     SourceLocation where,
+    const bool absolute,
     const FnType fn,
     std::string name,
     std::vector<ParamPtr> args,
@@ -16,6 +17,7 @@ NJS::FunctionStmt::FunctionStmt(
     TypePtr result_type,
     StmtPtr body)
     : Stmt(std::move(where)),
+      Absolute(absolute),
       Fn(fn),
       Name(std::move(name)),
       Args(std::move(args)),
@@ -31,7 +33,7 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder& builder)
     switch (Fn)
     {
     case FnType_Function:
-        name = builder.GetName(Name);
+        name = builder.GetName(Absolute, Name);
         break;
     case FnType_Extern:
         name = Name;
@@ -40,15 +42,17 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder& builder)
         switch (Args.size())
         {
         case 1:
-            name = builder.GetName(Args[0]->Type->GetString() + Name);
+            name = builder.GetName(Absolute, Args[0]->Type->GetString() + Name);
             break;
         case 2:
-            name = builder.GetName(Args[0]->Type->GetString() + Name + Args[1]->Type->GetString());
+            name = builder.GetName(Absolute, Args[0]->Type->GetString() + Name + Args[1]->Type->GetString());
             break;
         default:
             break;
         }
         break;
+    case FnType_Template:
+        return;
     }
 
     auto function = builder.GetModule().getFunction(name);
@@ -59,7 +63,7 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder& builder)
             args.push_back(arg->Type);
         const auto type = builder.GetCtx().GetFunctionType(ResultType, args, VarArg);
         function = llvm::Function::Create(
-            type->GenFnLLVM(builder),
+            type->GenFnLLVM(Where, builder),
             llvm::GlobalValue::ExternalLinkage,
             name,
             builder.GetModule());
@@ -82,6 +86,8 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder& builder)
             default:
                 break;
             }
+            break;
+        default:
             break;
         }
     }
@@ -144,6 +150,8 @@ std::ostream& NJS::FunctionStmt::Print(std::ostream& os)
     case FnType_Operator:
         os << "operator";
         break;
+    default:
+        break;
     }
     os << Name << "(";
     for (unsigned i = 0; i < Args.size(); ++i)
@@ -185,9 +193,9 @@ NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&)
         args.push_back(arg->Type);
     const auto type = builder.GetCtx().GetFunctionType(ResultType, args, VarArg);
     const auto function = llvm::Function::Create(
-        type->GenFnLLVM(builder),
+        type->GenFnLLVM(Where, builder),
         llvm::GlobalValue::InternalLinkage,
-        builder.GetName(name),
+        builder.GetName(false, name),
         builder.GetModule());
 
     const auto end_block = builder.GetBuilder().GetInsertBlock();

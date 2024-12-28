@@ -1,26 +1,32 @@
 #include <utility>
+#include <NJS/AST.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Param.hpp>
 #include <NJS/Parser.hpp>
-#include <NJS/TypeContext.hpp>
 
 NJS::Parser::Parser(
-    TypeContext& ctx,
+    TypeContext& type_ctx,
+    TemplateContext& template_ctx,
     std::istream& stream,
-    std::string filename,
+    SourceLocation where,
     std::map<std::string, Macro>& macros,
     const bool imported,
     std::set<std::filesystem::path> parsed)
-    : m_Ctx(ctx),
+    : m_TypeCtx(type_ctx),
+      m_TemplateCtx(template_ctx),
       m_Stream(stream),
       m_Macros(macros),
       m_Imported(imported),
-      m_Parsed(std::move(parsed))
+      m_Parsed(std::move(parsed)),
+      m_Where(std::move(where))
 {
-    if (!filename.empty() && std::filesystem::exists(filename))
-        m_Parsed.insert(std::filesystem::canonical(filename));
+    if (!m_Where.Filename.empty() && std::filesystem::exists(m_Where.Filename))
+    {
+        const auto filename = std::filesystem::canonical(m_Where.Filename);
+        m_Where.Filename = filename.string();
+        m_Parsed.insert(filename);
+    }
 
-    m_Where.Filename = std::move(filename);
     m_C = m_Stream.get();
     Next();
 }
@@ -32,8 +38,18 @@ void NJS::Parser::Parse(const Callback& callback)
             callback(ptr);
 }
 
+void NJS::Parser::ResetBuffer()
+{
+    m_TemplateBuffer.str({});
+    m_TemplateBuffer.clear();
+    m_TemplateWhere = m_Where;
+    --m_TemplateWhere.Col;
+}
+
 int NJS::Parser::Get()
 {
+    m_TemplateBuffer.put(m_C);
+
     ++m_Where.Col;
     return m_C = m_Stream.get();
 }

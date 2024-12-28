@@ -57,12 +57,12 @@ void NJS::FunctionType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& ar
     args.push_back(builder.GetBuilder().getInt32(m_VarArg ? 1 : 0));
 }
 
-llvm::FunctionType* NJS::FunctionType::GenFnLLVM(const Builder& builder) const
+llvm::FunctionType* NJS::FunctionType::GenFnLLVM(const SourceLocation& where, const Builder& builder) const
 {
     std::vector<llvm::Type*> types;
     for (const auto& arg : m_Args)
-        types.push_back(arg->GetLLVM(builder));
-    return llvm::FunctionType::get(m_Result->GetLLVM(builder), types, m_VarArg);
+        types.push_back(arg->GetLLVM(where, builder));
+    return llvm::FunctionType::get(m_Result->GetLLVM(where, builder), types, m_VarArg);
 }
 
 NJS::FunctionType::FunctionType(
@@ -75,7 +75,7 @@ NJS::FunctionType::FunctionType(
 {
 }
 
-llvm::Type* NJS::FunctionType::GenLLVM(const Builder& builder) const
+llvm::Type* NJS::FunctionType::GenLLVM(const SourceLocation&, const Builder& builder) const
 {
     return builder.GetBuilder().getPtrTy();
 }

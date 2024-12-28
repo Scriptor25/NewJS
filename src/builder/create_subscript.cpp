@@ -6,7 +6,7 @@
 
 NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation& where, const ValuePtr& array, const ValuePtr& index)
 {
-    return CreateSubscript(where, array, index->Load());
+    return CreateSubscript(where, array, index->Load(where));
 }
 
 NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation& where, const ValuePtr& array, const unsigned index)
@@ -28,8 +28,8 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation& where, const V
     {
         const auto element_type = array_type->GetElement();
         const auto ptr = GetBuilder().CreateGEP(
-            element_type->GetLLVM(*this),
-            array->Load(),
+            element_type->GetLLVM(where, *this),
+            array->Load(where),
             {index});
         return LValue::Create(*this, element_type, ptr);
     }
@@ -39,7 +39,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation& where, const V
         const auto index_type = index->getType();
         const auto zero = llvm::Constant::getNullValue(index_type);
         const auto ptr = GetBuilder().CreateGEP(
-            array_type->GetLLVM(*this),
+            array_type->GetLLVM(where, *this),
             array->GetPtr(where),
             {zero, index});
 
@@ -57,6 +57,6 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation& where, const V
     }
 
     const auto i = llvm::dyn_cast<llvm::ConstantInt>(index)->getValue().getLimitedValue();
-    const auto val = GetBuilder().CreateExtractValue(array->Load(), i);
+    const auto val = GetBuilder().CreateExtractValue(array->Load(where), i);
     return RValue::Create(*this, array_type->GetElement(i), val);
 }

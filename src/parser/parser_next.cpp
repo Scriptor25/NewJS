@@ -19,19 +19,6 @@ NJS::Token& NJS::Parser::Next()
         State_Symbol,
     };
 
-    static std::map<int, bool> comp_op
-    {
-        {'+', true},
-        {'-', true},
-        {'*', true},
-        {'&', true},
-        {'|', true},
-        {'^', true},
-        {'<', true},
-        {'>', true},
-        {'=', true},
-    };
-
     State state = State_Idle;
     SourceLocation where;
     std::string value;
@@ -174,10 +161,92 @@ NJS::Token& NJS::Parser::Next()
             break;
 
         case State_Operator:
-            if (!comp_op[m_C])
-                return m_Token = {where, TokenType_Operator, value};
-            value += static_cast<char>(m_C);
-            break;
+            if (value == "+" && (m_C == '+' || m_C == '='))
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "-" && (m_C == '-' || m_C == '='))
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "*" && (m_C == '*' || m_C == '='))
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "**" && m_C == '=')
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "/" && m_C == '=')
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "%" && m_C == '=')
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "|" && (m_C == '|' || m_C == '='))
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "||" && m_C == '=')
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "^" && (m_C == '^' || m_C == '='))
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "&" && (m_C == '&' || m_C == '='))
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "&&" && m_C == '=')
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "<" && (m_C == '<' || m_C == '='))
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "<<" && m_C == '=')
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == ">" && (m_C == '>' || m_C == '='))
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == ">>" && m_C == '=')
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "=" && m_C == '=')
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            if (value == "!" && m_C == '=')
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            return m_Token = {where, TokenType_Operator, value};
 
         case State_Bin:
             if ('0' > m_C || m_C > '1')
@@ -243,5 +312,5 @@ NJS::Token& NJS::Parser::Next()
         Get();
     }
 
-    return m_Token = {};
+    return m_Token = {m_Where};
 }

@@ -20,7 +20,7 @@ void NJS::ReturnStmt::GenVoidLLVM(Builder& builder)
 
     if (ref)
         builder.GetBuilder().CreateRet(value->GetPtr(Where));
-    else builder.GetBuilder().CreateRet(value->Load());
+    else builder.GetBuilder().CreateRet(value->Load(Where));
 }
 
 std::ostream& NJS::ReturnStmt::Print(std::ostream& os)

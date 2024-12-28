@@ -2,19 +2,40 @@
 #include <NJS/Error.hpp>
 #include <NJS/Param.hpp>
 #include <NJS/Parser.hpp>
+#include <NJS/TemplateContext.hpp>
 #include <NJS/TypeContext.hpp>
 
 NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
 {
     const auto where = m_Token.Where;
 
-    FnType fn = FnType_Function;
-    const auto is_extern = NextAt("extern");
-    if (is_extern)
-        fn = FnType_Extern;
-    else if (NextAt("operator"))
-        fn = FnType_Operator;
-    else Expect("function");
+    const auto fn = NextAt("extern")
+                        ? FnType_Extern
+                        : NextAt("operator")
+                        ? FnType_Operator
+                        : NextAt("template")
+                        ? FnType_Template
+                        : (Expect("function"), FnType_Function);
+
+    std::vector<std::string> templ_args;
+    const auto parent_template = m_IsTemplate;
+    if (fn == FnType_Template)
+    {
+        m_IsTemplate = true;
+
+        Expect("<");
+        while (!At(">") && !AtEof())
+        {
+            templ_args.push_back(Expect(TokenType_Symbol).StringValue);
+
+            if (!At(">"))
+                Expect(",");
+        }
+        Expect(">");
+
+        if (!parent_template)
+            ResetBuffer();
+    }
 
     const auto name = (fn == FnType_Operator ? Expect(TokenType_Operator) : Expect(TokenType_Symbol)).StringValue;
 
@@ -25,13 +46,22 @@ NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
     TypePtr result_type;
     if (NextAt(":"))
         result_type = ParseType();
-    else result_type = m_Ctx.GetVoidType();
+    else result_type = m_TypeCtx.GetVoidType();
 
     StmtPtr body;
-    if (!is_extern && At("{"))
+    if (fn != FnType_Extern && At("{"))
         body = ParseScopeStmt();
 
-    return std::make_shared<FunctionStmt>(where, fn, name, args, vararg, result_type, body);
+    if (fn == FnType_Template)
+    {
+        if (parent_template)
+            return {};
+
+        m_IsTemplate = false;
+        m_TemplateCtx.InsertFunction(name, templ_args, m_TemplateWhere, m_TemplateBuffer.str());
+    }
+
+    return std::make_shared<FunctionStmt>(where, false, fn, name, args, vararg, result_type, body);
 }
 
 NJS::ExprPtr NJS::Parser::ParseFunctionExpr()
@@ -44,9 +74,9 @@ NJS::ExprPtr NJS::Parser::ParseFunctionExpr()
         vararg = ParseParamList(args, ")");
 
     TypePtr result_type;
-    if (NextAt(": "))
+    if (NextAt(":"))
         result_type = ParseType();
-    else result_type = m_Ctx.GetVoidType();
+    else result_type = m_TypeCtx.GetVoidType();
 
     std::vector<TypePtr> arg_types;
     for (const auto& arg : args)

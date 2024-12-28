@@ -54,11 +54,11 @@ NJS::StructType::StructType(
 {
 }
 
-llvm::Type* NJS::StructType::GenLLVM(const Builder& builder) const
+llvm::Type* NJS::StructType::GenLLVM(const SourceLocation& where, const Builder& builder) const
 {
     std::vector<llvm::Type*> types;
     for (const auto& type_ : m_Elements | std::ranges::views::values)
-        types.push_back(type_->GetLLVM(builder));
+        types.push_back(type_->GetLLVM(where, builder));
     return llvm::StructType::get(builder.GetContext(), types, true);
 }
 

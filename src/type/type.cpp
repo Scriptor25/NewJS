@@ -4,6 +4,9 @@
 
 NJS::TypePtr NJS::max(TypeContext& ctx, const TypePtr& lhs, const TypePtr& rhs)
 {
+    if (lhs == rhs)
+        return lhs;
+
     if (lhs->IsInt())
     {
         if (rhs->IsInt())
@@ -26,7 +29,7 @@ NJS::TypePtr NJS::max(TypeContext& ctx, const TypePtr& lhs, const TypePtr& rhs)
             return lhs;
     }
 
-    return {};
+    Error("no maximum type of {} and {}", lhs, rhs);
 }
 
 std::ostream& NJS::Type::Print(std::ostream& os) const

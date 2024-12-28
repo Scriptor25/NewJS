@@ -14,12 +14,12 @@ NJS::Builder::Builder(TypeContext& ctx, llvm::LLVMContext& context, const std::s
     Push(m_ModuleID);
 
     const auto process = DefVar({}, "process") = CreateGlobal(
+        {},
         "process",
         m_Ctx.GetStructType({
             {"argc", m_Ctx.GetIntType(32, true)},
             {"argv", m_Ctx.GetPointerType(m_Ctx.GetStringType())}
-        }),
-        is_main);
+        }), is_main);
 
     llvm::Function* function;
     if (is_main)
@@ -44,7 +44,7 @@ NJS::Builder::Builder(TypeContext& ctx, llvm::LLVMContext& context, const std::s
         function = llvm::Function::Create(
             type,
             llvm::GlobalValue::ExternalLinkage,
-            GetName("main"),
+            GetName(true, "main"),
             GetModule());
         GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", function));
     }
@@ -104,8 +104,10 @@ void NJS::Builder::Pop()
     m_Stack.pop_back();
 }
 
-std::string NJS::Builder::GetName(const std::string& name) const
+std::string NJS::Builder::GetName(const bool absolute, const std::string& name) const
 {
+    if (absolute)
+        return m_ModuleID + '.' + name;
     return m_Stack.back().ValueName(name);
 }
 

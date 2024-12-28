@@ -4,6 +4,8 @@
 #include <functional>
 #include <memory>
 #include <set>
+#include <sstream>
+#include <string>
 #include <NJS/Import.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Token.hpp>
@@ -19,14 +21,14 @@ namespace NJS
 
     class Parser
     {
-        friend Param;
-        friend ImportMapping;
+        friend TemplateContext;
 
     public:
         Parser(
             TypeContext&,
+            TemplateContext&,
             std::istream&,
-            std::string,
+            SourceLocation,
             std::map<std::string, Macro>&,
             bool = false,
             std::set<std::filesystem::path>  = {});
@@ -34,6 +36,8 @@ namespace NJS
         void Parse(const Callback&);
 
     private:
+        void ResetBuffer();
+
         int Get();
         void NewLine();
         void Escape();
@@ -68,7 +72,7 @@ namespace NJS
         ImportMapping ParseImportMapping();
 
         StmtPtr ParseStmt();
-        StmtPtr ParseDefStmt();
+        StmtPtr ParseVariableStmt();
         StmtPtr ParseForStmt();
         StmtPtr ParseFunctionStmt();
         StmtPtr ParseIfStmt();
@@ -87,14 +91,20 @@ namespace NJS
         ExprPtr ParseSwitchExpr();
         ExprPtr ParseTupleExpr();
 
-        TypeContext& m_Ctx;
+        TypeContext& m_TypeCtx;
+        TemplateContext& m_TemplateCtx;
+
         std::istream& m_Stream;
         std::map<std::string, Macro>& m_Macros;
         bool m_Imported;
         std::set<std::filesystem::path> m_Parsed;
 
         int m_C;
-        SourceLocation m_Where{"", 1, 1};
+        SourceLocation m_Where;
         Token m_Token;
+
+        bool m_IsTemplate = false;
+        SourceLocation m_TemplateWhere;
+        std::stringstream m_TemplateBuffer;
     };
 }

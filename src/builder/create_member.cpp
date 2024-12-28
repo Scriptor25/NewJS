@@ -14,12 +14,12 @@ NJS::ValuePtr NJS::Builder::CreateMember(const SourceLocation& where, const Valu
 
     if (obj->IsL())
     {
-        const auto ty = obj_type->GetLLVM(*this);
+        const auto ty = obj_type->GetLLVM(where, *this);
         const auto ptr = obj->GetPtr(where);
         const auto gep = GetBuilder().CreateStructGEP(ty, ptr, index_);
         return LValue::Create(*this, type_, gep);
     }
 
-    const auto value = GetBuilder().CreateExtractValue(obj->Load(), index_);
+    const auto value = GetBuilder().CreateExtractValue(obj->Load(where), index_);
     return RValue::Create(*this, type_, value);
 }

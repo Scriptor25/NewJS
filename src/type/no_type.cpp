@@ -22,9 +22,9 @@ NJS::NoType::NoType(TypeContext& ctx, std::string string)
 {
 }
 
-llvm::Type* NJS::NoType::GenLLVM(const Builder&) const
+llvm::Type* NJS::NoType::GenLLVM(const SourceLocation& where, const Builder&) const
 {
-    Error("the no-type does not have a llvm representation");
+    Error(where, "the no-type does not have a llvm representation");
 }
 
 unsigned NJS::NoType::GenSize() const

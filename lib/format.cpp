@@ -383,27 +383,27 @@ void Pointer_AppendV(Type* type, char* stream, const unsigned n, unsigned& offse
     const auto self = reinterpret_cast<PointerType*>(type);
     const auto ptr = va_arg(ap, char*);
 
-    if (const auto el = reinterpret_cast<IntType*>(self->Element); el->Bits == 8 && el->IsSigned)
+    if (const auto el = reinterpret_cast<IntType*>(self->Element); el && el->Bits == 8 && el->IsSigned)
     {
         offset += snprintf(stream + offset, n - offset, "%s", ptr);
         return;
     }
 
-    offset += snprintf(stream + offset, n - offset, "%p", ptr);
+    offset += snprintf(stream + offset, n - offset, "0x%p", ptr);
 }
 
 void Pointer_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*& ptr)
 {
     const auto self = reinterpret_cast<PointerType*>(type);
 
-    if (const auto el = reinterpret_cast<IntType*>(self->Element); el->Bits == 8 && el->IsSigned)
+    if (const auto el = reinterpret_cast<IntType*>(self->Element); el && el->Bits == 8 && el->IsSigned)
     {
         offset += snprintf(stream + offset, n - offset, "%s", *reinterpret_cast<char**>(ptr));
         ptr += sizeof(char*);
         return;
     }
 
-    offset += snprintf(stream + offset, n - offset, "%p", *reinterpret_cast<char**>(ptr));
+    offset += snprintf(stream + offset, n - offset, "0x%p", *reinterpret_cast<char**>(ptr));
     ptr += sizeof(char*);
 }
 

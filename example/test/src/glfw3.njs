@@ -1,5 +1,5 @@
-type GLFWmonitor
-type GLFWwindow
+type GLFWmonitor = void
+type GLFWwindow  = void
 
 #GLFW_TRUE       "  1:i32"
 #GLFW_KEY_ESCAPE "256:i32"

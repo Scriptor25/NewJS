@@ -17,7 +17,7 @@ llvm::Value* NJS::RValue::GetPtr(const SourceLocation& where) const
     Error(where, "cannot get pointer to rvalue");
 }
 
-llvm::Value* NJS::RValue::Load() const
+llvm::Value* NJS::RValue::Load(const SourceLocation&) const
 {
     return m_Value;
 }

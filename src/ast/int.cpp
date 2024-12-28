@@ -17,7 +17,7 @@ NJS::ValuePtr NJS::IntExpr::GenLLVM(Builder& builder, const TypePtr& expected)
                           : expected && expected->IsInt()
                           ? expected
                           : builder.GetCtx().GetIntType(64, true);
-    const auto value = llvm::ConstantInt::get(type->GetLLVM(builder), Value, type->IsSigned());
+    const auto value = llvm::ConstantInt::get(type->GetLLVM(Where, builder), Value, type->IsSigned());
     return RValue::Create(builder, type, value);
 }
 

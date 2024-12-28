@@ -24,7 +24,7 @@ namespace NJS
 
     typedef std::pair<llvm::Value*, llvm::Value*> ValRef;
     typedef std::pair<TypePtr, llvm::Value*> OpRef;
-    typedef std::function<ValuePtr(Builder&, const TypePtr&, llvm::Value*, llvm::Value*)> BinOp;
+    typedef std::function<ValuePtr(Builder&, const SourceLocation&, const TypePtr&, llvm::Value*, llvm::Value*)> BinOp;
 
     class Builder
     {
@@ -42,8 +42,8 @@ namespace NJS
         [[nodiscard]] llvm::IRBuilder<>& GetBuilder() const;
 
         [[nodiscard]] llvm::Value* CreateAlloca(llvm::Type*, unsigned = 0) const;
-        ValuePtr CreateAlloca(const TypePtr&, unsigned = 0);
-        ValuePtr CreateGlobal(const std::string&, const TypePtr&, bool);
+        ValuePtr CreateAlloca(const SourceLocation&, const TypePtr&, unsigned = 0);
+        ValuePtr CreateGlobal(const SourceLocation&, const std::string&, const TypePtr&, bool);
 
         ValuePtr CreateMember(const SourceLocation&, const ValuePtr&, const std::string&);
 
@@ -59,7 +59,7 @@ namespace NJS
         void Push(const std::string& = {}, const TypePtr& = {});
         void Pop();
 
-        [[nodiscard]] std::string GetName(const std::string&) const;
+        [[nodiscard]] std::string GetName(bool, const std::string&) const;
 
         void DefOp(const std::string&, const TypePtr&, const TypePtr&, llvm::Value*);
         void DefOp(const std::string&, const TypePtr&, const TypePtr&, const TypePtr&, llvm::Value*);
