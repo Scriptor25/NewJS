@@ -55,11 +55,16 @@ static void parse(
 int main(const int argc, const char** argv)
 {
     NJS::ArgParser args({
-        {ARG_ID_HELP, {"--help", "-h"}, true},
-        {ARG_ID_VERSION, {"--version", "-v"}, true},
-        {ARG_ID_OUTPUT, {"--output", "-o"}, false},
-        {ARG_ID_TYPE, {"--type", "-t"}, false},
-        {ARG_ID_MAIN, {"--main", "-m"}, false},
+        {ARG_ID_HELP, "Display this help text.", {"--help", "-h"}, true},
+        {ARG_ID_VERSION, "Display the program version.", {"--version", "-v"}, true},
+        {ARG_ID_OUTPUT, "Specify the output filename.", {"--output", "-o"}, false},
+        {
+            ARG_ID_TYPE,
+            "Specify the output file type. Available values are 'llvm' for the intermediate representation, 'obj' for a compiled object file and 'asm' for an assembler file.",
+            {"--type", "-t"},
+            false
+        },
+        {ARG_ID_MAIN, "Specify which module name is the main module.", {"--main", "-m"}, false},
     });
     args.Parse(argc, argv);
 

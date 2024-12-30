@@ -13,7 +13,15 @@ namespace NJS
         struct Arg
         {
             ID Id;
+            std::string Description;
             std::vector<std::string> Patterns;
+            bool IsFlag;
+        };
+
+        struct ArgPattern
+        {
+            ID Id;
+            std::string Description;
             bool IsFlag;
         };
 
@@ -31,7 +39,7 @@ namespace NJS
         [[nodiscard]] bool IsEmpty() const;
 
     private:
-        std::map<std::string, std::pair<ID, bool>> m_Args;
+        std::map<std::string, ArgPattern> m_Args;
 
         std::string m_Executable;
         std::vector<std::string> m_Values;

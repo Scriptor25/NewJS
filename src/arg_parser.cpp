@@ -4,9 +4,9 @@
 
 NJS::ArgParser::ArgParser(const std::vector<Arg>& args)
 {
-    for (const auto& [id, patterns, is_flag] : args)
-        for (const auto& pat : patterns)
-            m_Args[pat] = {id, is_flag};
+    for (auto& [id_, description_, patterns_, is_flag_] : args)
+        for (const auto& pattern : patterns_)
+            m_Args[pattern] = {id_, description_, is_flag_};
 }
 
 void NJS::ArgParser::Parse(const int argc, const char** argv)
@@ -23,15 +23,15 @@ void NJS::ArgParser::Parse(const int argc, const char** argv)
             continue;
         }
 
-        const auto& [id, is_flag] = m_Args[pat];
+        auto& [id_, description_, is_flag_] = m_Args[pat];
 
-        if (is_flag)
+        if (is_flag_)
         {
-            m_Flags[id] = true;
+            m_Flags[id_] = true;
             continue;
         }
 
-        m_Options[id] = argv[++i];
+        m_Options[id_] = argv[++i];
     }
 }
 
@@ -64,35 +64,56 @@ void NJS::ArgParser::Option(const ID id, std::string& option, const std::string&
 
 void NJS::ArgParser::Print() const
 {
-    std::map<ID, std::vector<std::string>> options;
-    std::map<ID, std::vector<std::string>> flags;
-
-    for (const auto& [pat_, arg_] : m_Args)
+    constexpr auto print_description = [](const std::string& description)
     {
-        if (arg_.second)
-            flags[arg_.first].push_back(pat_);
-        else options[arg_.first].push_back(pat_);
+        unsigned i = 0;
+        for (const auto c : description)
+        {
+            if (i % 100 == 0)
+                std::cerr << std::endl << "    ";
+            std::cerr << description[i++];
+        }
+        std::cerr << std::endl;
+    };
+
+    std::map<ID, std::pair<std::vector<std::string>, std::string>> options;
+    std::map<ID, std::pair<std::vector<std::string>, std::string>> flags;
+
+    for (auto& [pat_, arg_] : m_Args)
+    {
+        if (arg_.IsFlag)
+        {
+            flags[arg_.Id].first.push_back(pat_);
+            flags[arg_.Id].second = arg_.Description;
+        }
+        else
+        {
+            options[arg_.Id].first.push_back(pat_);
+            options[arg_.Id].second = arg_.Description;
+        }
     }
 
-    std::cerr << m_Executable << " [OPTION|FLAG|VALUE]..." << std::endl;
+    std::cerr << m_Executable << " [OPTION <VALUE> | FLAG | FILENAME]..." << std::endl;
     std::cerr << "OPTION" << std::endl;
-    for (const auto& pat_ : options | std::ranges::views::values)
+    for (const auto& [pat_, description_] : options | std::ranges::views::values)
     {
         for (unsigned i = 0; i < pat_.size(); ++i)
         {
             if (i > 0) std::cerr << ", ";
             std::cerr << pat_[i];
         }
+        print_description(description_);
         std::cerr << std::endl;
     }
     std::cerr << "FLAG" << std::endl;
-    for (const auto& pat_ : flags | std::ranges::views::values)
+    for (const auto& [pat_, description_] : flags | std::ranges::views::values)
     {
         for (unsigned i = 0; i < pat_.size(); ++i)
         {
             if (i > 0) std::cerr << ", ";
             std::cerr << pat_[i];
         }
+        print_description(description_);
         std::cerr << std::endl;
     }
 }
