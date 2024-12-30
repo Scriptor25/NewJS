@@ -27,7 +27,11 @@ namespace NJS
     ValuePtr OperatorShL(Builder&, const SourceLocation&, const TypePtr&, llvm::Value*, llvm::Value*);
     ValuePtr OperatorShR(Builder&, const SourceLocation&, const TypePtr&, llvm::Value*, llvm::Value*);
 
-    typedef std::pair<ValuePtr, bool> UnaryResult;
+    struct UnaryResult
+    {
+        ValuePtr Value{};
+        bool Assign{};
+    };
 
     UnaryResult OperatorInc(Builder&, const SourceLocation&, const ValuePtr&);
     UnaryResult OperatorDec(Builder&, const SourceLocation&, const ValuePtr&);

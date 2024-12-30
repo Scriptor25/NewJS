@@ -38,3 +38,6 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebIn
             COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink=$<TARGET_FILE:NewJS>.dbg $<TARGET_FILE:NewJS>
     )
 endif ()
+
+install(TARGETS NewJS)
+install(TARGETS StdNewJS)

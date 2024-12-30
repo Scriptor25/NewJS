@@ -10,7 +10,7 @@ NJS::TupleExpr::TupleExpr(SourceLocation where, std::vector<ExprPtr> elements)
 {
 }
 
-NJS::ValuePtr NJS::TupleExpr::GenLLVM(Builder& builder, const TypePtr& expected)
+NJS::ValuePtr NJS::TupleExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
 {
     std::vector<ValuePtr> elements;
     std::vector<TypePtr> element_types;

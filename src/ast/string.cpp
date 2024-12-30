@@ -1,6 +1,7 @@
 #include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
@@ -9,7 +10,7 @@ NJS::StringExpr::StringExpr(SourceLocation where, std::string value)
 {
 }
 
-NJS::ValuePtr NJS::StringExpr::GenLLVM(Builder& builder, const TypePtr&)
+NJS::ValuePtr NJS::StringExpr::GenLLVM(Builder& builder, const TypePtr&) const
 {
     const auto type = builder.GetCtx().GetStringType();
     const auto value = GetString(builder, Value);

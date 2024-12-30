@@ -2,6 +2,7 @@
 #include <llvm/IR/BasicBlock.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
@@ -14,7 +15,7 @@ NJS::ForStmt::ForStmt(SourceLocation where, StmtPtr init, ExprPtr condition, Stm
 {
 }
 
-void NJS::ForStmt::GenVoidLLVM(Builder& builder)
+void NJS::ForStmt::GenVoidLLVM(Builder& builder) const
 {
     builder.Push();
 

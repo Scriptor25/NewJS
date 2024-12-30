@@ -1,6 +1,7 @@
 #include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
@@ -9,7 +10,7 @@ NJS::BoolExpr::BoolExpr(SourceLocation where, const bool value)
 {
 }
 
-NJS::ValuePtr NJS::BoolExpr::GenLLVM(Builder& builder, const TypePtr&)
+NJS::ValuePtr NJS::BoolExpr::GenLLVM(Builder& builder, const TypePtr&) const
 {
     const auto type = builder.GetCtx().GetBoolType();
     const auto value = builder.GetBuilder().getInt1(Value);

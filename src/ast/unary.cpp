@@ -11,9 +11,9 @@ NJS::UnaryExpr::UnaryExpr(SourceLocation where, std::string op, const bool op_ri
 {
 }
 
-NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder, const TypePtr& expected)
+NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
 {
-    static const std::map<std::string, std::function<UnaryResult(Builder&, const SourceLocation&, const ValuePtr&)>> fns
+    static const std::map<std::string, UnOp> fns
     {
         {"++", OperatorInc},
         {"--", OperatorDec},
@@ -24,16 +24,16 @@ NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder, const TypePtr& expected)
     };
 
     auto operand = Operand->GenLLVM(builder, expected);
-    const auto val = operand->Load(Where);
+    const auto value = operand->Load(Where);
 
     if (fns.contains(Op))
-        if (const auto [value_, assign_] = fns.at(Op)(builder, Where, operand); value_)
+        if (auto [value_, assign_] = fns.at(Op)(builder, Where, operand); value_)
         {
             if (assign_)
             {
                 operand->Store(Where, value_);
                 if (OpRight)
-                    return RValue::Create(builder, operand->GetType(), val);
+                    return RValue::Create(builder, operand->GetType(), value);
                 return operand;
             }
             return value_;

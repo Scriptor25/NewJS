@@ -5,13 +5,13 @@ OBJ = $(patsubst %.njs,%.o,$(SRC))
 	llc -o $@ --filetype=obj $<
 
 %.ll: %.njs
-	../../build/NewJS -o $@ $<
+	newjs -o $@ $<
 
 main.exe: $(OBJ)
 	gcc -o $@ $^ -L../../build -lStdNewJS
 
 launch: main.exe
-	main.exe
+	main
 
 clean:
 	cmd /c del $(subst /,\\,$(OBJ)) main.exe

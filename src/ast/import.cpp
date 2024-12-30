@@ -15,7 +15,7 @@ NJS::ImportStmt::ImportStmt(
 {
 }
 
-void NJS::ImportStmt::GenVoidLLVM(Builder& builder)
+void NJS::ImportStmt::GenVoidLLVM(Builder& builder) const
 {
     const auto module_id = Filepath.filename().replace_extension().string();
     if (module_id != "main")

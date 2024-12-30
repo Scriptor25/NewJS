@@ -7,7 +7,7 @@ NJS::SubscriptExpr::SubscriptExpr(SourceLocation where, ExprPtr array, ExprPtr i
 {
 }
 
-NJS::ValuePtr NJS::SubscriptExpr::GenLLVM(Builder& builder, const TypePtr&)
+NJS::ValuePtr NJS::SubscriptExpr::GenLLVM(Builder& builder, const TypePtr&) const
 {
     const auto array = Array->GenLLVM(builder, {});
     const auto index = Index->GenLLVM(builder, {});

@@ -11,7 +11,7 @@ NJS::CallExpr::CallExpr(SourceLocation where, ExprPtr callee, std::vector<ExprPt
 {
 }
 
-NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder, const TypePtr& expected)
+NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
 {
     const auto callee = Callee->GenLLVM(builder, {});
     const auto callee_type = std::dynamic_pointer_cast<FunctionType>(callee->GetType());

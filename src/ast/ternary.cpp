@@ -14,7 +14,7 @@ NJS::TernaryExpr::TernaryExpr(SourceLocation where, ExprPtr condition, ExprPtr t
 {
 }
 
-NJS::ValuePtr NJS::TernaryExpr::GenLLVM(Builder& builder, const TypePtr& expected)
+NJS::ValuePtr NJS::TernaryExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent);

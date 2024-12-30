@@ -1,6 +1,7 @@
 #include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
@@ -9,7 +10,7 @@ NJS::CharExpr::CharExpr(SourceLocation where, const char value)
 {
 }
 
-NJS::ValuePtr NJS::CharExpr::GenLLVM(Builder& builder, const TypePtr&)
+NJS::ValuePtr NJS::CharExpr::GenLLVM(Builder& builder, const TypePtr&) const
 {
     const auto type = builder.GetCtx().GetCharType();
     const auto value = builder.GetBuilder().getInt8(Value);

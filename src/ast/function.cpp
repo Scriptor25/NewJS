@@ -4,6 +4,7 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Param.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
@@ -27,7 +28,7 @@ NJS::FunctionStmt::FunctionStmt(
 {
 }
 
-void NJS::FunctionStmt::GenVoidLLVM(Builder& builder)
+void NJS::FunctionStmt::GenVoidLLVM(Builder& builder) const
 {
     std::string name;
     switch (Fn)
@@ -183,7 +184,7 @@ NJS::FunctionExpr::FunctionExpr(
 {
 }
 
-NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&)
+NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&) const
 {
     static unsigned id = 0;
     const auto name = std::to_string(id++);

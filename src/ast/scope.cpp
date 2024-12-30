@@ -7,7 +7,7 @@ NJS::ScopeStmt::ScopeStmt(SourceLocation where, std::vector<StmtPtr> children)
 {
 }
 
-void NJS::ScopeStmt::GenVoidLLVM(Builder& builder)
+void NJS::ScopeStmt::GenVoidLLVM(Builder& builder) const
 {
     builder.Push();
     for (const auto& child : Children)
@@ -32,7 +32,7 @@ NJS::ScopeExpr::ScopeExpr(SourceLocation where, std::vector<StmtPtr> children, E
 {
 }
 
-NJS::ValuePtr NJS::ScopeExpr::GenLLVM(Builder& builder, const TypePtr& expected)
+NJS::ValuePtr NJS::ScopeExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
 {
     builder.Push();
     for (const auto& child : Children)

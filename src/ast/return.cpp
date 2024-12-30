@@ -9,7 +9,7 @@ NJS::ReturnStmt::ReturnStmt(SourceLocation where, ExprPtr value)
 {
 }
 
-void NJS::ReturnStmt::GenVoidLLVM(Builder& builder)
+void NJS::ReturnStmt::GenVoidLLVM(Builder& builder) const
 {
     auto type = builder.ResultType();
     const auto ref = type->IsRef();

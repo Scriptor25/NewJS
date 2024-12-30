@@ -2,6 +2,7 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Std.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
@@ -14,7 +15,7 @@ NJS::FormatExpr::FormatExpr(
 {
 }
 
-NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder, const TypePtr&)
+NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder, const TypePtr&) const
 {
     constexpr auto N = 1024;
     const auto ptr = builder.CreateAlloca(builder.GetBuilder().getInt8Ty(), N);
@@ -28,7 +29,7 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder, const TypePtr&)
     {
         if (Statics.contains(i))
         {
-            const auto value = Statics[i];
+            const auto value = Statics.at(i);
             const auto str = StringExpr::GetString(builder, value);
 
             args.push_back(builder.GetBuilder().getInt32(ID_POINTER));
@@ -39,7 +40,7 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder, const TypePtr&)
         }
         else if (Dynamics.contains(i))
         {
-            const auto value = Dynamics[i]->GenLLVM(builder, {});
+            const auto value = Dynamics.at(i)->GenLLVM(builder, {});
             value->GetType()->TypeInfo(builder, args);
             if (value->GetType()->IsPrimitive())
                 args.push_back(value->Load(Where));

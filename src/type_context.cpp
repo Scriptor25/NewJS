@@ -1,3 +1,4 @@
+#include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
 NJS::TypePtr& NJS::TypeContext::GetType(const std::string& string)
@@ -7,9 +8,9 @@ NJS::TypePtr& NJS::TypeContext::GetType(const std::string& string)
     return m_Types[string];
 }
 
-NJS::NoTypePtr NJS::TypeContext::GetNoType()
+NJS::NoTypePtr NJS::TypeContext::GetNoType(const std::string& name)
 {
-    return GetType<NoType>();
+    return GetType<NoType>(name);
 }
 
 NJS::VoidTypePtr NJS::TypeContext::GetVoidType()

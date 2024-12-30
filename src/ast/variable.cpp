@@ -15,7 +15,7 @@ NJS::VariableStmt::VariableStmt(
 {
 }
 
-void NJS::VariableStmt::GenVoidLLVM(Builder& builder)
+void NJS::VariableStmt::GenVoidLLVM(Builder& builder) const
 {
     const auto value = Value ? Value->GenLLVM(builder, Name->Type) : nullptr;
     Name->CreateVars(builder, Where, IsConst, value);

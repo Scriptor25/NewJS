@@ -48,7 +48,7 @@ void NJS::Parser::ResetBuffer()
 
 int NJS::Parser::Get()
 {
-    m_TemplateBuffer.put(m_C);
+    m_TemplateBuffer.put(static_cast<char>(m_C));
 
     ++m_Where.Col;
     return m_C = m_Stream.get();

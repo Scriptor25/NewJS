@@ -1,6 +1,7 @@
 #include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
@@ -9,7 +10,7 @@ NJS::IfStmt::IfStmt(SourceLocation where, ExprPtr condition, StmtPtr then, StmtP
 {
 }
 
-void NJS::IfStmt::GenVoidLLVM(Builder& builder)
+void NJS::IfStmt::GenVoidLLVM(Builder& builder) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_bb = llvm::BasicBlock::Create(builder.GetContext(), "then", parent);

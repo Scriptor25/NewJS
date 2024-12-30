@@ -3,6 +3,7 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Import.hpp>
 #include <NJS/Param.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 

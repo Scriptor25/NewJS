@@ -7,7 +7,7 @@ NJS::CastExpr::CastExpr(SourceLocation where, TypePtr type, ExprPtr value)
 {
 }
 
-NJS::ValuePtr NJS::CastExpr::GenLLVM(Builder& builder, const TypePtr&)
+NJS::ValuePtr NJS::CastExpr::GenLLVM(Builder& builder, const TypePtr&) const
 {
     const auto value = Value->GenLLVM(builder, Type);
     return builder.CreateCast(Where, value, Type);

@@ -11,8 +11,6 @@ namespace NJS
     class Builder;
     class Linker;
 
-    struct ModuleInfo;
-
     struct SourceLocation;
     struct Token;
 

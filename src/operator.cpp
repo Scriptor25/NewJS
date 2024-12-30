@@ -1,6 +1,7 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Operator.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
@@ -16,6 +17,11 @@ NJS::ValuePtr NJS::OperatorEQ(
             builder,
             builder.GetCtx().GetBoolType(),
             builder.GetBuilder().CreateICmpEQ(lhs, rhs));
+    if (type->IsFP())
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetBoolType(),
+            builder.GetBuilder().CreateFCmpOEQ(lhs, rhs));
 
     return {};
 }
@@ -32,6 +38,11 @@ NJS::ValuePtr NJS::OperatorNE(
             builder,
             builder.GetCtx().GetBoolType(),
             builder.GetBuilder().CreateICmpNE(lhs, rhs));
+    if (type->IsFP())
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetBoolType(),
+            builder.GetBuilder().CreateFCmpONE(lhs, rhs));
 
     return {};
 }
@@ -50,6 +61,11 @@ NJS::ValuePtr NJS::OperatorLT(
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSLT(lhs, rhs)
                 : builder.GetBuilder().CreateICmpULT(lhs, rhs));
+    if (type->IsFP())
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetBoolType(),
+            builder.GetBuilder().CreateFCmpOLT(lhs, rhs));
 
     return {};
 }
@@ -68,6 +84,11 @@ NJS::ValuePtr NJS::OperatorLE(
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSLE(lhs, rhs)
                 : builder.GetBuilder().CreateICmpULE(lhs, rhs));
+    if (type->IsFP())
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetBoolType(),
+            builder.GetBuilder().CreateFCmpOLE(lhs, rhs));
 
     return {};
 }
@@ -86,6 +107,11 @@ NJS::ValuePtr NJS::OperatorGT(
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSGT(lhs, rhs)
                 : builder.GetBuilder().CreateICmpUGT(lhs, rhs));
+    if (type->IsFP())
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetBoolType(),
+            builder.GetBuilder().CreateFCmpOGT(lhs, rhs));
 
     return {};
 }
@@ -104,6 +130,11 @@ NJS::ValuePtr NJS::OperatorGE(
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSGE(lhs, rhs)
                 : builder.GetBuilder().CreateICmpUGE(lhs, rhs));
+    if (type->IsFP())
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetBoolType(),
+            builder.GetBuilder().CreateFCmpOGE(lhs, rhs));
 
     return {};
 }
@@ -115,13 +146,13 @@ NJS::ValuePtr NJS::OperatorLOr(
     llvm::Value* lhs,
     llvm::Value* rhs)
 {
-    if (!type->IsInt() || !type->GetBits() == 1)
-        return {};
+    if (type->IsInt() && type->GetBits() == 1)
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetBoolType(),
+            builder.GetBuilder().CreateOr(lhs, rhs));
 
-    return RValue::Create(
-        builder,
-        builder.GetCtx().GetBoolType(),
-        builder.GetBuilder().CreateOr(lhs, rhs));
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorLXor(
@@ -131,13 +162,13 @@ NJS::ValuePtr NJS::OperatorLXor(
     llvm::Value* lhs,
     llvm::Value* rhs)
 {
-    if (!type->IsInt() || !type->GetBits() == 1)
-        return {};
+    if (type->IsInt() && type->GetBits() == 1)
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetBoolType(),
+            builder.GetBuilder().CreateXor(lhs, rhs));
 
-    return RValue::Create(
-        builder,
-        builder.GetCtx().GetBoolType(),
-        builder.GetBuilder().CreateXor(lhs, rhs));
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorLAnd(
@@ -147,13 +178,13 @@ NJS::ValuePtr NJS::OperatorLAnd(
     llvm::Value* lhs,
     llvm::Value* rhs)
 {
-    if (!type->IsInt() || !type->GetBits() == 1)
-        return {};
+    if (type->IsInt() && type->GetBits() == 1)
+        return RValue::Create(
+            builder,
+            builder.GetCtx().GetBoolType(),
+            builder.GetBuilder().CreateAnd(lhs, rhs));
 
-    return RValue::Create(
-        builder,
-        builder.GetCtx().GetBoolType(),
-        builder.GetBuilder().CreateAnd(lhs, rhs));
+    return {};
 }
 
 NJS::ValuePtr NJS::OperatorOr(
@@ -345,6 +376,12 @@ NJS::ValuePtr NJS::OperatorPow(
                 : builder.GetBuilder().CreateFPToUI(val, src_ty));
     }
 
+    if (type->IsFP())
+        return RValue::Create(
+            builder,
+            type,
+            builder.GetBuilder().CreateBinaryIntrinsic(llvm::Intrinsic::pow, lhs, rhs));
+
     return {};
 }
 
@@ -382,81 +419,107 @@ NJS::ValuePtr NJS::OperatorShR(
     return {};
 }
 
-NJS::UnaryResult NJS::OperatorInc(Builder& builder, const SourceLocation& where, const ValuePtr& val)
+NJS::UnaryResult NJS::OperatorInc(Builder& builder, const SourceLocation& where, const ValuePtr& value)
 {
-    if (val->GetType()->IsInt())
+    const auto val = value->Load(where);
+    const auto type = value->GetType();
+    const auto ty = type->GetLLVM(where, builder);
+
+    if (type->IsInt())
         return {
             RValue::Create(
                 builder,
-                val->GetType(),
-                builder.GetBuilder().CreateAdd(
-                    val->Load(where),
-                    llvm::ConstantInt::get(val->GetType()->GetLLVM(where, builder), 1, val->GetType()->IsSigned()))),
+                type,
+                builder.GetBuilder().CreateAdd(val, llvm::ConstantInt::get(ty, 1, type->IsSigned()))),
+            true,
+        };
+    if (type->IsFP())
+        return {
+            RValue::Create(
+                builder,
+                type,
+                builder.GetBuilder().CreateFAdd(val, llvm::ConstantFP::get(ty, 1.0))),
             true,
         };
 
-    return {nullptr, false};
+    return {};
 }
 
-NJS::UnaryResult NJS::OperatorDec(Builder& builder, const SourceLocation& where, const ValuePtr& val)
+NJS::UnaryResult NJS::OperatorDec(Builder& builder, const SourceLocation& where, const ValuePtr& value)
 {
-    if (val->GetType()->IsInt())
+    const auto val = value->Load(where);
+    const auto type = value->GetType();
+    const auto ty = type->GetLLVM(where, builder);
+
+    if (type->IsInt())
         return {
             RValue::Create(
                 builder,
-                val->GetType(),
-                builder.GetBuilder().CreateSub(
-                    val->Load(where),
-                    llvm::ConstantInt::get(val->GetType()->GetLLVM(where, builder), 1, val->GetType()->IsSigned()))),
+                type,
+                builder.GetBuilder().CreateSub(val, llvm::ConstantInt::get(ty, 1, type->IsSigned()))),
             true,
         };
 
-    return {nullptr, false};
+    return {};
 }
 
-NJS::UnaryResult NJS::OperatorNeg(Builder& builder, const SourceLocation& where, const ValuePtr& val)
+NJS::UnaryResult NJS::OperatorNeg(Builder& builder, const SourceLocation& where, const ValuePtr& value)
 {
-    if (val->GetType()->IsInt())
+    const auto val = value->Load(where);
+    const auto type = value->GetType();
+
+    if (type->IsInt())
         return {
             RValue::Create(
                 builder,
-                val->GetType(),
-                builder.GetBuilder().CreateNeg(val->Load(where))),
+                type,
+                builder.GetBuilder().CreateNeg(val)),
             false,
         };
-
-    if (val->GetType()->IsFP())
+    if (type->IsFP())
         return {
             RValue::Create(
                 builder,
-                val->GetType(),
-                builder.GetBuilder().CreateFNeg(val->Load(where))),
+                type,
+                builder.GetBuilder().CreateFNeg(val)),
             false,
         };
 
-    return {nullptr, false};
+    return {};
 }
 
 NJS::UnaryResult NJS::OperatorLNot(Builder&, const SourceLocation&, const ValuePtr&)
 {
-    return {nullptr, false};
+    return {};
 }
 
-NJS::UnaryResult NJS::OperatorNot(Builder& builder, const SourceLocation& where, const ValuePtr& val)
+NJS::UnaryResult NJS::OperatorNot(Builder& builder, const SourceLocation& where, const ValuePtr& value)
 {
-    if (val->GetType()->IsInt())
+    const auto val = value->Load(where);
+    const auto type = value->GetType();
+
+    if (type->IsInt())
         return {
             RValue::Create(
                 builder,
-                val->GetType(),
-                builder.GetBuilder().CreateNot(val->Load(where))),
+                type,
+                builder.GetBuilder().CreateNot(val)),
             false,
         };
 
-    return {nullptr, false};
+    return {};
 }
 
-NJS::UnaryResult NJS::OperatorRef(Builder& builder, const SourceLocation& where, const ValuePtr& val)
+NJS::UnaryResult NJS::OperatorRef(Builder& builder, const SourceLocation& where, const ValuePtr& value)
 {
-    return {RValue::Create(builder, builder.GetCtx().GetPointerType(val->GetType()), val->GetPtr(where)), false};
+    const auto ptr = value->GetPtr(where);
+    const auto type = value->GetType();
+
+    return {
+        RValue::Create(
+            builder,
+            builder.GetCtx().GetPointerType(type),
+            ptr),
+        false,
+    };
 }

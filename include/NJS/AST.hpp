@@ -24,7 +24,7 @@ namespace NJS
         explicit Stmt(SourceLocation);
 
         virtual ~Stmt() = default;
-        virtual void GenVoidLLVM(Builder&) = 0;
+        virtual void GenVoidLLVM(Builder&) const = 0;
         virtual std::ostream& Print(std::ostream&) = 0;
 
         SourceLocation Where;
@@ -34,7 +34,7 @@ namespace NJS
     {
         ForStmt(SourceLocation, StmtPtr, ExprPtr, StmtPtr, StmtPtr);
 
-        void GenVoidLLVM(Builder&) override;
+        void GenVoidLLVM(Builder&) const override;
         std::ostream& Print(std::ostream&) override;
 
         StmtPtr Init;
@@ -47,7 +47,7 @@ namespace NJS
     {
         FunctionStmt(SourceLocation, bool, FnType, std::string, std::vector<ParamPtr>, bool, TypePtr, StmtPtr);
 
-        void GenVoidLLVM(Builder&) override;
+        void GenVoidLLVM(Builder&) const override;
         std::ostream& Print(std::ostream&) override;
 
         bool Absolute;
@@ -63,7 +63,7 @@ namespace NJS
     {
         IfStmt(SourceLocation, ExprPtr, StmtPtr, StmtPtr);
 
-        void GenVoidLLVM(Builder&) override;
+        void GenVoidLLVM(Builder&) const override;
         std::ostream& Print(std::ostream&) override;
 
         ExprPtr Condition;
@@ -75,7 +75,7 @@ namespace NJS
     {
         ImportStmt(SourceLocation, ImportMapping, std::filesystem::path, std::vector<StmtPtr>);
 
-        void GenVoidLLVM(Builder&) override;
+        void GenVoidLLVM(Builder&) const override;
         std::ostream& Print(std::ostream&) override;
 
         ImportMapping Mapping;
@@ -87,7 +87,7 @@ namespace NJS
     {
         ReturnStmt(SourceLocation, ExprPtr);
 
-        void GenVoidLLVM(Builder&) override;
+        void GenVoidLLVM(Builder&) const override;
         std::ostream& Print(std::ostream&) override;
 
         ExprPtr Value;
@@ -97,7 +97,7 @@ namespace NJS
     {
         ScopeStmt(SourceLocation, std::vector<StmtPtr>);
 
-        void GenVoidLLVM(Builder&) override;
+        void GenVoidLLVM(Builder&) const override;
         std::ostream& Print(std::ostream&) override;
 
         std::vector<StmtPtr> Children;
@@ -107,7 +107,7 @@ namespace NJS
     {
         SwitchStmt(SourceLocation, ExprPtr, std::map<StmtPtr, std::vector<ExprPtr>>, StmtPtr);
 
-        void GenVoidLLVM(Builder&) override;
+        void GenVoidLLVM(Builder&) const override;
         std::ostream& Print(std::ostream&) override;
 
         ExprPtr Condition;
@@ -119,7 +119,7 @@ namespace NJS
     {
         VariableStmt(SourceLocation, bool, ParamPtr, ExprPtr);
 
-        void GenVoidLLVM(Builder&) override;
+        void GenVoidLLVM(Builder&) const override;
         std::ostream& Print(std::ostream&) override;
 
         bool IsConst;
@@ -131,15 +131,15 @@ namespace NJS
     {
         explicit Expr(SourceLocation);
 
-        void GenVoidLLVM(Builder&) override;
-        virtual ValuePtr GenLLVM(Builder&, const TypePtr&) = 0;
+        void GenVoidLLVM(Builder&) const override;
+        virtual ValuePtr GenLLVM(Builder&, const TypePtr&) const = 0;
     };
 
     struct BinaryExpr final : Expr
     {
         BinaryExpr(SourceLocation, std::string, ExprPtr, ExprPtr);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         std::string Op;
@@ -147,11 +147,21 @@ namespace NJS
         ExprPtr Rhs;
     };
 
+    struct BoolExpr final : Expr
+    {
+        BoolExpr(SourceLocation, bool);
+
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
+        std::ostream& Print(std::ostream&) override;
+
+        bool Value;
+    };
+
     struct CallExpr final : Expr
     {
         CallExpr(SourceLocation, ExprPtr, std::vector<ExprPtr>);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         ExprPtr Callee;
@@ -162,38 +172,40 @@ namespace NJS
     {
         CastExpr(SourceLocation, TypePtr, ExprPtr);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         TypePtr Type;
         ExprPtr Value;
     };
 
-    struct BoolExpr final : Expr
-    {
-        BoolExpr(SourceLocation, bool);
-
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
-        std::ostream& Print(std::ostream&) override;
-
-        bool Value;
-    };
-
     struct CharExpr final : Expr
     {
         CharExpr(SourceLocation, char);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         char Value;
+    };
+
+    struct FormatExpr final : Expr
+    {
+        FormatExpr(SourceLocation, unsigned, std::map<unsigned, std::string>, std::map<unsigned, ExprPtr>);
+
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
+        std::ostream& Print(std::ostream&) override;
+
+        unsigned Count;
+        std::map<unsigned, std::string> Statics;
+        std::map<unsigned, ExprPtr> Dynamics;
     };
 
     struct FPExpr final : Expr
     {
         FPExpr(SourceLocation, TypePtr, double);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         TypePtr Type;
@@ -204,7 +216,7 @@ namespace NJS
     {
         FunctionExpr(SourceLocation, std::vector<ParamPtr>, bool, TypePtr, StmtPtr);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         std::vector<ParamPtr> Args;
@@ -217,62 +229,18 @@ namespace NJS
     {
         IntExpr(SourceLocation, TypePtr, uint64_t);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         TypePtr Type;
         uint64_t Value;
     };
 
-    struct StructExpr final : Expr
-    {
-        StructExpr(SourceLocation, std::map<std::string, ExprPtr>);
-
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
-        std::ostream& Print(std::ostream&) override;
-
-        std::map<std::string, ExprPtr> Elements;
-    };
-
-    struct StringExpr final : Expr
-    {
-        StringExpr(SourceLocation, std::string);
-
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
-        std::ostream& Print(std::ostream&) override;
-
-        std::string Value;
-
-        static llvm::Constant* GetString(const Builder&, const std::string&);
-    };
-
-    struct TupleExpr final : Expr
-    {
-        TupleExpr(SourceLocation, std::vector<ExprPtr>);
-
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
-        std::ostream& Print(std::ostream&) override;
-
-        std::vector<ExprPtr> Elements;
-    };
-
-    struct FormatExpr final : Expr
-    {
-        FormatExpr(SourceLocation, unsigned, std::map<unsigned, std::string>, std::map<unsigned, ExprPtr>);
-
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
-        std::ostream& Print(std::ostream&) override;
-
-        unsigned Count;
-        std::map<unsigned, std::string> Statics;
-        std::map<unsigned, ExprPtr> Dynamics;
-    };
-
     struct MemberExpr final : Expr
     {
         MemberExpr(SourceLocation, ExprPtr, std::string);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         ExprPtr Object;
@@ -283,18 +251,40 @@ namespace NJS
     {
         ScopeExpr(SourceLocation, std::vector<StmtPtr>, ExprPtr);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         std::vector<StmtPtr> Children;
         ExprPtr Last;
     };
 
+    struct StringExpr final : Expr
+    {
+        StringExpr(SourceLocation, std::string);
+
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
+        std::ostream& Print(std::ostream&) override;
+
+        std::string Value;
+
+        static llvm::Constant* GetString(const Builder&, const std::string&);
+    };
+
+    struct StructExpr final : Expr
+    {
+        StructExpr(SourceLocation, std::map<std::string, ExprPtr>);
+
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
+        std::ostream& Print(std::ostream&) override;
+
+        std::map<std::string, ExprPtr> Elements;
+    };
+
     struct SubscriptExpr final : Expr
     {
         SubscriptExpr(SourceLocation, ExprPtr, ExprPtr);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         ExprPtr Array;
@@ -305,7 +295,7 @@ namespace NJS
     {
         SwitchExpr(SourceLocation, ExprPtr, std::map<ExprPtr, std::vector<ExprPtr>>, ExprPtr);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         ExprPtr Condition;
@@ -317,7 +307,7 @@ namespace NJS
     {
         SymbolExpr(SourceLocation, std::string);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         std::string Name;
@@ -327,7 +317,7 @@ namespace NJS
     {
         TernaryExpr(SourceLocation, ExprPtr, ExprPtr, ExprPtr);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         ExprPtr Condition;
@@ -335,11 +325,21 @@ namespace NJS
         ExprPtr Else;
     };
 
+    struct TupleExpr final : Expr
+    {
+        TupleExpr(SourceLocation, std::vector<ExprPtr>);
+
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
+        std::ostream& Print(std::ostream&) override;
+
+        std::vector<ExprPtr> Elements;
+    };
+
     struct UnaryExpr final : Expr
     {
         UnaryExpr(SourceLocation, std::string, bool, ExprPtr);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) override;
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
         std::string Op;

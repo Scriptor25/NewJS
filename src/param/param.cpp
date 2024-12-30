@@ -2,7 +2,7 @@
 #include <NJS/Error.hpp>
 #include <NJS/Param.hpp>
 #include <NJS/Parser.hpp>
-#include <NJS/TypeContext.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
 NJS::Param::Param(std::string name)

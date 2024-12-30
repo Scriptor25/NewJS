@@ -21,11 +21,6 @@ bool NJS::TupleType::IsTuple() const
     return true;
 }
 
-NJS::TypePtr NJS::TupleType::GetElement() const
-{
-    return m_Ctx.GetNoType();
-}
-
 NJS::TypePtr NJS::TupleType::GetElement(const unsigned i) const
 {
     return m_Elements[i];

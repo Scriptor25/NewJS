@@ -10,7 +10,7 @@ NJS::FPExpr::FPExpr(SourceLocation where, TypePtr type, const double value)
 {
 }
 
-NJS::ValuePtr NJS::FPExpr::GenLLVM(Builder& builder, const TypePtr& expected)
+NJS::ValuePtr NJS::FPExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
 {
     const auto type = Type
                           ? Type

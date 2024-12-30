@@ -10,7 +10,7 @@ NJS::IntExpr::IntExpr(SourceLocation where, TypePtr type, const uint64_t value)
 {
 }
 
-NJS::ValuePtr NJS::IntExpr::GenLLVM(Builder& builder, const TypePtr& expected)
+NJS::ValuePtr NJS::IntExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
 {
     const auto type = Type
                           ? Type

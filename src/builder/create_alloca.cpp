@@ -16,20 +16,3 @@ NJS::ValuePtr NJS::Builder::CreateAlloca(const SourceLocation& where, const Type
     const auto ptr = CreateAlloca(type->GetLLVM(where, *this), size);
     return LValue::Create(*this, type, ptr);
 }
-
-NJS::ValuePtr NJS::Builder::CreateGlobal(
-    const SourceLocation& where,
-    const std::string& name,
-    const TypePtr& type,
-    const bool init)
-{
-    const auto ty = type->GetLLVM(where, *this);
-    const auto global = new llvm::GlobalVariable(
-        GetModule(),
-        ty,
-        false,
-        llvm::GlobalValue::ExternalLinkage,
-        init ? llvm::Constant::getNullValue(ty) : nullptr,
-        name);
-    return LValue::Create(*this, type, global);
-}

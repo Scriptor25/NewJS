@@ -13,7 +13,7 @@ NJS::BinaryExpr::BinaryExpr(SourceLocation where, std::string op, ExprPtr lhs, E
 {
 }
 
-NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder, const TypePtr& expected)
+NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
 {
     static const std::map<std::string, BinOp>
         fns

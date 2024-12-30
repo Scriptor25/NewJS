@@ -1,5 +1,4 @@
 #include <istream>
-#include <map>
 #include <NJS/Parser.hpp>
 
 NJS::Token& NJS::Parser::Next()
@@ -166,7 +165,7 @@ NJS::Token& NJS::Parser::Next()
                 value += static_cast<char>(m_C);
                 break;
             }
-            if (value == "-" && (m_C == '-' || m_C == '='))
+            if (value == "-" && (m_C == '-' || m_C == '=' || m_C == '>'))
             {
                 value += static_cast<char>(m_C);
                 break;

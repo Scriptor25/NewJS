@@ -5,6 +5,7 @@
 #include <vector>
 #include <NJS/NJS.hpp>
 #include <NJS/SourceLocation.hpp>
+#include <NJS/Type.hpp>
 
 namespace NJS
 {
@@ -32,8 +33,8 @@ namespace NJS
             const SourceLocation&,
             const std::string&);
 
-        bool HasFunction(const std::string&) const;
-        bool HasType(const std::string&) const;
+        [[nodiscard]] bool HasFunction(const std::string&) const;
+        [[nodiscard]] bool HasType(const std::string&) const;
 
         std::string InflateFunctionTemplate(Parser&, const std::string&, const std::vector<TypePtr>&);
         TypePtr InflateType(Parser&, const std::string&, const std::vector<TypePtr>&);

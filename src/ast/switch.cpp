@@ -16,7 +16,7 @@ NJS::SwitchStmt::SwitchStmt(
 {
 }
 
-void NJS::SwitchStmt::GenVoidLLVM(Builder& builder)
+void NJS::SwitchStmt::GenVoidLLVM(Builder& builder) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     const auto default_dest = llvm::BasicBlock::Create(builder.GetContext(), "default", parent);
@@ -83,7 +83,7 @@ NJS::SwitchExpr::SwitchExpr(
 {
 }
 
-NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder& builder, const TypePtr& expected)
+NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto default_dest = llvm::BasicBlock::Create(builder.GetContext(), "default", parent);

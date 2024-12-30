@@ -10,7 +10,7 @@ NJS::StructExpr::StructExpr(SourceLocation where, std::map<std::string, ExprPtr>
 {
 }
 
-NJS::ValuePtr NJS::StructExpr::GenLLVM(Builder& builder, const TypePtr& expected)
+NJS::ValuePtr NJS::StructExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
 {
     std::map<std::string, ValuePtr> elements;
     std::map<std::string, TypePtr> element_types;
