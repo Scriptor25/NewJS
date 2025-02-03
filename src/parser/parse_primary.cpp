@@ -77,10 +77,25 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
 
     if (NextAt("sizeof"))
     {
-        Expect("(");
+        if (NextAt("("))
+        {
+            const auto expr = ParseExpr();
+            Expect(")");
+            return std::make_shared<SizeOfExpr>(where, expr);
+        }
+
+        Expect("<");
         const auto type = ParseType();
-        Expect(")");
+        Expect(">");
         return std::make_shared<IntExpr>(where, m_TypeCtx.GetIntType(64, false), type->GetSize());
+    }
+
+    if (NextAt("typeof"))
+    {
+        Expect("(");
+        const auto expr = ParseExpr();
+        Expect(")");
+        return std::make_shared<TypeOfExpr>(where, expr);
     }
 
     if (At(TokenType_Symbol))

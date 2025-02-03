@@ -12,41 +12,44 @@ NJS::IfStmt::IfStmt(SourceLocation where, ExprPtr condition, StmtPtr then, StmtP
 
 void NJS::IfStmt::GenVoidLLVM(Builder& builder) const
 {
-    const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
-    auto then_bb = llvm::BasicBlock::Create(builder.GetContext(), "then", parent);
-    auto else_bb = Else
-                       ? llvm::BasicBlock::Create(builder.GetContext(), "else", parent)
-                       : nullptr;
-    const auto end_bb = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
+    const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
+    auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent_function);
+    auto else_block = Else
+                          ? llvm::BasicBlock::Create(builder.GetContext(), "else", parent_function)
+                          : nullptr;
+    const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent_function);
 
     const auto condition = Condition->GenLLVM(builder, builder.GetCtx().GetBoolType());
-    builder.GetBuilder().CreateCondBr(condition->Load(Where), then_bb, else_bb ? else_bb : end_bb);
+    builder.GetBuilder().CreateCondBr(
+        condition->Load(Condition->Where),
+        then_block,
+        else_block ? else_block : end_block);
 
-    builder.GetBuilder().SetInsertPoint(then_bb);
+    builder.GetBuilder().SetInsertPoint(then_block);
     Then->GenVoidLLVM(builder);
-    then_bb = builder.GetBuilder().GetInsertBlock();
-    const auto then_terminator = then_bb->getTerminator();
+    then_block = builder.GetBuilder().GetInsertBlock();
+    const auto then_terminator = then_block->getTerminator();
     if (!then_terminator)
-        builder.GetBuilder().CreateBr(end_bb);
+        builder.GetBuilder().CreateBr(end_block);
 
     const llvm::Instruction* else_terminator{};
     if (Else)
     {
-        builder.GetBuilder().SetInsertPoint(else_bb);
+        builder.GetBuilder().SetInsertPoint(else_block);
         Else->GenVoidLLVM(builder);
-        else_bb = builder.GetBuilder().GetInsertBlock();
-        else_terminator = else_bb->getTerminator();
+        else_block = builder.GetBuilder().GetInsertBlock();
+        else_terminator = else_block->getTerminator();
         if (!else_terminator)
-            builder.GetBuilder().CreateBr(end_bb);
+            builder.GetBuilder().CreateBr(end_block);
     }
 
     if (then_terminator && else_terminator)
     {
-        end_bb->eraseFromParent();
+        end_block->eraseFromParent();
         return;
     }
 
-    builder.GetBuilder().SetInsertPoint(end_bb);
+    builder.GetBuilder().SetInsertPoint(end_block);
 }
 
 std::ostream& NJS::IfStmt::Print(std::ostream& os)

@@ -30,23 +30,23 @@ NJS::FunctionStmt::FunctionStmt(
 
 void NJS::FunctionStmt::GenVoidLLVM(Builder& builder) const
 {
-    std::string name;
+    std::string function_name;
     switch (Fn)
     {
     case FnType_Function:
-        name = builder.GetName(Absolute, Name);
+        function_name = builder.GetName(Absolute, Name);
         break;
     case FnType_Extern:
-        name = Name;
+        function_name = Name;
         break;
     case FnType_Operator:
         switch (Args.size())
         {
         case 1:
-            name = builder.GetName(Absolute, Args[0]->Type->GetString() + Name);
+            function_name = builder.GetName(Absolute, Args[0]->Type->GetString() + Name);
             break;
         case 2:
-            name = builder.GetName(Absolute, Args[0]->Type->GetString() + Name + Args[1]->Type->GetString());
+            function_name = builder.GetName(Absolute, Args[0]->Type->GetString() + Name + Args[1]->Type->GetString());
             break;
         default:
             break;
@@ -56,7 +56,7 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder& builder) const
         return;
     }
 
-    auto function = builder.GetModule().getFunction(name);
+    auto function = builder.GetModule().getFunction(function_name);
     if (!function)
     {
         std::vector<TypePtr> args;
@@ -66,7 +66,7 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder& builder) const
         function = llvm::Function::Create(
             type->GenFnLLVM(Where, builder),
             llvm::GlobalValue::ExternalLinkage,
-            name,
+            function_name,
             builder.GetModule());
 
         switch (Fn)
@@ -94,7 +94,7 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder& builder) const
     }
 
     if (!Body) return;
-    if (!function->empty()) Error(Where, "redefining function {} ({})", Name, name);
+    if (!function->empty()) Error(Where, "redefining function {} ({})", Name, function_name);
 
     const auto end_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
@@ -104,14 +104,14 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder& builder) const
     for (unsigned i = 0; i < Args.size(); ++i)
     {
         const auto& arg = Args[i];
-        const auto ir_arg = function->getArg(i);
-        ir_arg->setName(arg->Name);
+        const auto llvm_arg = function->getArg(i);
+        llvm_arg->setName(arg->Name);
 
-        ValuePtr value;
+        ValuePtr arg_value;
         if (arg->Type->IsRef())
-            value = LValue::Create(builder, arg->Type->GetElement(), ir_arg);
-        else value = RValue::Create(builder, arg->Type, ir_arg);
-        arg->CreateVars(builder, Where, false, value);
+            arg_value = LValue::Create(builder, arg->Type->GetElement(), llvm_arg);
+        else arg_value = RValue::Create(builder, arg->Type, llvm_arg);
+        arg->CreateVars(builder, Where, false, arg_value);
     }
 
     Body->GenVoidLLVM(builder);
@@ -126,13 +126,13 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder& builder) const
             builder.GetBuilder().CreateRetVoid();
             continue;
         }
-        Error(Where, "not all code paths return a value: in function {} ({})", Name, name);
+        Error(Where, "not all code paths return a value: in function {} ({})", Name, function_name);
     }
 
     if (verifyFunction(*function, &llvm::errs()))
     {
         function->print(llvm::errs());
-        Error(Where, "failed to verify function {} ({})", Name, name);
+        Error(Where, "failed to verify function {} ({})", Name, function_name);
     }
 
     builder.GetBuilder().SetInsertPoint(end_block);
@@ -187,7 +187,7 @@ NJS::FunctionExpr::FunctionExpr(
 NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&) const
 {
     static unsigned id = 0;
-    const auto name = std::to_string(id++);
+    const auto function_name = std::to_string(id++);
 
     std::vector<TypePtr> args;
     for (const auto& arg : Args)
@@ -196,25 +196,25 @@ NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&) const
     const auto function = llvm::Function::Create(
         type->GenFnLLVM(Where, builder),
         llvm::GlobalValue::InternalLinkage,
-        builder.GetName(false, name),
+        builder.GetName(false, function_name),
         builder.GetModule());
 
     const auto end_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
     builder.GetBuilder().SetInsertPoint(entry_block);
 
-    builder.Push(name, ResultType);
+    builder.Push(function_name, ResultType);
     for (unsigned i = 0; i < Args.size(); ++i)
     {
         const auto& arg = Args[i];
-        const auto ir_arg = function->getArg(i);
-        ir_arg->setName(arg->Name);
+        const auto llvm_arg = function->getArg(i);
+        llvm_arg->setName(arg->Name);
 
-        ValuePtr value;
+        ValuePtr arg_value;
         if (arg->Type->IsRef())
-            value = LValue::Create(builder, arg->Type->GetElement(), ir_arg);
-        else value = RValue::Create(builder, arg->Type, ir_arg);
-        arg->CreateVars(builder, Where, false, value);
+            arg_value = LValue::Create(builder, arg->Type->GetElement(), llvm_arg);
+        else arg_value = RValue::Create(builder, arg->Type, llvm_arg);
+        arg->CreateVars(builder, Where, false, arg_value);
     }
 
     Body->GenVoidLLVM(builder);
@@ -229,13 +229,13 @@ NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&) const
             builder.GetBuilder().CreateRetVoid();
             continue;
         }
-        Error(Where, "not all code paths return a value: in function lambda ({})", name);
+        Error(Where, "not all code paths return a value: in function lambda ({})", function_name);
     }
 
     if (verifyFunction(*function, &llvm::errs()))
     {
         function->print(llvm::errs());
-        Error(Where, "failed to verify function lambda ({})", name);
+        Error(Where, "failed to verify function lambda ({})", function_name);
     }
 
     builder.GetBuilder().SetInsertPoint(end_block);

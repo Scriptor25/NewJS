@@ -4,19 +4,21 @@
 #include <NJS/Type.hpp>
 
 std::string NJS::FunctionType::GenString(
-    const TypePtr& result,
-    const std::vector<TypePtr>& args,
+    const TypePtr &result,
+    const std::vector<TypePtr> &args,
     const bool vararg)
 {
     std::string dst = "(";
     for (unsigned i = 0; i < args.size(); ++i)
     {
-        if (i > 0) dst += ", ";
+        if (i > 0)
+            dst += ", ";
         dst += args[i]->GetString();
     }
     if (vararg)
     {
-        if (!args.empty()) dst += ", ";
+        if (!args.empty())
+            dst += ", ";
         dst += "...";
     }
     return dst += "): " + result->GetString();
@@ -37,7 +39,7 @@ NJS::TypePtr NJS::FunctionType::GetResult() const
     return m_Result;
 }
 
-NJS::TypePtr NJS::FunctionType::Arg(const unsigned i) const
+NJS::TypePtr NJS::FunctionType::Param(const unsigned i) const
 {
     return m_Args[i];
 }
@@ -47,35 +49,33 @@ bool NJS::FunctionType::VarArg() const
     return m_VarArg;
 }
 
-void NJS::FunctionType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::FunctionType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
 {
-    args.push_back(builder.GetBuilder().getInt32(ID_FUNCTION));
-    m_Result->TypeInfo(builder, args);
-    args.push_back(builder.GetBuilder().getInt32(m_Args.size()));
-    for (const auto& arg : m_Args)
-        arg->TypeInfo(builder, args);
-    args.push_back(builder.GetBuilder().getInt32(m_VarArg ? 1 : 0));
+    Error(where, "function type '{}' does not provide type info", GetString());
 }
 
-llvm::FunctionType* NJS::FunctionType::GenFnLLVM(const SourceLocation& where, const Builder& builder) const
+llvm::FunctionType *NJS::FunctionType::GenFnLLVM(const SourceLocation &where, const Builder &builder) const
 {
-    std::vector<llvm::Type*> types;
-    for (const auto& arg : m_Args)
+    std::vector<llvm::Type *> types;
+    for (const auto &arg: m_Args)
         types.push_back(arg->GetLLVM(where, builder));
     return llvm::FunctionType::get(m_Result->GetLLVM(where, builder), types, m_VarArg);
 }
 
 NJS::FunctionType::FunctionType(
-    TypeContext& ctx,
+    TypeContext &ctx,
     std::string string,
     TypePtr result,
     std::vector<TypePtr> args,
     const bool vararg)
-    : Type(ctx, std::move(string)), m_Result(std::move(result)), m_Args(std::move(args)), m_VarArg(vararg)
+    : Type(ctx, std::move(string)),
+      m_Result(std::move(result)),
+      m_Args(std::move(args)),
+      m_VarArg(vararg)
 {
 }
 
-llvm::Type* NJS::FunctionType::GenLLVM(const SourceLocation&, const Builder& builder) const
+llvm::Type *NJS::FunctionType::GenLLVM(const SourceLocation &, const Builder &builder) const
 {
     return builder.GetBuilder().getPtrTy();
 }

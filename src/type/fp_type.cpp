@@ -23,7 +23,7 @@ unsigned NJS::FPType::GetBits() const
     return m_Bits;
 }
 
-void NJS::FPType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::FPType::TypeInfo(const SourceLocation&, Builder& builder, std::vector<llvm::Value*>& args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_FP));
     args.push_back(builder.GetBuilder().getInt32(m_Bits));

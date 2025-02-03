@@ -10,8 +10,8 @@ NJS::MemberExpr::MemberExpr(SourceLocation where, ExprPtr object, std::string me
 
 NJS::ValuePtr NJS::MemberExpr::GenLLVM(Builder& builder, const TypePtr&) const
 {
-    const auto obj = Object->GenLLVM(builder, {});
-    return builder.CreateMember(Where, obj, Member);
+    const auto object_value = Object->GenLLVM(builder, {});
+    return builder.CreateMember(Where, object_value, Member);
 }
 
 std::ostream& NJS::MemberExpr::Print(std::ostream& os)

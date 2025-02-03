@@ -12,7 +12,6 @@ enum TypeID
     ID_ARRAY,
     ID_STRUCT,
     ID_TUPLE,
-    ID_FUNCTION,
 };
 
 extern "C" {

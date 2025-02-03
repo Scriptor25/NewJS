@@ -6,6 +6,8 @@
 #include <NJS/Operator.hpp>
 #include <NJS/Value.hpp>
 
+using namespace std::string_view_literals;
+
 NJS::UnaryExpr::UnaryExpr(SourceLocation where, std::string op, const bool op_right, ExprPtr operand)
     : Expr(std::move(where)), Op(std::move(op)), OpRight(op_right), Operand(std::move(operand))
 {
@@ -13,14 +15,15 @@ NJS::UnaryExpr::UnaryExpr(SourceLocation where, std::string op, const bool op_ri
 
 NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
 {
-    static const std::map<std::string, UnOp> fns
+    static const std::map<std::string_view, UnOp> fns
     {
-        {"++", OperatorInc},
-        {"--", OperatorDec},
-        {"-", OperatorNeg},
-        {"!", OperatorLNot},
-        {"~", OperatorNot},
-        {"&", OperatorRef},
+        {"++"sv, OperatorInc},
+        {"--"sv, OperatorDec},
+        {"-"sv, OperatorNeg},
+        {"!"sv, OperatorLNot},
+        {"~"sv, OperatorNot},
+        {"&"sv, OperatorRef},
+        {"*"sv, OperatorDeref},
     };
 
     auto operand = Operand->GenLLVM(builder, expected);

@@ -69,7 +69,11 @@ int main(const int argc, const char** argv)
     args.Parse(argc, argv);
 
     if (args.Flag(ARG_ID_VERSION))
+    {
         std::cerr << "NewJS [v1.0.0]" << std::endl;
+        if (argc == 2)
+            return 0;
+    }
 
     if (args.IsEmpty() || args.Flag(ARG_ID_HELP))
     {

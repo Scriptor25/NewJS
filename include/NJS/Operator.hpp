@@ -39,4 +39,5 @@ namespace NJS
     UnaryResult OperatorLNot(Builder&, const SourceLocation&, const ValuePtr&);
     UnaryResult OperatorNot(Builder&, const SourceLocation&, const ValuePtr&);
     UnaryResult OperatorRef(Builder&, const SourceLocation&, const ValuePtr&);
+    UnaryResult OperatorDeref(Builder&, const SourceLocation&, const ValuePtr&);
 }

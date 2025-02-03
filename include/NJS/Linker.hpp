@@ -15,7 +15,7 @@ namespace NJS
         [[nodiscard]] llvm::Module& LLVMModule() const;
 
         void Link(std::unique_ptr<llvm::Module>&&) const;
-        void Emit(llvm::raw_ostream&, llvm::CodeGenFileType) const;
+        void Emit(llvm::raw_pwrite_stream&, llvm::CodeGenFileType) const;
 
     private:
         std::unique_ptr<llvm::LLVMContext> m_LLVMContext;

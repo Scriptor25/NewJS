@@ -12,9 +12,9 @@ NJS::CharExpr::CharExpr(SourceLocation where, const char value)
 
 NJS::ValuePtr NJS::CharExpr::GenLLVM(Builder& builder, const TypePtr&) const
 {
-    const auto type = builder.GetCtx().GetCharType();
-    const auto value = builder.GetBuilder().getInt8(Value);
-    return RValue::Create(builder, type, value);
+    const auto result_type = builder.GetCtx().GetCharType();
+    const auto result_value = builder.GetBuilder().getInt8(Value);
+    return RValue::Create(builder, result_type, result_value);
 }
 
 std::ostream& NJS::CharExpr::Print(std::ostream& os)

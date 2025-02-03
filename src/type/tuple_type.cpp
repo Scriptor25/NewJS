@@ -26,12 +26,12 @@ NJS::TypePtr NJS::TupleType::GetElement(const unsigned i) const
     return m_Elements[i];
 }
 
-void NJS::TupleType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::TupleType::TypeInfo(const SourceLocation& where, Builder& builder, std::vector<llvm::Value*>& args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_TUPLE));
     args.push_back(builder.GetBuilder().getInt32(m_Elements.size()));
     for (const auto& element : m_Elements)
-        element->TypeInfo(builder, args);
+        element->TypeInfo(where, builder, args);
 }
 
 NJS::TupleType::TupleType(

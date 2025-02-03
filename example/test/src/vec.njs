@@ -14,6 +14,13 @@ template<T> vec_new(): vec<T> {
     }
 }
 
+template<T> vec_del(self: vec<T>&) {
+    free(self.base)
+    self.base = 0
+    self.cap = 0
+    self.size = 0
+}
+
 template<T> vec_clear(self: vec<T>&) {
     self.base = realloc(self.base, 0)
     self.size = 0

@@ -12,7 +12,7 @@ NJS::TypePtr NJS::NoType::GetResult() const
     return m_Ctx.GetNoType(m_Name + "::RESULT");
 }
 
-void NJS::NoType::TypeInfo(Builder&, std::vector<llvm::Value*>&) const
+void NJS::NoType::TypeInfo(const SourceLocation&, Builder&, std::vector<llvm::Value*>&) const
 {
     Error("the no-type does not provide type information");
 }

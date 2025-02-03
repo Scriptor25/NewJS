@@ -51,7 +51,7 @@ namespace NJS
         [[nodiscard]] virtual MemberT GetMember(const std::string&) const;
         [[nodiscard]] virtual TypePtr GetResult() const;
 
-        virtual void TypeInfo(Builder&, std::vector<llvm::Value*>&) const = 0;
+        virtual void TypeInfo(const SourceLocation&, Builder&, std::vector<llvm::Value*>&) const = 0;
 
     protected:
         Type(TypeContext&, std::string);
@@ -73,7 +73,7 @@ namespace NJS
         static std::string GenString(const std::string&);
 
         [[nodiscard]] TypePtr GetResult() const override;
-        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        void TypeInfo(const SourceLocation&, Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         NoType(TypeContext&, std::string, std::string);
@@ -93,7 +93,7 @@ namespace NJS
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsVoid() const override;
-        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        void TypeInfo(const SourceLocation&, Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         VoidType(TypeContext&, std::string);
@@ -113,7 +113,7 @@ namespace NJS
         [[nodiscard]] bool IsInt() const override;
         [[nodiscard]] bool IsSigned() const override;
         [[nodiscard]] unsigned GetBits() const override;
-        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        void TypeInfo(const SourceLocation&, Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         IntType(TypeContext&, std::string, unsigned, bool);
@@ -135,7 +135,7 @@ namespace NJS
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsFP() const override;
         [[nodiscard]] unsigned GetBits() const override;
-        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        void TypeInfo(const SourceLocation&, Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         FPType(TypeContext&, std::string, unsigned);
@@ -156,7 +156,7 @@ namespace NJS
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsPtr() const override;
         [[nodiscard]] TypePtr GetElement() const override;
-        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        void TypeInfo(const SourceLocation&, Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         PtrType(TypeContext&, std::string, TypePtr);
@@ -177,7 +177,7 @@ namespace NJS
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsRef() const override;
         [[nodiscard]] TypePtr GetElement() const override;
-        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        void TypeInfo(const SourceLocation&, Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         RefType(TypeContext&, std::string, TypePtr);
@@ -198,7 +198,7 @@ namespace NJS
         [[nodiscard]] bool IsArray() const override;
         [[nodiscard]] TypePtr GetElement() const override;
         [[nodiscard]] TypePtr GetElement(unsigned) const override;
-        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        void TypeInfo(const SourceLocation&, Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         ArrayType(TypeContext&, std::string, TypePtr, unsigned);
@@ -219,7 +219,7 @@ namespace NJS
 
         [[nodiscard]] bool IsStruct() const override;
         [[nodiscard]] MemberT GetMember(const std::string&) const override;
-        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        void TypeInfo(const SourceLocation&, Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         StructType(TypeContext&, std::string, std::map<std::string, TypePtr>);
@@ -239,7 +239,7 @@ namespace NJS
 
         [[nodiscard]] bool IsTuple() const override;
         [[nodiscard]] TypePtr GetElement(unsigned) const override;
-        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        void TypeInfo(const SourceLocation&, Builder&, std::vector<llvm::Value*>&) const override;
 
     protected:
         TupleType(TypeContext&, std::string, std::vector<TypePtr>);
@@ -260,9 +260,9 @@ namespace NJS
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsFunction() const override;
         [[nodiscard]] TypePtr GetResult() const override;
-        [[nodiscard]] TypePtr Arg(unsigned) const;
+        [[nodiscard]] TypePtr Param(unsigned) const;
         [[nodiscard]] bool VarArg() const;
-        void TypeInfo(Builder&, std::vector<llvm::Value*>&) const override;
+        void TypeInfo(const SourceLocation&, Builder&, std::vector<llvm::Value*>&) const override;
 
         [[nodiscard]] llvm::FunctionType* GenFnLLVM(const SourceLocation&, const Builder&) const;
 

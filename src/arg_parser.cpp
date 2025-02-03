@@ -62,20 +62,20 @@ void NJS::ArgParser::Option(const ID id, std::string& option, const std::string&
     option = alt;
 }
 
+static void print_description(const std::string& description)
+{
+    unsigned i = 0;
+    for (const auto c : description)
+    {
+        if (i++ % 100 == 0)
+            std::cerr << std::endl << "    ";
+        std::cerr << c;
+    }
+    std::cerr << std::endl;
+}
+
 void NJS::ArgParser::Print() const
 {
-    constexpr auto print_description = [](const std::string& description)
-    {
-        unsigned i = 0;
-        for (const auto c : description)
-        {
-            if (i % 100 == 0)
-                std::cerr << std::endl << "    ";
-            std::cerr << description[i++];
-        }
-        std::cerr << std::endl;
-    };
-
     std::map<ID, std::pair<std::vector<std::string>, std::string>> options;
     std::map<ID, std::pair<std::vector<std::string>, std::string>> flags;
 

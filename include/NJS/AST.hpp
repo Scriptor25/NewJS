@@ -142,9 +142,9 @@ namespace NJS
         ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
         std::ostream& Print(std::ostream&) override;
 
-        std::string Op;
-        ExprPtr Lhs;
-        ExprPtr Rhs;
+        std::string Operator;
+        ExprPtr LeftOperand;
+        ExprPtr RightOperand;
     };
 
     struct BoolExpr final : Expr
@@ -258,6 +258,16 @@ namespace NJS
         ExprPtr Last;
     };
 
+    struct SizeOfExpr final : Expr
+    {
+        SizeOfExpr(SourceLocation, ExprPtr);
+
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
+        std::ostream& Print(std::ostream&) override;
+
+        ExprPtr Operand;
+    };
+
     struct StringExpr final : Expr
     {
         StringExpr(SourceLocation, std::string);
@@ -333,6 +343,16 @@ namespace NJS
         std::ostream& Print(std::ostream&) override;
 
         std::vector<ExprPtr> Elements;
+    };
+
+    struct TypeOfExpr final : Expr
+    {
+        TypeOfExpr(SourceLocation, ExprPtr);
+
+        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
+        std::ostream& Print(std::ostream&) override;
+
+        ExprPtr Operand;
     };
 
     struct UnaryExpr final : Expr

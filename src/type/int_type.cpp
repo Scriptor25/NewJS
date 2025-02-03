@@ -28,7 +28,7 @@ unsigned NJS::IntType::GetBits() const
     return m_Bits;
 }
 
-void NJS::IntType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::IntType::TypeInfo(const SourceLocation&, Builder& builder, std::vector<llvm::Value*>& args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_INT));
     args.push_back(builder.GetBuilder().getInt32(m_Bits));

@@ -21,9 +21,9 @@ NJS::TypePtr NJS::RefType::GetElement() const
     return m_Element;
 }
 
-void NJS::RefType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::RefType::TypeInfo(const SourceLocation& where, Builder& builder, std::vector<llvm::Value*>& args) const
 {
-    m_Element->TypeInfo(builder, args);
+    m_Element->TypeInfo(where, builder, args);
 }
 
 NJS::RefType::RefType(TypeContext& ctx, std::string string, TypePtr element)

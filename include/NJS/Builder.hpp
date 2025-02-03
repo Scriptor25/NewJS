@@ -25,7 +25,7 @@ namespace NJS
 
     typedef std::pair<llvm::Value*, llvm::Value*> ValRef;
     typedef std::pair<TypePtr, llvm::Value*> OpRef;
-    typedef std::function<ValuePtr(Builder&, const SourceLocation&, const TypePtr&, llvm::Value*, llvm::Value*)> BinOp;
+    typedef std::function<ValuePtr(Builder&, const SourceLocation&, const TypePtr&, llvm::Value*, llvm::Value*)> BinaryOperator;
     typedef std::function<UnaryResult(Builder&, const SourceLocation&, const ValuePtr&)> UnOp;
 
     class Builder

@@ -3,13 +3,13 @@
 #include <NJS/Error.hpp>
 #include <NJS/SourceLocation.hpp>
 
-void NJS::Error(const std::string& message) noexcept
+void NJS::Error(const std::string &message) noexcept
 {
     std::cerr << message << std::endl;
     exit(1);
 }
 
-void NJS::Error(const SourceLocation& where, const std::string& message) noexcept
+void NJS::Error(const SourceLocation &where, const std::string &message) noexcept
 {
     const auto filename = where.Filename.empty()
                               ? "<empty>"

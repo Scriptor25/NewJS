@@ -35,14 +35,14 @@ NJS::MemberT NJS::StructType::GetMember(const std::string& name) const
     Error("no member '{}' in {}", name, m_String);
 }
 
-void NJS::StructType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::StructType::TypeInfo(const SourceLocation& where, Builder& builder, std::vector<llvm::Value*>& args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_STRUCT));
     args.push_back(builder.GetBuilder().getInt32(m_Elements.size()));
     for (const auto& [name_, type_] : m_Elements)
     {
         args.push_back(StringExpr::GetString(builder, name_));
-        type_->TypeInfo(builder, args);
+        type_->TypeInfo(where, builder, args);
     }
 }
 

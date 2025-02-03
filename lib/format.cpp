@@ -21,7 +21,7 @@ void operator delete(void* ptr, size_t) noexcept
 template <typename T>
 static T* New(const size_t count)
 {
-    const auto ptr = malloc(count * sizeof(T)); // NOLINT(*-sizeof-expression)
+    auto ptr = malloc(count * sizeof(T));
     return static_cast<T*>(ptr);
 }
 
@@ -53,8 +53,6 @@ static void Struct_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
 static void Struct_AppendP(Type*, char*, unsigned, unsigned&, char*&);
 static void Tuple_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
 static void Tuple_AppendP(Type*, char*, unsigned, unsigned&, char*&);
-static void Function_AppendV(Type*, char*, unsigned, unsigned&, va_list&);
-static void Function_AppendP(Type*, char*, unsigned, unsigned&, char*&);
 
 struct Type
 {
@@ -163,31 +161,6 @@ struct StructType : Type
     unsigned ElementCount;
 };
 
-struct FunctionType : Type
-{
-    FunctionType(Type* result, Type** args, const unsigned arg_count, const bool vararg)
-        : Type(Function_AppendV, Function_AppendP),
-          Result(result),
-          Args(args),
-          ArgCount(arg_count),
-          VarArg(vararg)
-    {
-    }
-
-    ~FunctionType()
-    {
-        delete Result;
-        for (unsigned i = 0; i < ArgCount; ++i)
-            delete Args[i];
-        delete[] Args;
-    }
-
-    Type* Result;
-    Type** Args;
-    unsigned ArgCount;
-    bool VarArg;
-};
-
 Type* ParseType(va_list& ap)
 {
     switch (va_arg(ap, unsigned))
@@ -241,17 +214,6 @@ Type* ParseType(va_list& ap)
             for (unsigned i = 0; i < element_count; ++i)
                 elements[i] = ParseType(ap);
             return new TupleType(elements, element_count);
-        }
-
-    case ID_FUNCTION:
-        {
-            const auto result = ParseType(ap);
-            const auto arg_count = va_arg(ap, unsigned);
-            const auto args = New<Type*>(arg_count);
-            for (unsigned i = 0; i < arg_count; ++i)
-                args[i] = ParseType(ap);
-            const auto vararg = va_arg(ap, int);
-            return new FunctionType(result, args, arg_count, vararg);
         }
 
     default:
@@ -501,22 +463,6 @@ void Struct_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset
         self->Elements[i].second->AppendPtr(stream, n, offset, ptr);
     }
     offset += snprintf(stream + offset, n - offset, " }");
-}
-
-void Function_AppendV(Type* type, char* stream, const unsigned n, unsigned& offset, va_list&)
-{
-    const auto self = reinterpret_cast<FunctionType*>(type);
-    offset += snprintf(stream + offset, n - offset, "fn");
-
-    (void)self;
-}
-
-void Function_AppendP(Type* type, char* stream, const unsigned n, unsigned& offset, char*&)
-{
-    const auto self = reinterpret_cast<FunctionType*>(type);
-    offset += snprintf(stream + offset, n - offset, "fn");
-
-    (void)self;
 }
 
 void format(char* stream, const unsigned n, ...)

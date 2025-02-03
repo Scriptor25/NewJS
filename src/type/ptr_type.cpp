@@ -23,10 +23,10 @@ NJS::TypePtr NJS::PtrType::GetElement() const
     return m_Element;
 }
 
-void NJS::PtrType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::PtrType::TypeInfo(const SourceLocation& where, Builder& builder, std::vector<llvm::Value*>& args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_POINTER));
-    m_Element->TypeInfo(builder, args);
+    m_Element->TypeInfo(where, builder, args);
 }
 
 NJS::PtrType::PtrType(TypeContext& ctx, std::string string, TypePtr element)

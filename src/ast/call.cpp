@@ -18,29 +18,32 @@ NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder, const TypePtr& expected) 
     if (!callee_type)
         Error(Where, "invalid callee: callee is not a function");
 
-    std::vector<llvm::Value*> args(Args.size());
+    std::vector<llvm::Value*> arg_values(Args.size());
     for (unsigned i = 0; i < Args.size(); ++i)
     {
-        auto arg_type = callee_type->Arg(i);
-        auto arg = Args[i]->GenLLVM(builder, arg_type);
+        auto param_type = callee_type->Param(i);
+        auto& arg = Args[i];
+        auto arg_value = arg->GenLLVM(builder, param_type);
 
-        const auto ref = arg_type->IsRef();
-        if (ref) arg_type = arg_type->GetElement();
+        const auto param_is_ref = param_type->IsRef();
+        if (param_is_ref) param_type = param_type->GetElement();
 
-        arg = builder.CreateCast(Where, arg, arg_type);
+        arg_value = builder.CreateCast(arg->Where, arg_value, param_type);
 
-        args[i] = ref ? arg->GetPtr(Where) : arg->Load(Where);
+        arg_values[i] = param_is_ref
+                            ? arg_value->GetPtr(arg->Where)
+                            : arg_value->Load(arg->Where);
     }
 
-    const auto value = builder.GetBuilder().CreateCall(
+    const auto result_value = builder.GetBuilder().CreateCall(
         callee_type->GenFnLLVM(Where, builder),
         callee->Load(Where),
-        args);
+        arg_values);
 
     if (callee_type->GetResult()->IsRef())
-        return LValue::Create(builder, callee_type->GetResult()->GetElement(), value);
+        return LValue::Create(builder, callee_type->GetResult()->GetElement(), result_value);
 
-    return RValue::Create(builder, callee_type->GetResult(), value);
+    return RValue::Create(builder, callee_type->GetResult(), result_value);
 }
 
 std::ostream& NJS::CallExpr::Print(std::ostream& os)

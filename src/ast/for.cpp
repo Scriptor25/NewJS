@@ -19,28 +19,28 @@ void NJS::ForStmt::GenVoidLLVM(Builder& builder) const
 {
     builder.Push();
 
-    const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
-    const auto head = llvm::BasicBlock::Create(builder.GetContext(), "head", parent);
-    const auto loop = llvm::BasicBlock::Create(builder.GetContext(), "loop", parent);
-    const auto end = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
+    const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
+    const auto head_block = llvm::BasicBlock::Create(builder.GetContext(), "head", parent_function);
+    const auto loop_block = llvm::BasicBlock::Create(builder.GetContext(), "loop", parent_function);
+    const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent_function);
 
     if (Init) Init->GenVoidLLVM(builder);
-    builder.GetBuilder().CreateBr(head);
+    builder.GetBuilder().CreateBr(head_block);
 
-    builder.GetBuilder().SetInsertPoint(head);
+    builder.GetBuilder().SetInsertPoint(head_block);
     if (Condition)
     {
         const auto condition = Condition->GenLLVM(builder, builder.GetCtx().GetBoolType());
-        builder.GetBuilder().CreateCondBr(condition->Load(Where), loop, end);
+        builder.GetBuilder().CreateCondBr(condition->Load(Where), loop_block, end_block);
     }
-    else builder.GetBuilder().CreateBr(loop);
+    else builder.GetBuilder().CreateBr(loop_block);
 
-    builder.GetBuilder().SetInsertPoint(loop);
+    builder.GetBuilder().SetInsertPoint(loop_block);
     Body->GenVoidLLVM(builder);
     if (Loop) Loop->GenVoidLLVM(builder);
-    builder.GetBuilder().CreateBr(head);
+    builder.GetBuilder().CreateBr(head_block);
 
-    builder.GetBuilder().SetInsertPoint(end);
+    builder.GetBuilder().SetInsertPoint(end_block);
     builder.Pop();
 }
 

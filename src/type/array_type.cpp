@@ -25,11 +25,11 @@ NJS::TypePtr NJS::ArrayType::GetElement(const unsigned i) const
     return m_Element;
 }
 
-void NJS::ArrayType::TypeInfo(Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::ArrayType::TypeInfo(const SourceLocation& where, Builder& builder, std::vector<llvm::Value*>& args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_ARRAY));
     args.push_back(builder.GetBuilder().getInt32(m_Count));
-    m_Element->TypeInfo(builder, args);
+    m_Element->TypeInfo(where, builder, args);
 }
 
 NJS::ArrayType::ArrayType(

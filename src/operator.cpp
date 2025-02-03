@@ -6,11 +6,11 @@
 #include <NJS/Value.hpp>
 
 NJS::ValuePtr NJS::OperatorEQ(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -27,11 +27,11 @@ NJS::ValuePtr NJS::OperatorEQ(
 }
 
 NJS::ValuePtr NJS::OperatorNE(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -48,11 +48,11 @@ NJS::ValuePtr NJS::OperatorNE(
 }
 
 NJS::ValuePtr NJS::OperatorLT(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -71,11 +71,11 @@ NJS::ValuePtr NJS::OperatorLT(
 }
 
 NJS::ValuePtr NJS::OperatorLE(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -94,11 +94,11 @@ NJS::ValuePtr NJS::OperatorLE(
 }
 
 NJS::ValuePtr NJS::OperatorGT(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -117,11 +117,11 @@ NJS::ValuePtr NJS::OperatorGT(
 }
 
 NJS::ValuePtr NJS::OperatorGE(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -140,11 +140,11 @@ NJS::ValuePtr NJS::OperatorGE(
 }
 
 NJS::ValuePtr NJS::OperatorLOr(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt() && type->GetBits() == 1)
         return RValue::Create(
@@ -156,11 +156,11 @@ NJS::ValuePtr NJS::OperatorLOr(
 }
 
 NJS::ValuePtr NJS::OperatorLXor(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt() && type->GetBits() == 1)
         return RValue::Create(
@@ -172,11 +172,11 @@ NJS::ValuePtr NJS::OperatorLXor(
 }
 
 NJS::ValuePtr NJS::OperatorLAnd(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt() && type->GetBits() == 1)
         return RValue::Create(
@@ -188,11 +188,11 @@ NJS::ValuePtr NJS::OperatorLAnd(
 }
 
 NJS::ValuePtr NJS::OperatorOr(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -204,11 +204,11 @@ NJS::ValuePtr NJS::OperatorOr(
 }
 
 NJS::ValuePtr NJS::OperatorXor(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -220,11 +220,11 @@ NJS::ValuePtr NJS::OperatorXor(
 }
 
 NJS::ValuePtr NJS::OperatorAnd(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -236,11 +236,11 @@ NJS::ValuePtr NJS::OperatorAnd(
 }
 
 NJS::ValuePtr NJS::OperatorAdd(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -258,11 +258,11 @@ NJS::ValuePtr NJS::OperatorAdd(
 }
 
 NJS::ValuePtr NJS::OperatorSub(
-    Builder& builder,
-    const SourceLocation& where,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &where,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -287,11 +287,11 @@ NJS::ValuePtr NJS::OperatorSub(
 }
 
 NJS::ValuePtr NJS::OperatorMul(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -309,11 +309,11 @@ NJS::ValuePtr NJS::OperatorMul(
 }
 
 NJS::ValuePtr NJS::OperatorDiv(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -333,11 +333,11 @@ NJS::ValuePtr NJS::OperatorDiv(
 }
 
 NJS::ValuePtr NJS::OperatorRem(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -351,11 +351,11 @@ NJS::ValuePtr NJS::OperatorRem(
 }
 
 NJS::ValuePtr NJS::OperatorPow(
-    Builder& builder,
-    const SourceLocation& where,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &where,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
     {
@@ -386,11 +386,11 @@ NJS::ValuePtr NJS::OperatorPow(
 }
 
 NJS::ValuePtr NJS::OperatorShL(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -402,11 +402,11 @@ NJS::ValuePtr NJS::OperatorShL(
 }
 
 NJS::ValuePtr NJS::OperatorShR(
-    Builder& builder,
-    const SourceLocation&,
-    const TypePtr& type,
-    llvm::Value* lhs,
-    llvm::Value* rhs)
+    Builder &builder,
+    const SourceLocation &,
+    const TypePtr &type,
+    llvm::Value *lhs,
+    llvm::Value *rhs)
 {
     if (type->IsInt())
         return RValue::Create(
@@ -419,7 +419,7 @@ NJS::ValuePtr NJS::OperatorShR(
     return {};
 }
 
-NJS::UnaryResult NJS::OperatorInc(Builder& builder, const SourceLocation& where, const ValuePtr& value)
+NJS::UnaryResult NJS::OperatorInc(Builder &builder, const SourceLocation &where, const ValuePtr &value)
 {
     const auto val = value->Load(where);
     const auto type = value->GetType();
@@ -445,7 +445,7 @@ NJS::UnaryResult NJS::OperatorInc(Builder& builder, const SourceLocation& where,
     return {};
 }
 
-NJS::UnaryResult NJS::OperatorDec(Builder& builder, const SourceLocation& where, const ValuePtr& value)
+NJS::UnaryResult NJS::OperatorDec(Builder &builder, const SourceLocation &where, const ValuePtr &value)
 {
     const auto val = value->Load(where);
     const auto type = value->GetType();
@@ -463,7 +463,7 @@ NJS::UnaryResult NJS::OperatorDec(Builder& builder, const SourceLocation& where,
     return {};
 }
 
-NJS::UnaryResult NJS::OperatorNeg(Builder& builder, const SourceLocation& where, const ValuePtr& value)
+NJS::UnaryResult NJS::OperatorNeg(Builder &builder, const SourceLocation &where, const ValuePtr &value)
 {
     const auto val = value->Load(where);
     const auto type = value->GetType();
@@ -488,12 +488,12 @@ NJS::UnaryResult NJS::OperatorNeg(Builder& builder, const SourceLocation& where,
     return {};
 }
 
-NJS::UnaryResult NJS::OperatorLNot(Builder&, const SourceLocation&, const ValuePtr&)
+NJS::UnaryResult NJS::OperatorLNot(Builder &, const SourceLocation &, const ValuePtr &)
 {
     return {};
 }
 
-NJS::UnaryResult NJS::OperatorNot(Builder& builder, const SourceLocation& where, const ValuePtr& value)
+NJS::UnaryResult NJS::OperatorNot(Builder &builder, const SourceLocation &where, const ValuePtr &value)
 {
     const auto val = value->Load(where);
     const auto type = value->GetType();
@@ -510,7 +510,7 @@ NJS::UnaryResult NJS::OperatorNot(Builder& builder, const SourceLocation& where,
     return {};
 }
 
-NJS::UnaryResult NJS::OperatorRef(Builder& builder, const SourceLocation& where, const ValuePtr& value)
+NJS::UnaryResult NJS::OperatorRef(Builder &builder, const SourceLocation &where, const ValuePtr &value)
 {
     const auto ptr = value->GetPtr(where);
     const auto type = value->GetType();
@@ -520,6 +520,20 @@ NJS::UnaryResult NJS::OperatorRef(Builder& builder, const SourceLocation& where,
             builder,
             builder.GetCtx().GetPointerType(type),
             ptr),
+        false,
+    };
+}
+
+NJS::UnaryResult NJS::OperatorDeref(Builder &builder, const SourceLocation &where, const ValuePtr &value)
+{
+    const auto val = value->Load(where);
+    const auto type = value->GetType();
+
+    return {
+        LValue::Create(
+            builder,
+            type->GetElement(),
+            val),
         false,
     };
 }

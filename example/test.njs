@@ -52,7 +52,7 @@ function foo(): (): u32 {
     return bar
 }
 
-println($"foo() = {foo()}")
+println($"foo() = {typeof(foo())}")
 println($"foo()() = {foo()()}")
 
 let [name1, {name, surname, age, type}] = ["Felix", u1]
@@ -66,7 +66,7 @@ type<T> vec = {
 }
 
 template<T> vec_new(n: u64): vec<T> {
-    const ptr: T[] = malloc(n * sizeof(T))
+    const ptr: T[] = malloc(n * sizeof<T>)
     return {
         beg: ptr,
         end: &ptr[n],
@@ -96,7 +96,7 @@ template<T> vec_at(self: vec<T>&, pos: u64): T& {
 
 template<T> vec_push(self: vec<T>&, element: T) {
     const size = vec_size<T>(self) + 1
-    const ptr: T[] = realloc(self.beg, size * sizeof(T))
+    const ptr: T[] = realloc(self.beg, size * sizeof<T>)
     self.beg = ptr
     self.end = &ptr[size]
     vec_back<T>(self) = element
@@ -105,7 +105,7 @@ template<T> vec_push(self: vec<T>&, element: T) {
 template<T> vec_pop(self: vec<T>&): T {
     const element: T = vec_back<T>(self)
     const size = vec_size<T>(self) - 1
-    const ptr: T[] = realloc(self.beg, size * sizeof(T))
+    const ptr: T[] = realloc(self.beg, size * sizeof<T>)
     self.beg = ptr
     self.end = ptr + size
     return element
