@@ -6,7 +6,7 @@ type<T> vec = {
 
 template<T> vec_new(): vec<T> {
     const cap: u64 = 10
-    const base: T[] = malloc(cap * sizeof(T))
+    const base: T[] = malloc(cap * sizeof<T>)
     return {
         base,
         cap,
@@ -30,7 +30,7 @@ template<T> vec_clear(self: vec<T>&) {
 template<T> vec_push(self: vec<T>&, element: T) {
     if (self.cap == self.size) {
         self.cap += self.cap
-        self.base = realloc(self.base, self.cap * sizeof(T))
+        self.base = realloc(self.base, self.cap * sizeof<T>)
     }
     self.base[self.size++] = element
 }

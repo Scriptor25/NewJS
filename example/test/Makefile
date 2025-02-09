@@ -1,11 +1,8 @@
 SRC = $(wildcard src/*.njs)
 OBJ = $(patsubst %.njs,%.o,$(SRC))
 
-%.o: %.ll
-	llc -o $@ --filetype=obj $<
-
-%.ll: %.njs
-	newjs -o $@ $<
+%.o: %.njs
+	newjs --output $@ --type obj $<
 
 main.exe: $(OBJ)
 	gcc -o $@ $^ -Llib -lStdNewJS -lglfw3 -lgdi32 -lopengl32 -lglu32
