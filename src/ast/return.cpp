@@ -5,25 +5,28 @@
 #include <NJS/Value.hpp>
 
 NJS::ReturnStmt::ReturnStmt(SourceLocation where, ExprPtr value)
-    : Stmt(std::move(where)), Value(std::move(value))
+    : Stmt(std::move(where)),
+      Value(std::move(value))
 {
 }
 
-void NJS::ReturnStmt::GenVoidLLVM(Builder& builder) const
+void NJS::ReturnStmt::GenVoidLLVM(Builder &builder) const
 {
     auto type = builder.ResultType();
     const auto ref = type->IsRef();
-    if (ref) type = type->GetElement();
+    if (ref)
+        type = type->GetElement();
 
     auto value = Value->GenLLVM(builder, type);
     value = builder.CreateCast(Where, value, type);
 
     if (ref)
         builder.GetBuilder().CreateRet(value->GetPtr(Where));
-    else builder.GetBuilder().CreateRet(value->Load(Where));
+    else
+        builder.GetBuilder().CreateRet(value->Load(Where));
 }
 
-std::ostream& NJS::ReturnStmt::Print(std::ostream& os)
+std::ostream &NJS::ReturnStmt::Print(std::ostream &os)
 {
     if (Value)
         return Value->Print(os << "return ");

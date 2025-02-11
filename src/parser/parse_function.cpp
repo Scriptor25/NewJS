@@ -12,10 +12,10 @@ NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
     const auto fn = NextAt("extern")
                         ? FnType_Extern
                         : NextAt("operator")
-                        ? FnType_Operator
-                        : NextAt("template")
-                        ? FnType_Template
-                        : (Expect("function"), FnType_Function);
+                              ? FnType_Operator
+                              : NextAt("template")
+                                    ? FnType_Template
+                                    : (Expect("function"), FnType_Function);
 
     std::vector<std::string> templ_args;
     const auto parent_template = m_IsTemplate;
@@ -46,7 +46,8 @@ NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
     TypePtr result_type;
     if (NextAt(":"))
         result_type = ParseType();
-    else result_type = m_TypeCtx.GetVoidType();
+    else
+        result_type = m_TypeCtx.GetVoidType();
 
     StmtPtr body;
     if (fn != FnType_Extern && At("{"))
@@ -76,10 +77,11 @@ NJS::ExprPtr NJS::Parser::ParseFunctionExpr()
     TypePtr result_type;
     if (NextAt(":"))
         result_type = ParseType();
-    else result_type = m_TypeCtx.GetVoidType();
+    else
+        result_type = m_TypeCtx.GetVoidType();
 
     std::vector<TypePtr> arg_types;
-    for (const auto& arg : args)
+    for (const auto &arg: args)
         arg_types.push_back(arg->Type);
 
     const auto body = ParseScopeStmt();

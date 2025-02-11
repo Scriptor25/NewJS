@@ -11,7 +11,7 @@ NJS::StmtPtr NJS::Parser::ParseSwitchStmt()
 
     Expect(")");
 
-    std::map<StmtPtr, std::vector<ExprPtr>> cases;
+    std::map<StmtPtr, std::vector<ExprPtr> > cases;
     StmtPtr default_case;
 
     Expect("{");
@@ -21,20 +21,23 @@ NJS::StmtPtr NJS::Parser::ParseSwitchStmt()
         {
             if (NextAt("->"))
                 default_case = ParseStmt();
-            else default_case = ParseScopeStmt();
+            else
+                default_case = ParseScopeStmt();
             continue;
         }
 
         Expect("case");
 
         std::vector<ExprPtr> case_entries;
-        do case_entries.push_back(ParseExpr());
+        do
+            case_entries.push_back(ParseExpr());
         while (NextAt(","));
 
         StmtPtr value;
         if (NextAt("->"))
             value = ParseStmt();
-        else value = ParseScopeStmt();
+        else
+            value = ParseScopeStmt();
 
         cases[value] = case_entries;
     }
@@ -53,7 +56,7 @@ NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
 
     Expect(")");
 
-    std::map<ExprPtr, std::vector<ExprPtr>> cases;
+    std::map<ExprPtr, std::vector<ExprPtr> > cases;
     ExprPtr default_case;
 
     Expect("{");
@@ -63,20 +66,23 @@ NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
         {
             if (NextAt("->"))
                 default_case = ParseExpr();
-            else default_case = ParseScopeExpr();
+            else
+                default_case = ParseScopeExpr();
             continue;
         }
 
         Expect("case");
 
         std::vector<ExprPtr> case_entries;
-        do case_entries.push_back(ParseExpr());
+        do
+            case_entries.push_back(ParseExpr());
         while (NextAt(","));
 
         ExprPtr value;
         if (NextAt("->"))
             value = ParseExpr();
-        else value = ParseScopeExpr();
+        else
+            value = ParseScopeExpr();
 
         cases[value] = case_entries;
     }

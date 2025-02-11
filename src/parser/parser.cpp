@@ -5,11 +5,11 @@
 #include <NJS/Parser.hpp>
 
 NJS::Parser::Parser(
-    TypeContext& type_ctx,
-    TemplateContext& template_ctx,
-    std::istream& stream,
+    TypeContext &type_ctx,
+    TemplateContext &template_ctx,
+    std::istream &stream,
     SourceLocation where,
-    std::map<std::string, Macro>& macros,
+    std::map<std::string, Macro> &macros,
     const bool imported,
     std::set<std::filesystem::path> parsed)
     : m_TypeCtx(type_ctx),
@@ -31,7 +31,7 @@ NJS::Parser::Parser(
     Next();
 }
 
-void NJS::Parser::Parse(const Callback& callback)
+void NJS::Parser::Parse(const Callback &callback)
 {
     while (m_Token.Type != TokenType_EOF)
         if (const auto ptr = ParseStmt())
@@ -70,7 +70,7 @@ bool NJS::Parser::At(const TokenType type) const
     return m_Token.Type == type;
 }
 
-bool NJS::Parser::At(const std::string& value) const
+bool NJS::Parser::At(const std::string &value) const
 {
     return m_Token.StringValue == value;
 }
@@ -85,7 +85,7 @@ bool NJS::Parser::NextAt(const TokenType type)
     return false;
 }
 
-bool NJS::Parser::NextAt(const std::string& value)
+bool NJS::Parser::NextAt(const std::string &value)
 {
     if (At(value))
     {
@@ -104,12 +104,14 @@ NJS::Token NJS::Parser::Skip()
 
 NJS::Token NJS::Parser::Expect(const TokenType type)
 {
-    if (At(type)) return Skip();
+    if (At(type))
+        return Skip();
     Error(m_Token.Where, "unexpected token {}, expected {}", m_Token, type);
 }
 
-NJS::Token NJS::Parser::Expect(const std::string& value)
+NJS::Token NJS::Parser::Expect(const std::string &value)
 {
-    if (At(value)) return Skip();
+    if (At(value))
+        return Skip();
     Error(m_Token.Where, "unexpected token {}, expected '{}'", m_Token, value);
 }

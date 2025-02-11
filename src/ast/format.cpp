@@ -11,17 +11,20 @@ NJS::FormatExpr::FormatExpr(
     const unsigned count,
     std::map<unsigned, std::string> statics,
     std::map<unsigned, ExprPtr> dynamics)
-    : Expr(std::move(where)), Count(count), Statics(std::move(statics)), Dynamics(std::move(dynamics))
+    : Expr(std::move(where)),
+      Count(count),
+      Statics(std::move(statics)),
+      Dynamics(std::move(dynamics))
 {
 }
 
-NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder, const TypePtr&) const
+NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder &builder, const TypePtr &) const
 {
     constexpr auto BUFFER_SIZE = 1024;
 
     const auto buffer_pointer = builder.CreateAlloca(builder.GetBuilder().getInt8Ty(), BUFFER_SIZE);
 
-    std::vector<llvm::Value*> args;
+    std::vector<llvm::Value *> args;
 
     args.push_back(buffer_pointer);
     args.push_back(builder.GetBuilder().getInt64(BUFFER_SIZE));
@@ -65,13 +68,16 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder& builder, const TypePtr&) const
     return RValue::Create(builder, builder.GetCtx().GetStringType(), buffer_pointer);
 }
 
-std::ostream& NJS::FormatExpr::Print(std::ostream& os)
+std::ostream &NJS::FormatExpr::Print(std::ostream &os)
 {
     os << "$\"";
     for (unsigned i = 0; i < Count; ++i)
     {
-        if (Statics.contains(i)) os << Statics[i];
-        else if (Dynamics.contains(i)) Dynamics[i]->Print(os << '{') << '}';
+        if (Statics.contains(i))
+            os << Statics[i];
+        else
+            if (Dynamics.contains(i))
+                Dynamics[i]->Print(os << '{') << '}';
     }
     return os << '"';
 }

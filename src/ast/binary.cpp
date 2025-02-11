@@ -18,7 +18,7 @@ NJS::BinaryExpr::BinaryExpr(SourceLocation where, std::string operator_, ExprPtr
 {
 }
 
-NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder, const TypePtr& expected_type) const
+NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     static const std::map<std::string_view, BinaryOperator> binary_operators
     {
@@ -147,7 +147,8 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder, const TypePtr& expected
             return result_value;
 
     const auto assign = operator_.back() == '=';
-    if (assign) operator_.pop_back();
+    if (assign)
+        operator_.pop_back();
 
     if (binary_operators.contains(operator_))
         if (auto result_value = binary_operators.at(operator_)(
@@ -168,7 +169,7 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder, const TypePtr& expected
     Error(Where, "undefined binary operator '{} {} {}'", result_type, Operator, result_type);
 }
 
-std::ostream& NJS::BinaryExpr::Print(std::ostream& os)
+std::ostream &NJS::BinaryExpr::Print(std::ostream &os)
 {
     return RightOperand->Print(LeftOperand->Print(os) << ' ' << Operator << ' ');
 }

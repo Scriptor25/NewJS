@@ -14,7 +14,8 @@ NJS::ExprPtr NJS::Parser::ParseTupleExpr()
 
         if (!At("]"))
             Expect(",");
-        else NextAt(",");
+        else
+            NextAt(",");
     }
     Expect("]");
 

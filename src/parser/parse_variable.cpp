@@ -6,7 +6,8 @@ NJS::StmtPtr NJS::Parser::ParseVariableStmt()
 {
     const auto where = m_Token.Where;
     const auto is_const = NextAt("const");
-    if (!is_const) Expect("let");
+    if (!is_const)
+        Expect("let");
 
     const auto name = ParseParam();
 

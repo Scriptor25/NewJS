@@ -5,15 +5,15 @@
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
-static std::string to_upper(const std::string& src)
+static std::string to_upper(const std::string &src)
 {
     std::string res;
-    for (const auto c : src)
+    for (const auto c: src)
         res += static_cast<char>(std::toupper(c));
     return res;
 }
 
-static void replace_all(std::string& src, const std::string& find, const std::string& replace)
+static void replace_all(std::string &src, const std::string &find, const std::string &replace)
 {
     for (size_t pos; (pos = src.find(find)) != std::string::npos;)
         src.replace(pos, find.size(), replace);
@@ -150,7 +150,8 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
             std::string inflated_name;
             if (!m_IsTemplate)
                 inflated_name = m_TemplateCtx.InflateFunctionTemplate(*this, name, args);
-            else inflated_name = name;
+            else
+                inflated_name = name;
             return std::make_shared<SymbolExpr>(where, inflated_name);
         }
 

@@ -21,7 +21,8 @@ NJS::ExprPtr NJS::Parser::ParseFormatExpr()
             source.erase(0, beg + 2);
             continue;
         }
-        if (const auto str = source.substr(0, beg); !str.empty()) statics[index++] = str;
+        if (const auto str = source.substr(0, beg); !str.empty())
+            statics[index++] = str;
         source.erase(0, beg + 1);
 
         std::stringstream stream(source);
@@ -30,7 +31,8 @@ NJS::ExprPtr NJS::Parser::ParseFormatExpr()
 
         source.erase(0, static_cast<unsigned>(stream.tellg()) - 1);
     }
-    if (!source.empty()) statics[index++] = source;
+    if (!source.empty())
+        statics[index++] = source;
 
     return std::make_shared<FormatExpr>(where, index, statics, dynamics);
 }

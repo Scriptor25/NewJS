@@ -3,17 +3,19 @@
 #include <NJS/Type.hpp>
 
 NJS::CastExpr::CastExpr(SourceLocation where, TypePtr type, ExprPtr value)
-    : Expr(std::move(where)), Type(std::move(type)), Value(std::move(value))
+    : Expr(std::move(where)),
+      Type(std::move(type)),
+      Value(std::move(value))
 {
 }
 
-NJS::ValuePtr NJS::CastExpr::GenLLVM(Builder& builder, const TypePtr&) const
+NJS::ValuePtr NJS::CastExpr::GenLLVM(Builder &builder, const TypePtr &) const
 {
     const auto result_value = Value->GenLLVM(builder, Type);
     return builder.CreateCast(Where, result_value, Type);
 }
 
-std::ostream& NJS::CastExpr::Print(std::ostream& os)
+std::ostream &NJS::CastExpr::Print(std::ostream &os)
 {
     return Type->Print(Value->Print(os) << " as ");
 }

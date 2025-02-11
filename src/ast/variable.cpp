@@ -15,15 +15,16 @@ NJS::VariableStmt::VariableStmt(
 {
 }
 
-void NJS::VariableStmt::GenVoidLLVM(Builder& builder) const
+void NJS::VariableStmt::GenVoidLLVM(Builder &builder) const
 {
     const auto value = Value ? Value->GenLLVM(builder, Name->Type) : nullptr;
     Name->CreateVars(builder, Where, IsConst, value);
 }
 
-std::ostream& NJS::VariableStmt::Print(std::ostream& os)
+std::ostream &NJS::VariableStmt::Print(std::ostream &os)
 {
     Name->Print(os << (IsConst ? "const" : "let") << ' ');
-    if (Value) Value->Print(os << " = ");
+    if (Value)
+        Value->Print(os << " = ");
     return os;
 }

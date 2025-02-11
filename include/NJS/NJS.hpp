@@ -14,6 +14,8 @@ namespace NJS
     struct SourceLocation;
     struct Token;
 
+    struct UnaryResult;
+
     typedef std::shared_ptr<class Type> TypePtr;
     typedef std::shared_ptr<class NoType> NoTypePtr;
     typedef std::shared_ptr<class VoidType> VoidTypePtr;
@@ -35,16 +37,16 @@ namespace NJS
     void Indent();
     void Exdent();
 
-    std::ostream& Spacing(std::ostream&);
+    std::ostream &Spacing(std::ostream &);
 
-    std::string TypeString(const TypePtr&);
+    std::string TypeString(const TypePtr &);
 }
 
-template <>
+template<>
 struct std::formatter<NJS::TypePtr> : formatter<string>
 {
-    template <typename FormatContext>
-    auto format(const NJS::TypePtr& type, FormatContext& ctx) const
+    template<typename FormatContext>
+    auto format(const NJS::TypePtr &type, FormatContext &ctx) const
     {
         return formatter<string>::format(TypeString(type), ctx);
     }

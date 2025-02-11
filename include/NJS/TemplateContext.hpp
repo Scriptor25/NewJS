@@ -20,27 +20,27 @@ namespace NJS
     class TemplateContext
     {
     public:
-        explicit TemplateContext(Builder&);
+        explicit TemplateContext(Builder &);
 
         void InsertType(
-            const std::string&,
-            const std::vector<std::string>&,
-            const SourceLocation&,
-            const std::string&);
+            const std::string &,
+            const std::vector<std::string> &,
+            const SourceLocation &,
+            const std::string &);
         void InsertFunction(
-            const std::string&,
-            const std::vector<std::string>&,
-            const SourceLocation&,
-            const std::string&);
+            const std::string &,
+            const std::vector<std::string> &,
+            const SourceLocation &,
+            const std::string &);
 
-        [[nodiscard]] bool HasFunction(const std::string&) const;
-        [[nodiscard]] bool HasType(const std::string&) const;
+        [[nodiscard]] bool HasFunction(const std::string &) const;
+        [[nodiscard]] bool HasType(const std::string &) const;
 
-        std::string InflateFunctionTemplate(Parser&, const std::string&, const std::vector<TypePtr>&);
-        TypePtr InflateType(Parser&, const std::string&, const std::vector<TypePtr>&);
+        std::string InflateFunctionTemplate(Parser &, const std::string &, const std::vector<TypePtr> &);
+        TypePtr InflateType(Parser &, const std::string &, const std::vector<TypePtr> &);
 
     private:
-        Builder& m_Builder;
+        Builder &m_Builder;
 
         std::map<std::string, Template> m_TypeTemplates;
         std::map<std::string, Template> m_FunctionTemplates;

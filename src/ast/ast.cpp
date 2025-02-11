@@ -11,7 +11,7 @@ NJS::Expr::Expr(SourceLocation where)
 {
 }
 
-void NJS::Expr::GenVoidLLVM(Builder& builder) const
+void NJS::Expr::GenVoidLLVM(Builder &builder) const
 {
-    (void)GenLLVM(builder, {});
+    (void) GenLLVM(builder, {});
 }

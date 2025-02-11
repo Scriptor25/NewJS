@@ -31,7 +31,8 @@ void NJS::Parser::ParseTypeAlias()
     TypePtr type;
     if ((m_IsTemplate && (Expect("="), true)) || NextAt("="))
         type = ParseType();
-    else type = m_TypeCtx.GetNoType(name);
+    else
+        type = m_TypeCtx.GetNoType(name);
 
     if (m_IsTemplate)
     {

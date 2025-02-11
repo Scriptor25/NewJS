@@ -3,9 +3,9 @@
 #include <NJS/Value.hpp>
 
 NJS::ValuePtr NJS::Builder::CreateGlobal(
-    const SourceLocation& where,
-    const std::string& name,
-    const TypePtr& type,
+    const SourceLocation &where,
+    const std::string &name,
+    const TypePtr &type,
     const bool init)
 {
     const auto ty = type->GetLLVM(where, *this);

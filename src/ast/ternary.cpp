@@ -14,7 +14,7 @@ NJS::TernaryExpr::TernaryExpr(SourceLocation where, ExprPtr condition, ExprPtr t
 {
 }
 
-NJS::ValuePtr NJS::TernaryExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
+NJS::ValuePtr NJS::TernaryExpr::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent);
@@ -55,7 +55,7 @@ NJS::ValuePtr NJS::TernaryExpr::GenLLVM(Builder& builder, const TypePtr& expecte
     return RValue::Create(builder, result_type, phi_inst);
 }
 
-std::ostream& NJS::TernaryExpr::Print(std::ostream& os)
+std::ostream &NJS::TernaryExpr::Print(std::ostream &os)
 {
     return Else->Print(Then->Print(Condition->Print(os) << " ? ") << " : ");
 }

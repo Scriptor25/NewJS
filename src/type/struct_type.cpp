@@ -5,14 +5,16 @@
 #include <NJS/Std.hpp>
 #include <NJS/Type.hpp>
 
-std::string NJS::StructType::GenString(const std::map<std::string, TypePtr>& elements)
+std::string NJS::StructType::GenString(const std::map<std::string, TypePtr> &elements)
 {
     std::string dst = "{ ";
     bool first = true;
-    for (const auto& [name_, type_] : elements)
+    for (const auto &[name_, type_]: elements)
     {
-        if (first) first = false;
-        else dst += ", ";
+        if (first)
+            first = false;
+        else
+            dst += ", ";
         dst += name_ + ": " + type_->GetString();
     }
     return dst += " }";
@@ -23,10 +25,10 @@ bool NJS::StructType::IsStruct() const
     return true;
 }
 
-NJS::MemberT NJS::StructType::GetMember(const std::string& name) const
+NJS::MemberT NJS::StructType::GetMember(const std::string &name) const
 {
     unsigned i = 0;
-    for (const auto& [name_, type_] : m_Elements)
+    for (const auto &[name_, type_]: m_Elements)
     {
         if (name == name_)
             return {type_, i};
@@ -35,11 +37,11 @@ NJS::MemberT NJS::StructType::GetMember(const std::string& name) const
     Error("no member '{}' in {}", name, m_String);
 }
 
-void NJS::StructType::TypeInfo(const SourceLocation& where, Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::StructType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_STRUCT));
     args.push_back(builder.GetBuilder().getInt32(m_Elements.size()));
-    for (const auto& [name_, type_] : m_Elements)
+    for (const auto &[name_, type_]: m_Elements)
     {
         args.push_back(StringExpr::GetString(builder, name_));
         type_->TypeInfo(where, builder, args);
@@ -47,17 +49,18 @@ void NJS::StructType::TypeInfo(const SourceLocation& where, Builder& builder, st
 }
 
 NJS::StructType::StructType(
-    TypeContext& ctx,
+    TypeContext &ctx,
     std::string string,
     std::map<std::string, TypePtr> elements)
-    : Type(ctx, std::move(string)), m_Elements(std::move(elements))
+    : Type(ctx, std::move(string)),
+      m_Elements(std::move(elements))
 {
 }
 
-llvm::Type* NJS::StructType::GenLLVM(const SourceLocation& where, const Builder& builder) const
+llvm::Type *NJS::StructType::GenLLVM(const SourceLocation &where, const Builder &builder) const
 {
-    std::vector<llvm::Type*> types;
-    for (const auto& type_ : m_Elements | std::ranges::views::values)
+    std::vector<llvm::Type *> types;
+    for (const auto &type_: m_Elements | std::ranges::views::values)
         types.push_back(type_->GetLLVM(where, builder));
     return llvm::StructType::get(builder.GetContext(), types, true);
 }
@@ -65,7 +68,7 @@ llvm::Type* NJS::StructType::GenLLVM(const SourceLocation& where, const Builder&
 unsigned NJS::StructType::GenSize() const
 {
     unsigned size = 0;
-    for (const auto& type_ : m_Elements | std::ranges::views::values)
+    for (const auto &type_: m_Elements | std::ranges::views::values)
         size += type_->GetSize();
     return size;
 }

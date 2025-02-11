@@ -12,7 +12,7 @@
 
 namespace NJS
 {
-    typedef std::function<void(const StmtPtr&)> Callback;
+    typedef std::function<void(const StmtPtr &)> Callback;
 
     struct Macro
     {
@@ -25,15 +25,15 @@ namespace NJS
 
     public:
         Parser(
-            TypeContext&,
-            TemplateContext&,
-            std::istream&,
+            TypeContext &,
+            TemplateContext &,
+            std::istream &,
             SourceLocation,
-            std::map<std::string, Macro>&,
+            std::map<std::string, Macro> &,
             bool = false,
             std::set<std::filesystem::path>  = {});
 
-        void Parse(const Callback&);
+        void Parse(const Callback &);
 
     private:
         void ResetBuffer();
@@ -41,30 +41,30 @@ namespace NJS
         int Get();
         void NewLine();
         void Escape();
-        Token& Next();
+        Token &Next();
 
         [[nodiscard]] bool AtEof() const;
         [[nodiscard]] bool At(TokenType) const;
-        [[nodiscard]] bool At(const std::string&) const;
+        [[nodiscard]] bool At(const std::string &) const;
 
         bool NextAt(TokenType);
-        bool NextAt(const std::string&);
+        bool NextAt(const std::string &);
 
         Token Skip();
 
         Token Expect(TokenType);
-        Token Expect(const std::string&);
+        Token Expect(const std::string &);
 
         TypePtr ParseType();
         TypePtr ParseTupleType();
         TypePtr ParseStructType();
         TypePtr ParseFunctionType();
-        bool ParseTypeList(std::vector<TypePtr>&, const std::string&);
-        void ParseTypeMap(std::map<std::string, TypePtr>&, const std::string&);
+        bool ParseTypeList(std::vector<TypePtr> &, const std::string &);
+        void ParseTypeMap(std::map<std::string, TypePtr> &, const std::string &);
 
         ParamPtr ParseParam();
-        bool ParseParamList(std::vector<ParamPtr>&, const std::string&);
-        void ParseParamMap(std::map<std::string, ParamPtr>&, const std::string&);
+        bool ParseParamList(std::vector<ParamPtr> &, const std::string &);
+        void ParseParamMap(std::map<std::string, ParamPtr> &, const std::string &);
 
         void ParseTypeAlias();
 
@@ -91,11 +91,11 @@ namespace NJS
         ExprPtr ParseSwitchExpr();
         ExprPtr ParseTupleExpr();
 
-        TypeContext& m_TypeCtx;
-        TemplateContext& m_TemplateCtx;
+        TypeContext &m_TypeCtx;
+        TemplateContext &m_TemplateCtx;
 
-        std::istream& m_Stream;
-        std::map<std::string, Macro>& m_Macros;
+        std::istream &m_Stream;
+        std::map<std::string, Macro> &m_Macros;
         bool m_Imported;
         std::set<std::filesystem::path> m_Parsed;
 

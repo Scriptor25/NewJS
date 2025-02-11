@@ -20,24 +20,31 @@ message(STATUS "LLVM definitions ${LLVM_DEFS_LIST}")
 message(STATUS "LLVM libraries ${LLVM_LIBNAMES_LIST}")
 message(STATUS "LLVM lib dirs ${LLVM_LIBRARY_DIRS}")
 
-file(GLOB_RECURSE sources "src/*.cpp" "include/*.hpp")
+file(GLOB_RECURSE sources src/*.cpp include/*.hpp)
 add_executable(NewJS ${sources})
 target_compile_definitions(NewJS PUBLIC ${LLVM_DEFS_LIST})
-target_include_directories(NewJS PUBLIC "include" ${LLVM_INCLUDE_DIRS})
+target_include_directories(NewJS PUBLIC include ${LLVM_INCLUDE_DIRS})
 target_link_directories(NewJS PUBLIC ${LLVM_LIBRARY_DIRS})
 target_link_libraries(NewJS PUBLIC ${LLVM_LIBNAMES_LIST})
 
-file(GLOB_RECURSE lib_sources "lib/*.cpp")
+file(GLOB_RECURSE lib_sources lib/*.cpp)
 add_library(StdNewJS ${lib_sources})
-target_include_directories(StdNewJS PUBLIC "include")
+target_include_directories(StdNewJS PUBLIC include)
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+install(TARGETS NewJS)
+install(TARGETS StdNewJS)
+
+if (CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
     add_custom_command(TARGET NewJS POST_BUILD
             COMMAND ${CMAKE_OBJCOPY} --only-keep-debug $<TARGET_FILE:NewJS> $<TARGET_FILE:NewJS>.dbg
             COMMAND ${CMAKE_OBJCOPY} --strip-debug $<TARGET_FILE:NewJS>
             COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink=$<TARGET_FILE:NewJS>.dbg $<TARGET_FILE:NewJS>
     )
+    install(FILES $<TARGET_FILE:NewJS>.dbg DESTINATION bin)
+    add_custom_command(TARGET StdNewJS POST_BUILD
+            COMMAND ${CMAKE_OBJCOPY} --only-keep-debug $<TARGET_FILE:StdNewJS> $<TARGET_FILE:StdNewJS>.dbg
+            COMMAND ${CMAKE_OBJCOPY} --strip-debug $<TARGET_FILE:StdNewJS>
+            COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink=$<TARGET_FILE:StdNewJS>.dbg $<TARGET_FILE:StdNewJS>
+    )
+    install(FILES $<TARGET_FILE:StdNewJS>.dbg DESTINATION lib)
 endif ()
-
-install(TARGETS NewJS)
-install(TARGETS StdNewJS)

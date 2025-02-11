@@ -7,11 +7,12 @@
 #include <NJS/Value.hpp>
 
 NJS::SizeOfExpr::SizeOfExpr(SourceLocation where, ExprPtr operand)
-    : Expr(std::move(where)), Operand(std::move(operand))
+    : Expr(std::move(where)),
+      Operand(std::move(operand))
 {
 }
 
-NJS::ValuePtr NJS::SizeOfExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
+NJS::ValuePtr NJS::SizeOfExpr::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
     const auto operand = Operand->GenLLVM(builder, {});
 
@@ -25,7 +26,7 @@ NJS::ValuePtr NJS::SizeOfExpr::GenLLVM(Builder& builder, const TypePtr& expected
     return RValue::Create(builder, type, value);
 }
 
-std::ostream& NJS::SizeOfExpr::Print(std::ostream& os)
+std::ostream &NJS::SizeOfExpr::Print(std::ostream &os)
 {
     return Operand->Print(os << "sizeof(") << ")";
 }

@@ -16,18 +16,18 @@ bool NJS::Param::RequireValue()
 }
 
 void NJS::Param::CreateVars(
-    Builder& builder,
-    const SourceLocation& where,
+    Builder &builder,
+    const SourceLocation &where,
     const bool is_const,
-    const ValuePtr& value)
+    const ValuePtr &value)
 {
     const auto type = !Type
                           ? value->GetType()
                           : Type->IsRef()
-                          ? Type->GetElement()
-                          : Type;
+                                ? Type->GetElement()
+                                : Type;
 
-    auto& var = builder.DefVar(where, Name);
+    auto &var = builder.DefVar(where, Name);
     if (Type && Type->IsRef())
     {
         var = LValue::Create(builder, type, value->GetPtr(where));
@@ -39,14 +39,17 @@ void NJS::Param::CreateVars(
     else
     {
         var = builder.CreateAlloca(where, type);
-        if (value) var->Store(where, value);
-        else var->Store(where, llvm::Constant::getNullValue(type->GetLLVM(where, builder)));
+        if (value)
+            var->Store(where, value);
+        else
+            var->Store(where, llvm::Constant::getNullValue(type->GetLLVM(where, builder)));
     }
 }
 
-std::ostream& NJS::Param::Print(std::ostream& os)
+std::ostream &NJS::Param::Print(std::ostream &os)
 {
     os << Name;
-    if (Type) Type->Print(os << ": ");
+    if (Type)
+        Type->Print(os << ": ");
     return os;
 }

@@ -3,7 +3,7 @@
 #include <NJS/Std.hpp>
 #include <NJS/Type.hpp>
 
-std::string NJS::ArrayType::GenString(const TypePtr& element, const unsigned count)
+std::string NJS::ArrayType::GenString(const TypePtr &element, const unsigned count)
 {
     return element->GetString() + '[' + std::to_string(count) + ']';
 }
@@ -25,7 +25,7 @@ NJS::TypePtr NJS::ArrayType::GetElement(const unsigned i) const
     return m_Element;
 }
 
-void NJS::ArrayType::TypeInfo(const SourceLocation& where, Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::ArrayType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_ARRAY));
     args.push_back(builder.GetBuilder().getInt32(m_Count));
@@ -33,15 +33,17 @@ void NJS::ArrayType::TypeInfo(const SourceLocation& where, Builder& builder, std
 }
 
 NJS::ArrayType::ArrayType(
-    TypeContext& ctx,
+    TypeContext &ctx,
     std::string string,
     TypePtr element,
     const unsigned count)
-    : Type(ctx, std::move(string)), m_Element(std::move(element)), m_Count(count)
+    : Type(ctx, std::move(string)),
+      m_Element(std::move(element)),
+      m_Count(count)
 {
 }
 
-llvm::Type* NJS::ArrayType::GenLLVM(const SourceLocation& where, const Builder& builder) const
+llvm::Type *NJS::ArrayType::GenLLVM(const SourceLocation &where, const Builder &builder) const
 {
     return llvm::ArrayType::get(m_Element->GetLLVM(where, builder), m_Count);
 }

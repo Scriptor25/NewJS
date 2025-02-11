@@ -6,11 +6,14 @@
 #include <NJS/Value.hpp>
 
 NJS::IfStmt::IfStmt(SourceLocation where, ExprPtr condition, StmtPtr then, StmtPtr else_)
-    : Stmt(std::move(where)), Condition(std::move(condition)), Then(std::move(then)), Else(std::move(else_))
+    : Stmt(std::move(where)),
+      Condition(std::move(condition)),
+      Then(std::move(then)),
+      Else(std::move(else_))
 {
 }
 
-void NJS::IfStmt::GenVoidLLVM(Builder& builder) const
+void NJS::IfStmt::GenVoidLLVM(Builder &builder) const
 {
     const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent_function);
@@ -32,7 +35,7 @@ void NJS::IfStmt::GenVoidLLVM(Builder& builder) const
     if (!then_terminator)
         builder.GetBuilder().CreateBr(end_block);
 
-    const llvm::Instruction* else_terminator{};
+    const llvm::Instruction *else_terminator{};
     if (Else)
     {
         builder.GetBuilder().SetInsertPoint(else_block);
@@ -52,9 +55,10 @@ void NJS::IfStmt::GenVoidLLVM(Builder& builder) const
     builder.GetBuilder().SetInsertPoint(end_block);
 }
 
-std::ostream& NJS::IfStmt::Print(std::ostream& os)
+std::ostream &NJS::IfStmt::Print(std::ostream &os)
 {
     Then->Print(Condition->Print(os << "if (") << ") ");
-    if (Else) Else->Print(os << " else ");
+    if (Else)
+        Else->Print(os << " else ");
     return os;
 }

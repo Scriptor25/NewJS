@@ -28,39 +28,41 @@ NJS::FunctionStmt::FunctionStmt(
 {
 }
 
-void NJS::FunctionStmt::GenVoidLLVM(Builder& builder) const
+void NJS::FunctionStmt::GenVoidLLVM(Builder &builder) const
 {
     std::string function_name;
     switch (Fn)
     {
-    case FnType_Function:
-        function_name = builder.GetName(Absolute, Name);
-        break;
-    case FnType_Extern:
-        function_name = Name;
-        break;
-    case FnType_Operator:
-        switch (Args.size())
-        {
-        case 1:
-            function_name = builder.GetName(Absolute, Args[0]->Type->GetString() + Name);
+        case FnType_Function:
+            function_name = builder.GetName(Absolute, Name);
             break;
-        case 2:
-            function_name = builder.GetName(Absolute, Args[0]->Type->GetString() + Name + Args[1]->Type->GetString());
+        case FnType_Extern:
+            function_name = Name;
             break;
-        default:
+        case FnType_Operator:
+            switch (Args.size())
+            {
+                case 1:
+                    function_name = builder.GetName(Absolute, Args[0]->Type->GetString() + Name);
+                    break;
+                case 2:
+                    function_name = builder.GetName(
+                        Absolute,
+                        Args[0]->Type->GetString() + Name + Args[1]->Type->GetString());
+                    break;
+                default:
+                    break;
+            }
             break;
-        }
-        break;
-    case FnType_Template:
-        return;
+        case FnType_Template:
+            return;
     }
 
     auto function = builder.GetModule().getFunction(function_name);
     if (!function)
     {
         std::vector<TypePtr> args;
-        for (const auto& arg : Args)
+        for (const auto &arg: Args)
             args.push_back(arg->Type);
         const auto type = builder.GetCtx().GetFunctionType(ResultType, args, VarArg);
         function = llvm::Function::Create(
@@ -71,30 +73,32 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder& builder) const
 
         switch (Fn)
         {
-        case FnType_Function:
-        case FnType_Extern:
-            builder.DefVar(Where, Name) = RValue::Create(builder, type, function);
-            break;
-        case FnType_Operator:
-            switch (Args.size())
-            {
-            case 1:
-                builder.DefOp(Name, Args[0]->Type, ResultType, function);
+            case FnType_Function:
+            case FnType_Extern:
+                builder.DefVar(Where, Name) = RValue::Create(builder, type, function);
                 break;
-            case 2:
-                builder.DefOp(Name, Args[0]->Type, Args[1]->Type, ResultType, function);
+            case FnType_Operator:
+                switch (Args.size())
+                {
+                    case 1:
+                        builder.DefOp(Name, Args[0]->Type, ResultType, function);
+                        break;
+                    case 2:
+                        builder.DefOp(Name, Args[0]->Type, Args[1]->Type, ResultType, function);
+                        break;
+                    default:
+                        break;
+                }
                 break;
             default:
                 break;
-            }
-            break;
-        default:
-            break;
         }
     }
 
-    if (!Body) return;
-    if (!function->empty()) Error(Where, "redefining function {} ({})", Name, function_name);
+    if (!Body)
+        return;
+    if (!function->empty())
+        Error(Where, "redefining function {} ({})", Name, function_name);
 
     const auto end_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
@@ -103,23 +107,25 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder& builder) const
     builder.Push(Name, ResultType);
     for (unsigned i = 0; i < Args.size(); ++i)
     {
-        const auto& arg = Args[i];
+        const auto &arg = Args[i];
         const auto llvm_arg = function->getArg(i);
         llvm_arg->setName(arg->Name);
 
         ValuePtr arg_value;
         if (arg->Type->IsRef())
             arg_value = LValue::Create(builder, arg->Type->GetElement(), llvm_arg);
-        else arg_value = RValue::Create(builder, arg->Type, llvm_arg);
+        else
+            arg_value = RValue::Create(builder, arg->Type, llvm_arg);
         arg->CreateVars(builder, Where, false, arg_value);
     }
 
     Body->GenVoidLLVM(builder);
     builder.Pop();
 
-    for (auto& block : *function)
+    for (auto &block: *function)
     {
-        if (block.getTerminator()) continue;
+        if (block.getTerminator())
+            continue;
         if (function->getReturnType()->isVoidTy())
         {
             builder.GetBuilder().SetInsertPoint(&block);
@@ -138,35 +144,38 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder& builder) const
     builder.GetBuilder().SetInsertPoint(end_block);
 }
 
-std::ostream& NJS::FunctionStmt::Print(std::ostream& os)
+std::ostream &NJS::FunctionStmt::Print(std::ostream &os)
 {
     switch (Fn)
     {
-    case FnType_Function:
-        os << "function ";
-        break;
-    case FnType_Extern:
-        os << "extern ";
-        break;
-    case FnType_Operator:
-        os << "operator";
-        break;
-    default:
-        break;
+        case FnType_Function:
+            os << "function ";
+            break;
+        case FnType_Extern:
+            os << "extern ";
+            break;
+        case FnType_Operator:
+            os << "operator";
+            break;
+        default:
+            break;
     }
     os << Name << "(";
     for (unsigned i = 0; i < Args.size(); ++i)
     {
-        if (i > 0) os << ", ";
+        if (i > 0)
+            os << ", ";
         Args[i]->Print(os);
     }
     if (VarArg)
     {
-        if (!Args.empty()) os << ", ";
+        if (!Args.empty())
+            os << ", ";
         os << "...";
     }
     ResultType->Print(os << "): ");
-    if (Body) Body->Print(os << ' ');
+    if (Body)
+        Body->Print(os << ' ');
     return os;
 }
 
@@ -184,13 +193,13 @@ NJS::FunctionExpr::FunctionExpr(
 {
 }
 
-NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&) const
+NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder &builder, const TypePtr &) const
 {
     static unsigned id = 0;
     const auto function_name = std::to_string(id++);
 
     std::vector<TypePtr> args;
-    for (const auto& arg : Args)
+    for (const auto &arg: Args)
         args.push_back(arg->Type);
     const auto type = builder.GetCtx().GetFunctionType(ResultType, args, VarArg);
     const auto function = llvm::Function::Create(
@@ -206,23 +215,25 @@ NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&) const
     builder.Push(function_name, ResultType);
     for (unsigned i = 0; i < Args.size(); ++i)
     {
-        const auto& arg = Args[i];
+        const auto &arg = Args[i];
         const auto llvm_arg = function->getArg(i);
         llvm_arg->setName(arg->Name);
 
         ValuePtr arg_value;
         if (arg->Type->IsRef())
             arg_value = LValue::Create(builder, arg->Type->GetElement(), llvm_arg);
-        else arg_value = RValue::Create(builder, arg->Type, llvm_arg);
+        else
+            arg_value = RValue::Create(builder, arg->Type, llvm_arg);
         arg->CreateVars(builder, Where, false, arg_value);
     }
 
     Body->GenVoidLLVM(builder);
     builder.Pop();
 
-    for (auto& block : *function)
+    for (auto &block: *function)
     {
-        if (block.getTerminator()) continue;
+        if (block.getTerminator())
+            continue;
         if (function->getReturnType()->isVoidTy())
         {
             builder.GetBuilder().SetInsertPoint(&block);
@@ -242,7 +253,7 @@ NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&) const
     return RValue::Create(builder, type, function);
 }
 
-std::ostream& NJS::FunctionExpr::Print(std::ostream& os)
+std::ostream &NJS::FunctionExpr::Print(std::ostream &os)
 {
     os << '?';
     if (!Args.empty())
@@ -250,7 +261,8 @@ std::ostream& NJS::FunctionExpr::Print(std::ostream& os)
         os << '(';
         for (unsigned i = 0; i < Args.size(); ++i)
         {
-            if (i > 0) os << ", ";
+            if (i > 0)
+                os << ", ";
             Args[i]->Print(os);
         }
         if (VarArg)

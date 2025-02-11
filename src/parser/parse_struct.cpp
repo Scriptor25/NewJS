@@ -23,7 +23,8 @@ NJS::ExprPtr NJS::Parser::ParseStructExpr()
 
         if (!At("}"))
             Expect(",");
-        else NextAt(",");
+        else
+            NextAt(",");
     }
     Expect("}");
 

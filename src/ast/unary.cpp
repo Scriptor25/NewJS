@@ -9,13 +9,16 @@
 using namespace std::string_view_literals;
 
 NJS::UnaryExpr::UnaryExpr(SourceLocation where, std::string op, const bool op_right, ExprPtr operand)
-    : Expr(std::move(where)), Op(std::move(op)), OpRight(op_right), Operand(std::move(operand))
+    : Expr(std::move(where)),
+      Op(std::move(op)),
+      OpRight(op_right),
+      Operand(std::move(operand))
 {
 }
 
-NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
+NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
-    static const std::map<std::string_view, UnOp> fns
+    static const std::map<std::string_view, UnaryOperator> fns
     {
         {"++"sv, OperatorInc},
         {"--"sv, OperatorDec},
@@ -45,7 +48,7 @@ NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder& builder, const TypePtr& expected)
     Error(Where, "undefined unary operator {}{}", Op, operand->GetType());
 }
 
-std::ostream& NJS::UnaryExpr::Print(std::ostream& os)
+std::ostream &NJS::UnaryExpr::Print(std::ostream &os)
 {
     return Operand->Print(os << (OpRight ? "" : Op)) << (OpRight ? Op : "");
 }

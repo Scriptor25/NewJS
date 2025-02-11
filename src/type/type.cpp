@@ -2,7 +2,7 @@
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::TypePtr NJS::max(TypeContext& ctx, const TypePtr& lhs, const TypePtr& rhs)
+NJS::TypePtr NJS::max(TypeContext &ctx, const TypePtr &lhs, const TypePtr &rhs)
 {
     if (lhs == rhs)
         return lhs;
@@ -32,7 +32,7 @@ NJS::TypePtr NJS::max(TypeContext& ctx, const TypePtr& lhs, const TypePtr& rhs)
     Error("no maximum type of {} and {}", lhs, rhs);
 }
 
-std::ostream& NJS::Type::Print(std::ostream& os) const
+std::ostream &NJS::Type::Print(std::ostream &os) const
 {
     return os << m_String;
 }
@@ -119,7 +119,7 @@ NJS::TypePtr NJS::Type::GetElement(unsigned) const
     Error("type {} does not support 'GetElement'", m_String);
 }
 
-NJS::MemberT NJS::Type::GetMember(const std::string&) const
+NJS::MemberT NJS::Type::GetMember(const std::string &) const
 {
     Error("type {} does not support 'GetMember'", m_String);
 }
@@ -129,7 +129,10 @@ NJS::TypePtr NJS::Type::GetResult() const
     Error("type {} does not support 'GetResult'", m_String);
 }
 
-NJS::Type::Type(TypeContext& ctx, std::string string)
-    : m_Ctx(ctx), m_String(std::move(string)), m_LLVM(nullptr), m_Size(~0u)
+NJS::Type::Type(TypeContext &ctx, std::string string)
+    : m_Ctx(ctx),
+      m_String(std::move(string)),
+      m_LLVM(nullptr),
+      m_Size(~0u)
 {
 }

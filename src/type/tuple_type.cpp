@@ -5,12 +5,13 @@
 #include "NJS/Std.hpp"
 #include "NJS/TypeContext.hpp"
 
-std::string NJS::TupleType::GenString(const std::vector<TypePtr>& elements)
+std::string NJS::TupleType::GenString(const std::vector<TypePtr> &elements)
 {
     std::string dst = "[ ";
     for (unsigned i = 0; i < elements.size(); ++i)
     {
-        if (i > 0) dst += ", ";
+        if (i > 0)
+            dst += ", ";
         dst += elements[i]->GetString();
     }
     return dst += " ]";
@@ -26,26 +27,27 @@ NJS::TypePtr NJS::TupleType::GetElement(const unsigned i) const
     return m_Elements[i];
 }
 
-void NJS::TupleType::TypeInfo(const SourceLocation& where, Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::TupleType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_TUPLE));
     args.push_back(builder.GetBuilder().getInt32(m_Elements.size()));
-    for (const auto& element : m_Elements)
+    for (const auto &element: m_Elements)
         element->TypeInfo(where, builder, args);
 }
 
 NJS::TupleType::TupleType(
-    TypeContext& ctx,
+    TypeContext &ctx,
     std::string string,
     std::vector<TypePtr> elements)
-    : Type(ctx, std::move(string)), m_Elements(std::move(elements))
+    : Type(ctx, std::move(string)),
+      m_Elements(std::move(elements))
 {
 }
 
-llvm::Type* NJS::TupleType::GenLLVM(const SourceLocation& where, const Builder& builder) const
+llvm::Type *NJS::TupleType::GenLLVM(const SourceLocation &where, const Builder &builder) const
 {
-    std::vector<llvm::Type*> types;
-    for (const auto& element : m_Elements)
+    std::vector<llvm::Type *> types;
+    for (const auto &element: m_Elements)
         types.push_back(element->GetLLVM(where, builder));
     return llvm::StructType::get(builder.GetContext(), types, true);
 }
@@ -53,7 +55,7 @@ llvm::Type* NJS::TupleType::GenLLVM(const SourceLocation& where, const Builder& 
 unsigned NJS::TupleType::GenSize() const
 {
     unsigned size = 0;
-    for (const auto& element : m_Elements)
+    for (const auto &element: m_Elements)
         size += element->GetSize();
     return size;
 }

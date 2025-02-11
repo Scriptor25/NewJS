@@ -23,25 +23,30 @@ unsigned NJS::FPType::GetBits() const
     return m_Bits;
 }
 
-void NJS::FPType::TypeInfo(const SourceLocation&, Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::FPType::TypeInfo(const SourceLocation &, Builder &builder, std::vector<llvm::Value *> &args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_FP));
     args.push_back(builder.GetBuilder().getInt32(m_Bits));
 }
 
-NJS::FPType::FPType(TypeContext& ctx, std::string string, const unsigned bits)
-    : Type(ctx, std::move(string)), m_Bits(bits)
+NJS::FPType::FPType(TypeContext &ctx, std::string string, const unsigned bits)
+    : Type(ctx, std::move(string)),
+      m_Bits(bits)
 {
 }
 
-llvm::Type* NJS::FPType::GenLLVM(const SourceLocation&, const Builder& builder) const
+llvm::Type *NJS::FPType::GenLLVM(const SourceLocation &, const Builder &builder) const
 {
     switch (m_Bits)
     {
-    case 16: return builder.GetBuilder().getHalfTy();
-    case 32: return builder.GetBuilder().getFloatTy();
-    case 64: return builder.GetBuilder().getDoubleTy();
-    default: Error("no llvm representation for floating point type {}", m_String);
+        case 16:
+            return builder.GetBuilder().getHalfTy();
+        case 32:
+            return builder.GetBuilder().getFloatTy();
+        case 64:
+            return builder.GetBuilder().getDoubleTy();
+        default:
+            Error("no llvm representation for floating point type {}", m_String);
     }
 }
 

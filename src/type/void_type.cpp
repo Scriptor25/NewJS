@@ -18,17 +18,17 @@ bool NJS::VoidType::IsVoid() const
     return true;
 }
 
-void NJS::VoidType::TypeInfo(const SourceLocation&, Builder& builder, std::vector<llvm::Value*>& args) const
+void NJS::VoidType::TypeInfo(const SourceLocation &, Builder &builder, std::vector<llvm::Value *> &args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_VOID));
 }
 
-NJS::VoidType::VoidType(TypeContext& ctx, std::string string)
+NJS::VoidType::VoidType(TypeContext &ctx, std::string string)
     : Type(ctx, std::move(string))
 {
 }
 
-llvm::Type* NJS::VoidType::GenLLVM(const SourceLocation&, const Builder& builder) const
+llvm::Type *NJS::VoidType::GenLLVM(const SourceLocation &, const Builder &builder) const
 {
     return builder.GetBuilder().getVoidTy();
 }

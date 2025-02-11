@@ -4,7 +4,8 @@
 #include <NJS/Type.hpp>
 
 NJS::DestructureArray::DestructureArray(std::vector<ParamPtr> elements)
-    : Param(""), Elements(std::move(elements))
+    : Param(""),
+      Elements(std::move(elements))
 {
 }
 
@@ -14,10 +15,10 @@ bool NJS::DestructureArray::RequireValue()
 }
 
 void NJS::DestructureArray::CreateVars(
-    Builder& builder,
-    const SourceLocation& where,
+    Builder &builder,
+    const SourceLocation &where,
     const bool is_const,
-    const ValuePtr& value)
+    const ValuePtr &value)
 {
     for (unsigned i = 0; i < Elements.size(); ++i)
     {
@@ -26,15 +27,17 @@ void NJS::DestructureArray::CreateVars(
     }
 }
 
-std::ostream& NJS::DestructureArray::Print(std::ostream& os)
+std::ostream &NJS::DestructureArray::Print(std::ostream &os)
 {
     os << "[ ";
     for (unsigned i = 0; i < Elements.size(); ++i)
     {
-        if (i > 0) os << ", ";
+        if (i > 0)
+            os << ", ";
         Elements[i]->Print(os);
     }
     os << " ]";
-    if (Type) Type->Print(os << ": ");
+    if (Type)
+        Type->Print(os << ": ");
     return os;
 }

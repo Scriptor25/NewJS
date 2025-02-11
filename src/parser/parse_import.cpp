@@ -17,21 +17,22 @@ NJS::StmtPtr NJS::Parser::ParseImportStmt()
     Parser parser(m_TypeCtx, m_TemplateCtx, stream, SourceLocation(filepath.string()), m_Macros, true, m_Parsed);
 
     std::vector<StmtPtr> functions;
-    parser.Parse([&](const StmtPtr& ptr)
-    {
-        if (m_Imported)
-            return;
+    parser.Parse(
+        [&](const StmtPtr &ptr)
+        {
+            if (m_Imported)
+                return;
 
-        const auto function = std::dynamic_pointer_cast<FunctionStmt>(ptr);
-        if (!function)
-            return;
+            const auto function = std::dynamic_pointer_cast<FunctionStmt>(ptr);
+            if (!function)
+                return;
 
-        if (function->Fn == FnType_Extern)
-            return;
+            if (function->Fn == FnType_Extern)
+                return;
 
-        function->Body = {};
-        functions.push_back(function);
-    });
+            function->Body = {};
+            functions.push_back(function);
+        });
 
     return std::make_shared<ImportStmt>(where, mapping, filepath, functions);
 }
@@ -64,7 +65,8 @@ NJS::ImportMapping NJS::Parser::ParseImportMapping()
 
         if (!At("}"))
             Expect(",");
-        else NextAt(",");
+        else
+            NextAt(",");
     }
     Expect("}");
 

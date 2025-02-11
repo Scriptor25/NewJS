@@ -6,18 +6,19 @@
 #include <NJS/Value.hpp>
 
 NJS::BoolExpr::BoolExpr(SourceLocation where, const bool value)
-    : Expr(std::move(where)), Value(value)
+    : Expr(std::move(where)),
+      Value(value)
 {
 }
 
-NJS::ValuePtr NJS::BoolExpr::GenLLVM(Builder& builder, const TypePtr&) const
+NJS::ValuePtr NJS::BoolExpr::GenLLVM(Builder &builder, const TypePtr &) const
 {
     const auto result_type = builder.GetCtx().GetBoolType();
     const auto result_value = builder.GetBuilder().getInt1(Value);
     return RValue::Create(builder, result_type, result_value);
 }
 
-std::ostream& NJS::BoolExpr::Print(std::ostream& os)
+std::ostream &NJS::BoolExpr::Print(std::ostream &os)
 {
     return os << (Value ? "true" : "false");
 }

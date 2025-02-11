@@ -15,7 +15,7 @@ NJS::ForStmt::ForStmt(SourceLocation where, StmtPtr init, ExprPtr condition, Stm
 {
 }
 
-void NJS::ForStmt::GenVoidLLVM(Builder& builder) const
+void NJS::ForStmt::GenVoidLLVM(Builder &builder) const
 {
     builder.Push();
 
@@ -24,7 +24,8 @@ void NJS::ForStmt::GenVoidLLVM(Builder& builder) const
     const auto loop_block = llvm::BasicBlock::Create(builder.GetContext(), "loop", parent_function);
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent_function);
 
-    if (Init) Init->GenVoidLLVM(builder);
+    if (Init)
+        Init->GenVoidLLVM(builder);
     builder.GetBuilder().CreateBr(head_block);
 
     builder.GetBuilder().SetInsertPoint(head_block);
@@ -33,24 +34,29 @@ void NJS::ForStmt::GenVoidLLVM(Builder& builder) const
         const auto condition = Condition->GenLLVM(builder, builder.GetCtx().GetBoolType());
         builder.GetBuilder().CreateCondBr(condition->Load(Where), loop_block, end_block);
     }
-    else builder.GetBuilder().CreateBr(loop_block);
+    else
+        builder.GetBuilder().CreateBr(loop_block);
 
     builder.GetBuilder().SetInsertPoint(loop_block);
     Body->GenVoidLLVM(builder);
-    if (Loop) Loop->GenVoidLLVM(builder);
+    if (Loop)
+        Loop->GenVoidLLVM(builder);
     builder.GetBuilder().CreateBr(head_block);
 
     builder.GetBuilder().SetInsertPoint(end_block);
     builder.Pop();
 }
 
-std::ostream& NJS::ForStmt::Print(std::ostream& os)
+std::ostream &NJS::ForStmt::Print(std::ostream &os)
 {
     os << "for (";
-    if (Init) Init->Print(os);
+    if (Init)
+        Init->Print(os);
     os << ';';
-    if (Condition) Condition->Print(os << ' ');
+    if (Condition)
+        Condition->Print(os << ' ');
     os << ';';
-    if (Loop) Loop->Print(os << ' ');
+    if (Loop)
+        Loop->Print(os << ' ');
     return Body->Print(os << ") ");
 }
