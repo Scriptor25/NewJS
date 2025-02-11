@@ -11,31 +11,31 @@ NJS::TemplateContext::TemplateContext(Builder &builder)
 }
 
 void NJS::TemplateContext::InsertType(
-    const std::string &name,
+    const std::string_view &name,
     const std::vector<std::string> &args,
     const SourceLocation &where,
-    const std::string &source)
+    const std::string_view &source)
 {
-    m_TypeTemplates[name] = {name, args, where, source};
+    m_TypeTemplates[std::string(name)] = {std::string(name), args, where, std::string(source)};
 }
 
 void NJS::TemplateContext::InsertFunction(
-    const std::string &name,
+    const std::string_view &name,
     const std::vector<std::string> &args,
     const SourceLocation &where,
-    const std::string &source)
+    const std::string_view &source)
 {
-    m_FunctionTemplates[name] = {name, args, where, source};
+    m_FunctionTemplates[std::string(name)] = {std::string(name), args, where, std::string(source)};
 }
 
-bool NJS::TemplateContext::HasFunction(const std::string &name) const
+bool NJS::TemplateContext::HasFunction(const std::string_view &name) const
 {
-    return m_FunctionTemplates.contains(name);
+    return m_FunctionTemplates.contains(std::string(name));
 }
 
-bool NJS::TemplateContext::HasType(const std::string &name) const
+bool NJS::TemplateContext::HasType(const std::string_view &name) const
 {
-    return m_TypeTemplates.contains(name);
+    return m_TypeTemplates.contains(std::string(name));
 }
 
 std::string NJS::TemplateContext::InflateFunctionTemplate(
@@ -58,10 +58,10 @@ std::string NJS::TemplateContext::InflateFunctionTemplate(
     if (ref)
         return name;
 
-    parent.m_TypeCtx.PushTemplate(args_, args);
+    parent.m_TypeContext.PushTemplate(args_, args);
 
     std::stringstream stream('?' + source_, std::ios_base::in);
-    Parser parser(parent.m_TypeCtx, parent.m_TemplateCtx, stream, where_, parent.m_Macros);
+    Parser parser(parent.m_TypeContext, parent.m_TemplateContext, stream, where_, parent.m_MacroMap);
     const auto inflated = std::dynamic_pointer_cast<FunctionExpr>(parser.ParseFunctionExpr());
     ref = std::make_shared<FunctionStmt>(
         inflated->Where,
@@ -74,7 +74,7 @@ std::string NJS::TemplateContext::InflateFunctionTemplate(
         inflated->Body);
     ref->GenVoidLLVM(m_Builder);
 
-    parent.m_TypeCtx.PopTemplate();
+    parent.m_TypeContext.PopTemplate();
 
     return name;
 }
@@ -99,13 +99,13 @@ NJS::TypePtr NJS::TemplateContext::InflateType(
     if (ref)
         return ref;
 
-    parent.m_TypeCtx.PushTemplate(args_, args);
+    parent.m_TypeContext.PushTemplate(args_, args);
 
     std::stringstream stream(source_, std::ios_base::in);
-    Parser parser(parent.m_TypeCtx, parent.m_TemplateCtx, stream, where_, parent.m_Macros);
+    Parser parser(parent.m_TypeContext, parent.m_TemplateContext, stream, where_, parent.m_MacroMap);
     const auto inflated = parser.ParseType();
 
-    parent.m_TypeCtx.PopTemplate();
+    parent.m_TypeContext.PopTemplate();
 
     return ref = inflated;
 }

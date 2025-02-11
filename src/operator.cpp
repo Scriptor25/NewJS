@@ -15,12 +15,12 @@ NJS::ValuePtr NJS::OperatorEQ(
     if (type->IsInt())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateICmpEQ(lhs, rhs));
     if (type->IsFP())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateFCmpOEQ(lhs, rhs));
 
     return {};
@@ -36,12 +36,12 @@ NJS::ValuePtr NJS::OperatorNE(
     if (type->IsInt())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateICmpNE(lhs, rhs));
     if (type->IsFP())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateFCmpONE(lhs, rhs));
 
     return {};
@@ -57,14 +57,14 @@ NJS::ValuePtr NJS::OperatorLT(
     if (type->IsInt())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSLT(lhs, rhs)
                 : builder.GetBuilder().CreateICmpULT(lhs, rhs));
     if (type->IsFP())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateFCmpOLT(lhs, rhs));
 
     return {};
@@ -80,14 +80,14 @@ NJS::ValuePtr NJS::OperatorLE(
     if (type->IsInt())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSLE(lhs, rhs)
                 : builder.GetBuilder().CreateICmpULE(lhs, rhs));
     if (type->IsFP())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateFCmpOLE(lhs, rhs));
 
     return {};
@@ -103,14 +103,14 @@ NJS::ValuePtr NJS::OperatorGT(
     if (type->IsInt())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSGT(lhs, rhs)
                 : builder.GetBuilder().CreateICmpUGT(lhs, rhs));
     if (type->IsFP())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateFCmpOGT(lhs, rhs));
 
     return {};
@@ -126,14 +126,14 @@ NJS::ValuePtr NJS::OperatorGE(
     if (type->IsInt())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSGE(lhs, rhs)
                 : builder.GetBuilder().CreateICmpUGE(lhs, rhs));
     if (type->IsFP())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateFCmpOGE(lhs, rhs));
 
     return {};
@@ -149,7 +149,7 @@ NJS::ValuePtr NJS::OperatorLOr(
     if (type->IsInt() && type->GetBits() == 1)
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateOr(lhs, rhs));
 
     return {};
@@ -165,7 +165,7 @@ NJS::ValuePtr NJS::OperatorLXor(
     if (type->IsInt() && type->GetBits() == 1)
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateXor(lhs, rhs));
 
     return {};
@@ -181,7 +181,7 @@ NJS::ValuePtr NJS::OperatorLAnd(
     if (type->IsInt() && type->GetBits() == 1)
         return RValue::Create(
             builder,
-            builder.GetCtx().GetBoolType(),
+            builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateAnd(lhs, rhs));
 
     return {};
@@ -280,7 +280,7 @@ NJS::ValuePtr NJS::OperatorSub(
     if (type->IsPtr())
         return RValue::Create(
             builder,
-            builder.GetCtx().GetIntType(64, true),
+            builder.GetTypeContext().GetIntType(64, true),
             builder.GetBuilder().CreatePtrDiff(type->GetElement()->GetLLVM(where, builder), lhs, rhs));
 
     return {};
@@ -359,7 +359,7 @@ NJS::ValuePtr NJS::OperatorPow(
 {
     if (type->IsInt())
     {
-        const auto dst_ty = builder.GetCtx().GetFPType(type->GetBits())->GetLLVM(where, builder);
+        const auto dst_ty = builder.GetTypeContext().GetFPType(type->GetBits())->GetLLVM(where, builder);
         const auto src_ty = type->GetLLVM(where, builder);
         const auto l = type->IsSigned()
                            ? builder.GetBuilder().CreateSIToFP(lhs, dst_ty)
@@ -518,7 +518,7 @@ NJS::UnaryResult NJS::OperatorRef(Builder &builder, const SourceLocation &where,
     return {
         RValue::Create(
             builder,
-            builder.GetCtx().GetPointerType(type),
+            builder.GetTypeContext().GetPointerType(type),
             ptr),
         false,
     };

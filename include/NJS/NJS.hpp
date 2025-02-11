@@ -19,10 +19,10 @@ namespace NJS
     typedef std::shared_ptr<class Type> TypePtr;
     typedef std::shared_ptr<class NoType> NoTypePtr;
     typedef std::shared_ptr<class VoidType> VoidTypePtr;
-    typedef std::shared_ptr<class IntType> IntTypePtr;
-    typedef std::shared_ptr<class FPType> FPTypePtr;
-    typedef std::shared_ptr<class PtrType> PtrTypePtr;
-    typedef std::shared_ptr<class RefType> RefTypePtr;
+    typedef std::shared_ptr<class IntegerType> IntTypePtr;
+    typedef std::shared_ptr<class FloatingPointType> FPTypePtr;
+    typedef std::shared_ptr<class PointerType> PtrTypePtr;
+    typedef std::shared_ptr<class ReferenceType> RefTypePtr;
     typedef std::shared_ptr<class ArrayType> ArrayTypePtr;
     typedef std::shared_ptr<class StructType> StructTypePtr;
     typedef std::shared_ptr<class TupleType> TupleTypePtr;
@@ -37,9 +37,9 @@ namespace NJS
     void Indent();
     void Exdent();
 
-    std::ostream &Spacing(std::ostream &);
+    std::ostream &Spacing(std::ostream &stream);
 
-    std::string TypeString(const TypePtr &);
+    std::string TypeString(const TypePtr &type);
 }
 
 template<>

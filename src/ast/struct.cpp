@@ -24,7 +24,7 @@ NJS::ValuePtr NJS::StructExpr::GenLLVM(Builder &builder, const TypePtr &expected
         element_types[name_] = value->GetType();
     }
 
-    const auto type = expected ? expected : builder.GetCtx().GetStructType(element_types);
+    const auto type = expected ? expected : builder.GetTypeContext().GetStructType(element_types);
 
     llvm::Value *object = llvm::ConstantStruct::getNullValue(type->GetLLVM<llvm::StructType>(Where, builder));
 

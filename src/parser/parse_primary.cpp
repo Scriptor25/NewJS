@@ -38,7 +38,7 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
         TypePtr type;
         if (NextAt(":"))
             type = ParseType();
-        return std::make_shared<FPExpr>(where, type, value);
+        return std::make_shared<FloatingPointExpr>(where, type, value);
     }
 
     if (At(TokenType_String))
@@ -87,7 +87,7 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
         Expect("<");
         const auto type = ParseType();
         Expect(">");
-        return std::make_shared<IntExpr>(where, m_TypeCtx.GetIntType(64, false), type->GetSize());
+        return std::make_shared<IntExpr>(where, m_TypeContext.GetIntType(64, false), type->GetSize());
     }
 
     if (NextAt("typeof"))
@@ -102,9 +102,9 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
     {
         const auto name = Skip().StringValue;
 
-        if (m_Macros.contains(name))
+        if (m_MacroMap.contains(name))
         {
-            auto [source_] = m_Macros[name];
+            auto [source_] = m_MacroMap[name];
 
             if (NextAt("!"))
             {
@@ -129,11 +129,11 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
             }
 
             std::stringstream stream(source_);
-            Parser parser(m_TypeCtx, m_TemplateCtx, stream, SourceLocation("<macro>"), m_Macros);
+            Parser parser(m_TypeContext, m_TemplateContext, stream, SourceLocation("<macro>"), m_MacroMap);
             return parser.ParseExpr();
         }
 
-        if (m_TemplateCtx.HasFunction(name))
+        if (m_TemplateContext.HasFunction(name))
         {
             std::vector<TypePtr> args;
 
@@ -149,7 +149,7 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
 
             std::string inflated_name;
             if (!m_IsTemplate)
-                inflated_name = m_TemplateCtx.InflateFunctionTemplate(*this, name, args);
+                inflated_name = m_TemplateContext.InflateFunctionTemplate(*this, name, args);
             else
                 inflated_name = name;
             return std::make_shared<SymbolExpr>(where, inflated_name);

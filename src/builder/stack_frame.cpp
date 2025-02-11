@@ -1,6 +1,6 @@
 #include <NJS/Builder.hpp>
 
-bool NJS::StackFrame::contains(const std::string_view &name) const
+bool NJS::StackFrame::Contains(const std::string_view &name) const
 {
     return Values.contains(std::string(name));
 }
@@ -15,7 +15,7 @@ NJS::ValuePtr &NJS::StackFrame::operator[](const std::string_view &name)
     return Values[std::string(name)];
 }
 
-std::string NJS::StackFrame::ValueName(const std::string_view &name) const
+std::string NJS::StackFrame::GetValueName(const std::string_view &name) const
 {
     if (name.empty())
         return ParentName;

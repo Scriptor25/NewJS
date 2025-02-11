@@ -14,7 +14,7 @@ NJS::TypeOfExpr::TypeOfExpr(SourceLocation where, ExprPtr operand)
 NJS::ValuePtr NJS::TypeOfExpr::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
     const auto operand = Operand->GenLLVM(builder, {});
-    const auto type = builder.GetCtx().GetStringType();
+    const auto type = builder.GetTypeContext().GetStringType();
     const auto value = StringExpr::GetString(builder, operand->GetType()->GetString());
     return RValue::Create(builder, type, value);
 }

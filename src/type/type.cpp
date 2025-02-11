@@ -2,39 +2,41 @@
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::TypePtr NJS::max(TypeContext &ctx, const TypePtr &lhs, const TypePtr &rhs)
+NJS::TypePtr NJS::max(TypeContext &type_context, const TypePtr &type_a, const TypePtr &type_b)
 {
-    if (lhs == rhs)
-        return lhs;
+    if (type_a == type_b)
+        return type_a;
 
-    if (lhs->IsInt())
+    if (type_a->IsInt())
     {
-        if (rhs->IsInt())
-            return ctx.GetIntType(std::max(lhs->GetBits(), rhs->GetBits()), lhs->IsSigned() || rhs->IsSigned());
-        if (rhs->IsFP())
-            return ctx.GetFPType(std::max(lhs->GetBits(), rhs->GetBits()));
-        if (rhs->IsPtr())
-            return rhs;
+        if (type_b->IsInt())
+            return type_context.GetIntType(
+                std::max(type_a->GetBits(), type_b->GetBits()),
+                type_a->IsSigned() || type_b->IsSigned());
+        if (type_b->IsFP())
+            return type_context.GetFPType(std::max(type_a->GetBits(), type_b->GetBits()));
+        if (type_b->IsPtr())
+            return type_b;
     }
 
-    if (lhs->IsFP())
+    if (type_a->IsFP())
     {
-        if (rhs->IsInt() || rhs->IsFP())
-            return ctx.GetFPType(std::max(lhs->GetBits(), rhs->GetBits()));
+        if (type_b->IsInt() || type_b->IsFP())
+            return type_context.GetFPType(std::max(type_a->GetBits(), type_b->GetBits()));
     }
 
-    if (lhs->IsPtr())
+    if (type_a->IsPtr())
     {
-        if (rhs->IsInt())
-            return lhs;
+        if (type_b->IsInt())
+            return type_a;
     }
 
-    Error("no maximum type of {} and {}", lhs, rhs);
+    Error("no maximum type of {} and {}", type_a, type_b);
 }
 
-std::ostream &NJS::Type::Print(std::ostream &os) const
+std::ostream &NJS::Type::Print(std::ostream &stream) const
 {
-    return os << m_String;
+    return stream << m_String;
 }
 
 std::string NJS::Type::GetString() const
@@ -119,7 +121,7 @@ NJS::TypePtr NJS::Type::GetElement(unsigned) const
     Error("type {} does not support 'GetElement'", m_String);
 }
 
-NJS::MemberT NJS::Type::GetMember(const std::string &) const
+NJS::MemberT NJS::Type::GetMember(const std::string_view &) const
 {
     Error("type {} does not support 'GetMember'", m_String);
 }
@@ -129,8 +131,8 @@ NJS::TypePtr NJS::Type::GetResult() const
     Error("type {} does not support 'GetResult'", m_String);
 }
 
-NJS::Type::Type(TypeContext &ctx, std::string string)
-    : m_Ctx(ctx),
+NJS::Type::Type(TypeContext &type_context, std::string_view string)
+    : m_TypeContext(type_context),
       m_String(std::move(string)),
       m_LLVM(nullptr),
       m_Size(~0u)

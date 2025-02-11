@@ -10,24 +10,24 @@ NJS::StmtPtr NJS::Parser::ParseImportStmt()
     const auto filename = Expect(TokenType_String).StringValue;
     const auto filepath = canonical(std::filesystem::path(where.Filename).parent_path() / filename);
 
-    if (m_Parsed.contains(filepath))
+    if (m_ParsedSet.contains(filepath))
         return {};
 
     std::ifstream stream(filepath);
-    Parser parser(m_TypeCtx, m_TemplateCtx, stream, SourceLocation(filepath.string()), m_Macros, true, m_Parsed);
+    Parser parser(m_TypeContext, m_TemplateContext, stream, SourceLocation(filepath.string()), m_MacroMap, true, m_ParsedSet);
 
     std::vector<StmtPtr> functions;
     parser.Parse(
         [&](const StmtPtr &ptr)
         {
-            if (m_Imported)
+            if (m_IsImport)
                 return;
 
             const auto function = std::dynamic_pointer_cast<FunctionStmt>(ptr);
             if (!function)
                 return;
 
-            if (function->Fn == FnType_Extern)
+            if (function->FnID == FnType_Extern)
                 return;
 
             function->Body = {};

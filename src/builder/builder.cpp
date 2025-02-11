@@ -11,7 +11,7 @@ NJS::Builder::Builder(
     llvm::LLVMContext &context,
     const std::string_view &module_id,
     const bool is_main)
-    : m_Ctx(ctx),
+    : m_TypeContext(ctx),
       m_LLVMContext(context),
       m_ModuleID(module_id),
       m_IsMain(is_main)
@@ -19,15 +19,15 @@ NJS::Builder::Builder(
     m_LLVMModule = std::make_unique<llvm::Module>(module_id, m_LLVMContext);
     m_LLVMBuilder = std::make_unique<llvm::IRBuilder<> >(m_LLVMContext);
 
-    Push(m_ModuleID);
+    StackPush(m_ModuleID);
 
-    const auto process = DefVar({}, "process") = CreateGlobal(
+    const auto process = DefineVariable({}, "process") = CreateGlobal(
                              {},
                              "process",
-                             m_Ctx.GetStructType(
+                             m_TypeContext.GetStructType(
                                  {
-                                     {"argc", m_Ctx.GetIntType(32, true)},
-                                     {"argv", m_Ctx.GetPointerType(m_Ctx.GetStringType())}
+                                     {"argc", m_TypeContext.GetIntType(32, true)},
+                                     {"argv", m_TypeContext.GetPointerType(m_TypeContext.GetStringType())}
                                  }),
                              is_main);
 
@@ -66,12 +66,12 @@ void NJS::Builder::Close()
         GetBuilder().CreateRet(GetBuilder().getInt32(0));
     else
         GetBuilder().CreateRetVoid();
-    Pop();
+    StackPop();
 }
 
-NJS::TypeContext &NJS::Builder::GetCtx() const
+NJS::TypeContext &NJS::Builder::GetTypeContext() const
 {
-    return m_Ctx;
+    return m_TypeContext;
 }
 
 std::unique_ptr<llvm::Module> &&NJS::Builder::MoveModule()
@@ -103,14 +103,14 @@ void NJS::Builder::GetFormat(llvm::FunctionCallee &callee) const
     callee = GetModule().getOrInsertFunction("format", type);
 }
 
-void NJS::Builder::Push(const std::string &name, const TypePtr &result_type)
+void NJS::Builder::StackPush(const std::string &name, const TypePtr &result_type)
 {
-    const auto frame_name = m_Stack.empty() ? name : m_Stack.back().ValueName(name);
+    const auto frame_name = m_Stack.empty() ? name : m_Stack.back().GetValueName(name);
     const auto frame_result_type = result_type ? result_type : m_Stack.empty() ? nullptr : m_Stack.back().ResultType;
     m_Stack.emplace_back(frame_name, frame_result_type);
 }
 
-void NJS::Builder::Pop()
+void NJS::Builder::StackPop()
 {
     m_Stack.pop_back();
 }
@@ -119,46 +119,50 @@ std::string NJS::Builder::GetName(const bool absolute, const std::string &name) 
 {
     if (absolute)
         return m_ModuleID + '.' + name;
-    return m_Stack.back().ValueName(name);
+    return m_Stack.back().GetValueName(name);
 }
 
-void NJS::Builder::DefOp(const std::string &sym, const TypePtr &val, const TypePtr &result, llvm::Value *callee)
+void NJS::Builder::DefineOperator(
+    const std::string &sym,
+    const TypePtr &val,
+    const TypePtr &result,
+    llvm::Value *callee)
 {
-    m_UnOps[sym][val] = {result, callee};
+    m_UnaryOperators[sym][val] = {result, callee};
 }
 
-void NJS::Builder::DefOp(
+void NJS::Builder::DefineOperator(
     const std::string &sym,
     const TypePtr &lhs,
     const TypePtr &rhs,
     const TypePtr &result,
     llvm::Value *callee)
 {
-    m_BinOps[sym][lhs][rhs] = {result, callee};
+    m_BinaryOperators[sym][lhs][rhs] = {result, callee};
 }
 
-NJS::OperatorRef NJS::Builder::GetOp(const std::string &sym, const TypePtr &val)
+NJS::OperatorRef NJS::Builder::GetOperator(const std::string &sym, const TypePtr &val)
 {
-    return m_UnOps[sym][val];
+    return m_UnaryOperators[sym][val];
 }
 
-NJS::OperatorRef NJS::Builder::GetOp(const std::string &sym, const TypePtr &lhs, const TypePtr &rhs)
+NJS::OperatorRef NJS::Builder::GetOperator(const std::string &sym, const TypePtr &lhs, const TypePtr &rhs)
 {
-    return m_BinOps[sym][lhs][rhs];
+    return m_BinaryOperators[sym][lhs][rhs];
 }
 
-NJS::ValuePtr &NJS::Builder::DefVar(const SourceLocation &where, const std::string_view &name)
+NJS::ValuePtr &NJS::Builder::DefineVariable(const SourceLocation &where, const std::string_view &name)
 {
     auto &stack = m_Stack.back();
-    if (stack.contains(name))
+    if (stack.Contains(name))
         Error(where, "cannot redefine symbol '{}'", name);
     return stack[name];
 }
 
-NJS::ValuePtr &NJS::Builder::GetVar(const SourceLocation &where, const std::string_view &name)
+NJS::ValuePtr &NJS::Builder::GetVariable(const SourceLocation &where, const std::string_view &name)
 {
     for (auto &stack: std::ranges::reverse_view(m_Stack))
-        if (stack.contains(name))
+        if (stack.Contains(name))
             return stack[name];
     Error(where, "undefined symbol '{}'", name);
 }

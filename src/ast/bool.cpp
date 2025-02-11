@@ -13,7 +13,7 @@ NJS::BoolExpr::BoolExpr(SourceLocation where, const bool value)
 
 NJS::ValuePtr NJS::BoolExpr::GenLLVM(Builder &builder, const TypePtr &) const
 {
-    const auto result_type = builder.GetCtx().GetBoolType();
+    const auto result_type = builder.GetTypeContext().GetBoolType();
     const auto result_value = builder.GetBuilder().getInt1(Value);
     return RValue::Create(builder, result_type, result_value);
 }

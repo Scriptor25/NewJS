@@ -16,7 +16,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, const V
         array,
         RValue::Create(
             *this,
-            GetCtx().GetIntType(64, false),
+            GetTypeContext().GetIntType(64, false),
             GetBuilder().getInt64(index)));
 }
 

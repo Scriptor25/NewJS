@@ -20,24 +20,30 @@ namespace NJS
     class TemplateContext
     {
     public:
-        explicit TemplateContext(Builder &);
+        explicit TemplateContext(Builder &builder);
 
         void InsertType(
-            const std::string &,
-            const std::vector<std::string> &,
-            const SourceLocation &,
-            const std::string &);
+            const std::string_view &name,
+            const std::vector<std::string> &args,
+            const SourceLocation &where,
+            const std::string_view &source);
         void InsertFunction(
-            const std::string &,
-            const std::vector<std::string> &,
-            const SourceLocation &,
-            const std::string &);
+            const std::string_view &name,
+            const std::vector<std::string> &args,
+            const SourceLocation &where,
+            const std::string_view &source);
 
-        [[nodiscard]] bool HasFunction(const std::string &) const;
-        [[nodiscard]] bool HasType(const std::string &) const;
+        [[nodiscard]] bool HasFunction(const std::string_view &name) const;
+        [[nodiscard]] bool HasType(const std::string_view &name) const;
 
-        std::string InflateFunctionTemplate(Parser &, const std::string &, const std::vector<TypePtr> &);
-        TypePtr InflateType(Parser &, const std::string &, const std::vector<TypePtr> &);
+        std::string InflateFunctionTemplate(
+            Parser &parent,
+            const std::string &templ_name,
+            const std::vector<TypePtr> &args);
+        TypePtr InflateType(
+            Parser &parent,
+            const std::string &templ_name,
+            const std::vector<TypePtr> &args);
 
     private:
         Builder &m_Builder;

@@ -7,7 +7,7 @@ NJS::StmtPtr NJS::Parser::ParseStmt()
     {
         const auto name = Expect(TokenType_Symbol).StringValue;
         const auto source = Expect(TokenType_String).StringValue;
-        m_Macros[name] = {source};
+        m_MacroMap[name] = {source};
         return {};
     }
 

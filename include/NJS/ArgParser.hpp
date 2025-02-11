@@ -31,9 +31,9 @@ namespace NJS
         void Parse(int argc, const char **argv);
 
         [[nodiscard]] std::string Executable() const;
-        void Values(std::vector<std::string> &) const;
-        [[nodiscard]] bool Flag(ID) const;
-        void Option(ID, std::string &, const std::string_view & = {}) const;
+        void Values(std::vector<std::string> &values) const;
+        [[nodiscard]] bool Flag(ID id) const;
+        void Option(ID id, std::string &option, const std::string_view &default_value = {}) const;
 
         void Print() const;
         [[nodiscard]] bool IsEmpty() const;

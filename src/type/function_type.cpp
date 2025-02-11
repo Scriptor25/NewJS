@@ -1,27 +1,26 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/Std.hpp>
 #include <NJS/Type.hpp>
 
 std::string NJS::FunctionType::GenString(
-    const TypePtr &result,
-    const std::vector<TypePtr> &args,
-    const bool vararg)
+    const TypePtr &result_type,
+    const std::vector<TypePtr> &arg_types,
+    const bool var_arg)
 {
     std::string dst = "(";
-    for (unsigned i = 0; i < args.size(); ++i)
+    for (unsigned i = 0; i < arg_types.size(); ++i)
     {
         if (i > 0)
             dst += ", ";
-        dst += args[i]->GetString();
+        dst += arg_types[i]->GetString();
     }
-    if (vararg)
+    if (var_arg)
     {
-        if (!args.empty())
+        if (!arg_types.empty())
             dst += ", ";
         dst += "...";
     }
-    return dst += "): " + result->GetString();
+    return dst += "): " + result_type->GetString();
 }
 
 bool NJS::FunctionType::IsPrimitive() const
@@ -36,12 +35,12 @@ bool NJS::FunctionType::IsFunction() const
 
 NJS::TypePtr NJS::FunctionType::GetResult() const
 {
-    return m_Result;
+    return m_ResultType;
 }
 
 NJS::TypePtr NJS::FunctionType::Param(const unsigned i) const
 {
-    return m_Args[i];
+    return m_ArgTypes[i];
 }
 
 bool NJS::FunctionType::VarArg() const
@@ -57,21 +56,21 @@ void NJS::FunctionType::TypeInfo(const SourceLocation &where, Builder &builder, 
 llvm::FunctionType *NJS::FunctionType::GenFnLLVM(const SourceLocation &where, const Builder &builder) const
 {
     std::vector<llvm::Type *> types;
-    for (const auto &arg: m_Args)
+    for (const auto &arg: m_ArgTypes)
         types.push_back(arg->GetLLVM(where, builder));
-    return llvm::FunctionType::get(m_Result->GetLLVM(where, builder), types, m_VarArg);
+    return llvm::FunctionType::get(m_ResultType->GetLLVM(where, builder), types, m_VarArg);
 }
 
 NJS::FunctionType::FunctionType(
-    TypeContext &ctx,
-    std::string string,
-    TypePtr result,
-    std::vector<TypePtr> args,
-    const bool vararg)
-    : Type(ctx, std::move(string)),
-      m_Result(std::move(result)),
-      m_Args(std::move(args)),
-      m_VarArg(vararg)
+    TypeContext &type_context,
+    std::string_view string,
+    TypePtr result_type,
+    std::vector<TypePtr> arg_types,
+    const bool var_arg)
+    : Type(type_context, std::move(string)),
+      m_ResultType(std::move(result_type)),
+      m_ArgTypes(std::move(arg_types)),
+      m_VarArg(var_arg)
 {
 }
 

@@ -30,9 +30,9 @@ NJS::ValuePtr NJS::TupleExpr::GenLLVM(Builder &builder, const TypePtr &expected)
     if (expected)
         type = expected;
     else if (is_array)
-        type = builder.GetCtx().GetArrayType(element_types.front(), element_types.size());
+        type = builder.GetTypeContext().GetArrayType(element_types.front(), element_types.size());
     else
-        type = builder.GetCtx().GetTupleType(element_types);
+        type = builder.GetTypeContext().GetTupleType(element_types);
 
     llvm::Value *value = llvm::Constant::getNullValue(type->GetLLVM(Where, builder));
 

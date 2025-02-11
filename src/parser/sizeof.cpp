@@ -18,7 +18,7 @@ NJS::ValuePtr NJS::SizeOfExpr::GenLLVM(Builder &builder, const TypePtr &expected
 
     const auto type = expected && expected->IsInt()
                           ? expected
-                          : builder.GetCtx().GetIntType(64, false);
+                          : builder.GetTypeContext().GetIntType(64, false);
     const auto value = llvm::ConstantInt::get(
         type->GetLLVM(Where, builder),
         operand->GetType()->GetSize(),

@@ -5,7 +5,7 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::Param::Param(std::string name)
+NJS::Param::Param(std::string_view name)
     : Name(std::move(name))
 {
 }
@@ -27,7 +27,7 @@ void NJS::Param::CreateVars(
                                 ? Type->GetElement()
                                 : Type;
 
-    auto &var = builder.DefVar(where, Name);
+    auto &var = builder.DefineVariable(where, Name);
     if (Type && Type->IsRef())
     {
         var = LValue::Create(builder, type, value->GetPtr(where));

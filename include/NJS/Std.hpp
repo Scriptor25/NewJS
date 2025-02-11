@@ -16,17 +16,17 @@ enum TypeID
 
 extern "C"
 {
-void format(char *, unsigned, ...);
+void format(char *stream, unsigned n, ...);
 
-void println(const char *);
+void println(const char *message);
 
-FILE *file_open(const char *, const char *);
-void file_close(FILE *);
-char *file_read(FILE *, uint64_t);
-char *file_read_eof(FILE *);
-void file_read_free(char *);
-void file_write(FILE *, const char *, uint64_t);
+FILE *file_open(const char *filename, const char *mode);
+void file_close(FILE *stream);
+char *file_read(FILE *stream, uint64_t count);
+char *file_read_eof(FILE *stream);
+void file_read_free(char *buf);
+void file_write(FILE *stream, const char *buf, uint64_t count);
 
-int64_t parse_int(const char *);
-double parse_float(const char *);
+int64_t parse_int(const char *str);
+double parse_float(const char *str);
 }

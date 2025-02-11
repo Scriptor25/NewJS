@@ -6,11 +6,11 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::TernaryExpr::TernaryExpr(SourceLocation where, ExprPtr condition, ExprPtr then, ExprPtr else_)
+NJS::TernaryExpr::TernaryExpr(SourceLocation where, ExprPtr condition, ExprPtr then_body, ExprPtr else_body)
     : Expr(std::move(where)),
       Condition(std::move(condition)),
-      Then(std::move(then)),
-      Else(std::move(else_))
+      ThenBody(std::move(then_body)),
+      ElseBody(std::move(else_body))
 {
 }
 
@@ -21,24 +21,24 @@ NJS::ValuePtr NJS::TernaryExpr::GenLLVM(Builder &builder, const TypePtr &expecte
     auto else_block = llvm::BasicBlock::Create(builder.GetContext(), "else", parent);
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
-    const auto cond = Condition->GenLLVM(builder, builder.GetCtx().GetBoolType());
+    const auto cond = Condition->GenLLVM(builder, builder.GetTypeContext().GetBoolType());
     builder.GetBuilder().CreateCondBr(cond->Load(Where), then_block, else_block);
 
     builder.GetBuilder().SetInsertPoint(then_block);
-    auto then_value = Then->GenLLVM(builder, expected);
+    auto then_value = ThenBody->GenLLVM(builder, expected);
     if (then_value->IsL())
         then_value = RValue::Create(builder, then_value->GetType(), then_value->Load(Where));
     then_block = builder.GetBuilder().GetInsertBlock();
     const auto then_term = builder.GetBuilder().CreateBr(end_block);
 
     builder.GetBuilder().SetInsertPoint(else_block);
-    auto else_value = Else->GenLLVM(builder, expected);
+    auto else_value = ElseBody->GenLLVM(builder, expected);
     if (else_value->IsL())
         else_value = RValue::Create(builder, else_value->GetType(), else_value->Load(Where));
     else_block = builder.GetBuilder().GetInsertBlock();
     const auto else_term = builder.GetBuilder().CreateBr(end_block);
 
-    const auto result_type = max(builder.GetCtx(), then_value->GetType(), else_value->GetType());
+    const auto result_type = max(builder.GetTypeContext(), then_value->GetType(), else_value->GetType());
 
     builder.GetBuilder().SetInsertPoint(then_term);
     then_value = builder.CreateCast(Where, then_value, result_type);
@@ -57,5 +57,5 @@ NJS::ValuePtr NJS::TernaryExpr::GenLLVM(Builder &builder, const TypePtr &expecte
 
 std::ostream &NJS::TernaryExpr::Print(std::ostream &os)
 {
-    return Else->Print(Then->Print(Condition->Print(os) << " ? ") << " : ");
+    return ElseBody->Print(ThenBody->Print(Condition->Print(os) << " ? ") << " : ");
 }

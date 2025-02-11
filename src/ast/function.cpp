@@ -11,18 +11,18 @@
 NJS::FunctionStmt::FunctionStmt(
     SourceLocation where,
     const bool absolute,
-    const FnType fn,
+    const FunctionID fn_id,
     std::string name,
     std::vector<ParamPtr> args,
-    const bool vararg,
+    const bool var_arg,
     TypePtr result_type,
     StmtPtr body)
     : Stmt(std::move(where)),
       Absolute(absolute),
-      Fn(fn),
+      FnID(fn_id),
       Name(std::move(name)),
       Args(std::move(args)),
-      VarArg(vararg),
+      VarArg(var_arg),
       ResultType(std::move(result_type)),
       Body(std::move(body))
 {
@@ -31,7 +31,7 @@ NJS::FunctionStmt::FunctionStmt(
 void NJS::FunctionStmt::GenVoidLLVM(Builder &builder) const
 {
     std::string function_name;
-    switch (Fn)
+    switch (FnID)
     {
         case FnType_Function:
             function_name = builder.GetName(Absolute, Name);
@@ -64,27 +64,27 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder &builder) const
         std::vector<TypePtr> args;
         for (const auto &arg: Args)
             args.push_back(arg->Type);
-        const auto type = builder.GetCtx().GetFunctionType(ResultType, args, VarArg);
+        const auto type = builder.GetTypeContext().GetFunctionType(ResultType, args, VarArg);
         function = llvm::Function::Create(
             type->GenFnLLVM(Where, builder),
             llvm::GlobalValue::ExternalLinkage,
             function_name,
             builder.GetModule());
 
-        switch (Fn)
+        switch (FnID)
         {
             case FnType_Function:
             case FnType_Extern:
-                builder.DefVar(Where, Name) = RValue::Create(builder, type, function);
+                builder.DefineVariable(Where, Name) = RValue::Create(builder, type, function);
                 break;
             case FnType_Operator:
                 switch (Args.size())
                 {
                     case 1:
-                        builder.DefOp(Name, Args[0]->Type, ResultType, function);
+                        builder.DefineOperator(Name, Args[0]->Type, ResultType, function);
                         break;
                     case 2:
-                        builder.DefOp(Name, Args[0]->Type, Args[1]->Type, ResultType, function);
+                        builder.DefineOperator(Name, Args[0]->Type, Args[1]->Type, ResultType, function);
                         break;
                     default:
                         break;
@@ -104,7 +104,7 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder &builder) const
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
     builder.GetBuilder().SetInsertPoint(entry_block);
 
-    builder.Push(Name, ResultType);
+    builder.StackPush(Name, ResultType);
     for (unsigned i = 0; i < Args.size(); ++i)
     {
         const auto &arg = Args[i];
@@ -120,7 +120,7 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder &builder) const
     }
 
     Body->GenVoidLLVM(builder);
-    builder.Pop();
+    builder.StackPop();
 
     for (auto &block: *function)
     {
@@ -146,7 +146,7 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder &builder) const
 
 std::ostream &NJS::FunctionStmt::Print(std::ostream &os)
 {
-    switch (Fn)
+    switch (FnID)
     {
         case FnType_Function:
             os << "function ";
@@ -201,7 +201,7 @@ NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder &builder, const TypePtr &) cons
     std::vector<TypePtr> args;
     for (const auto &arg: Args)
         args.push_back(arg->Type);
-    const auto type = builder.GetCtx().GetFunctionType(ResultType, args, VarArg);
+    const auto type = builder.GetTypeContext().GetFunctionType(ResultType, args, VarArg);
     const auto function = llvm::Function::Create(
         type->GenFnLLVM(Where, builder),
         llvm::GlobalValue::InternalLinkage,
@@ -212,7 +212,7 @@ NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder &builder, const TypePtr &) cons
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
     builder.GetBuilder().SetInsertPoint(entry_block);
 
-    builder.Push(function_name, ResultType);
+    builder.StackPush(function_name, ResultType);
     for (unsigned i = 0; i < Args.size(); ++i)
     {
         const auto &arg = Args[i];
@@ -228,7 +228,7 @@ NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder &builder, const TypePtr &) cons
     }
 
     Body->GenVoidLLVM(builder);
-    builder.Pop();
+    builder.StackPop();
 
     for (auto &block: *function)
     {

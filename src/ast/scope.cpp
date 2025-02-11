@@ -10,10 +10,10 @@ NJS::ScopeStmt::ScopeStmt(SourceLocation where, std::vector<StmtPtr> children)
 
 void NJS::ScopeStmt::GenVoidLLVM(Builder &builder) const
 {
-    builder.Push();
+    builder.StackPush();
     for (const auto &child: Children)
         child->GenVoidLLVM(builder);
-    builder.Pop();
+    builder.StackPop();
 }
 
 std::ostream &NJS::ScopeStmt::Print(std::ostream &os)
@@ -38,11 +38,11 @@ NJS::ScopeExpr::ScopeExpr(SourceLocation where, std::vector<StmtPtr> children, E
 
 NJS::ValuePtr NJS::ScopeExpr::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
-    builder.Push();
+    builder.StackPush();
     for (const auto &child: Children)
         child->GenVoidLLVM(builder);
     auto result = Last->GenLLVM(builder, expected);
-    builder.Pop();
+    builder.StackPop();
     return result;
 }
 

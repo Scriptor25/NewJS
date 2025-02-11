@@ -1,43 +1,43 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Type.hpp>
 
-std::string NJS::RefType::GenString(const TypePtr &element)
+std::string NJS::ReferenceType::GenString(const TypePtr &element_type)
 {
-    return element->GetString() + '&';
+    return element_type->GetString() + '&';
 }
 
-bool NJS::RefType::IsPrimitive() const
-{
-    return true;
-}
-
-bool NJS::RefType::IsRef() const
+bool NJS::ReferenceType::IsPrimitive() const
 {
     return true;
 }
 
-NJS::TypePtr NJS::RefType::GetElement() const
+bool NJS::ReferenceType::IsRef() const
 {
-    return m_Element;
+    return true;
 }
 
-void NJS::RefType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
+NJS::TypePtr NJS::ReferenceType::GetElement() const
 {
-    m_Element->TypeInfo(where, builder, args);
+    return m_ElementType;
 }
 
-NJS::RefType::RefType(TypeContext &ctx, std::string string, TypePtr element)
-    : Type(ctx, std::move(string)),
-      m_Element(std::move(element))
+void NJS::ReferenceType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
+{
+    m_ElementType->TypeInfo(where, builder, args);
+}
+
+NJS::ReferenceType::ReferenceType(TypeContext &type_context, std::string_view string, TypePtr element_type)
+    : Type(type_context, std::move(string)),
+      m_ElementType(std::move(element_type))
 {
 }
 
-llvm::Type *NJS::RefType::GenLLVM(const SourceLocation &, const Builder &builder) const
+llvm::Type *NJS::ReferenceType::GenLLVM(const SourceLocation &, const Builder &builder) const
 {
     return llvm::PointerType::get(builder.GetContext(), 0u);
 }
 
-unsigned NJS::RefType::GenSize() const
+unsigned NJS::ReferenceType::GenSize() const
 {
     return 8;
 }

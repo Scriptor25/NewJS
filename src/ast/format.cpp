@@ -9,12 +9,12 @@
 NJS::FormatExpr::FormatExpr(
     SourceLocation where,
     const unsigned count,
-    std::map<unsigned, std::string> statics,
-    std::map<unsigned, ExprPtr> dynamics)
+    std::map<unsigned, std::string> static_expr,
+    std::map<unsigned, ExprPtr> dynamic_expr)
     : Expr(std::move(where)),
       Count(count),
-      Statics(std::move(statics)),
-      Dynamics(std::move(dynamics))
+      StaticExpr(std::move(static_expr)),
+      DynamicExpr(std::move(dynamic_expr))
 {
 }
 
@@ -31,9 +31,9 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder &builder, const TypePtr &) const
 
     for (unsigned i = 0; i < Count; ++i)
     {
-        if (Statics.contains(i))
+        if (StaticExpr.contains(i))
         {
-            const auto value = Statics.at(i);
+            const auto value = StaticExpr.at(i);
             const auto string_value = StringExpr::GetString(builder, value);
 
             args.push_back(builder.GetBuilder().getInt32(ID_POINTER));
@@ -42,9 +42,9 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder &builder, const TypePtr &) const
             args.push_back(builder.GetBuilder().getInt32(1));
             args.push_back(string_value);
         }
-        else if (Dynamics.contains(i))
+        else if (DynamicExpr.contains(i))
         {
-            const auto value = Dynamics.at(i)->GenLLVM(builder, {});
+            const auto value = DynamicExpr.at(i)->GenLLVM(builder, {});
             value->GetType()->TypeInfo(Where, builder, args);
             if (value->GetType()->IsPrimitive())
                 args.push_back(value->Load(Where));
@@ -65,7 +65,7 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder &builder, const TypePtr &) const
     builder.GetFormat(format_callee);
     builder.GetBuilder().CreateCall(format_callee, args);
 
-    return RValue::Create(builder, builder.GetCtx().GetStringType(), buffer_pointer);
+    return RValue::Create(builder, builder.GetTypeContext().GetStringType(), buffer_pointer);
 }
 
 std::ostream &NJS::FormatExpr::Print(std::ostream &os)
@@ -73,11 +73,10 @@ std::ostream &NJS::FormatExpr::Print(std::ostream &os)
     os << "$\"";
     for (unsigned i = 0; i < Count; ++i)
     {
-        if (Statics.contains(i))
-            os << Statics[i];
-        else
-            if (Dynamics.contains(i))
-                Dynamics[i]->Print(os << '{') << '}';
+        if (StaticExpr.contains(i))
+            os << StaticExpr[i];
+        else if (DynamicExpr.contains(i))
+            DynamicExpr[i]->Print(os << '{') << '}';
     }
     return os << '"';
 }

@@ -8,10 +8,10 @@
 
 using namespace std::string_view_literals;
 
-NJS::UnaryExpr::UnaryExpr(SourceLocation where, std::string op, const bool op_right, ExprPtr operand)
+NJS::UnaryExpr::UnaryExpr(SourceLocation where, std::string_view operator_, const bool post, ExprPtr operand)
     : Expr(std::move(where)),
-      Op(std::move(op)),
-      OpRight(op_right),
+      Operator(std::move(operator_)),
+      Post(post),
       Operand(std::move(operand))
 {
 }
@@ -32,23 +32,23 @@ NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder &builder, const TypePtr &expected)
     auto operand = Operand->GenLLVM(builder, expected);
     const auto value = operand->Load(Where);
 
-    if (fns.contains(Op))
-        if (auto [value_, assign_] = fns.at(Op)(builder, Where, operand); value_)
+    if (fns.contains(Operator))
+        if (auto [value_, assign_] = fns.at(Operator)(builder, Where, operand); value_)
         {
             if (assign_)
             {
                 operand->Store(Where, value_);
-                if (OpRight)
+                if (Post)
                     return RValue::Create(builder, operand->GetType(), value);
                 return operand;
             }
             return value_;
         }
 
-    Error(Where, "undefined unary operator {}{}", Op, operand->GetType());
+    Error(Where, "undefined unary operator {}{}", Operator, operand->GetType());
 }
 
 std::ostream &NJS::UnaryExpr::Print(std::ostream &os)
 {
-    return Operand->Print(os << (OpRight ? "" : Op)) << (OpRight ? Op : "");
+    return Operand->Print(os << (Post ? "" : Operator)) << (Post ? Operator : "");
 }

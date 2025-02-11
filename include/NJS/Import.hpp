@@ -9,8 +9,12 @@ namespace NJS
 {
     struct ImportMapping
     {
-        std::ostream &Print(std::ostream &) const;
-        void MapFunctions(Builder &, const SourceLocation &, const std::string &, const std::vector<StmtPtr> &) const;
+        std::ostream &Print(std::ostream &stream) const;
+        void MapFunctions(
+            Builder &builder,
+            const SourceLocation &where,
+            const std::string_view &module_id,
+            const std::vector<StmtPtr> &functions) const;
 
         bool All;
         std::string Name;

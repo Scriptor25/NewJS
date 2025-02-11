@@ -20,22 +20,22 @@ NJS::VoidTypePtr NJS::TypeContext::GetVoidType()
 
 NJS::IntTypePtr NJS::TypeContext::GetIntType(unsigned bits, bool is_signed)
 {
-    return GetType<IntType>(bits, is_signed);
+    return GetType<IntegerType>(bits, is_signed);
 }
 
 NJS::FPTypePtr NJS::TypeContext::GetFPType(unsigned bits)
 {
-    return GetType<FPType>(bits);
+    return GetType<FloatingPointType>(bits);
 }
 
 NJS::PtrTypePtr NJS::TypeContext::GetPointerType(const TypePtr &element)
 {
-    return GetType<PtrType>(element);
+    return GetType<PointerType>(element);
 }
 
 NJS::RefTypePtr NJS::TypeContext::GetRefType(const TypePtr &element)
 {
-    return GetType<RefType>(element);
+    return GetType<ReferenceType>(element);
 }
 
 NJS::ArrayTypePtr NJS::TypeContext::GetArrayType(const TypePtr &element, unsigned count)

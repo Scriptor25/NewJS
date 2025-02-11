@@ -18,7 +18,7 @@ NJS::ValuePtr NJS::IntExpr::GenLLVM(Builder &builder, const TypePtr &expected) c
                                  ? Type
                                  : expected && expected->IsInt()
                                        ? expected
-                                       : builder.GetCtx().GetIntType(64, true);
+                                       : builder.GetTypeContext().GetIntType(64, true);
     const auto result_value = llvm::ConstantInt::get(
         result_type->GetLLVM(Where, builder),
         Value,

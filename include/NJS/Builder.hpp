@@ -11,11 +11,11 @@ namespace NJS
 {
     struct StackFrame
     {
-        [[nodiscard]] bool contains(const std::string_view &) const;
+        [[nodiscard]] bool Contains(const std::string_view &) const;
         ValuePtr operator[](const std::string_view &) const;
         ValuePtr &operator[](const std::string_view &);
 
-        [[nodiscard]] std::string ValueName(const std::string_view &) const;
+        [[nodiscard]] std::string GetValueName(const std::string_view &) const;
 
         std::string ParentName;
         TypePtr ResultType;
@@ -59,7 +59,7 @@ namespace NJS
 
         void Close();
 
-        [[nodiscard]] TypeContext &GetCtx() const;
+        [[nodiscard]] TypeContext &GetTypeContext() const;
 
         std::unique_ptr<llvm::Module> &&MoveModule();
 
@@ -86,28 +86,28 @@ namespace NJS
 
         void GetFormat(llvm::FunctionCallee &callee) const;
 
-        void Push(const std::string &name = {}, const TypePtr &result_type = {});
-        void Pop();
+        void StackPush(const std::string &name = {}, const TypePtr &result_type = {});
+        void StackPop();
 
         [[nodiscard]] std::string GetName(bool absolute, const std::string &name) const;
 
-        void DefOp(const std::string &sym, const TypePtr &val, const TypePtr &result, llvm::Value *callee);
-        void DefOp(
+        void DefineOperator(const std::string &sym, const TypePtr &val, const TypePtr &result, llvm::Value *callee);
+        void DefineOperator(
             const std::string &sym,
             const TypePtr &lhs,
             const TypePtr &rhs,
             const TypePtr &result,
             llvm::Value *callee);
-        OperatorRef GetOp(const std::string &sym, const TypePtr &val);
-        OperatorRef GetOp(const std::string &sym, const TypePtr &lhs, const TypePtr &rhs);
+        OperatorRef GetOperator(const std::string &sym, const TypePtr &val);
+        OperatorRef GetOperator(const std::string &sym, const TypePtr &lhs, const TypePtr &rhs);
 
-        ValuePtr &DefVar(const SourceLocation &where, const std::string_view &name);
-        ValuePtr &GetVar(const SourceLocation &where, const std::string_view &name);
+        ValuePtr &DefineVariable(const SourceLocation &where, const std::string_view &name);
+        ValuePtr &GetVariable(const SourceLocation &where, const std::string_view &name);
 
         TypePtr &ResultType();
 
     private:
-        TypeContext &m_Ctx;
+        TypeContext &m_TypeContext;
         llvm::LLVMContext &m_LLVMContext;
 
         std::string m_ModuleID;
@@ -116,8 +116,8 @@ namespace NJS
         std::unique_ptr<llvm::Module> m_LLVMModule;
         std::unique_ptr<llvm::IRBuilder<> > m_LLVMBuilder;
 
-        std::map<std::string, std::map<TypePtr, OperatorRef> > m_UnOps;
-        std::map<std::string, std::map<TypePtr, std::map<TypePtr, OperatorRef> > > m_BinOps;
+        std::map<std::string, std::map<TypePtr, OperatorRef> > m_UnaryOperators;
+        std::map<std::string, std::map<TypePtr, std::map<TypePtr, OperatorRef> > > m_BinaryOperators;
 
         std::vector<StackFrame> m_Stack;
     };

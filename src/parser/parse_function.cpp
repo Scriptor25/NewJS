@@ -47,7 +47,7 @@ NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
     if (NextAt(":"))
         result_type = ParseType();
     else
-        result_type = m_TypeCtx.GetVoidType();
+        result_type = m_TypeContext.GetVoidType();
 
     StmtPtr body;
     if (fn != FnType_Extern && At("{"))
@@ -59,7 +59,7 @@ NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
             return {};
 
         m_IsTemplate = false;
-        m_TemplateCtx.InsertFunction(name, templ_args, m_TemplateWhere, m_TemplateBuffer.str());
+        m_TemplateContext.InsertFunction(name, templ_args, m_TemplateWhere, m_TemplateBuffer.str());
     }
 
     return std::make_shared<FunctionStmt>(where, false, fn, name, args, vararg, result_type, body);
@@ -78,7 +78,7 @@ NJS::ExprPtr NJS::Parser::ParseFunctionExpr()
     if (NextAt(":"))
         result_type = ParseType();
     else
-        result_type = m_TypeCtx.GetVoidType();
+        result_type = m_TypeContext.GetVoidType();
 
     std::vector<TypePtr> arg_types;
     for (const auto &arg: args)
