@@ -20,7 +20,7 @@ std::string NJS::FunctionType::GenString(
             dst += ", ";
         dst += "...";
     }
-    return dst += "): " + result_type->GetString();
+    return dst += ") => " + result_type->GetString();
 }
 
 bool NJS::FunctionType::IsPrimitive() const
