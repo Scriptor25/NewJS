@@ -22,6 +22,18 @@ operator-(self: vec2): vec2 {
     return new(-self[0], -self[1])
 }
 
+operator=(self: vec2&, v: vec2): vec2& {
+    self[0] = v[0]
+    self[1] = v[1]
+    return self
+}
+
+operator=(self: vec2&, s: f64): vec2& {
+    self[0] = s
+    self[1] = s
+    return self
+}
+
 operator+=(self: vec2&, v: vec2): vec2& {
     self[0] += v[0]
     self[1] += v[1]

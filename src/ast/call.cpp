@@ -20,33 +20,44 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expe
     if (!callee_type)
         Error(Where, "invalid callee: callee is not a function");
 
-    std::vector<llvm::Value *> arg_values(Arguments.size());
+    const auto parameter_count = callee_type->GetParameterCount();
+    if (Arguments.size() < parameter_count)
+        Error(Where, "not enough arguments");
+    if (Arguments.size() > parameter_count && !callee_type->IsVarArg())
+        Error(Where, "too many arguments");
+
+    std::vector<llvm::Value *> argument_values(Arguments.size());
     for (unsigned i = 0; i < Arguments.size(); ++i)
     {
-        auto param_type = callee_type->Param(i);
-        auto &arg = Arguments[i];
-        auto arg_value = arg->GenLLVM(builder, param_type);
+        const auto has_parameter = i < parameter_count;
+        auto parameter_type = has_parameter
+                                  ? callee_type->ParameterType(i)
+                                  : nullptr;
 
-        const auto param_is_ref = param_type->IsReference();
-        if (param_is_ref)
-            param_type = param_type->GetElement();
+        auto &argument = Arguments[i];
+        auto argument_value = argument->GenLLVM(builder, parameter_type);
 
-        arg_value = builder.CreateCast(arg->Where, arg_value, param_type);
+        const auto parameter_is_reference = has_parameter && parameter_type->IsReference();
+        if (parameter_is_reference)
+            parameter_type = parameter_type->GetElement();
 
-        arg_values[i] = param_is_ref
-                            ? arg_value->GetPtr(arg->Where)
-                            : arg_value->Load(arg->Where);
+        if (has_parameter)
+            argument_value = builder.CreateCast(argument->Where, argument_value, parameter_type);
+
+        argument_values[i] = parameter_is_reference
+                                 ? argument_value->GetPtr(argument->Where)
+                                 : argument_value->Load(argument->Where);
     }
 
     const auto result_value = builder.GetBuilder().CreateCall(
         callee_type->GenFnLLVM(Where, builder),
         callee->Load(Where),
-        arg_values);
+        argument_values);
 
-    if (callee_type->GetResult()->IsReference())
-        return LValue::Create(builder, callee_type->GetResult()->GetElement(), result_value);
+    if (callee_type->GetResultType()->IsReference())
+        return LValue::Create(builder, callee_type->GetResultType()->GetElement(), result_value);
 
-    return RValue::Create(builder, callee_type->GetResult(), result_value);
+    return RValue::Create(builder, callee_type->GetResultType(), result_value);
 }
 
 std::ostream &NJS::CallExpression::Print(std::ostream &stream)

@@ -126,9 +126,9 @@ NJS::MemberT NJS::Type::GetMember(const std::string_view &) const
     Error("type {} does not support 'GetMember'", m_String);
 }
 
-NJS::TypePtr NJS::Type::GetResult() const
+NJS::TypePtr NJS::Type::GetResultType() const
 {
-    Error("type {} does not support 'GetResult'", m_String);
+    Error("type {} does not support 'GetResultType'", m_String);
 }
 
 NJS::Type::Type(TypeContext &type_context, std::string_view string)

@@ -24,5 +24,7 @@ e *= 2.
 println($"e = {e}")
 
 let m = mat4.new()
+m *= mat4.translation(vec3.new(1, 2, 3))
+m *= mat4.scale(vec3.new(0.4, 0.5, 0.6))
 
-
+println($"m = {m}")

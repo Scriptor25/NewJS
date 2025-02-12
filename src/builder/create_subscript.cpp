@@ -20,7 +20,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, const V
             GetBuilder().getInt64(index)));
 }
 
-NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, const ValuePtr &array, llvm::Value *index)
+NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePtr array, llvm::Value *index)
 {
     const auto array_type = array->GetType();
 
@@ -34,6 +34,14 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, const V
         return LValue::Create(*this, element_type, ptr);
     }
 
+    const auto const_index = llvm::dyn_cast<llvm::ConstantInt>(index);
+    if (!const_index && !array->IsL())
+    {
+        const auto l_array = CreateAlloca(where, array_type);
+        l_array->Store(where, array);
+        array = l_array;
+    }
+
     if (array->IsL())
     {
         const auto index_type = index->getType();
@@ -45,18 +53,21 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, const V
 
         TypePtr type;
         if (array_type->IsArray())
-        {
             type = array_type->GetElement();
-        }
         else if (array_type->IsTuple())
         {
-            const auto i = llvm::dyn_cast<llvm::ConstantInt>(index)->getValue().getLimitedValue();
+            if (!const_index)
+                Error(where, "subscript index for indexing into tuple must be a constant");
+            const auto i = const_index->getValue().getLimitedValue();
             type = array_type->GetElement(i);
         }
         return LValue::Create(*this, type, ptr);
     }
 
-    const auto i = llvm::dyn_cast<llvm::ConstantInt>(index)->getValue().getLimitedValue();
+    if (!const_index)
+        Error(where, "subscript index for indexing into constant must be a constant");
+
+    const auto i = const_index->getValue().getLimitedValue();
     const auto val = GetBuilder().CreateExtractValue(array->Load(where), i);
     return RValue::Create(*this, array_type->GetElement(i), val);
 }

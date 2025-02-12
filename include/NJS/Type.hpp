@@ -49,7 +49,7 @@ namespace NJS
         [[nodiscard]] virtual TypePtr GetElement() const;
         [[nodiscard]] virtual TypePtr GetElement(unsigned index) const;
         [[nodiscard]] virtual MemberT GetMember(const std::string_view &name) const;
-        [[nodiscard]] virtual TypePtr GetResult() const;
+        [[nodiscard]] virtual TypePtr GetResultType() const;
 
         virtual void TypeInfo(
             const SourceLocation &where,
@@ -75,7 +75,7 @@ namespace NJS
     public:
         static std::string GenString(const std::string_view &name);
 
-        [[nodiscard]] TypePtr GetResult() const override;
+        [[nodiscard]] TypePtr GetResultType() const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
     private:
@@ -258,13 +258,14 @@ namespace NJS
         friend TypeContext;
 
     public:
-        static std::string GenString(const TypePtr &result_type, const std::vector<TypePtr> &arg_types, bool var_arg);
+        static std::string GenString(const TypePtr &result_type, const std::vector<TypePtr> &parameter_types, bool var_arg);
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsFunction() const override;
-        [[nodiscard]] TypePtr GetResult() const override;
-        [[nodiscard]] TypePtr Param(unsigned index) const;
-        [[nodiscard]] bool VarArg() const;
+        [[nodiscard]] TypePtr GetResultType() const override;
+        [[nodiscard]] TypePtr ParameterType(unsigned index) const;
+        [[nodiscard]] unsigned GetParameterCount() const;
+        [[nodiscard]] bool IsVarArg() const;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
         [[nodiscard]] llvm::FunctionType *GenFnLLVM(const SourceLocation &where, const Builder &builder) const;
@@ -274,14 +275,14 @@ namespace NJS
             TypeContext &type_context,
             std::string_view string,
             TypePtr result_type,
-            std::vector<TypePtr> arg_types,
+            std::vector<TypePtr> parameter_types,
             bool var_arg);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
         [[nodiscard]] unsigned GenSize() const override;
 
         TypePtr m_ResultType;
-        std::vector<TypePtr> m_ArgTypes;
+        std::vector<TypePtr> m_ParameterTypes;
         bool m_VarArg;
     };
 }

@@ -7,7 +7,7 @@ std::string NJS::NoType::GenString(const std::string_view &name)
     return std::string(name);
 }
 
-NJS::TypePtr NJS::NoType::GetResult() const
+NJS::TypePtr NJS::NoType::GetResultType() const
 {
     return m_TypeContext.GetNoType(m_Name + "::RESULT");
 }
