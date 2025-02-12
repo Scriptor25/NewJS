@@ -29,39 +29,39 @@ llvm::Value *NJS::Builder::CreateCast(
 
     const auto ty = dst_type->GetLLVM(where, *this);
 
-    if (src_type->IsInt())
+    if (src_type->IsInteger())
     {
-        if (dst_type->IsInt())
+        if (dst_type->IsInteger())
             return GetBuilder().CreateIntCast(val_, ty, dst_type->IsSigned());
-        if (dst_type->IsFP())
+        if (dst_type->IsFloatingPoint())
             return src_type->IsSigned()
                        ? GetBuilder().CreateSIToFP(val_, ty)
                        : GetBuilder().CreateUIToFP(val_, ty);
-        if (dst_type->IsPtr())
+        if (dst_type->IsPointer())
             return GetBuilder().CreateIntToPtr(val_, ty);
     }
 
-    if (src_type->IsFP())
+    if (src_type->IsFloatingPoint())
     {
-        if (dst_type->IsInt())
+        if (dst_type->IsInteger())
             return dst_type->IsSigned()
                        ? GetBuilder().CreateFPToSI(val_, ty)
                        : GetBuilder().CreateFPToUI(val_, ty);
-        if (dst_type->IsFP())
+        if (dst_type->IsFloatingPoint())
             return GetBuilder().CreateFPCast(val_, ty);
     }
 
-    if (src_type->IsPtr())
+    if (src_type->IsPointer())
     {
-        if (dst_type->IsInt())
+        if (dst_type->IsInteger())
             return GetBuilder().CreatePtrToInt(val_, ty);
-        if (dst_type->IsPtr())
+        if (dst_type->IsPointer())
             return GetBuilder().CreatePointerCast(val_, ty);
     }
 
     if (ptr_ && src_type->IsArray())
     {
-        if (dst_type->IsPtr() && src_type->GetElement() == dst_type->GetElement())
+        if (dst_type->IsPointer() && src_type->GetElement() == dst_type->GetElement())
             return GetBuilder().CreateConstGEP2_64(src_type->GetLLVM(where, *this), ptr_, 0, 0);
     }
 

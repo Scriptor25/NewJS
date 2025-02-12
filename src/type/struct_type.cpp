@@ -43,7 +43,7 @@ void NJS::StructType::TypeInfo(const SourceLocation &where, Builder &builder, st
     args.push_back(builder.GetBuilder().getInt32(m_ElementTypeMap.size()));
     for (const auto &[name_, type_]: m_ElementTypeMap)
     {
-        args.push_back(StringExpr::GetString(builder, name_));
+        args.push_back(StringExpression::GetString(builder, name_));
         type_->TypeInfo(where, builder, args);
     }
 }

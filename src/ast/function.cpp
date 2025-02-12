@@ -3,21 +3,21 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/Param.hpp>
+#include <NJS/Parameter.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::FunctionStmt::FunctionStmt(
+NJS::FunctionStatement::FunctionStatement(
     SourceLocation where,
     const bool absolute,
     const FunctionID fn_id,
     std::string name,
-    std::vector<ParamPtr> args,
+    std::vector<ParameterPtr> args,
     const bool var_arg,
     TypePtr result_type,
-    StmtPtr body)
-    : Stmt(std::move(where)),
+    StatementPtr body)
+    : Statement(std::move(where)),
       Absolute(absolute),
       FnID(fn_id),
       Name(std::move(name)),
@@ -28,7 +28,7 @@ NJS::FunctionStmt::FunctionStmt(
 {
 }
 
-void NJS::FunctionStmt::GenVoidLLVM(Builder &builder) const
+void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
 {
     std::string function_name;
     switch (FnID)
@@ -112,7 +112,7 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder &builder) const
         llvm_arg->setName(arg->Name);
 
         ValuePtr arg_value;
-        if (arg->Type->IsRef())
+        if (arg->Type->IsReference())
             arg_value = LValue::Create(builder, arg->Type->GetElement(), llvm_arg);
         else
             arg_value = RValue::Create(builder, arg->Type, llvm_arg);
@@ -144,7 +144,7 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder &builder) const
     builder.GetBuilder().SetInsertPoint(end_block);
 }
 
-std::ostream &NJS::FunctionStmt::Print(std::ostream &os)
+std::ostream &NJS::FunctionStatement::Print(std::ostream &os)
 {
     switch (FnID)
     {
@@ -179,21 +179,21 @@ std::ostream &NJS::FunctionStmt::Print(std::ostream &os)
     return os;
 }
 
-NJS::FunctionExpr::FunctionExpr(
+NJS::FunctionExpression::FunctionExpression(
     SourceLocation where,
-    std::vector<ParamPtr> args,
-    const bool vararg,
+    std::vector<ParameterPtr> args,
+    const bool var_arg,
     TypePtr result_type,
-    StmtPtr body)
-    : Expr(std::move(where)),
+    StatementPtr body)
+    : Expression(std::move(where)),
       Args(std::move(args)),
-      VarArg(vararg),
+      VarArg(var_arg),
       ResultType(std::move(result_type)),
       Body(std::move(body))
 {
 }
 
-NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
     static unsigned id = 0;
     const auto function_name = std::to_string(id++);
@@ -220,7 +220,7 @@ NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder &builder, const TypePtr &) cons
         llvm_arg->setName(arg->Name);
 
         ValuePtr arg_value;
-        if (arg->Type->IsRef())
+        if (arg->Type->IsReference())
             arg_value = LValue::Create(builder, arg->Type->GetElement(), llvm_arg);
         else
             arg_value = RValue::Create(builder, arg->Type, llvm_arg);
@@ -253,7 +253,7 @@ NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder &builder, const TypePtr &) cons
     return RValue::Create(builder, type, function);
 }
 
-std::ostream &NJS::FunctionExpr::Print(std::ostream &os)
+std::ostream &NJS::FunctionExpression::Print(std::ostream &os)
 {
     os << '?';
     if (!Args.empty())

@@ -26,7 +26,7 @@ NJS::Builder::Builder(
                              "process",
                              m_TypeContext.GetStructType(
                                  {
-                                     {"argc", m_TypeContext.GetIntType(32, true)},
+                                     {"argc", m_TypeContext.GetIntegerType(32, true)},
                                      {"argv", m_TypeContext.GetPointerType(m_TypeContext.GetStringType())}
                                  }),
                              is_main);
@@ -103,10 +103,16 @@ void NJS::Builder::GetFormat(llvm::FunctionCallee &callee) const
     callee = GetModule().getOrInsertFunction("format", type);
 }
 
-void NJS::Builder::StackPush(const std::string &name, const TypePtr &result_type)
+void NJS::Builder::StackPush(const std::string_view &name, const TypePtr &result_type)
 {
-    const auto frame_name = m_Stack.empty() ? name : m_Stack.back().GetValueName(name);
-    const auto frame_result_type = result_type ? result_type : m_Stack.empty() ? nullptr : m_Stack.back().ResultType;
+    const auto frame_name = m_Stack.empty()
+                                ? std::string(name)
+                                : m_Stack.back().GetChildName(name);
+    const auto frame_result_type = result_type
+                                       ? result_type
+                                       : m_Stack.empty()
+                                             ? nullptr
+                                             : m_Stack.back().ResultType;
     m_Stack.emplace_back(frame_name, frame_result_type);
 }
 
@@ -115,40 +121,40 @@ void NJS::Builder::StackPop()
     m_Stack.pop_back();
 }
 
-std::string NJS::Builder::GetName(const bool absolute, const std::string &name) const
+std::string NJS::Builder::GetName(const bool absolute, const std::string_view &name) const
 {
     if (absolute)
-        return m_ModuleID + '.' + name;
-    return m_Stack.back().GetValueName(name);
+        return m_ModuleID + '.' + std::string(name);
+    return m_Stack.back().GetChildName(name);
 }
 
 void NJS::Builder::DefineOperator(
-    const std::string &sym,
+    const std::string_view &sym,
     const TypePtr &val,
     const TypePtr &result,
     llvm::Value *callee)
 {
-    m_UnaryOperators[sym][val] = {result, callee};
+    m_UnaryOperators[std::string(sym)][val] = {result, callee};
 }
 
 void NJS::Builder::DefineOperator(
-    const std::string &sym,
+    const std::string_view &sym,
     const TypePtr &lhs,
     const TypePtr &rhs,
     const TypePtr &result,
     llvm::Value *callee)
 {
-    m_BinaryOperators[sym][lhs][rhs] = {result, callee};
+    m_BinaryOperators[std::string(sym)][lhs][rhs] = {result, callee};
 }
 
-NJS::OperatorRef NJS::Builder::GetOperator(const std::string &sym, const TypePtr &val)
+NJS::OperatorRef NJS::Builder::GetOperator(const std::string_view &sym, const TypePtr &val)
 {
-    return m_UnaryOperators[sym][val];
+    return m_UnaryOperators[std::string(sym)][val];
 }
 
-NJS::OperatorRef NJS::Builder::GetOperator(const std::string &sym, const TypePtr &lhs, const TypePtr &rhs)
+NJS::OperatorRef NJS::Builder::GetOperator(const std::string_view &sym, const TypePtr &lhs, const TypePtr &rhs)
 {
-    return m_BinaryOperators[sym][lhs][rhs];
+    return m_BinaryOperators[std::string(sym)][lhs][rhs];
 }
 
 NJS::ValuePtr &NJS::Builder::DefineVariable(const SourceLocation &where, const std::string_view &name)
@@ -167,7 +173,7 @@ NJS::ValuePtr &NJS::Builder::GetVariable(const SourceLocation &where, const std:
     Error(where, "undefined symbol '{}'", name);
 }
 
-NJS::TypePtr &NJS::Builder::ResultType()
+NJS::TypePtr &NJS::Builder::CurrentFunctionResultType()
 {
     return m_Stack.back().ResultType;
 }

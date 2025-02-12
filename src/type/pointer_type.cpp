@@ -13,7 +13,7 @@ bool NJS::PointerType::IsPrimitive() const
     return true;
 }
 
-bool NJS::PointerType::IsPtr() const
+bool NJS::PointerType::IsPointer() const
 {
     return true;
 }

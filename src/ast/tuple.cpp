@@ -5,13 +5,13 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::TupleExpr::TupleExpr(SourceLocation where, std::vector<ExprPtr> elements)
-    : Expr(std::move(where)),
+NJS::TupleExpression::TupleExpression(SourceLocation where, std::vector<ExpressionPtr> elements)
+    : Expression(std::move(where)),
       Elements(std::move(elements))
 {
 }
 
-NJS::ValuePtr NJS::TupleExpr::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::TupleExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
     std::vector<ValuePtr> elements;
     std::vector<TypePtr> element_types;
@@ -45,7 +45,7 @@ NJS::ValuePtr NJS::TupleExpr::GenLLVM(Builder &builder, const TypePtr &expected)
     return RValue::Create(builder, type, value);
 }
 
-std::ostream &NJS::TupleExpr::Print(std::ostream &os)
+std::ostream &NJS::TupleExpression::Print(std::ostream &os)
 {
     if (Elements.empty())
         return os << "[]";

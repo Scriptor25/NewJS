@@ -4,16 +4,16 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::ReturnStmt::ReturnStmt(SourceLocation where, ExprPtr value)
-    : Stmt(std::move(where)),
+NJS::ReturnStatement::ReturnStatement(SourceLocation where, ExpressionPtr value)
+    : Statement(std::move(where)),
       Value(std::move(value))
 {
 }
 
-void NJS::ReturnStmt::GenVoidLLVM(Builder &builder) const
+void NJS::ReturnStatement::GenVoidLLVM(Builder &builder) const
 {
-    auto type = builder.ResultType();
-    const auto ref = type->IsRef();
+    auto type = builder.CurrentFunctionResultType();
+    const auto ref = type->IsReference();
     if (ref)
         type = type->GetElement();
 
@@ -26,7 +26,7 @@ void NJS::ReturnStmt::GenVoidLLVM(Builder &builder) const
         builder.GetBuilder().CreateRet(value->Load(Where));
 }
 
-std::ostream &NJS::ReturnStmt::Print(std::ostream &os)
+std::ostream &NJS::ReturnStatement::Print(std::ostream &os)
 {
     if (Value)
         return Value->Print(os << "return ");

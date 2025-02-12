@@ -5,15 +5,19 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::IfStmt::IfStmt(SourceLocation where, ExprPtr condition, StmtPtr then_body, StmtPtr else_body)
-    : Stmt(std::move(where)),
+NJS::IfStatement::IfStatement(
+    SourceLocation where,
+    ExpressionPtr condition,
+    StatementPtr then_body,
+    StatementPtr else_body)
+    : Statement(std::move(where)),
       Condition(std::move(condition)),
       ThenBody(std::move(then_body)),
       ElseBody(std::move(else_body))
 {
 }
 
-void NJS::IfStmt::GenVoidLLVM(Builder &builder) const
+void NJS::IfStatement::GenVoidLLVM(Builder &builder) const
 {
     const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent_function);
@@ -55,7 +59,7 @@ void NJS::IfStmt::GenVoidLLVM(Builder &builder) const
     builder.GetBuilder().SetInsertPoint(end_block);
 }
 
-std::ostream &NJS::IfStmt::Print(std::ostream &os)
+std::ostream &NJS::IfStatement::Print(std::ostream &os)
 {
     ThenBody->Print(Condition->Print(os << "if (") << ") ");
     if (ElseBody)

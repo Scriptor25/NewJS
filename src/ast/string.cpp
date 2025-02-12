@@ -5,25 +5,7 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::StringExpr::StringExpr(SourceLocation where, std::string_view value)
-    : Expr(std::move(where)),
-      Value(std::move(value))
-{
-}
-
-NJS::ValuePtr NJS::StringExpr::GenLLVM(Builder &builder, const TypePtr &) const
-{
-    const auto type = builder.GetTypeContext().GetStringType();
-    const auto value = GetString(builder, Value);
-    return RValue::Create(builder, type, value);
-}
-
-std::ostream &NJS::StringExpr::Print(std::ostream &os)
-{
-    return os << '"' << Value << '"';
-}
-
-llvm::Constant *NJS::StringExpr::GetString(const Builder &builder, const std::string_view &value)
+llvm::Constant *NJS::StringExpression::GetString(const Builder &builder, const std::string_view &value)
 {
     static std::map<std::string, llvm::Constant *> string_table;
 
@@ -31,4 +13,22 @@ llvm::Constant *NJS::StringExpr::GetString(const Builder &builder, const std::st
     if (!ptr)
         ptr = builder.GetBuilder().CreateGlobalStringPtr(value);
     return ptr;
+}
+
+NJS::StringExpression::StringExpression(SourceLocation where, std::string_view value)
+    : Expression(std::move(where)),
+      Value(std::move(value))
+{
+}
+
+NJS::ValuePtr NJS::StringExpression::GenLLVM(Builder &builder, const TypePtr &) const
+{
+    const auto type = builder.GetTypeContext().GetStringType();
+    const auto value = GetString(builder, Value);
+    return RValue::Create(builder, type, value);
+}
+
+std::ostream &NJS::StringExpression::Print(std::ostream &os)
+{
+    return os << '"' << Value << '"';
 }

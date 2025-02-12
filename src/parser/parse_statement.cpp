@@ -1,7 +1,7 @@
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::StmtPtr NJS::Parser::ParseStmt()
+NJS::StatementPtr NJS::Parser::ParseStatement()
 {
     if (NextAt("#"))
     {
@@ -18,22 +18,22 @@ NJS::StmtPtr NJS::Parser::ParseStmt()
     }
 
     if (At("import"))
-        return ParseImportStmt();
+        return ParseImportStatement();
 
     if (At("{"))
-        return ParseScopeStmt();
+        return ParseScopeStatement();
     if (At("function") || At("extern") || At("operator") || At("template"))
-        return ParseFunctionStmt();
+        return ParseFunctionStatement();
     if (At("let") || At("const"))
-        return ParseVariableStmt();
+        return ParseVariableStatement();
     if (At("if"))
-        return ParseIfStmt();
+        return ParseIfStatement();
     if (At("for"))
-        return ParseForStmt();
+        return ParseForStatement();
     if (At("return"))
-        return ParseReturnStmt();
+        return ParseReturnStatement();
     if (At("switch"))
-        return ParseSwitchStmt();
+        return ParseSwitchStatement();
 
-    return ParseExpr();
+    return ParseExpression();
 }

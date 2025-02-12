@@ -1,8 +1,8 @@
 #include <NJS/AST.hpp>
-#include <NJS/Param.hpp>
+#include <NJS/Parameter.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::StmtPtr NJS::Parser::ParseVariableStmt()
+NJS::StatementPtr NJS::Parser::ParseVariableStatement()
 {
     const auto where = m_Token.Where;
     const auto is_const = NextAt("const");
@@ -11,9 +11,9 @@ NJS::StmtPtr NJS::Parser::ParseVariableStmt()
 
     const auto name = ParseParam();
 
-    ExprPtr value;
+    ExpressionPtr value;
     if (((is_const || name->RequireValue()) && (Expect("="), true)) || NextAt("="))
-        value = ParseExpr();
+        value = ParseExpression();
 
-    return std::make_shared<VariableStmt>(where, is_const, name, value);
+    return std::make_shared<VariableStatement>(where, is_const, name, value);
 }

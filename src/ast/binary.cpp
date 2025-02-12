@@ -10,15 +10,19 @@
 
 using namespace std::string_view_literals;
 
-NJS::BinaryExpr::BinaryExpr(SourceLocation where, std::string_view operator_, ExprPtr left_operand, ExprPtr right_operand)
-    : Expr(std::move(where)),
+NJS::BinaryExpression::BinaryExpression(
+    SourceLocation where,
+    std::string_view operator_,
+    ExpressionPtr left_operand,
+    ExpressionPtr right_operand)
+    : Expression(std::move(where)),
       Operator(std::move(operator_)),
       LeftOperand(std::move(left_operand)),
       RightOperand(std::move(right_operand))
 {
 }
 
-NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     static const std::map<std::string_view, BinaryOperator> binary_operators
     {
@@ -84,8 +88,9 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder &builder, const TypePtr &expected
 
     if (assignment_operators.contains(Operator))
     {
-        const auto left_type_reference = builder.GetTypeContext().GetRefType(left_type);
-        if (auto [result_, callee_] = builder.GetOperator(Operator, left_type_reference, right_type); result_ && callee_)
+        const auto left_type_reference = builder.GetTypeContext().GetReferenceType(left_type);
+        if (auto [result_, callee_] = builder.GetOperator(Operator, left_type_reference, right_type);
+            result_ && callee_)
         {
             const auto function_type = llvm::FunctionType::get(
                 result_->GetLLVM(Where, builder),
@@ -169,7 +174,7 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder &builder, const TypePtr &expected
     Error(Where, "undefined binary operator '{} {} {}'", result_type, Operator, result_type);
 }
 
-std::ostream &NJS::BinaryExpr::Print(std::ostream &os)
+std::ostream &NJS::BinaryExpression::Print(std::ostream &os)
 {
     return RightOperand->Print(LeftOperand->Print(os) << ' ' << Operator << ' ');
 }

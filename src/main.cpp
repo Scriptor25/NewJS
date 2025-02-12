@@ -49,7 +49,7 @@ static void parse(
     NJS::Parser parser(type_ctx, template_ctx, input_stream, NJS::SourceLocation(input_path.string()), macros);
 
     parser.Parse(
-        [&](const NJS::StmtPtr &ptr)
+        [&](const NJS::StatementPtr &ptr)
         {
             ptr->GenVoidLLVM(builder);
         });

@@ -6,8 +6,8 @@
 
 namespace NJS
 {
-    [[noreturn]] void Error(const std::string_view &) noexcept;
-    [[noreturn]] void Error(const SourceLocation &, const std::string_view &) noexcept;
+    [[noreturn]] void Error(const std::string_view &message) noexcept;
+    [[noreturn]] void Error(const SourceLocation &where, const std::string_view &message) noexcept;
 
     template<typename... Args>
     [[noreturn]] void Error(const SourceLocation &where, const std::string_view &format, Args &&... args) noexcept

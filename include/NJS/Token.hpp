@@ -32,7 +32,7 @@ namespace NJS
 namespace std
 {
     template<>
-    struct formatter<NJS::TokenType> : formatter<string>
+    struct formatter<NJS::TokenType> final : formatter<string>
     {
         template<typename FormatContext>
         auto format(const NJS::TokenType type, FormatContext &ctx) const
@@ -53,7 +53,7 @@ namespace std
     };
 
     template<>
-    struct formatter<NJS::Token> : formatter<string>
+    struct formatter<NJS::Token> final : formatter<string>
     {
         template<typename FormatContext>
         auto format(const NJS::Token &token, FormatContext &ctx) const

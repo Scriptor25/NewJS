@@ -2,29 +2,29 @@
 #include <NJS/Parser.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::StmtPtr NJS::Parser::ParseScopeStmt()
+NJS::StatementPtr NJS::Parser::ParseScopeStatement()
 {
-    std::vector<StmtPtr> children;
+    std::vector<StatementPtr> children;
 
     const auto where = Expect("{").Where;
     while (!At("}") && !AtEof())
-        children.push_back(ParseStmt());
+        children.push_back(ParseStatement());
     Expect("}");
 
-    return std::make_shared<ScopeStmt>(where, children);
+    return std::make_shared<ScopeStatement>(where, children);
 }
 
-NJS::ExprPtr NJS::Parser::ParseScopeExpr()
+NJS::ExpressionPtr NJS::Parser::ParseScopeExpression()
 {
-    std::vector<StmtPtr> children;
+    std::vector<StatementPtr> children;
 
     const auto where = Expect("{").Where;
     while (!At("}") && !AtEof())
-        children.push_back(ParseStmt());
+        children.push_back(ParseStatement());
     Expect("}");
 
-    ExprPtr last = std::dynamic_pointer_cast<Expr>(children.back());
+    auto last = std::dynamic_pointer_cast<Expression>(children.back());
     children.pop_back();
 
-    return std::make_shared<ScopeExpr>(where, children, last);
+    return std::make_shared<ScopeExpression>(where, children, last);
 }

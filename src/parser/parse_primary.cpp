@@ -19,7 +19,7 @@ static void replace_all(std::string &src, const std::string &find, const std::st
         src.replace(pos, find.size(), replace);
 }
 
-NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
+NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
 {
     const auto where = m_Token.Where;
 
@@ -29,7 +29,7 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
         TypePtr type;
         if (NextAt(":"))
             type = ParseType();
-        return std::make_shared<IntExpr>(where, type, value);
+        return std::make_shared<IntegerExpression>(where, type, value);
     }
 
     if (At(TokenType_FP))
@@ -38,64 +38,64 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
         TypePtr type;
         if (NextAt(":"))
             type = ParseType();
-        return std::make_shared<FloatingPointExpr>(where, type, value);
+        return std::make_shared<FloatingPointExpression>(where, type, value);
     }
 
     if (At(TokenType_String))
-        return std::make_shared<StringExpr>(where, Skip().StringValue);
+        return std::make_shared<StringExpression>(where, Skip().StringValue);
 
     if (At(TokenType_Char))
-        return std::make_shared<CharExpr>(where, Skip().StringValue[0]);
+        return std::make_shared<CharacterExpression>(where, Skip().StringValue[0]);
 
     if (NextAt("true"))
-        return std::make_shared<BoolExpr>(where, true);
+        return std::make_shared<BooleanExpression>(where, true);
 
     if (NextAt("false"))
-        return std::make_shared<BoolExpr>(where, false);
+        return std::make_shared<BooleanExpression>(where, false);
 
     if (NextAt("("))
     {
-        const auto ptr = ParseExpr();
+        const auto ptr = ParseExpression();
         Expect(")");
         return ptr;
     }
 
     if (At("{"))
-        return ParseStructExpr();
+        return ParseStructExpression();
 
     if (At("["))
-        return ParseTupleExpr();
+        return ParseTupleExpression();
 
     if (At("?"))
-        return ParseFunctionExpr();
+        return ParseFunctionExpression();
 
     if (At("$"))
-        return ParseFormatExpr();
+        return ParseFormatExpression();
 
     if (At("switch"))
-        return ParseSwitchExpr();
+        return ParseSwitchExpression();
 
     if (NextAt("sizeof"))
     {
         if (NextAt("("))
         {
-            const auto expr = ParseExpr();
+            const auto expr = ParseExpression();
             Expect(")");
-            return std::make_shared<SizeOfExpr>(where, expr);
+            return std::make_shared<SizeOfExpression>(where, expr);
         }
 
         Expect("<");
         const auto type = ParseType();
         Expect(">");
-        return std::make_shared<IntExpr>(where, m_TypeContext.GetIntType(64, false), type->GetSize());
+        return std::make_shared<IntegerExpression>(where, m_TypeContext.GetIntegerType(64, false), type->GetSize());
     }
 
     if (NextAt("typeof"))
     {
         Expect("(");
-        const auto expr = ParseExpr();
+        const auto expr = ParseExpression();
         Expect(")");
-        return std::make_shared<TypeOfExpr>(where, expr);
+        return std::make_shared<TypeOfExpression>(where, expr);
     }
 
     if (At(TokenType_Symbol))
@@ -130,7 +130,7 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
 
             std::stringstream stream(source_);
             Parser parser(m_TypeContext, m_TemplateContext, stream, SourceLocation("<macro>"), m_MacroMap);
-            return parser.ParseExpr();
+            return parser.ParseExpression();
         }
 
         if (m_TemplateContext.HasFunction(name))
@@ -152,17 +152,17 @@ NJS::ExprPtr NJS::Parser::ParsePrimaryExpr()
                 inflated_name = m_TemplateContext.InflateFunctionTemplate(*this, name, args);
             else
                 inflated_name = name;
-            return std::make_shared<SymbolExpr>(where, inflated_name);
+            return std::make_shared<SymbolExpression>(where, inflated_name);
         }
 
-        return std::make_shared<SymbolExpr>(where, name);
+        return std::make_shared<SymbolExpression>(where, name);
     }
 
     if (At(TokenType_Operator))
     {
         const auto op = Skip().StringValue;
-        const auto operand = ParseOperandExpr();
-        return std::make_shared<UnaryExpr>(where, op, false, operand);
+        const auto operand = ParseOperandExpression();
+        return std::make_shared<UnaryExpression>(where, op, false, operand);
     }
 
     Error(m_Token.Where, "unused token {}", m_Token);

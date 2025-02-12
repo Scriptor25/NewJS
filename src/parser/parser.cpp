@@ -1,7 +1,7 @@
 #include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/Param.hpp>
+#include <NJS/Parameter.hpp>
 #include <NJS/Parser.hpp>
 
 NJS::Parser::Parser(
@@ -34,7 +34,7 @@ NJS::Parser::Parser(
 void NJS::Parser::Parse(const Consumer &consumer)
 {
     while (m_Token.Type != TokenType_EOF)
-        if (const auto ptr = ParseStmt())
+        if (const auto ptr = ParseStatement())
             consumer(ptr);
 }
 

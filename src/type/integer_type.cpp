@@ -13,7 +13,7 @@ bool NJS::IntegerType::IsPrimitive() const
     return true;
 }
 
-bool NJS::IntegerType::IsInt() const
+bool NJS::IntegerType::IsInteger() const
 {
     return true;
 }

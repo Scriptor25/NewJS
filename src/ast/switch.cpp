@@ -4,19 +4,19 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::SwitchStmt::SwitchStmt(
+NJS::SwitchStatement::SwitchStatement(
     SourceLocation where,
-    ExprPtr condition,
-    std::map<StmtPtr, std::vector<ExprPtr> > cases,
-    StmtPtr default_case)
-    : Stmt(std::move(where)),
+    ExpressionPtr condition,
+    std::map<StatementPtr, std::vector<ExpressionPtr> > cases,
+    StatementPtr default_case)
+    : Statement(std::move(where)),
       Condition(std::move(condition)),
       Cases(std::move(cases)),
       DefaultCase(std::move(default_case))
 {
 }
 
-void NJS::SwitchStmt::GenVoidLLVM(Builder &builder) const
+void NJS::SwitchStatement::GenVoidLLVM(Builder &builder) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     const auto default_dest = llvm::BasicBlock::Create(builder.GetContext(), "default", parent);
@@ -46,7 +46,7 @@ void NJS::SwitchStmt::GenVoidLLVM(Builder &builder) const
     builder.GetBuilder().SetInsertPoint(end_block);
 }
 
-std::ostream &NJS::SwitchStmt::Print(std::ostream &os)
+std::ostream &NJS::SwitchStatement::Print(std::ostream &os)
 {
     Condition->Print(os << "switch (") << ") {" << std::endl;
     Indent();
@@ -59,14 +59,14 @@ std::ostream &NJS::SwitchStmt::Print(std::ostream &os)
                 os << ", ";
             entries_[i]->Print(os);
         }
-        if (const auto p = std::dynamic_pointer_cast<ScopeStmt>(case_))
+        if (const auto p = std::dynamic_pointer_cast<ScopeStatement>(case_))
             case_->Print(os << ' ');
         else
             case_->Print(os << " -> ");
         os << std::endl;
     }
     Spacing(os) << "default";
-    if (const auto p = std::dynamic_pointer_cast<ScopeStmt>(DefaultCase))
+    if (const auto p = std::dynamic_pointer_cast<ScopeStatement>(DefaultCase))
         DefaultCase->Print(os << ' ');
     else
         DefaultCase->Print(os << " -> ");
@@ -74,19 +74,19 @@ std::ostream &NJS::SwitchStmt::Print(std::ostream &os)
     return Spacing(os << std::endl) << '}';
 }
 
-NJS::SwitchExpr::SwitchExpr(
+NJS::SwitchExpression::SwitchExpression(
     SourceLocation where,
-    ExprPtr condition,
-    std::map<ExprPtr, std::vector<ExprPtr> > cases,
-    ExprPtr default_case)
-    : Expr(std::move(where)),
+    ExpressionPtr condition,
+    std::map<ExpressionPtr, std::vector<ExpressionPtr> > cases,
+    ExpressionPtr default_case)
+    : Expression(std::move(where)),
       Condition(std::move(condition)),
       Cases(std::move(cases)),
       DefaultCase(std::move(default_case))
 {
 }
 
-NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::SwitchExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto default_dest = llvm::BasicBlock::Create(builder.GetContext(), "default", parent);
@@ -137,7 +137,7 @@ NJS::ValuePtr NJS::SwitchExpr::GenLLVM(Builder &builder, const TypePtr &expected
     return RValue::Create(builder, result_type, phi_inst);
 }
 
-std::ostream &NJS::SwitchExpr::Print(std::ostream &os)
+std::ostream &NJS::SwitchExpression::Print(std::ostream &os)
 {
     Condition->Print(os << "switch (") << ") {" << std::endl;
     Indent();
@@ -150,14 +150,14 @@ std::ostream &NJS::SwitchExpr::Print(std::ostream &os)
                 os << ", ";
             entries_[i]->Print(os);
         }
-        if (const auto p = std::dynamic_pointer_cast<ScopeExpr>(case_))
+        if (const auto p = std::dynamic_pointer_cast<ScopeExpression>(case_))
             case_->Print(os << ' ');
         else
             case_->Print(os << " -> ");
         os << std::endl;
     }
     Spacing(os) << "default";
-    if (const auto p = std::dynamic_pointer_cast<ScopeExpr>(DefaultCase))
+    if (const auto p = std::dynamic_pointer_cast<ScopeExpression>(DefaultCase))
         DefaultCase->Print(os << ' ');
     else
         DefaultCase->Print(os << " -> ");

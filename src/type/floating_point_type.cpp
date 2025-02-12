@@ -13,7 +13,7 @@ bool NJS::FloatingPointType::IsPrimitive() const
     return true;
 }
 
-bool NJS::FloatingPointType::IsFP() const
+bool NJS::FloatingPointType::IsFloatingPoint() const
 {
     return true;
 }

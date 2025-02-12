@@ -1,10 +1,10 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/Param.hpp>
+#include <NJS/Parameter.hpp>
 #include <NJS/Type.hpp>
 
-NJS::DestructureArray::DestructureArray(std::vector<ParamPtr> elements)
-    : Param(""),
+NJS::DestructureArray::DestructureArray(std::vector<ParameterPtr> elements)
+    : Parameter(""),
       Elements(std::move(elements))
 {
 }
@@ -27,17 +27,17 @@ void NJS::DestructureArray::CreateVars(
     }
 }
 
-std::ostream &NJS::DestructureArray::Print(std::ostream &os)
+std::ostream &NJS::DestructureArray::Print(std::ostream &stream)
 {
-    os << "[ ";
+    stream << "[ ";
     for (unsigned i = 0; i < Elements.size(); ++i)
     {
         if (i > 0)
-            os << ", ";
-        Elements[i]->Print(os);
+            stream << ", ";
+        Elements[i]->Print(stream);
     }
-    os << " ]";
+    stream << " ]";
     if (Type)
-        Type->Print(os << ": ");
-    return os;
+        Type->Print(stream << ": ");
+    return stream;
 }

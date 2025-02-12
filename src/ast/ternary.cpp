@@ -6,15 +6,19 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::TernaryExpr::TernaryExpr(SourceLocation where, ExprPtr condition, ExprPtr then_body, ExprPtr else_body)
-    : Expr(std::move(where)),
+NJS::TernaryExpression::TernaryExpression(
+    SourceLocation where,
+    ExpressionPtr condition,
+    ExpressionPtr then_body,
+    ExpressionPtr else_body)
+    : Expression(std::move(where)),
       Condition(std::move(condition)),
       ThenBody(std::move(then_body)),
       ElseBody(std::move(else_body))
 {
 }
 
-NJS::ValuePtr NJS::TernaryExpr::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::TernaryExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent);
@@ -55,7 +59,7 @@ NJS::ValuePtr NJS::TernaryExpr::GenLLVM(Builder &builder, const TypePtr &expecte
     return RValue::Create(builder, result_type, phi_inst);
 }
 
-std::ostream &NJS::TernaryExpr::Print(std::ostream &os)
+std::ostream &NJS::TernaryExpression::Print(std::ostream &os)
 {
     return ElseBody->Print(ThenBody->Print(Condition->Print(os) << " ? ") << " : ");
 }

@@ -1,21 +1,21 @@
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::StmtPtr NJS::Parser::ParseIfStmt()
+NJS::StatementPtr NJS::Parser::ParseIfStatement()
 {
     const auto where = Expect("if").Where;
 
     Expect("(");
 
-    const auto condition = ParseExpr();
+    const auto condition = ParseExpression();
 
     Expect(")");
 
-    const auto then = ParseStmt();
+    const auto then = ParseStatement();
 
-    StmtPtr else_;
+    StatementPtr else_;
     if (NextAt("else"))
-        else_ = ParseStmt();
+        else_ = ParseStatement();
 
-    return std::make_shared<IfStmt>(where, condition, then, else_);
+    return std::make_shared<IfStatement>(where, condition, then, else_);
 }

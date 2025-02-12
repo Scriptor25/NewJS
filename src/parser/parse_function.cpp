@@ -1,11 +1,11 @@
 #include <NJS/AST.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/Param.hpp>
+#include <NJS/Parameter.hpp>
 #include <NJS/Parser.hpp>
 #include <NJS/TemplateContext.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
+NJS::StatementPtr NJS::Parser::ParseFunctionStatement()
 {
     const auto where = m_Token.Where;
 
@@ -39,7 +39,7 @@ NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
 
     const auto name = (fn == FnType_Operator ? Expect(TokenType_Operator) : Expect(TokenType_Symbol)).StringValue;
 
-    std::vector<ParamPtr> args;
+    std::vector<ParameterPtr> args;
     Expect("(");
     const auto vararg = ParseParamList(args, ")");
 
@@ -49,9 +49,9 @@ NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
     else
         result_type = m_TypeContext.GetVoidType();
 
-    StmtPtr body;
+    StatementPtr body;
     if (fn != FnType_Extern && At("{"))
-        body = ParseScopeStmt();
+        body = ParseScopeStatement();
 
     if (fn == FnType_Template)
     {
@@ -62,14 +62,14 @@ NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
         m_TemplateContext.InsertFunction(name, templ_args, m_TemplateWhere, m_TemplateBuffer.str());
     }
 
-    return std::make_shared<FunctionStmt>(where, false, fn, name, args, vararg, result_type, body);
+    return std::make_shared<FunctionStatement>(where, false, fn, name, args, vararg, result_type, body);
 }
 
-NJS::ExprPtr NJS::Parser::ParseFunctionExpr()
+NJS::ExpressionPtr NJS::Parser::ParseFunctionExpression()
 {
     const auto where = Expect("?").Where;
 
-    std::vector<ParamPtr> args;
+    std::vector<ParameterPtr> args;
     bool vararg = false;
     if (NextAt("("))
         vararg = ParseParamList(args, ")");
@@ -84,7 +84,7 @@ NJS::ExprPtr NJS::Parser::ParseFunctionExpr()
     for (const auto &arg: args)
         arg_types.push_back(arg->Type);
 
-    const auto body = ParseScopeStmt();
+    const auto body = ParseScopeStatement();
 
-    return std::make_shared<FunctionExpr>(where, args, vararg, result_type, body);
+    return std::make_shared<FunctionExpression>(where, args, vararg, result_type, body);
 }

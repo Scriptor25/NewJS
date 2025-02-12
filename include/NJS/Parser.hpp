@@ -12,7 +12,7 @@
 
 namespace NJS
 {
-    using Consumer = std::function<void(const StmtPtr &stmt)>;
+    using Consumer = std::function<void(const StatementPtr &)>;
 
     struct Macro
     {
@@ -62,34 +62,34 @@ namespace NJS
         bool ParseTypeList(std::vector<TypePtr> &types, const std::string_view &delim);
         void ParseTypeMap(std::map<std::string, TypePtr> &types, const std::string_view &delim);
 
-        ParamPtr ParseParam();
-        bool ParseParamList(std::vector<ParamPtr> &params, const std::string_view &delim);
-        void ParseParamMap(std::map<std::string, ParamPtr> &params, const std::string_view &delim);
+        ParameterPtr ParseParam();
+        bool ParseParamList(std::vector<ParameterPtr> &params, const std::string_view &delim);
+        void ParseParamMap(std::map<std::string, ParameterPtr> &params, const std::string_view &delim);
 
         void ParseTypeAlias();
 
-        StmtPtr ParseImportStmt();
+        StatementPtr ParseImportStatement();
         ImportMapping ParseImportMapping();
 
-        StmtPtr ParseStmt();
-        StmtPtr ParseVariableStmt();
-        StmtPtr ParseForStmt();
-        StmtPtr ParseFunctionStmt();
-        StmtPtr ParseIfStmt();
-        StmtPtr ParseReturnStmt();
-        StmtPtr ParseScopeStmt();
-        StmtPtr ParseSwitchStmt();
+        StatementPtr ParseStatement();
+        StatementPtr ParseVariableStatement();
+        StatementPtr ParseForStatement();
+        StatementPtr ParseFunctionStatement();
+        StatementPtr ParseIfStatement();
+        StatementPtr ParseReturnStatement();
+        StatementPtr ParseScopeStatement();
+        StatementPtr ParseSwitchStatement();
 
-        ExprPtr ParseExpr();
-        ExprPtr ParseBinaryExpr(ExprPtr lhs, unsigned min_pre);
-        ExprPtr ParseFormatExpr();
-        ExprPtr ParseFunctionExpr();
-        ExprPtr ParseOperandExpr();
-        ExprPtr ParsePrimaryExpr();
-        ExprPtr ParseScopeExpr();
-        ExprPtr ParseStructExpr();
-        ExprPtr ParseSwitchExpr();
-        ExprPtr ParseTupleExpr();
+        ExpressionPtr ParseExpression();
+        ExpressionPtr ParseBinaryExpression(ExpressionPtr lhs, unsigned min_pre);
+        ExpressionPtr ParseFormatExpression();
+        ExpressionPtr ParseFunctionExpression();
+        ExpressionPtr ParseOperandExpression();
+        ExpressionPtr ParsePrimaryExpression();
+        ExpressionPtr ParseScopeExpression();
+        ExpressionPtr ParseStructExpression();
+        ExpressionPtr ParseSwitchExpression();
+        ExpressionPtr ParseTupleExpression();
 
         TypeContext &m_TypeContext;
         TemplateContext &m_TemplateContext;

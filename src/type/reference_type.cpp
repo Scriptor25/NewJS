@@ -11,7 +11,7 @@ bool NJS::ReferenceType::IsPrimitive() const
     return true;
 }
 
-bool NJS::ReferenceType::IsRef() const
+bool NJS::ReferenceType::IsReference() const
 {
     return true;
 }

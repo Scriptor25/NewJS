@@ -2,7 +2,7 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Import.hpp>
-#include <NJS/Param.hpp>
+#include <NJS/Parameter.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
@@ -34,14 +34,14 @@ void NJS::ImportMapping::MapFunctions(
     Builder &builder,
     const SourceLocation &where,
     const std::string_view &module_id,
-    const std::vector<StmtPtr> &functions) const
+    const std::vector<StatementPtr> &functions) const
 {
     std::map<std::string, TypePtr> element_types;
     std::map<std::string, ValuePtr> elements;
 
     for (const auto &ptr: functions)
     {
-        const auto &fn = *std::dynamic_pointer_cast<FunctionStmt>(ptr);
+        const auto &fn = *std::dynamic_pointer_cast<FunctionStatement>(ptr);
 
         std::string name;
         switch (fn.FnID)

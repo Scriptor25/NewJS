@@ -43,31 +43,31 @@ NJS::TypePtr NJS::Parser::ParseType()
         else if (sym == "str")
             type = m_TypeContext.GetStringType();
         else if (sym == "i1")
-            type = m_TypeContext.GetIntType(1, true);
+            type = m_TypeContext.GetIntegerType(1, true);
         else if (sym == "i8")
-            type = m_TypeContext.GetIntType(8, true);
+            type = m_TypeContext.GetIntegerType(8, true);
         else if (sym == "i16")
-            type = m_TypeContext.GetIntType(16, true);
+            type = m_TypeContext.GetIntegerType(16, true);
         else if (sym == "i32")
-            type = m_TypeContext.GetIntType(32, true);
+            type = m_TypeContext.GetIntegerType(32, true);
         else if (sym == "i64")
-            type = m_TypeContext.GetIntType(64, true);
+            type = m_TypeContext.GetIntegerType(64, true);
         else if (sym == "u1")
-            type = m_TypeContext.GetIntType(1, false);
+            type = m_TypeContext.GetIntegerType(1, false);
         else if (sym == "u8")
-            type = m_TypeContext.GetIntType(8, false);
+            type = m_TypeContext.GetIntegerType(8, false);
         else if (sym == "u16")
-            type = m_TypeContext.GetIntType(16, false);
+            type = m_TypeContext.GetIntegerType(16, false);
         else if (sym == "u32")
-            type = m_TypeContext.GetIntType(32, false);
+            type = m_TypeContext.GetIntegerType(32, false);
         else if (sym == "u64")
-            type = m_TypeContext.GetIntType(64, false);
+            type = m_TypeContext.GetIntegerType(64, false);
         else if (sym == "f16")
-            type = m_TypeContext.GetFPType(16);
+            type = m_TypeContext.GetFloatingPointType(16);
         else if (sym == "f32")
-            type = m_TypeContext.GetFPType(32);
+            type = m_TypeContext.GetFloatingPointType(32);
         else if (sym == "f64")
-            type = m_TypeContext.GetFPType(64);
+            type = m_TypeContext.GetFloatingPointType(64);
         else
             type = m_TypeContext.GetNoType(sym);
     }
@@ -89,7 +89,7 @@ NJS::TypePtr NJS::Parser::ParseType()
 
         if (NextAt("&"))
         {
-            type = m_TypeContext.GetRefType(type);
+            type = m_TypeContext.GetReferenceType(type);
             continue;
         }
 

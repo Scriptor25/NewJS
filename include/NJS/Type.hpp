@@ -36,10 +36,10 @@ namespace NJS
 
         [[nodiscard]] virtual bool IsPrimitive() const;
         [[nodiscard]] virtual bool IsVoid() const;
-        [[nodiscard]] virtual bool IsInt() const;
-        [[nodiscard]] virtual bool IsFP() const;
-        [[nodiscard]] virtual bool IsPtr() const;
-        [[nodiscard]] virtual bool IsRef() const;
+        [[nodiscard]] virtual bool IsInteger() const;
+        [[nodiscard]] virtual bool IsFloatingPoint() const;
+        [[nodiscard]] virtual bool IsPointer() const;
+        [[nodiscard]] virtual bool IsReference() const;
         [[nodiscard]] virtual bool IsArray() const;
         [[nodiscard]] virtual bool IsStruct() const;
         [[nodiscard]] virtual bool IsTuple() const;
@@ -113,7 +113,7 @@ namespace NJS
         static std::string GenString(unsigned bits, bool is_signed);
 
         [[nodiscard]] bool IsPrimitive() const override;
-        [[nodiscard]] bool IsInt() const override;
+        [[nodiscard]] bool IsInteger() const override;
         [[nodiscard]] bool IsSigned() const override;
         [[nodiscard]] unsigned GetBits() const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
@@ -136,7 +136,7 @@ namespace NJS
         static std::string GenString(unsigned bits);
 
         [[nodiscard]] bool IsPrimitive() const override;
-        [[nodiscard]] bool IsFP() const override;
+        [[nodiscard]] bool IsFloatingPoint() const override;
         [[nodiscard]] unsigned GetBits() const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
@@ -157,7 +157,7 @@ namespace NJS
         static std::string GenString(const TypePtr &element_type);
 
         [[nodiscard]] bool IsPrimitive() const override;
-        [[nodiscard]] bool IsPtr() const override;
+        [[nodiscard]] bool IsPointer() const override;
         [[nodiscard]] TypePtr GetElement() const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
@@ -178,7 +178,7 @@ namespace NJS
         static std::string GenString(const TypePtr &element_type);
 
         [[nodiscard]] bool IsPrimitive() const override;
-        [[nodiscard]] bool IsRef() const override;
+        [[nodiscard]] bool IsReference() const override;
         [[nodiscard]] TypePtr GetElement() const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 

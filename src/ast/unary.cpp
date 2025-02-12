@@ -8,15 +8,19 @@
 
 using namespace std::string_view_literals;
 
-NJS::UnaryExpr::UnaryExpr(SourceLocation where, std::string_view operator_, const bool post, ExprPtr operand)
-    : Expr(std::move(where)),
+NJS::UnaryExpression::UnaryExpression(
+    SourceLocation where,
+    std::string_view operator_,
+    const bool post,
+    ExpressionPtr operand)
+    : Expression(std::move(where)),
       Operator(std::move(operator_)),
       Post(post),
       Operand(std::move(operand))
 {
 }
 
-NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::UnaryExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
     static const std::map<std::string_view, UnaryOperator> fns
     {
@@ -48,7 +52,7 @@ NJS::ValuePtr NJS::UnaryExpr::GenLLVM(Builder &builder, const TypePtr &expected)
     Error(Where, "undefined unary operator {}{}", Operator, operand->GetType());
 }
 
-std::ostream &NJS::UnaryExpr::Print(std::ostream &os)
+std::ostream &NJS::UnaryExpression::Print(std::ostream &os)
 {
     return Operand->Print(os << (Post ? "" : Operator)) << (Post ? Operator : "");
 }

@@ -6,8 +6,13 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::ForStmt::ForStmt(SourceLocation where, StmtPtr initializer, ExprPtr condition, StmtPtr loop, StmtPtr body)
-    : Stmt(std::move(where)),
+NJS::ForStatement::ForStatement(
+    SourceLocation where,
+    StatementPtr initializer,
+    ExpressionPtr condition,
+    StatementPtr loop,
+    StatementPtr body)
+    : Statement(std::move(where)),
       Initializer(std::move(initializer)),
       Condition(std::move(condition)),
       Loop(std::move(loop)),
@@ -15,7 +20,7 @@ NJS::ForStmt::ForStmt(SourceLocation where, StmtPtr initializer, ExprPtr conditi
 {
 }
 
-void NJS::ForStmt::GenVoidLLVM(Builder &builder) const
+void NJS::ForStatement::GenVoidLLVM(Builder &builder) const
 {
     builder.StackPush();
 
@@ -47,7 +52,7 @@ void NJS::ForStmt::GenVoidLLVM(Builder &builder) const
     builder.StackPop();
 }
 
-std::ostream &NJS::ForStmt::Print(std::ostream &os)
+std::ostream &NJS::ForStatement::Print(std::ostream &os)
 {
     os << "for (";
     if (Initializer)

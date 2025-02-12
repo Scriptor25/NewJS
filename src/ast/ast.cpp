@@ -1,17 +1,17 @@
 #include <utility>
 #include <NJS/AST.hpp>
 
-NJS::Stmt::Stmt(SourceLocation where)
+NJS::Statement::Statement(SourceLocation where)
     : Where(std::move(where))
 {
 }
 
-NJS::Expr::Expr(SourceLocation where)
-    : Stmt(std::move(where))
+NJS::Expression::Expression(SourceLocation where)
+    : Statement(std::move(where))
 {
 }
 
-void NJS::Expr::GenVoidLLVM(Builder &builder) const
+void NJS::Expression::GenVoidLLVM(Builder &builder) const
 {
     (void) GenLLVM(builder, {});
 }

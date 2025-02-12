@@ -7,27 +7,27 @@ NJS::TypePtr NJS::max(TypeContext &type_context, const TypePtr &type_a, const Ty
     if (type_a == type_b)
         return type_a;
 
-    if (type_a->IsInt())
+    if (type_a->IsInteger())
     {
-        if (type_b->IsInt())
-            return type_context.GetIntType(
+        if (type_b->IsInteger())
+            return type_context.GetIntegerType(
                 std::max(type_a->GetBits(), type_b->GetBits()),
                 type_a->IsSigned() || type_b->IsSigned());
-        if (type_b->IsFP())
-            return type_context.GetFPType(std::max(type_a->GetBits(), type_b->GetBits()));
-        if (type_b->IsPtr())
+        if (type_b->IsFloatingPoint())
+            return type_context.GetFloatingPointType(std::max(type_a->GetBits(), type_b->GetBits()));
+        if (type_b->IsPointer())
             return type_b;
     }
 
-    if (type_a->IsFP())
+    if (type_a->IsFloatingPoint())
     {
-        if (type_b->IsInt() || type_b->IsFP())
-            return type_context.GetFPType(std::max(type_a->GetBits(), type_b->GetBits()));
+        if (type_b->IsInteger() || type_b->IsFloatingPoint())
+            return type_context.GetFloatingPointType(std::max(type_a->GetBits(), type_b->GetBits()));
     }
 
-    if (type_a->IsPtr())
+    if (type_a->IsPointer())
     {
-        if (type_b->IsInt())
+        if (type_b->IsInteger())
             return type_a;
     }
 
@@ -61,22 +61,22 @@ bool NJS::Type::IsVoid() const
     return false;
 }
 
-bool NJS::Type::IsInt() const
+bool NJS::Type::IsInteger() const
 {
     return false;
 }
 
-bool NJS::Type::IsFP() const
+bool NJS::Type::IsFloatingPoint() const
 {
     return false;
 }
 
-bool NJS::Type::IsPtr() const
+bool NJS::Type::IsPointer() const
 {
     return false;
 }
 
-bool NJS::Type::IsRef() const
+bool NJS::Type::IsReference() const
 {
     return false;
 }

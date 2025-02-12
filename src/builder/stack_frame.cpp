@@ -15,11 +15,11 @@ NJS::ValuePtr &NJS::StackFrame::operator[](const std::string_view &name)
     return Values[std::string(name)];
 }
 
-std::string NJS::StackFrame::GetValueName(const std::string_view &name) const
+std::string NJS::StackFrame::GetChildName(const std::string_view &name) const
 {
     if (name.empty())
-        return ParentName;
-    if (ParentName.empty())
+        return Name;
+    if (Name.empty())
         return std::string(name);
-    return ParentName + '.' + std::string(name);
+    return Name + '.' + std::string(name);
 }

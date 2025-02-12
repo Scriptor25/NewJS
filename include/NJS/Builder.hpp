@@ -15,9 +15,9 @@ namespace NJS
         ValuePtr operator[](const std::string_view &) const;
         ValuePtr &operator[](const std::string_view &);
 
-        [[nodiscard]] std::string GetValueName(const std::string_view &) const;
+        [[nodiscard]] std::string GetChildName(const std::string_view &) const;
 
-        std::string ParentName;
+        std::string Name;
         TypePtr ResultType;
         std::map<std::string, ValuePtr> Values;
     };
@@ -86,25 +86,29 @@ namespace NJS
 
         void GetFormat(llvm::FunctionCallee &callee) const;
 
-        void StackPush(const std::string &name = {}, const TypePtr &result_type = {});
+        void StackPush(const std::string_view &name = {}, const TypePtr &result_type = {});
         void StackPop();
 
-        [[nodiscard]] std::string GetName(bool absolute, const std::string &name) const;
+        [[nodiscard]] std::string GetName(bool absolute, const std::string_view &name) const;
 
-        void DefineOperator(const std::string &sym, const TypePtr &val, const TypePtr &result, llvm::Value *callee);
         void DefineOperator(
-            const std::string &sym,
+            const std::string_view &sym,
+            const TypePtr &val,
+            const TypePtr &result,
+            llvm::Value *callee);
+        void DefineOperator(
+            const std::string_view &sym,
             const TypePtr &lhs,
             const TypePtr &rhs,
             const TypePtr &result,
             llvm::Value *callee);
-        OperatorRef GetOperator(const std::string &sym, const TypePtr &val);
-        OperatorRef GetOperator(const std::string &sym, const TypePtr &lhs, const TypePtr &rhs);
+        OperatorRef GetOperator(const std::string_view &sym, const TypePtr &val);
+        OperatorRef GetOperator(const std::string_view &sym, const TypePtr &lhs, const TypePtr &rhs);
 
         ValuePtr &DefineVariable(const SourceLocation &where, const std::string_view &name);
         ValuePtr &GetVariable(const SourceLocation &where, const std::string_view &name);
 
-        TypePtr &ResultType();
+        TypePtr &CurrentFunctionResultType();
 
     private:
         TypeContext &m_TypeContext;

@@ -9,9 +9,6 @@ NJS::ValuePtr NJS::Builder::CreateMember(const SourceLocation &where, const Valu
 
     const auto [type_, index_] = object_type->GetMember(name);
 
-    if (index_ == ~0)
-        Error(where, "no member '{}' in {}", name, object_type);
-
     if (object->IsL())
     {
         const auto ty = object_type->GetLLVM(where, *this);

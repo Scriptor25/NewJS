@@ -18,10 +18,10 @@ NJS::Token &NJS::Parser::Next()
         State_Symbol,
     };
 
-    State state = State_Idle;
+    auto state = State_Idle;
     SourceLocation where;
     std::string value;
-    bool is_float = false;
+    auto is_float = false;
 
     while (m_C >= 0 || state != State_Idle)
     {
@@ -154,13 +154,11 @@ NJS::Token &NJS::Parser::Next()
                     Get();
                     if (m_C == '/')
                         state = State_Idle;
-                    else
-                        if (m_C == '\n')
-                            NewLine();
-                }
-                else
-                    if (m_C == '\n')
+                    else if (m_C == '\n')
                         NewLine();
+                }
+                else if (m_C == '\n')
+                    NewLine();
                 break;
 
             case State_Operator:

@@ -6,28 +6,28 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::CallExpr::CallExpr(SourceLocation where, ExprPtr callee, std::vector<ExprPtr> args)
-    : Expr(std::move(where)),
+NJS::CallExpression::CallExpression(SourceLocation where, ExpressionPtr callee, std::vector<ExpressionPtr> arguments)
+    : Expression(std::move(where)),
       Callee(std::move(callee)),
-      Args(std::move(args))
+      Arguments(std::move(arguments))
 {
 }
 
-NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     const auto callee = Callee->GenLLVM(builder, {});
     const auto callee_type = std::dynamic_pointer_cast<FunctionType>(callee->GetType());
     if (!callee_type)
         Error(Where, "invalid callee: callee is not a function");
 
-    std::vector<llvm::Value *> arg_values(Args.size());
-    for (unsigned i = 0; i < Args.size(); ++i)
+    std::vector<llvm::Value *> arg_values(Arguments.size());
+    for (unsigned i = 0; i < Arguments.size(); ++i)
     {
         auto param_type = callee_type->Param(i);
-        auto &arg = Args[i];
+        auto &arg = Arguments[i];
         auto arg_value = arg->GenLLVM(builder, param_type);
 
-        const auto param_is_ref = param_type->IsRef();
+        const auto param_is_ref = param_type->IsReference();
         if (param_is_ref)
             param_type = param_type->GetElement();
 
@@ -43,20 +43,20 @@ NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder &builder, const TypePtr &expected) 
         callee->Load(Where),
         arg_values);
 
-    if (callee_type->GetResult()->IsRef())
+    if (callee_type->GetResult()->IsReference())
         return LValue::Create(builder, callee_type->GetResult()->GetElement(), result_value);
 
     return RValue::Create(builder, callee_type->GetResult(), result_value);
 }
 
-std::ostream &NJS::CallExpr::Print(std::ostream &os)
+std::ostream &NJS::CallExpression::Print(std::ostream &stream)
 {
-    Callee->Print(os) << '(';
-    for (unsigned i = 0; i < Args.size(); ++i)
+    Callee->Print(stream) << '(';
+    for (unsigned i = 0; i < Arguments.size(); ++i)
     {
         if (i > 0)
-            os << ", ";
-        Args[i]->Print(os);
+            stream << ", ";
+        Arguments[i]->Print(stream);
     }
-    return os << ')';
+    return stream << ')';
 }

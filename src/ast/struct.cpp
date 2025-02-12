@@ -5,13 +5,13 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::StructExpr::StructExpr(SourceLocation where, std::map<std::string, ExprPtr> elements)
-    : Expr(std::move(where)),
+NJS::StructExpression::StructExpression(SourceLocation where, std::map<std::string, ExpressionPtr> elements)
+    : Expression(std::move(where)),
       Elements(std::move(elements))
 {
 }
 
-NJS::ValuePtr NJS::StructExpr::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::StructExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
     std::map<std::string, ValuePtr> elements;
     std::map<std::string, TypePtr> element_types;
@@ -38,7 +38,7 @@ NJS::ValuePtr NJS::StructExpr::GenLLVM(Builder &builder, const TypePtr &expected
     return RValue::Create(builder, type, object);
 }
 
-std::ostream &NJS::StructExpr::Print(std::ostream &os)
+std::ostream &NJS::StructExpression::Print(std::ostream &os)
 {
     if (Elements.empty())
         return os << "{}";

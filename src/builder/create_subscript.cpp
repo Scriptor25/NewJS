@@ -16,7 +16,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, const V
         array,
         RValue::Create(
             *this,
-            GetTypeContext().GetIntType(64, false),
+            GetTypeContext().GetIntegerType(64, false),
             GetBuilder().getInt64(index)));
 }
 
@@ -24,7 +24,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, const V
 {
     const auto array_type = array->GetType();
 
-    if (array_type->IsPtr())
+    if (array_type->IsPointer())
     {
         const auto element_type = array_type->GetElement();
         const auto ptr = GetBuilder().CreateGEP(

@@ -62,8 +62,8 @@ std::string NJS::TemplateContext::InflateFunctionTemplate(
 
     std::stringstream stream('?' + source_, std::ios_base::in);
     Parser parser(parent.m_TypeContext, parent.m_TemplateContext, stream, where_, parent.m_MacroMap);
-    const auto inflated = std::dynamic_pointer_cast<FunctionExpr>(parser.ParseFunctionExpr());
-    ref = std::make_shared<FunctionStmt>(
+    const auto inflated = std::dynamic_pointer_cast<FunctionExpression>(parser.ParseFunctionExpression());
+    ref = std::make_shared<FunctionStatement>(
         inflated->Where,
         true,
         FnType_Function,

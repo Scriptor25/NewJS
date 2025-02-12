@@ -1,18 +1,18 @@
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::StmtPtr NJS::Parser::ParseSwitchStmt()
+NJS::StatementPtr NJS::Parser::ParseSwitchStatement()
 {
     const auto where = Expect("switch").Where;
 
     Expect("(");
 
-    const auto condition = ParseExpr();
+    const auto condition = ParseExpression();
 
     Expect(")");
 
-    std::map<StmtPtr, std::vector<ExprPtr> > cases;
-    StmtPtr default_case;
+    std::map<StatementPtr, std::vector<ExpressionPtr> > cases;
+    StatementPtr default_case;
 
     Expect("{");
     while (!At("}") && !AtEof())
@@ -20,44 +20,44 @@ NJS::StmtPtr NJS::Parser::ParseSwitchStmt()
         if (!default_case && NextAt("default"))
         {
             if (NextAt("->"))
-                default_case = ParseStmt();
+                default_case = ParseStatement();
             else
-                default_case = ParseScopeStmt();
+                default_case = ParseScopeStatement();
             continue;
         }
 
         Expect("case");
 
-        std::vector<ExprPtr> case_entries;
+        std::vector<ExpressionPtr> case_entries;
         do
-            case_entries.push_back(ParseExpr());
+            case_entries.push_back(ParseExpression());
         while (NextAt(","));
 
-        StmtPtr value;
+        StatementPtr value;
         if (NextAt("->"))
-            value = ParseStmt();
+            value = ParseStatement();
         else
-            value = ParseScopeStmt();
+            value = ParseScopeStatement();
 
         cases[value] = case_entries;
     }
     Expect("}");
 
-    return std::make_shared<SwitchStmt>(where, condition, cases, default_case);
+    return std::make_shared<SwitchStatement>(where, condition, cases, default_case);
 }
 
-NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
+NJS::ExpressionPtr NJS::Parser::ParseSwitchExpression()
 {
     const auto where = Expect("switch").Where;
 
     Expect("(");
 
-    const auto condition = ParseExpr();
+    const auto condition = ParseExpression();
 
     Expect(")");
 
-    std::map<ExprPtr, std::vector<ExprPtr> > cases;
-    ExprPtr default_case;
+    std::map<ExpressionPtr, std::vector<ExpressionPtr> > cases;
+    ExpressionPtr default_case;
 
     Expect("{");
     while (!At("}") && !AtEof())
@@ -65,28 +65,28 @@ NJS::ExprPtr NJS::Parser::ParseSwitchExpr()
         if (!default_case && NextAt("default"))
         {
             if (NextAt("->"))
-                default_case = ParseExpr();
+                default_case = ParseExpression();
             else
-                default_case = ParseScopeExpr();
+                default_case = ParseScopeExpression();
             continue;
         }
 
         Expect("case");
 
-        std::vector<ExprPtr> case_entries;
+        std::vector<ExpressionPtr> case_entries;
         do
-            case_entries.push_back(ParseExpr());
+            case_entries.push_back(ParseExpression());
         while (NextAt(","));
 
-        ExprPtr value;
+        ExpressionPtr value;
         if (NextAt("->"))
-            value = ParseExpr();
+            value = ParseExpression();
         else
-            value = ParseScopeExpr();
+            value = ParseScopeExpression();
 
         cases[value] = case_entries;
     }
     Expect("}");
 
-    return std::make_shared<SwitchExpr>(where, condition, cases, default_case);
+    return std::make_shared<SwitchExpression>(where, condition, cases, default_case);
 }

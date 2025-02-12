@@ -8,10 +8,10 @@
 
 namespace NJS
 {
-    struct Param
+    struct Parameter
     {
-        explicit Param(std::string_view name);
-        virtual ~Param() = default;
+        explicit Parameter(std::string_view name);
+        virtual ~Parameter() = default;
 
         virtual bool RequireValue();
         virtual void CreateVars(Builder &builder, const SourceLocation &where, bool is_const, const ValuePtr &value);
@@ -22,27 +22,27 @@ namespace NJS
         TypePtr Type;
     };
 
-    struct DestructureObject final : Param
+    struct DestructureObject final : Parameter
     {
-        explicit DestructureObject(std::map<std::string, ParamPtr> elements);
+        explicit DestructureObject(std::map<std::string, ParameterPtr> elements);
 
         bool RequireValue() override;
         void CreateVars(Builder &builder, const SourceLocation &where, bool is_const, const ValuePtr &value) override;
 
         std::ostream &Print(std::ostream &stream) override;
 
-        std::map<std::string, ParamPtr> Elements;
+        std::map<std::string, ParameterPtr> Elements;
     };
 
-    struct DestructureArray final : Param
+    struct DestructureArray final : Parameter
     {
-        explicit DestructureArray(std::vector<ParamPtr> elements);
+        explicit DestructureArray(std::vector<ParameterPtr> elements);
 
         bool RequireValue() override;
         void CreateVars(Builder &builder, const SourceLocation &where, bool is_const, const ValuePtr &value) override;
 
         std::ostream &Print(std::ostream &stream) override;
 
-        std::vector<ParamPtr> Elements;
+        std::vector<ParameterPtr> Elements;
     };
 }

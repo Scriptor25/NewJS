@@ -2,13 +2,13 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 
-NJS::ScopeStmt::ScopeStmt(SourceLocation where, std::vector<StmtPtr> children)
-    : Stmt(std::move(where)),
+NJS::ScopeStatement::ScopeStatement(SourceLocation where, std::vector<StatementPtr> children)
+    : Statement(std::move(where)),
       Children(std::move(children))
 {
 }
 
-void NJS::ScopeStmt::GenVoidLLVM(Builder &builder) const
+void NJS::ScopeStatement::GenVoidLLVM(Builder &builder) const
 {
     builder.StackPush();
     for (const auto &child: Children)
@@ -16,7 +16,7 @@ void NJS::ScopeStmt::GenVoidLLVM(Builder &builder) const
     builder.StackPop();
 }
 
-std::ostream &NJS::ScopeStmt::Print(std::ostream &os)
+std::ostream &NJS::ScopeStatement::Print(std::ostream &os)
 {
     if (Children.empty())
         return os << "{}";
@@ -29,14 +29,14 @@ std::ostream &NJS::ScopeStmt::Print(std::ostream &os)
     return Spacing(os) << '}';
 }
 
-NJS::ScopeExpr::ScopeExpr(SourceLocation where, std::vector<StmtPtr> children, ExprPtr last)
-    : Expr(std::move(where)),
+NJS::ScopeExpression::ScopeExpression(SourceLocation where, std::vector<StatementPtr> children, ExpressionPtr last)
+    : Expression(std::move(where)),
       Children(std::move(children)),
       Last(std::move(last))
 {
 }
 
-NJS::ValuePtr NJS::ScopeExpr::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::ScopeExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
     builder.StackPush();
     for (const auto &child: Children)
@@ -46,7 +46,7 @@ NJS::ValuePtr NJS::ScopeExpr::GenLLVM(Builder &builder, const TypePtr &expected)
     return result;
 }
 
-std::ostream &NJS::ScopeExpr::Print(std::ostream &os)
+std::ostream &NJS::ScopeExpression::Print(std::ostream &os)
 {
     if (Children.empty())
         return Last->Print(os << "{ ") << " }";

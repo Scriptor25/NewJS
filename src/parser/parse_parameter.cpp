@@ -1,25 +1,25 @@
-#include <NJS/Param.hpp>
+#include <NJS/Parameter.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::ParamPtr NJS::Parser::ParseParam()
+NJS::ParameterPtr NJS::Parser::ParseParam()
 {
-    ParamPtr param;
+    ParameterPtr param;
     if (NextAt("{"))
     {
-        std::map<std::string, ParamPtr> params;
+        std::map<std::string, ParameterPtr> params;
         ParseParamMap(params, "}");
         param = std::make_shared<DestructureObject>(params);
     }
     else if (NextAt("["))
     {
-        std::vector<ParamPtr> params;
+        std::vector<ParameterPtr> params;
         ParseParamList(params, "]");
         param = std::make_shared<DestructureArray>(params);
     }
     else
     {
         auto name = Expect(TokenType_Symbol).StringValue;
-        param = std::make_shared<Param>(name);
+        param = std::make_shared<Parameter>(name);
     }
 
     if (!NextAt(":"))
@@ -29,7 +29,7 @@ NJS::ParamPtr NJS::Parser::ParseParam()
     return param;
 }
 
-bool NJS::Parser::ParseParamList(std::vector<ParamPtr> &params, const std::string_view &delim)
+bool NJS::Parser::ParseParamList(std::vector<ParameterPtr> &params, const std::string_view &delim)
 {
     while (!At(delim) && !AtEof())
     {
@@ -51,7 +51,7 @@ bool NJS::Parser::ParseParamList(std::vector<ParamPtr> &params, const std::strin
     return false;
 }
 
-void NJS::Parser::ParseParamMap(std::map<std::string, ParamPtr> &params, const std::string_view &delim)
+void NJS::Parser::ParseParamMap(std::map<std::string, ParameterPtr> &params, const std::string_view &delim)
 {
     while (!At(delim) && !AtEof())
     {
@@ -59,7 +59,7 @@ void NJS::Parser::ParseParamMap(std::map<std::string, ParamPtr> &params, const s
         if (NextAt(":"))
             params[name] = ParseParam();
         else
-            params[name] = std::make_shared<Param>(name);
+            params[name] = std::make_shared<Parameter>(name);
 
         if (!At(delim))
             Expect(",");

@@ -6,19 +6,19 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::FormatExpr::FormatExpr(
+NJS::FormatExpression::FormatExpression(
     SourceLocation where,
     const unsigned count,
-    std::map<unsigned, std::string> static_expr,
-    std::map<unsigned, ExprPtr> dynamic_expr)
-    : Expr(std::move(where)),
+    std::map<unsigned, std::string> static_expressions,
+    std::map<unsigned, ExpressionPtr> dynamic_expressions)
+    : Expression(std::move(where)),
       Count(count),
-      StaticExpr(std::move(static_expr)),
-      DynamicExpr(std::move(dynamic_expr))
+      StaticExpressions(std::move(static_expressions)),
+      DynamicExpressions(std::move(dynamic_expressions))
 {
 }
 
-NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
     constexpr auto BUFFER_SIZE = 1024;
 
@@ -31,10 +31,10 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder &builder, const TypePtr &) const
 
     for (unsigned i = 0; i < Count; ++i)
     {
-        if (StaticExpr.contains(i))
+        if (StaticExpressions.contains(i))
         {
-            const auto value = StaticExpr.at(i);
-            const auto string_value = StringExpr::GetString(builder, value);
+            const auto value = StaticExpressions.at(i);
+            const auto string_value = StringExpression::GetString(builder, value);
 
             args.push_back(builder.GetBuilder().getInt32(ID_POINTER));
             args.push_back(builder.GetBuilder().getInt32(ID_INT));
@@ -42,9 +42,9 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder &builder, const TypePtr &) const
             args.push_back(builder.GetBuilder().getInt32(1));
             args.push_back(string_value);
         }
-        else if (DynamicExpr.contains(i))
+        else if (DynamicExpressions.contains(i))
         {
-            const auto value = DynamicExpr.at(i)->GenLLVM(builder, {});
+            const auto value = DynamicExpressions.at(i)->GenLLVM(builder, {});
             value->GetType()->TypeInfo(Where, builder, args);
             if (value->GetType()->IsPrimitive())
                 args.push_back(value->Load(Where));
@@ -68,15 +68,15 @@ NJS::ValuePtr NJS::FormatExpr::GenLLVM(Builder &builder, const TypePtr &) const
     return RValue::Create(builder, builder.GetTypeContext().GetStringType(), buffer_pointer);
 }
 
-std::ostream &NJS::FormatExpr::Print(std::ostream &os)
+std::ostream &NJS::FormatExpression::Print(std::ostream &os)
 {
     os << "$\"";
     for (unsigned i = 0; i < Count; ++i)
     {
-        if (StaticExpr.contains(i))
-            os << StaticExpr[i];
-        else if (DynamicExpr.contains(i))
-            DynamicExpr[i]->Print(os << '{') << '}';
+        if (StaticExpressions.contains(i))
+            os << StaticExpressions[i];
+        else if (DynamicExpressions.contains(i))
+            DynamicExpressions[i]->Print(os << '{') << '}';
     }
     return os << '"';
 }

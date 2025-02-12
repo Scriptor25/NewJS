@@ -14,7 +14,7 @@ namespace NJS
             Builder &builder,
             const SourceLocation &where,
             const std::string_view &module_id,
-            const std::vector<StmtPtr> &functions) const;
+            const std::vector<StatementPtr> &functions) const;
 
         bool All;
         std::string Name;
