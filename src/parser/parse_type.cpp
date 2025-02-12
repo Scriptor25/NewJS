@@ -121,7 +121,7 @@ NJS::TypePtr NJS::Parser::ParseFunctionType()
     std::vector<TypePtr> args;
     const auto vararg = ParseTypeList(args, ")");
     TypePtr result;
-    if (NextAt(":"))
+    if (NextAt("=>"))
         result = ParseType();
     else
         result = m_TypeContext.GetVoidType();

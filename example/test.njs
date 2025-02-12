@@ -45,7 +45,7 @@ printArray(a1)
 for (let i: u32; i < 3; ++i)
     println($"a1[{i}] = {a1[i]}")
 
-function foo(): (): u32 {
+function foo(): () => u32 {
     function bar(): u32 {
         return 123
     }
@@ -124,7 +124,7 @@ vec_at<i8>(v, 0x8) = 'r'
 vec_at<i8>(v, 0x9) = 'l'
 vec_at<i8>(v, 0xA) = 'd'
 vec_at<i8>(v, 0xB) = '!'
-vec_push<i8>(v, '\x00')
+vec_push<i8>(v, 0)
 
 println(v.beg)
 vec_free<i8>(v)
