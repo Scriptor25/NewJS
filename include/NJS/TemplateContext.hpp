@@ -51,7 +51,7 @@ namespace NJS
         std::map<std::string, Template> m_TypeTemplates;
         std::map<std::string, Template> m_FunctionTemplates;
 
-        std::map<std::string, StatementPtr> m_InflatedFunctions;
+        std::set<std::string> m_InflatedFunctions;
         std::map<std::string, TypePtr> m_InflatedTypes;
     };
 }

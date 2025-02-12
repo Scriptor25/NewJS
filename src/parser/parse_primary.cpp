@@ -5,15 +5,15 @@
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
-static std::string to_upper(const std::string &src)
+static std::string to_upper(const std::string_view &src)
 {
-    std::string res;
-    for (const auto c: src)
-        res += static_cast<char>(std::toupper(c));
-    return res;
+    std::string string(src);
+    for (auto &c: string)
+        c = static_cast<char>(std::toupper(c));
+    return string;
 }
 
-static void replace_all(std::string &src, const std::string &find, const std::string &replace)
+static void replace_all(std::string &src, const std::string_view &find, const std::string_view &replace)
 {
     for (size_t pos; (pos = src.find(find)) != std::string::npos;)
         src.replace(pos, find.size(), replace);
@@ -42,7 +42,13 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
     }
 
     if (At(TokenType_String))
-        return std::make_shared<StringExpression>(where, Skip().StringValue);
+    {
+        std::string value;
+        do
+            value += Skip().StringValue;
+        while (At(TokenType_String));
+        return std::make_shared<StringExpression>(where, value);
+    }
 
     if (At(TokenType_Char))
         return std::make_shared<CharacterExpression>(where, Skip().StringValue[0]);
@@ -104,23 +110,21 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
 
         if (m_MacroMap.contains(name))
         {
-            auto [source_] = m_MacroMap[name];
+            const auto &[parameters_, source_] = m_MacroMap[name];
 
-            if (NextAt("!"))
+            auto source = source_;
+            if (!parameters_.empty())
             {
-                unsigned i = 0;
-
                 Expect("(");
-                while (!At(")") && !AtEof())
+                for (const auto &parameter: parameters_)
                 {
-                    std::string arg;
+                    std::string argument;
                     while (!At(",") && !At(")") && !AtEof())
-                        arg += Skip().StringValue + " ";
-                    arg.pop_back();
+                        argument += Skip().StringValue + ' ';
+                    argument.pop_back();
 
-                    const auto id = std::to_string(i++);
-                    replace_all(source_, "$$" + id, to_upper(arg));
-                    replace_all(source_, "$" + id, arg);
+                    replace_all(source, "##" + parameter, to_upper(argument));
+                    replace_all(source, "#" + parameter, argument);
 
                     if (!At(")"))
                         Expect(",");
@@ -128,7 +132,7 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
                 Expect(")");
             }
 
-            std::stringstream stream(source_);
+            std::stringstream stream(source);
             Parser parser(m_TypeContext, m_TemplateContext, stream, SourceLocation("<macro>"), m_MacroMap);
             return parser.ParseExpression();
         }

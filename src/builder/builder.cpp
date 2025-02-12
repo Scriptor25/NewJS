@@ -43,8 +43,9 @@ NJS::Builder::Builder(
             llvm::GlobalValue::ExternalLinkage,
             "main",
             GetModule());
+        function->getArg(0)->setName("argc");
+        function->getArg(1)->setName("argv");
         GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", function));
-
         CreateMember({}, process, "argc")->Store({}, function->getArg(0));
         CreateMember({}, process, "argv")->Store({}, function->getArg(1));
     }

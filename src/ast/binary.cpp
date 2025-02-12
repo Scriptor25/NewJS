@@ -138,20 +138,11 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
         return destination;
     }
 
-    const auto result_type = max(builder.GetTypeContext(), left_type, right_type);
-    left_operand = builder.CreateCast(Where, left_operand, result_type);
-    right_operand = builder.CreateCast(Where, right_operand, result_type);
+    const auto operand_type = max(builder.GetTypeContext(), left_type, right_type);
+    left_operand = builder.CreateCast(Where, left_operand, operand_type);
+    right_operand = builder.CreateCast(Where, right_operand, operand_type);
 
-    if (binary_operators.contains(operator_))
-        if (auto result_value = binary_operators.at(operator_)(
-            builder,
-            Where,
-            result_type,
-            left_operand->Load(Where),
-            right_operand->Load(Where)))
-            return result_value;
-
-    const auto assign = operator_.back() == '=';
+    const auto assign = assignment_operators.contains(operator_);
     if (assign)
         operator_.pop_back();
 
@@ -159,7 +150,7 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
         if (auto result_value = binary_operators.at(operator_)(
             builder,
             Where,
-            result_type,
+            operand_type,
             left_operand->Load(Where),
             right_operand->Load(Where)))
         {
@@ -171,10 +162,10 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
             return result_value;
         }
 
-    Error(Where, "undefined binary operator '{} {} {}'", result_type, Operator, result_type);
+    Error(Where, "undefined binary operator '{} {} {}'", operand_type, Operator, operand_type);
 }
 
-std::ostream &NJS::BinaryExpression::Print(std::ostream &os)
+std::ostream &NJS::BinaryExpression::Print(std::ostream &stream)
 {
-    return RightOperand->Print(LeftOperand->Print(os) << ' ' << Operator << ' ');
+    return RightOperand->Print(LeftOperand->Print(stream) << ' ' << Operator << ' ');
 }

@@ -13,10 +13,10 @@ namespace NJS
 {
     enum FunctionID
     {
-        FnType_Function,
-        FnType_Extern,
-        FnType_Operator,
-        FnType_Template,
+        FunctionID_Default,
+        FunctionID_Extern,
+        FunctionID_Operator,
+        FunctionID_Template,
     };
 
     struct Statement

@@ -33,13 +33,13 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
     std::string function_name;
     switch (FnID)
     {
-        case FnType_Function:
+        case FunctionID_Default:
             function_name = builder.GetName(Absolute, Name);
             break;
-        case FnType_Extern:
+        case FunctionID_Extern:
             function_name = Name;
             break;
-        case FnType_Operator:
+        case FunctionID_Operator:
             switch (Args.size())
             {
                 case 1:
@@ -54,7 +54,7 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
                     break;
             }
             break;
-        case FnType_Template:
+        case FunctionID_Template:
             return;
     }
 
@@ -73,11 +73,11 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
 
         switch (FnID)
         {
-            case FnType_Function:
-            case FnType_Extern:
+            case FunctionID_Default:
+            case FunctionID_Extern:
                 builder.DefineVariable(Where, Name) = RValue::Create(builder, type, function);
                 break;
-            case FnType_Operator:
+            case FunctionID_Operator:
                 switch (Args.size())
                 {
                     case 1:
@@ -144,39 +144,39 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
     builder.GetBuilder().SetInsertPoint(end_block);
 }
 
-std::ostream &NJS::FunctionStatement::Print(std::ostream &os)
+std::ostream &NJS::FunctionStatement::Print(std::ostream &stream)
 {
     switch (FnID)
     {
-        case FnType_Function:
-            os << "function ";
+        case FunctionID_Default:
+            stream << "function ";
             break;
-        case FnType_Extern:
-            os << "extern ";
+        case FunctionID_Extern:
+            stream << "extern ";
             break;
-        case FnType_Operator:
-            os << "operator";
+        case FunctionID_Operator:
+            stream << "operator";
             break;
         default:
             break;
     }
-    os << Name << "(";
+    stream << Name << "(";
     for (unsigned i = 0; i < Args.size(); ++i)
     {
         if (i > 0)
-            os << ", ";
-        Args[i]->Print(os);
+            stream << ", ";
+        Args[i]->Print(stream);
     }
     if (VarArg)
     {
         if (!Args.empty())
-            os << ", ";
-        os << "...";
+            stream << ", ";
+        stream << "...";
     }
-    ResultType->Print(os << "): ");
+    ResultType->Print(stream << "): ");
     if (Body)
-        Body->Print(os << ' ');
-    return os;
+        Body->Print(stream << ' ');
+    return stream;
 }
 
 NJS::FunctionExpression::FunctionExpression(
@@ -253,25 +253,25 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
     return RValue::Create(builder, type, function);
 }
 
-std::ostream &NJS::FunctionExpression::Print(std::ostream &os)
+std::ostream &NJS::FunctionExpression::Print(std::ostream &stream)
 {
-    os << '?';
+    stream << '?';
     if (!Args.empty())
     {
-        os << '(';
+        stream << '(';
         for (unsigned i = 0; i < Args.size(); ++i)
         {
             if (i > 0)
-                os << ", ";
-            Args[i]->Print(os);
+                stream << ", ";
+            Args[i]->Print(stream);
         }
         if (VarArg)
         {
             if (!Args.empty())
-                os << ", ";
-            os << "...";
+                stream << ", ";
+            stream << "...";
         }
-        ResultType->Print(os << "): ") << ' ';
+        ResultType->Print(stream << "): ") << ' ';
     }
-    return Body->Print(os);
+    return Body->Print(stream);
 }

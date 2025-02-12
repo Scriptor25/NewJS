@@ -16,6 +16,7 @@ namespace NJS
 
     struct Macro
     {
+        std::vector<std::string> Parameters;
         std::string Source;
     };
 

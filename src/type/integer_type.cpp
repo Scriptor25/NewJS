@@ -30,7 +30,7 @@ unsigned NJS::IntegerType::GetBits() const
 
 void NJS::IntegerType::TypeInfo(const SourceLocation &, Builder &builder, std::vector<llvm::Value *> &args) const
 {
-    args.push_back(builder.GetBuilder().getInt32(ID_INT));
+    args.push_back(builder.GetBuilder().getInt32(ID_INTEGER));
     args.push_back(builder.GetBuilder().getInt32(m_Bits));
     args.push_back(builder.GetBuilder().getInt32(m_IsSigned ? 1 : 0));
 }

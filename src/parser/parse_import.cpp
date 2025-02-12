@@ -27,7 +27,7 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
             if (!function)
                 return;
 
-            if (function->FnID == FnType_Extern)
+            if (function->FnID == FunctionID_Extern)
                 return;
 
             function->Body = {};

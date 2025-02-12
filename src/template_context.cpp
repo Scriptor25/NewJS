@@ -54,28 +54,26 @@ std::string NJS::TemplateContext::InflateFunctionTemplate(
     }
     name += '>';
 
-    auto &ref = m_InflatedFunctions[name];
-    if (ref)
+    if (m_InflatedFunctions.contains(name))
         return name;
+    m_InflatedFunctions.emplace(name);
 
     parent.m_TypeContext.PushTemplate(args_, args);
 
     std::stringstream stream('?' + source_, std::ios_base::in);
     Parser parser(parent.m_TypeContext, parent.m_TemplateContext, stream, where_, parent.m_MacroMap);
     const auto inflated = std::dynamic_pointer_cast<FunctionExpression>(parser.ParseFunctionExpression());
-    ref = std::make_shared<FunctionStatement>(
+    FunctionStatement(
         inflated->Where,
         true,
-        FnType_Function,
+        FunctionID_Default,
         name,
         inflated->Args,
         inflated->VarArg,
         inflated->ResultType,
-        inflated->Body);
-    ref->GenVoidLLVM(m_Builder);
+        inflated->Body).GenVoidLLVM(m_Builder);
 
     parent.m_TypeContext.PopTemplate();
-
     return name;
 }
 

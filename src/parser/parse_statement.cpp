@@ -5,9 +5,24 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
 {
     if (NextAt("#"))
     {
-        const auto name = Expect(TokenType_Symbol).StringValue;
-        const auto source = Expect(TokenType_String).StringValue;
-        m_MacroMap[name] = {source};
+        auto name = Expect(TokenType_Symbol).StringValue;
+        std::vector<std::string> parameters;
+        if (NextAt("("))
+        {
+            while (!At(")") && !AtEof())
+            {
+                parameters.push_back(Expect(TokenType_Symbol).StringValue);
+                if (!At(")"))
+                    Expect(",");
+            }
+            Expect(")");
+        }
+
+        std::string source;
+        do
+            source += Expect(TokenType_String).StringValue;
+        while (At(TokenType_String));
+        m_MacroMap[std::move(name)] = {std::move(parameters), std::move(source)};
         return {};
     }
 

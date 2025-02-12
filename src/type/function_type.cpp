@@ -1,5 +1,6 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
+#include <NJS/Std.hpp>
 #include <NJS/Type.hpp>
 
 std::string NJS::FunctionType::GenString(
@@ -50,7 +51,12 @@ bool NJS::FunctionType::VarArg() const
 
 void NJS::FunctionType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
 {
-    Error(where, "function type '{}' does not provide type info", GetString());
+    args.push_back(builder.GetBuilder().getInt32(ID_FUNCTION));
+    m_ResultType->TypeInfo(where, builder, args);
+    args.push_back(builder.GetBuilder().getInt32(m_ArgTypes.size()));
+    for (const auto &arg_type: m_ArgTypes)
+        arg_type->TypeInfo(where, builder, args);
+    args.push_back(builder.GetBuilder().getInt32(m_VarArg ? 1 : 0));
 }
 
 llvm::FunctionType *NJS::FunctionType::GenFnLLVM(const SourceLocation &where, const Builder &builder) const

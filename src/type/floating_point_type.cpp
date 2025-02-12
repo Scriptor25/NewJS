@@ -25,7 +25,7 @@ unsigned NJS::FloatingPointType::GetBits() const
 
 void NJS::FloatingPointType::TypeInfo(const SourceLocation &, Builder &builder, std::vector<llvm::Value *> &args) const
 {
-    args.push_back(builder.GetBuilder().getInt32(ID_FP));
+    args.push_back(builder.GetBuilder().getInt32(ID_FLOATING_POINT));
     args.push_back(builder.GetBuilder().getInt32(m_Bits));
 }
 

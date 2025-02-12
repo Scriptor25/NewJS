@@ -1,6 +1,7 @@
 #include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/Std.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
@@ -37,12 +38,14 @@ NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) 
             const auto string_value = StringExpression::GetString(builder, value);
 
             args.push_back(builder.GetBuilder().getInt32(ID_POINTER));
-            args.push_back(builder.GetBuilder().getInt32(ID_INT));
+            args.push_back(builder.GetBuilder().getInt32(ID_INTEGER));
             args.push_back(builder.GetBuilder().getInt32(8));
             args.push_back(builder.GetBuilder().getInt32(1));
             args.push_back(string_value);
+
+            continue;
         }
-        else if (DynamicExpressions.contains(i))
+        if (DynamicExpressions.contains(i))
         {
             const auto value = DynamicExpressions.at(i)->GenLLVM(builder, {});
             value->GetType()->TypeInfo(Where, builder, args);
@@ -56,7 +59,11 @@ NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) 
                 value_pointer->Store(Where, value);
                 args.push_back(value_pointer->GetPtr(Where));
             }
+
+            continue;
         }
+
+        Error(Where, "non-existent formatter operand at index {}", i);
     }
 
     args.push_back(builder.GetBuilder().getInt32(ID_VOID));

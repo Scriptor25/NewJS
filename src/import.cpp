@@ -46,10 +46,10 @@ void NJS::ImportMapping::MapFunctions(
         std::string name;
         switch (fn.FnID)
         {
-            case FnType_Function:
+            case FunctionID_Default:
                 name = std::string(module_id) + '.' + fn.Name;
                 break;
-            case FnType_Operator:
+            case FunctionID_Operator:
                 switch (fn.Args.size())
                 {
                     case 1:
@@ -79,7 +79,7 @@ void NJS::ImportMapping::MapFunctions(
         auto callee = builder.GetModule().getOrInsertFunction(name, type->GenFnLLVM(where, builder));
         const auto value = RValue::Create(builder, type, callee.getCallee());
 
-        if (fn.FnID == FnType_Operator)
+        if (fn.FnID == FunctionID_Operator)
         {
             switch (fn.Args.size())
             {

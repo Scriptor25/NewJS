@@ -6,17 +6,18 @@
 enum TypeID
 {
     ID_VOID,
-    ID_INT,
-    ID_FP,
+    ID_INTEGER,
+    ID_FLOATING_POINT,
     ID_POINTER,
     ID_ARRAY,
     ID_STRUCT,
     ID_TUPLE,
+    ID_FUNCTION,
 };
 
 extern "C"
 {
-void format(char *stream, unsigned n, ...);
+void format(char *buffer, unsigned buffer_size, ...);
 
 void println(const char *message);
 

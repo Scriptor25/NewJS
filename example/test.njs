@@ -3,6 +3,8 @@ extern malloc(n: u64): void[]
 extern realloc(block: void[], n: u64): void[]
 extern free(block: void[])
 
+#PRINT(X) "println($\"{#X}\")"
+
 type User = {
     name: i8[],
     surname: i8[],
@@ -16,6 +18,9 @@ let u1: User = {
     age: 18,
     type: "App Development"
 }
+
+PRINT(u1)
+PRINT(println)
 
 function printUser({ name: n, surname: s, age: a, type: t }: User&) {
     println($" - {n} {s} ({a}), {t}")

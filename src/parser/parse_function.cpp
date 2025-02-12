@@ -10,16 +10,16 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement()
     const auto where = m_Token.Where;
 
     const auto fn = NextAt("extern")
-                        ? FnType_Extern
+                        ? FunctionID_Extern
                         : NextAt("operator")
-                              ? FnType_Operator
+                              ? FunctionID_Operator
                               : NextAt("template")
-                                    ? FnType_Template
-                                    : (Expect("function"), FnType_Function);
+                                    ? FunctionID_Template
+                                    : (Expect("function"), FunctionID_Default);
 
     std::vector<std::string> templ_args;
     const auto parent_template = m_IsTemplate;
-    if (fn == FnType_Template)
+    if (fn == FunctionID_Template)
     {
         m_IsTemplate = true;
 
@@ -37,7 +37,7 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement()
             ResetBuffer();
     }
 
-    const auto name = (fn == FnType_Operator ? Expect(TokenType_Operator) : Expect(TokenType_Symbol)).StringValue;
+    const auto name = (fn == FunctionID_Operator ? Expect(TokenType_Operator) : Expect(TokenType_Symbol)).StringValue;
 
     std::vector<ParameterPtr> args;
     Expect("(");
@@ -50,10 +50,10 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement()
         result_type = m_TypeContext.GetVoidType();
 
     StatementPtr body;
-    if (fn != FnType_Extern && At("{"))
+    if (fn != FunctionID_Extern && At("{"))
         body = ParseScopeStatement();
 
-    if (fn == FnType_Template)
+    if (fn == FunctionID_Template)
     {
         if (parent_template)
             return {};
