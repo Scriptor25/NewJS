@@ -100,7 +100,7 @@ NJS::ValuePtr NJS::SwitchExpression::GenLLVM(Builder &builder, const TypePtr &ex
     {
         builder.GetBuilder().SetInsertPoint(default_dest);
         auto default_value = DefaultCase->GenLLVM(builder, expected);
-        if (default_value->IsL())
+        if (default_value->IsLValue())
             default_value = RValue::Create(builder, default_value->GetType(), default_value->Load(Where));
         result_type = expected ? expected : default_value->GetType();
         default_value = builder.CreateCast(Where, default_value, result_type);
@@ -119,7 +119,7 @@ NJS::ValuePtr NJS::SwitchExpression::GenLLVM(Builder &builder, const TypePtr &ex
         }
         builder.GetBuilder().SetInsertPoint(dest);
         auto case_value = case_->GenLLVM(builder, result_type);
-        if (case_value->IsL())
+        if (case_value->IsLValue())
             case_value = RValue::Create(builder, case_value->GetType(), case_value->Load(Where));
         case_value = builder.CreateCast(Where, case_value, result_type);
         dest = builder.GetBuilder().GetInsertBlock();

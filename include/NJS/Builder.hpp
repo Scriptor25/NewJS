@@ -68,8 +68,13 @@ namespace NJS
         [[nodiscard]] llvm::IRBuilder<> &GetBuilder() const;
 
         [[nodiscard]] llvm::Value *CreateAlloca(llvm::Type *type, unsigned size = 0) const;
-        ValuePtr CreateAlloca(const SourceLocation &where, const TypePtr &type, unsigned size = 0);
-        ValuePtr CreateGlobal(const SourceLocation &where, const std::string &name, const TypePtr &type, bool init);
+        ValuePtr CreateAlloca(const SourceLocation &where, const TypePtr &type, bool is_mutable, unsigned size = 0);
+        ValuePtr CreateGlobal(
+            const SourceLocation &where,
+            const std::string &name,
+            const TypePtr &type,
+            bool initialize,
+            bool is_mutable);
 
         ValuePtr CreateMember(const SourceLocation &where, const ValuePtr &object, const std::string &name);
 

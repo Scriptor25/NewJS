@@ -89,11 +89,11 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
     if (assignment_operators.contains(Operator))
     {
         const auto left_type_reference = builder.GetTypeContext().GetReferenceType(left_type);
-        if (auto [result_, callee_] = builder.GetOperator(Operator, left_type_reference, right_type);
-            result_ && callee_)
+        if (auto [result_type_, callee_] = builder.GetOperator(Operator, left_type_reference, right_type);
+            result_type_ && callee_)
         {
             const auto function_type = llvm::FunctionType::get(
-                result_->GetLLVM(Where, builder),
+                result_type_->GetLLVM(Where, builder),
                 {
                     left_type_reference->GetLLVM(Where, builder),
                     right_type->GetLLVM(Where, builder),
@@ -106,15 +106,16 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
                     left_operand->GetPtr(Where),
                     right_operand->Load(Where)
                 });
-            return LValue::Create(builder, result_->GetElement(), result_pointer);
+            return LValue::Create(builder, result_type_->GetElement(), result_pointer, result_type_->IsMutable());
         }
     }
     else
     {
-        if (auto [result_, callee_] = builder.GetOperator(Operator, left_type, right_type); result_ && callee_)
+        if (auto [result_type_, callee_] = builder.GetOperator(Operator, left_type, right_type);
+            result_type_ && callee_)
         {
             const auto function_type = llvm::FunctionType::get(
-                result_->GetLLVM(Where, builder),
+                result_type_->GetLLVM(Where, builder),
                 {
                     left_type->GetLLVM(Where, builder),
                     right_type->GetLLVM(Where, builder),
@@ -127,12 +128,11 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
                     left_operand->Load(Where),
                     right_operand->Load(Where),
                 });
-            return RValue::Create(builder, result_, result_value);
+            return RValue::Create(builder, result_type_, result_value);
         }
     }
 
-    auto operator_ = Operator;
-    if (operator_ == "=")
+    if (Operator == "=")
     {
         destination->Store(Where, right_operand);
         return destination;
@@ -142,6 +142,7 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
     left_operand = builder.CreateCast(Where, left_operand, operand_type);
     right_operand = builder.CreateCast(Where, right_operand, operand_type);
 
+    auto operator_ = Operator;
     const auto assign = assignment_operators.contains(operator_);
     if (assign)
         operator_.pop_back();

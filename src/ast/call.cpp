@@ -54,10 +54,11 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expe
         callee->Load(Where),
         argument_values);
 
-    if (callee_type->GetResultType()->IsReference())
-        return LValue::Create(builder, callee_type->GetResultType()->GetElement(), result_value);
+    const auto result_type = callee_type->GetResultType();
+    if (result_type->IsReference())
+        return LValue::Create(builder, result_type->GetElement(), result_value, result_type->IsMutable());
 
-    return RValue::Create(builder, callee_type->GetResultType(), result_value);
+    return RValue::Create(builder, result_type, result_value);
 }
 
 std::ostream &NJS::CallExpression::Print(std::ostream &stream)

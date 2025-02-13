@@ -31,18 +31,18 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
             element_type->GetLLVM(where, *this),
             array->Load(where),
             {index});
-        return LValue::Create(*this, element_type, ptr);
+        return LValue::Create(*this, element_type, ptr, array->IsMutable());
     }
 
     const auto const_index = llvm::dyn_cast<llvm::ConstantInt>(index);
-    if (!const_index && !array->IsL())
+    if (!const_index && !array->IsLValue())
     {
-        const auto l_array = CreateAlloca(where, array_type);
-        l_array->Store(where, array);
-        array = l_array;
+        const auto value = CreateAlloca(where, array_type, false);
+        value->Store(where, array, true);
+        array = value;
     }
 
-    if (array->IsL())
+    if (array->IsLValue())
     {
         const auto index_type = index->getType();
         const auto zero = llvm::Constant::getNullValue(index_type);
@@ -61,7 +61,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
             const auto i = const_index->getValue().getLimitedValue();
             type = array_type->GetElement(i);
         }
-        return LValue::Create(*this, type, ptr);
+        return LValue::Create(*this, type, ptr, array->IsMutable());
     }
 
     if (!const_index)

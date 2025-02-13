@@ -22,7 +22,7 @@ let u1: User = {
 PRINT(u1)
 PRINT(println)
 
-function printUser({ name: n, surname: s, age: a, type: t }: User&) {
+function printUser({ name: n, surname: s, age: a, type: t }: User const&) {
     println($" - {n} {s} ({a}), {t}")
 }
 
@@ -30,8 +30,9 @@ println("IT WORKS!")
 printUser(u1)
 
 function recurse(n: u32): u32 {
-    if (n <= 1) return n
-    return recurse(n - 1) + recurse(n - 2)
+    return (n <= 1)
+        ? n
+        : recurse(n - 1) + recurse(n - 2)
 }
 
 let n: u32 = 10
@@ -83,7 +84,7 @@ function<T> vec_free(self: vec<T>&) {
     self.beg = self.end = 0
 }
 
-function<T> vec_size(self: vec<T>&): u64 {
+function<T> vec_size(self: vec<T> const&): u64 {
     return self.end - self.beg
 }
 
@@ -131,5 +132,5 @@ vec_at<i8>(v, 0xA) = 'd'
 vec_at<i8>(v, 0xB) = '!'
 vec_push<i8>(v, 0)
 
-println(v.beg)
+println($"v = {v}")
 vec_free<i8>(v)

@@ -10,7 +10,7 @@ NJS::ValuePtr NJS::Builder::CreateCast(const SourceLocation &where, const ValueP
 
     const auto result = CreateCast(
         where,
-        {value->Load(where), value->IsL() ? value->GetPtr(where) : nullptr},
+        {value->Load(where), value->IsLValue() ? value->GetPtr(where) : nullptr},
         value->GetType(),
         type);
     return RValue::Create(*this, type, result);

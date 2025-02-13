@@ -86,11 +86,17 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
         const auto argument = function->getArg(i);
         argument->setName(parameter->Name);
 
+        const auto parameter_type = parameter->Type;
+
         ValuePtr argument_value;
-        if (parameter->Type->IsReference())
-            argument_value = LValue::Create(builder, parameter->Type->GetElement(), argument);
+        if (parameter_type->IsReference())
+            argument_value = LValue::Create(
+                builder,
+                parameter_type->GetElement(),
+                argument,
+                parameter_type->IsMutable());
         else
-            argument_value = RValue::Create(builder, parameter->Type, argument);
+            argument_value = RValue::Create(builder, parameter_type, argument);
         parameter->CreateVars(builder, Where, argument_value, ParameterFlags_None);
     }
 
@@ -188,11 +194,17 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
         const auto argument = function->getArg(i);
         argument->setName(parameter->Name);
 
+        const auto parameter_type = parameter->Type;
+
         ValuePtr argument_value;
-        if (parameter->Type->IsReference())
-            argument_value = LValue::Create(builder, parameter->Type->GetElement(), argument);
+        if (parameter_type->IsReference())
+            argument_value = LValue::Create(
+                builder,
+                parameter_type->GetElement(),
+                argument,
+                parameter_type->IsMutable());
         else
-            argument_value = RValue::Create(builder, parameter->Type, argument);
+            argument_value = RValue::Create(builder, parameter_type, argument);
         parameter->CreateVars(builder, Where, argument_value, ParameterFlags_None);
     }
 

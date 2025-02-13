@@ -51,12 +51,12 @@ NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) 
             value->GetType()->TypeInfo(Where, builder, args);
             if (value->GetType()->IsPrimitive())
                 args.push_back(value->Load(Where));
-            else if (value->IsL())
+            else if (value->IsLValue())
                 args.push_back(value->GetPtr(Where));
             else
             {
-                const auto value_pointer = builder.CreateAlloca(Where, value->GetType());
-                value_pointer->Store(Where, value);
+                const auto value_pointer = builder.CreateAlloca(Where, value->GetType(), false);
+                value_pointer->Store(Where, value, true);
                 args.push_back(value_pointer->GetPtr(Where));
             }
 

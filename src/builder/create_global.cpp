@@ -6,7 +6,8 @@ NJS::ValuePtr NJS::Builder::CreateGlobal(
     const SourceLocation &where,
     const std::string &name,
     const TypePtr &type,
-    const bool init)
+    const bool initialize,
+    const bool is_mutable)
 {
     const auto ty = type->GetLLVM(where, *this);
     const auto global = new llvm::GlobalVariable(
@@ -14,7 +15,7 @@ NJS::ValuePtr NJS::Builder::CreateGlobal(
         ty,
         false,
         llvm::GlobalValue::ExternalLinkage,
-        init ? llvm::Constant::getNullValue(ty) : nullptr,
+        initialize ? llvm::Constant::getNullValue(ty) : nullptr,
         name);
-    return LValue::Create(*this, type, global);
+    return LValue::Create(*this, type, global, is_mutable);
 }

@@ -21,15 +21,17 @@ NJS::Builder::Builder(
 
     StackPush(m_ModuleID);
 
-    const auto process = DefineVariable({}, "process") = CreateGlobal(
-                             {},
-                             "process",
-                             m_TypeContext.GetStructType(
-                                 {
-                                     {"argc", m_TypeContext.GetIntegerType(32, true)},
-                                     {"argv", m_TypeContext.GetPointerType(m_TypeContext.GetStringType())}
-                                 }),
-                             is_main);
+    auto &process = DefineVariable({}, "process");
+    process = CreateGlobal(
+        {},
+        "process",
+        m_TypeContext.GetStructType(
+            {
+                {"argc", m_TypeContext.GetIntegerType(32, true)},
+                {"argv", m_TypeContext.GetPointerType(m_TypeContext.GetStringType())}
+            }),
+        is_main,
+        false);
 
     llvm::Function *function;
     if (is_main)
@@ -46,8 +48,8 @@ NJS::Builder::Builder(
         function->getArg(0)->setName("argc");
         function->getArg(1)->setName("argv");
         GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", function));
-        CreateMember({}, process, "argc")->Store({}, function->getArg(0));
-        CreateMember({}, process, "argv")->Store({}, function->getArg(1));
+        CreateMember({}, process, "argc")->Store({}, function->getArg(0), true);
+        CreateMember({}, process, "argv")->Store({}, function->getArg(1), true);
     }
     else
     {

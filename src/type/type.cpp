@@ -131,6 +131,11 @@ NJS::TypePtr NJS::Type::GetResultType() const
     Error("type {} does not support 'GetResultType'", m_String);
 }
 
+bool NJS::Type::IsMutable() const
+{
+    Error("type {} does not support 'IsMutable'", m_String);
+}
+
 NJS::Type::Type(TypeContext &type_context, std::string_view string)
     : m_TypeContext(type_context),
       m_String(std::move(string)),

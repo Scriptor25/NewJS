@@ -50,6 +50,7 @@ namespace NJS
         [[nodiscard]] virtual TypePtr GetElement(unsigned index) const;
         [[nodiscard]] virtual MemberT GetMember(const std::string_view &name) const;
         [[nodiscard]] virtual TypePtr GetResultType() const;
+        [[nodiscard]] virtual bool IsMutable() const;
 
         virtual void TypeInfo(
             const SourceLocation &where,
@@ -175,20 +176,22 @@ namespace NJS
         friend TypeContext;
 
     public:
-        static std::string GenString(const TypePtr &element_type);
+        static std::string GenString(const TypePtr &element_type, bool is_mutable);
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsReference() const override;
         [[nodiscard]] TypePtr GetElement() const override;
+        [[nodiscard]] bool IsMutable() const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
     private:
-        ReferenceType(TypeContext &type_context, std::string_view string, TypePtr element_type);
+        ReferenceType(TypeContext &type_context, std::string_view string, TypePtr element_type, bool is_mutable);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
         [[nodiscard]] unsigned GenSize() const override;
 
         TypePtr m_ElementType;
+        bool m_IsMutable;
     };
 
     class ArrayType final : public Type
@@ -258,7 +261,10 @@ namespace NJS
         friend TypeContext;
 
     public:
-        static std::string GenString(const TypePtr &result_type, const std::vector<TypePtr> &parameter_types, bool var_arg);
+        static std::string GenString(
+            const TypePtr &result_type,
+            const std::vector<TypePtr> &parameter_types,
+            bool var_arg);
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsFunction() const override;

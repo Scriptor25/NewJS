@@ -533,7 +533,8 @@ NJS::UnaryResult NJS::OperatorDeref(Builder &builder, const SourceLocation &wher
         LValue::Create(
             builder,
             type->GetElement(),
-            val),
+            val,
+            value->IsMutable()),
         false,
     };
 }

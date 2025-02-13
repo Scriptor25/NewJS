@@ -29,25 +29,28 @@ void NJS::Parameter::CreateVars(
 
     auto &variable = builder.DefineVariable(where, Name);
 
-    if (flags & ParameterFlags_Extern)
+    const bool is_extern = flags & ParameterFlags_Extern;
+    const bool is_const = flags & ParameterFlags_Const;
+
+    if (is_extern)
     {
-        variable = builder.CreateGlobal(where, Name, type, false);
+        variable = builder.CreateGlobal(where, Name, type, false, !is_const);
         return;
     }
 
     if (Type && Type->IsReference())
     {
-        variable = LValue::Create(builder, type, value->GetPtr(where));
+        variable = LValue::Create(builder, type, value->GetPtr(where), !is_const);
         return;
     }
 
-    if (flags & ParameterFlags_Const)
+    if (is_const)
     {
         variable = RValue::Create(builder, type, value->Load(where));
         return;
     }
 
-    variable = builder.CreateAlloca(where, type);
+    variable = builder.CreateAlloca(where, type, true);
     if (value)
     {
         variable->Store(where, value);

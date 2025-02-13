@@ -30,14 +30,14 @@ NJS::ValuePtr NJS::TernaryExpression::GenLLVM(Builder &builder, const TypePtr &e
 
     builder.GetBuilder().SetInsertPoint(then_block);
     auto then_value = ThenBody->GenLLVM(builder, expected);
-    if (then_value->IsL())
+    if (then_value->IsLValue())
         then_value = RValue::Create(builder, then_value->GetType(), then_value->Load(Where));
     then_block = builder.GetBuilder().GetInsertBlock();
     const auto then_term = builder.GetBuilder().CreateBr(end_block);
 
     builder.GetBuilder().SetInsertPoint(else_block);
     auto else_value = ElseBody->GenLLVM(builder, expected);
-    if (else_value->IsL())
+    if (else_value->IsLValue())
         else_value = RValue::Create(builder, else_value->GetType(), else_value->Load(Where));
     else_block = builder.GetBuilder().GetInsertBlock();
     const auto else_term = builder.GetBuilder().CreateBr(end_block);
