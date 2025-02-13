@@ -5,18 +5,18 @@ type GLFWwindow  = void
 #GLFW_KEY_ESCAPE "256:i32"
 #GLFW_RELEASE    "  0:i32"
 
-extern glfwInit()
-extern glfwTerminate()
-extern glfwCreateWindow(width: i32, height: i32, title: i8[], monitor: GLFWmonitor[], share: GLFWwindow[]): GLFWwindow[]
-extern glfwDestroyWindow(window: GLFWwindow[])
-extern glfwMakeContextCurrent(window: GLFWwindow[])
-extern glfwSwapInterval(interval: i32)
-extern glfwWindowShouldClose(window: GLFWwindow[]): i32
-extern glfwPollEvents()
-extern glfwSwapBuffers(window: GLFWwindow[])
-extern glfwGetFramebufferSize(window: GLFWwindow[], width: i32[], height: i32[])
-extern glfwSetKeyCallback(window: GLFWwindow[], callback: (GLFWwindow[], i32, i32, i32, i32))
-extern glfwSetWindowShouldClose(window: GLFWwindow[], closed: i32)
+extern function glfwInit()
+extern function glfwTerminate()
+extern function glfwCreateWindow(width: i32, height: i32, title: i8[], monitor: GLFWmonitor[], share: GLFWwindow[]): GLFWwindow[]
+extern function glfwDestroyWindow(window: GLFWwindow[])
+extern function glfwMakeContextCurrent(window: GLFWwindow[])
+extern function glfwSwapInterval(interval: i32)
+extern function glfwWindowShouldClose(window: GLFWwindow[]): i32
+extern function glfwPollEvents()
+extern function glfwSwapBuffers(window: GLFWwindow[])
+extern function glfwGetFramebufferSize(window: GLFWwindow[], width: i32[], height: i32[])
+extern function glfwSetKeyCallback(window: GLFWwindow[], callback: (GLFWwindow[], i32, i32, i32, i32))
+extern function glfwSetWindowShouldClose(window: GLFWwindow[], closed: i32)
 
 function init() { glfwInit() }
 function terminate() { glfwTerminate() }

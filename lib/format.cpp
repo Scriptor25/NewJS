@@ -1,6 +1,5 @@
 #include <cmath>
 #include <cstdarg>
-#include <cstdio>
 #include <NJS/Std.hpp>
 
 void *operator new(const size_t size) noexcept

@@ -1,4 +1,4 @@
-extern rand(): u32
+extern function rand(): u32
 
 function random_key(dst: i8[], words: u64): i8[] {
     for (let i: u64; i < words; ++i) {

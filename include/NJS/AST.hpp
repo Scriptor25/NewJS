@@ -7,16 +7,18 @@
 #include <llvm/IR/Constant.h>
 #include <NJS/Import.hpp>
 #include <NJS/NJS.hpp>
+#include <NJS/Parameter.hpp>
 #include <NJS/SourceLocation.hpp>
 
 namespace NJS
 {
-    enum FunctionID
+    enum FunctionFlags
     {
-        FunctionID_Default,
-        FunctionID_Extern,
-        FunctionID_Operator,
-        FunctionID_Template,
+        FunctionFlags_None = 0,
+        FunctionFlags_Extern = 1,
+        FunctionFlags_Operator = 2,
+        FunctionFlags_Template = 4,
+        FunctionFlags_Absolute = 8,
     };
 
     struct Statement
@@ -52,22 +54,20 @@ namespace NJS
     {
         FunctionStatement(
             SourceLocation where,
-            bool absolute,
-            FunctionID fn_id,
+            unsigned flags,
             std::string name,
-            std::vector<ParameterPtr> args,
-            bool var_arg,
+            std::vector<ParameterPtr> parameters,
+            bool is_var_arg,
             TypePtr result_type,
             StatementPtr body);
 
         void GenVoidLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
-        bool Absolute;
-        FunctionID FnID;
+        unsigned Flags;
         std::string Name;
-        std::vector<ParameterPtr> Args;
-        bool VarArg;
+        std::vector<ParameterPtr> Parameters;
+        bool IsVarArg;
         TypePtr ResultType;
         StatementPtr Body;
     };
@@ -138,13 +138,13 @@ namespace NJS
 
     struct VariableStatement final : Statement
     {
-        VariableStatement(SourceLocation where, bool is_const, ParameterPtr name, ExpressionPtr value);
+        VariableStatement(SourceLocation where, ParameterPtr name, unsigned flags, ExpressionPtr value);
 
         void GenVoidLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
-        bool IsConst;
         ParameterPtr Name;
+        unsigned Flags;
         ExpressionPtr Value;
     };
 
@@ -245,16 +245,16 @@ namespace NJS
     {
         FunctionExpression(
             SourceLocation where,
-            std::vector<ParameterPtr> args,
-            bool var_arg,
+            std::vector<ParameterPtr> parameters,
+            bool is_var_arg,
             TypePtr result_type,
             StatementPtr body);
 
         ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
-        std::vector<ParameterPtr> Args;
-        bool VarArg;
+        std::vector<ParameterPtr> Parameters;
+        bool IsVarArg;
         TypePtr ResultType;
         StatementPtr Body;
     };

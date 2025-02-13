@@ -65,11 +65,10 @@ std::string NJS::TemplateContext::InflateFunctionTemplate(
     const auto inflated = std::dynamic_pointer_cast<FunctionExpression>(parser.ParseFunctionExpression());
     FunctionStatement(
         inflated->Where,
-        true,
-        FunctionID_Default,
+        FunctionFlags_Absolute,
         name,
-        inflated->Args,
-        inflated->VarArg,
+        inflated->Parameters,
+        inflated->IsVarArg,
         inflated->ResultType,
         inflated->Body).GenVoidLLVM(m_Builder);
 

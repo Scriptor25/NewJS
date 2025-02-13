@@ -3,7 +3,7 @@ import   gl from    "./gl.njs"
 import    * from   "./vec.njs"
 
 glfw.init()
-let window = glfw.createWindow(800, 600, "Test", 0, 0)
+const window = glfw.createWindow(800, 600, "Test", 0, 0)
 glfw.makeContextCurrent(window)
 glfw.swapInterval(1)
 glfw.setKeyCallback(window, ?(window: GLFWwindow[], key: i32, scancode: i32, action: i32, mods: i32) {
@@ -13,10 +13,10 @@ glfw.setKeyCallback(window, ?(window: GLFWwindow[], key: i32, scancode: i32, act
 
 gl.clearColor(0.2, 0.3, 1.0, 1.0)
 
-extern println(str: i8[])
-extern malloc(count: u64): void[]
-extern realloc(block: void[], count: u64): void[]
-extern free(block: void[])
+extern function println(str: i8[])
+extern function malloc(count: u64): void[]
+extern function realloc(block: void[], count: u64): void[]
+extern function free(block: void[])
 
 let v = vec_new<i8>()
 vec_push<i8>(v, 'A')

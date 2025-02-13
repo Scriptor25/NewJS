@@ -5,8 +5,8 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::Parameter::Parameter(std::string_view name)
-    : Name(std::move(name))
+NJS::Parameter::Parameter(const std::string_view name)
+    : Name(name)
 {
 }
 
@@ -18,8 +18,8 @@ bool NJS::Parameter::RequireValue()
 void NJS::Parameter::CreateVars(
     Builder &builder,
     const SourceLocation &where,
-    const bool is_const,
-    const ValuePtr &value)
+    const ValuePtr &value,
+    const unsigned flags)
 {
     const auto type = !Type
                           ? value->GetType()
@@ -27,27 +27,34 @@ void NJS::Parameter::CreateVars(
                                 ? Type->GetElement()
                                 : Type;
 
-    auto &var = builder.DefineVariable(where, Name);
+    auto &variable = builder.DefineVariable(where, Name);
+
+    if (flags & ParameterFlags_Extern)
+    {
+        variable = builder.CreateGlobal(where, Name, type, false);
+        return;
+    }
+
     if (Type && Type->IsReference())
     {
-        var = LValue::Create(builder, type, value->GetPtr(where));
+        variable = LValue::Create(builder, type, value->GetPtr(where));
         return;
     }
 
-    if (is_const)
+    if (flags & ParameterFlags_Const)
     {
-        var = RValue::Create(builder, type, value->Load(where));
+        variable = RValue::Create(builder, type, value->Load(where));
         return;
     }
 
-    var = builder.CreateAlloca(where, type);
+    variable = builder.CreateAlloca(where, type);
     if (value)
     {
-        var->Store(where, value);
+        variable->Store(where, value);
         return;
     }
 
-    var->Store(where, llvm::Constant::getNullValue(type->GetLLVM(where, builder)));
+    variable->Store(where, llvm::Constant::getNullValue(type->GetLLVM(where, builder)));
 }
 
 std::ostream &NJS::Parameter::Print(std::ostream &stream)

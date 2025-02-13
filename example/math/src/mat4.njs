@@ -21,14 +21,14 @@ function transpose(self: mat4&): mat4 {
     return m
 }
 
-operator=(self: mat4&, other: mat4): mat4& {
+function operator=(self: mat4&, other: mat4): mat4& {
     for (let j = 0; j < 4; ++j)
         for (let i = 0; i < 4; ++i)
             self[j][i] = other[j][i]
     return self
 }
 
-operator*=(self: mat4&, other: mat4): mat4& {
+function operator*=(self: mat4&, other: mat4): mat4& {
     const s = self
     const t = transpose(other)
     for (let j = 0; j < 4; ++j)

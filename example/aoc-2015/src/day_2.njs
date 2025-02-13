@@ -1,11 +1,11 @@
 import { part_err } from "./main.njs"
 
-extern parse_int(str: i8[]): i64
-extern println(str: i8[])
-extern malloc(bytes: u64): void[]
-extern realloc(block: void[], bytes: u64): void[]
-extern strlen(str: i8[]): u64
-extern free(block: void[])
+extern function parse_int(str: i8[]): i64
+extern function println(str: i8[])
+extern function malloc(bytes: u64): void[]
+extern function realloc(block: void[], bytes: u64): void[]
+extern function strlen(str: i8[]): u64
+extern function free(block: void[])
 
 function min(a: u64, b: u64): u64 {
     return a < b ? a : b

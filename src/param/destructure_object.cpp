@@ -17,13 +17,13 @@ bool NJS::DestructureObject::RequireValue()
 void NJS::DestructureObject::CreateVars(
     Builder &builder,
     const SourceLocation &where,
-    const bool is_const,
-    const ValuePtr &value)
+    const ValuePtr &value,
+    const unsigned flags)
 {
     for (const auto &[name_, element_]: Elements)
     {
         const auto member = builder.CreateMember(where, value, name_);
-        element_->CreateVars(builder, where, is_const, member);
+        element_->CreateVars(builder, where, member, flags);
     }
 }
 

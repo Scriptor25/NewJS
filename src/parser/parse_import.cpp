@@ -14,7 +14,14 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
         return {};
 
     std::ifstream stream(filepath);
-    Parser parser(m_TypeContext, m_TemplateContext, stream, SourceLocation(filepath.string()), m_MacroMap, true, m_ParsedSet);
+    Parser parser(
+        m_TypeContext,
+        m_TemplateContext,
+        stream,
+        SourceLocation(filepath.string()),
+        m_MacroMap,
+        true,
+        m_ParsedSet);
 
     std::vector<StatementPtr> functions;
     parser.Parse(
@@ -27,7 +34,7 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
             if (!function)
                 return;
 
-            if (function->FnID == FunctionID_Extern)
+            if (function->Flags & FunctionFlags_Extern)
                 return;
 
             function->Body = {};

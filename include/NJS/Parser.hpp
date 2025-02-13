@@ -63,19 +63,20 @@ namespace NJS
         bool ParseTypeList(std::vector<TypePtr> &types, const std::string_view &delim);
         void ParseTypeMap(std::map<std::string, TypePtr> &types, const std::string_view &delim);
 
-        ParameterPtr ParseParam();
-        bool ParseParamList(std::vector<ParameterPtr> &params, const std::string_view &delim);
-        void ParseParamMap(std::map<std::string, ParameterPtr> &params, const std::string_view &delim);
+        ParameterPtr ParseParameter();
+        bool ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string_view &delimiter);
+        void ParseParameterMap(std::map<std::string, ParameterPtr> &parameters, const std::string_view &delimiter);
 
+        void ParseMacro();
         void ParseTypeAlias();
 
         StatementPtr ParseImportStatement();
         ImportMapping ParseImportMapping();
 
         StatementPtr ParseStatement();
-        StatementPtr ParseVariableStatement();
+        StatementPtr ParseVariableStatement(bool is_extern);
         StatementPtr ParseForStatement();
-        StatementPtr ParseFunctionStatement();
+        StatementPtr ParseFunctionStatement(bool is_extern);
         StatementPtr ParseIfStatement();
         StatementPtr ParseReturnStatement();
         StatementPtr ParseScopeStatement();

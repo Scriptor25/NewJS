@@ -1,28 +1,13 @@
 #include <NJS/AST.hpp>
+#include <NJS/Error.hpp>
+#include <NJS/Parameter.hpp>
 #include <NJS/Parser.hpp>
 
 NJS::StatementPtr NJS::Parser::ParseStatement()
 {
-    if (NextAt("#"))
+    if (At("#"))
     {
-        auto name = Expect(TokenType_Symbol).StringValue;
-        std::vector<std::string> parameters;
-        if (NextAt("("))
-        {
-            while (!At(")") && !AtEof())
-            {
-                parameters.push_back(Expect(TokenType_Symbol).StringValue);
-                if (!At(")"))
-                    Expect(",");
-            }
-            Expect(")");
-        }
-
-        std::string source;
-        do
-            source += Expect(TokenType_String).StringValue;
-        while (At(TokenType_String));
-        m_MacroMap[std::move(name)] = {std::move(parameters), std::move(source)};
+        ParseMacro();
         return {};
     }
 
@@ -32,15 +17,24 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
         return {};
     }
 
+    if (At("extern"))
+    {
+        const auto where = Skip().Where;
+        if (At("function"))
+            return ParseFunctionStatement(true);
+        if (At("let") || At("const"))
+            return ParseVariableStatement(true);
+        Error(where, "the extern keyword requires either a function or variable declaration to follow");
+    }
+
     if (At("import"))
         return ParseImportStatement();
-
     if (At("{"))
         return ParseScopeStatement();
-    if (At("function") || At("extern") || At("operator") || At("template"))
-        return ParseFunctionStatement();
+    if (At("function"))
+        return ParseFunctionStatement(false);
     if (At("let") || At("const"))
-        return ParseVariableStatement();
+        return ParseVariableStatement(false);
     if (At("if"))
         return ParseIfStatement();
     if (At("for"))

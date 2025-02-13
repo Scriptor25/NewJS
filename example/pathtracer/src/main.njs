@@ -1,17 +1,27 @@
 import ppm from "ppm.njs"
 
-#WIDTH  "256:u32"
-#HEIGHT "256:u32"
+extern let std_in:  FILE[]
+extern let std_out: FILE[]
+extern let std_err: FILE[]
 
-const image = ppm.begin("bin/out.ppm", WIDTH, HEIGHT)
-for (let j = 0; j < HEIGHT; ++j)
-    for (let i = 0; i < WIDTH; ++i) {
-        const fr = (i as f32) / ((WIDTH - 1) as f32)
-        const fg = (j as f32) / ((HEIGHT - 1) as f32)
+extern function fprintf(stream: FILE[], format: i8[], ...)
+extern function fflush(stream: FILE[])
+
+let image = ppm.begin("bin/out.ppm", 100, 100)
+for (let j: u32; j < image.height; ++j) {
+    fprintf(std_err, "\r[%4d / %4d]", j + 1:u32, image.height)
+    fflush(std_err)
+
+    for (let i: u32; i < image.width; ++i) {
+        const fr = (i as f32) / ((image.width - 1) as f32)
+        const fg = (j as f32) / ((image.height - 1) as f32)
         const fb = 0.2:f32
+
         const ir = (fr * 255.999) as i32
         const ig = (fg * 255.999) as i32
         const ib = (fb * 255.999) as i32
+
         ppm.write(image, ir, ig, ib)
     }
+}
 ppm.end(image)

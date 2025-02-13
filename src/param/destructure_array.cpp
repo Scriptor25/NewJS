@@ -17,13 +17,13 @@ bool NJS::DestructureArray::RequireValue()
 void NJS::DestructureArray::CreateVars(
     Builder &builder,
     const SourceLocation &where,
-    const bool is_const,
-    const ValuePtr &value)
+    const ValuePtr &value,
+    const unsigned flags)
 {
     for (unsigned i = 0; i < Elements.size(); ++i)
     {
         const auto element = builder.CreateSubscript(where, value, i);
-        Elements[i]->CreateVars(builder, where, is_const, element);
+        Elements[i]->CreateVars(builder, where, element, flags);
     }
 }
 

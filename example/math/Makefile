@@ -7,10 +7,12 @@ OBJ = $(patsubst %.njs,%.o,$(SRC))
 main.exe: $(OBJ)
 	gcc -o $@ $^ -lStdNewJS
 
+all: main.exe
+
 launch: main.exe
 	main
 
 clean:
 	cmd /c del $(subst /,\\,$(OBJ)) main.exe
 
-.PHONY: launch clean
+.PHONY: all launch clean

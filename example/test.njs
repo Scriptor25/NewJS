@@ -1,7 +1,7 @@
-extern println(message: i8[])
-extern malloc(n: u64): void[]
-extern realloc(block: void[], n: u64): void[]
-extern free(block: void[])
+extern function println(message: i8[])
+extern function malloc(n: u64): void[]
+extern function realloc(block: void[], n: u64): void[]
+extern function free(block: void[])
 
 #PRINT(X) "println($\"{#X}\")"
 
@@ -70,7 +70,7 @@ type<T> vec = {
     end: T[],
 }
 
-template<T> vec_new(n: u64): vec<T> {
+function<T> vec_new(n: u64): vec<T> {
     const ptr: T[] = malloc(n * sizeof<T>)
     return {
         beg: ptr,
@@ -78,28 +78,28 @@ template<T> vec_new(n: u64): vec<T> {
     }
 }
 
-template<T> vec_free(self: vec<T>&) {
+function<T> vec_free(self: vec<T>&) {
     free(self.beg)
     self.beg = self.end = 0
 }
 
-template<T> vec_size(self: vec<T>&): u64 {
+function<T> vec_size(self: vec<T>&): u64 {
     return self.end - self.beg
 }
 
-template<T> vec_front(self: vec<T>&): T& {
+function<T> vec_front(self: vec<T>&): T& {
     return *self.beg
 }
 
-template<T> vec_back(self: vec<T>&): T& {
+function<T> vec_back(self: vec<T>&): T& {
     return self.end[-1]
 }
 
-template<T> vec_at(self: vec<T>&, pos: u64): T& {
+function<T> vec_at(self: vec<T>&, pos: u64): T& {
     return self.beg[pos]
 }
 
-template<T> vec_push(self: vec<T>&, element: T) {
+function<T> vec_push(self: vec<T>&, element: T) {
     const size = vec_size<T>(self) + 1
     const ptr: T[] = realloc(self.beg, size * sizeof<T>)
     self.beg = ptr
@@ -107,7 +107,7 @@ template<T> vec_push(self: vec<T>&, element: T) {
     vec_back<T>(self) = element
 }
 
-template<T> vec_pop(self: vec<T>&): T {
+function<T> vec_pop(self: vec<T>&): T {
     const element: T = vec_back<T>(self)
     const size = vec_size<T>(self) - 1
     const ptr: T[] = realloc(self.beg, size * sizeof<T>)

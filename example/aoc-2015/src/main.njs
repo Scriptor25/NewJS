@@ -1,22 +1,27 @@
 import { day: day_1 } from "./day_1.njs"
 import { day: day_2 } from "./day_2.njs"
 
-// std
-type File = i8[]
-extern println(message: i8[])
-extern parse_int(str: i8[]): i64
-extern parse_float(str: i8[]): u64
-extern file_open(filename: i8[], flags: i8[]): File
-extern file_close(stream: File)
-extern file_read(stream: File, count: u64): i8[]
-extern file_read_eof(stream: File): i8[]
-extern file_read_free(buf: i8[])
-extern file_write(stream: File, buf: i8[], count: u64)
+#SEEK_SET "0:u32"
+#SEEK_CUR "1:u32"
+#SEEK_END "2:u32"
+
+extern function println(message: i8[])
+extern function parse_int(str: i8[]): i64
+extern function parse_float(str: i8[]): u64
+
+extern function fopen(filename: i8[], mode: i8[]): FILE[]
+extern function fclose(stream: FILE[])
+extern function fseek(stream: FILE[], offset: i32, origin: i32): i32
+extern function ftell(stream: FILE[]): i32
+extern function fread(buffer: void[], size: u32, count: u32, stream: FILE[]): u32
+
+extern function malloc(count: u32): void[]
+extern function free(block: void[])
 
 println($"{process}")
 
-let day = parse_int(process.argv[1])
-let part = parse_int(process.argv[2])
+const day = parse_int(process.argv[1])
+const part = parse_int(process.argv[2])
 
 function part_err(input: i8[]): u64 {
     println("invalid part")
@@ -28,16 +33,21 @@ function day_err(input: i8[]): u64 {
     return 0
 }
 
-let fn = switch (day) {
+const fn = switch (day) {
     case 1  -> day_1(part)
     case 2  -> day_2(part)
     default -> day_err
 }
 
-let stream = file_open($"input/{day}.txt", "r")
-let input = file_read_eof(stream)
+const stream = fopen($"input/{day}.txt", "r")
+fseek(stream, 0, SEEK_END)
+const stream_size = ftell(stream)
+fseek(stream, 0, SEEK_SET)
+const input: i8[] = malloc(stream_size)
+fread(input, 1, stream_size, stream)
+fclose(stream)
 
 let result = fn(input)
 println($"result: {result}")
 
-file_read_free(input)
+free(input)

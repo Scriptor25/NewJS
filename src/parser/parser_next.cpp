@@ -51,6 +51,7 @@ NJS::Token &NJS::Parser::Next()
                         NewLine();
                         break;
 
+                    case '.':
                     case '?':
                     case '!':
                     case '~':
@@ -79,7 +80,6 @@ NJS::Token &NJS::Parser::Next()
                     case '@':
                     case '#':
                     case ',':
-                    case '.':
                     case ';':
                     case ':':
                         where = m_Where;
@@ -162,6 +162,16 @@ NJS::Token &NJS::Parser::Next()
                 break;
 
             case State_Operator:
+                if (value == "." && m_C == '.')
+                {
+                    value += static_cast<char>(m_C);
+                    break;
+                }
+                if (value == ".." && m_C == '.')
+                {
+                    value += static_cast<char>(m_C);
+                    break;
+                }
                 if (value == "+" && (m_C == '+' || m_C == '='))
                 {
                     value += static_cast<char>(m_C);

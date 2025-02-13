@@ -2,7 +2,7 @@ import vec2 from "./vec2.njs"
 import vec3 from "./vec3.njs"
 import mat4 from "./mat4.njs"
 
-extern println(x: i8[])
+extern function println(x: i8[])
 
 let a = vec2.new( 1.2,   3.4)
 let b = vec2.new(10.0, -123.)

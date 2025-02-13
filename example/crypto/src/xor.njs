@@ -1,4 +1,4 @@
-extern strlen(str: i8[]): u64
+extern function strlen(str: i8[]): u64
 
 function xor(dst: i8[], src: i8[], key: i8[], key_len: u64): i8[] {
     let src_len = strlen(src)

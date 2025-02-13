@@ -8,13 +8,24 @@
 
 namespace NJS
 {
+    enum ParameterFlags
+    {
+        ParameterFlags_None = 0,
+        ParameterFlags_Const = 1,
+        ParameterFlags_Extern = 2,
+    };
+
     struct Parameter
     {
         explicit Parameter(std::string_view name);
         virtual ~Parameter() = default;
 
         virtual bool RequireValue();
-        virtual void CreateVars(Builder &builder, const SourceLocation &where, bool is_const, const ValuePtr &value);
+        virtual void CreateVars(
+            Builder &builder,
+            const SourceLocation &where,
+            const ValuePtr &value,
+            unsigned flags);
 
         virtual std::ostream &Print(std::ostream &stream);
 
@@ -27,7 +38,11 @@ namespace NJS
         explicit DestructureObject(std::map<std::string, ParameterPtr> elements);
 
         bool RequireValue() override;
-        void CreateVars(Builder &builder, const SourceLocation &where, bool is_const, const ValuePtr &value) override;
+        void CreateVars(
+            Builder &builder,
+            const SourceLocation &where,
+            const ValuePtr &value,
+            unsigned flags) override;
 
         std::ostream &Print(std::ostream &stream) override;
 
@@ -39,7 +54,11 @@ namespace NJS
         explicit DestructureArray(std::vector<ParameterPtr> elements);
 
         bool RequireValue() override;
-        void CreateVars(Builder &builder, const SourceLocation &where, bool is_const, const ValuePtr &value) override;
+        void CreateVars(
+            Builder &builder,
+            const SourceLocation &where,
+            const ValuePtr &value,
+            unsigned flags) override;
 
         std::ostream &Print(std::ostream &stream) override;
 
