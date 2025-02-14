@@ -398,13 +398,13 @@ namespace NJS
 
     struct UnaryExpression final : Expression
     {
-        UnaryExpression(SourceLocation where, std::string_view operator_, bool post, ExpressionPtr operand);
+        UnaryExpression(SourceLocation where, std::string_view operator_, bool prefix, ExpressionPtr operand);
 
         ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         std::string Operator;
-        bool Post;
+        bool Prefix;
         ExpressionPtr Operand;
     };
 }

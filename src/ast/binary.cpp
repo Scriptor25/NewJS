@@ -80,11 +80,6 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
     auto left_operand = LeftOperand->GenLLVM(builder, !is_comparator ? expected_type : nullptr);
     auto right_operand = RightOperand->GenLLVM(builder, !is_comparator ? expected_type : nullptr);
 
-    auto destination = left_operand;
-
-    const auto left_type = left_operand->GetType();
-    const auto right_type = right_operand->GetType();
-
     if (auto [
             result_type_,
             left_type_,
@@ -92,10 +87,8 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
             callee_
         ] = builder.FindOperator(
             Operator,
-            left_type,
-            left_operand->IsLValue(),
-            right_type,
-            right_operand->IsLValue());
+            left_operand,
+            right_operand);
         callee_)
     {
         const auto function_type = llvm::FunctionType::get(
@@ -117,12 +110,16 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
         return RValue::Create(builder, result_type_, result_value);
     }
 
+    auto destination = left_operand;
+
     if (Operator == "=")
     {
         destination->Store(Where, right_operand);
         return destination;
     }
 
+    const auto left_type = left_operand->GetType();
+    const auto right_type = right_operand->GetType();
     const auto operand_type = GetHigherOrderOf(builder.GetTypeContext(), left_type, right_type);
     if (!operand_type)
         Error(Where, "cannot determine higher order type of {} and {}", left_type, right_type);
@@ -143,12 +140,11 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
             left_operand->Load(Where),
             right_operand->Load(Where)))
         {
-            if (assign)
-            {
-                destination->Store(Where, result_value);
-                return destination;
-            }
-            return result_value;
+            if (!assign)
+                return result_value;
+
+            destination->Store(Where, result_value);
+            return destination;
         }
 
     Error(Where, "undefined binary operator '{} {} {}'", operand_type, Operator, operand_type);

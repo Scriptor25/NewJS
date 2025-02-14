@@ -39,7 +39,7 @@ NJS::TypePtr NJS::FunctionType::GetResultType() const
     return m_ResultType;
 }
 
-NJS::TypePtr NJS::FunctionType::ParameterType(const unsigned index) const
+NJS::TypePtr NJS::FunctionType::GetParameterType(const unsigned index) const
 {
     return m_ParameterTypes[index];
 }

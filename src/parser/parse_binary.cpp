@@ -54,7 +54,7 @@ NJS::ExpressionPtr NJS::Parser::ParseBinaryExpression(ExpressionPtr lhs, const u
         const auto op_pre = get_pre();
         const auto [where_, type_, op_, int_, fp_] = Skip();
 
-        auto rhs = ParseOperandExpression();
+        auto rhs = ParseUnaryExpression();
         while (At(TokenType_Operator) && has_pre() && (get_pre() > op_pre || (!get_pre() && get_pre() >= op_pre)))
             rhs = ParseBinaryExpression(rhs, op_pre + (get_pre() > op_pre ? 1 : 0));
 

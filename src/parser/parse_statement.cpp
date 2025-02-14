@@ -5,6 +5,8 @@
 
 NJS::StatementPtr NJS::Parser::ParseStatement()
 {
+    while (NextAt(";"));
+
     if (At("#"))
     {
         ParseMacro();

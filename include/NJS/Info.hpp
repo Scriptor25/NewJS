@@ -6,8 +6,8 @@ namespace NJS
 {
     struct ValueInfo
     {
-        llvm::Value *Val;
-        llvm::Value *Ptr;
+        llvm::Value *Val{};
+        llvm::Value *Ptr{};
     };
 
     template<unsigned N>
@@ -16,17 +16,23 @@ namespace NJS
     template<>
     struct OperatorInfo<1>
     {
-        TypePtr Result;
-        TypePtr Value;
-        llvm::Value *Callee;
+        TypePtr ResultType;
+        TypePtr ValueType;
+        llvm::Value *Callee{};
     };
 
     template<>
     struct OperatorInfo<2>
     {
-        TypePtr Result;
-        TypePtr Left;
-        TypePtr Right;
-        llvm::Value *Callee;
+        TypePtr ResultType;
+        TypePtr LeftType;
+        TypePtr RightType;
+        llvm::Value *Callee{};
+    };
+
+    struct FunctionInfo
+    {
+        FunctionTypePtr Type;
+        llvm::Function *Callee{};
     };
 }

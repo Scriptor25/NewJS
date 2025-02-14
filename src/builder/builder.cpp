@@ -130,51 +130,153 @@ std::string NJS::Builder::GetName(const bool absolute, const std::string_view &n
     return m_Stack.back().GetChildName(name);
 }
 
-void NJS::Builder::DefineOperator(
-    const std::string_view &sym,
-    const TypePtr &val,
-    const TypePtr &result,
-    llvm::Value *callee)
+void NJS::Builder::DefineFunction(const std::string_view &name, const FunctionTypePtr &type, llvm::Function *callee)
 {
-    m_UnaryOperators[std::string(sym)][val] = {result, val, callee};
+    m_FunctionMap[std::string(name)].emplace_back(type, callee);
+}
+
+NJS::FunctionInfo NJS::Builder::GetFunction(const std::string_view &name, const FunctionTypePtr &type) const
+{
+    if (!m_FunctionMap.contains(std::string(name)))
+        return {};
+    for (auto &info: m_FunctionMap.at(std::string(name)))
+        if (info.Type == type)
+            return info;
+    return {};
+}
+
+NJS::FunctionInfo NJS::Builder::FindFunction(const std::string_view &name, const std::vector<ValuePtr> &arguments) const
+{
+    auto max_error = ~0u;
+    FunctionInfo result_info;
+
+    for (auto &info: m_FunctionMap.at(std::string(name)))
+    {
+        auto info_error = 0u;
+        auto &[info_type_, info_callee_] = info;
+
+        const auto parameter_count = info_type_->GetParameterCount();
+        const auto count_difference = static_cast<int>(parameter_count) - static_cast<int>(arguments.size());
+        if (count_difference > 0)
+            continue;
+        if (count_difference < 0 && !info_type_->IsVarArg())
+            continue;
+
+        info_error += abs(count_difference);
+
+        unsigned i;
+        for (i = 0; i < parameter_count; ++i)
+        {
+            const auto parameter_type = info_type_->GetParameterType(i);
+            const auto argument_type = arguments[i]->GetType();
+            if (parameter_type->IsReference() && !arguments[i]->IsLValue())
+                break;
+            const auto assignment_error = GetAssignmentError(parameter_type, argument_type);
+            if (assignment_error == ~0u)
+                break;
+            info_error += assignment_error;
+        }
+        if (i < parameter_count)
+            continue;
+
+        if (info_error < max_error)
+        {
+            max_error = info_error;
+            result_info = info;
+        }
+    }
+
+    return result_info;
 }
 
 void NJS::Builder::DefineOperator(
-    const std::string_view &sym,
-    const TypePtr &lhs,
-    const TypePtr &rhs,
-    const TypePtr &result,
+    const std::string_view &name,
+    const bool prefix,
+    const TypePtr &value_type,
+    const TypePtr &result_type,
     llvm::Value *callee)
 {
-    m_BinaryOperators[std::string(sym)][lhs][rhs] = {result, lhs, rhs, callee};
+    m_UnaryOperatorMap[std::string(name)][prefix][value_type] = {result_type, value_type, callee};
 }
 
-NJS::OperatorInfo<1> NJS::Builder::GetOperator(const std::string_view &sym, const TypePtr &val)
+void NJS::Builder::DefineOperator(
+    const std::string_view &name,
+    const TypePtr &left_type,
+    const TypePtr &right_type,
+    const TypePtr &result_type,
+    llvm::Value *callee)
 {
-    return m_UnaryOperators[std::string(sym)][val];
+    m_BinaryOperatorMap[std::string(name)][left_type][right_type] = {result_type, left_type, right_type, callee};
 }
 
-NJS::OperatorInfo<2> NJS::Builder::GetOperator(const std::string_view &sym, const TypePtr &lhs, const TypePtr &rhs)
+NJS::OperatorInfo<1> NJS::Builder::GetOperator(
+    const std::string_view &name,
+    const bool prefix,
+    const TypePtr &value_type) const
 {
-    return m_BinaryOperators[std::string(sym)][lhs][rhs];
+    if (!m_UnaryOperatorMap.contains(std::string(name)))
+        return {};
+    auto &for_name = m_UnaryOperatorMap.at(std::string(name));
+    if (!for_name.contains(prefix))
+        return {};
+    auto &for_prefix = for_name.at(prefix);
+    if (!for_prefix.contains(value_type))
+        return {};
+    return for_prefix.at(value_type);
+}
+
+NJS::OperatorInfo<2> NJS::Builder::GetOperator(
+    const std::string_view &name,
+    const TypePtr &left_type,
+    const TypePtr &right_type) const
+{
+    if (!m_BinaryOperatorMap.contains(std::string(name)))
+        return {};
+    auto &for_name = m_BinaryOperatorMap.at(std::string(name));
+    if (!for_name.contains(left_type))
+        return {};
+    auto &for_left = for_name.at(left_type);
+    if (!for_left.contains(right_type))
+        return {};
+    return for_left.at(right_type);
+}
+
+NJS::OperatorInfo<1> NJS::Builder::FindOperator(
+    const std::string_view &name,
+    const bool prefix,
+    const ValuePtr &value) const
+{
+    const auto value_type = value->GetType();
+    const auto value_type_ref = value->IsLValue()
+                                    ? GetTypeContext().GetReferenceType(value_type)
+                                    : value_type;
+    if (auto o = GetOperator(name, prefix, value_type_ref); o.Callee)
+        return o;
+    if (auto o = GetOperator(name, prefix, value_type); o.Callee)
+        return o;
+    return {};
 }
 
 NJS::OperatorInfo<2> NJS::Builder::FindOperator(
-    const std::string_view &sym,
-    const TypePtr &lhs,
-    const bool lhs_is_ref_able,
-    const TypePtr &rhs,
-    const bool rhs_is_ref_able)
+    const std::string_view &name,
+    const ValuePtr &left_operand,
+    const ValuePtr &right_operand) const
 {
-    const auto lhs_ref = lhs_is_ref_able ? GetTypeContext().GetReferenceType(lhs) : lhs;
-    const auto rhs_ref = rhs_is_ref_able ? GetTypeContext().GetReferenceType(rhs) : rhs;
-    if (auto o = GetOperator(sym, lhs_ref, rhs_ref); o.Callee)
+    const auto left_type = left_operand->GetType();
+    const auto right_type = right_operand->GetType();
+    const auto left_type_ref = left_operand->IsLValue()
+                                   ? GetTypeContext().GetReferenceType(left_type)
+                                   : left_type;
+    const auto right_type_ref = right_operand->IsLValue()
+                                    ? GetTypeContext().GetReferenceType(right_type)
+                                    : right_type;
+    if (auto o = GetOperator(name, left_type_ref, right_type_ref); o.Callee)
         return o;
-    if (auto o = GetOperator(sym, lhs, rhs_ref); o.Callee)
+    if (auto o = GetOperator(name, left_type, right_type_ref); o.Callee)
         return o;
-    if (auto o = GetOperator(sym, lhs_ref, rhs); o.Callee)
+    if (auto o = GetOperator(name, left_type_ref, right_type); o.Callee)
         return o;
-    if (auto o = GetOperator(sym, lhs, rhs); o.Callee)
+    if (auto o = GetOperator(name, left_type, right_type); o.Callee)
         return o;
     return {};
 }

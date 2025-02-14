@@ -38,7 +38,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
     if (!const_index && !array->IsLValue())
     {
         const auto value = CreateAlloca(where, array_type);
-        value->Store(where, array, true);
+        value->Store(where, array);
         array = value;
     }
 

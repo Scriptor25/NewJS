@@ -47,7 +47,9 @@ void NJS::ImportMapping::MapFunctions(
         if (fn.Flags & FunctionFlags_Operator)
         {
             if (fn.Parameters.size() == 1)
-                name += fn.Parameters[0]->Type->GetString() + fn.Name;
+                name += (fn.IsVarArg ? "" : fn.Name)
+                        + fn.Parameters[0]->Type->GetString()
+                        + (fn.IsVarArg ? fn.Name : "");
             else if (fn.Parameters.size() == 2)
                 name += fn.Parameters[0]->Type->GetString() + fn.Name + fn.Parameters[1]->Type->GetString();
         }
@@ -71,6 +73,7 @@ void NJS::ImportMapping::MapFunctions(
             if (fn.Parameters.size() == 1)
                 builder.DefineOperator(
                     fn.Name,
+                    !fn.IsVarArg,
                     fn.Parameters[0]->Type,
                     fn.ResultType,
                     callee.getCallee());

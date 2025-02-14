@@ -31,7 +31,7 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expe
     {
         const auto has_parameter = i < parameter_count;
         auto parameter_type = has_parameter
-                                  ? callee_type->ParameterType(i)
+                                  ? callee_type->GetParameterType(i)
                                   : nullptr;
 
         auto &argument = Arguments[i];

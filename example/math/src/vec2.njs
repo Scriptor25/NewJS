@@ -18,6 +18,28 @@ function len(self: vec2&): f64 {
     return sqrt(self[0] * self[0] + self[1] * self[1])
 }
 
+function operator++(self: vec2&): vec2& {
+    ++self[0] ; ++self[1]
+    return self
+}
+
+function operator++(self: vec2&, ...): vec2 {
+    const old = self
+    self[0]++ ; self[1]++
+    return old
+}
+
+function operator--(self: vec2&): vec2& {
+    --self[0] ; --self[1]
+    return self
+}
+
+function operator--(self: vec2&, ...): vec2 {
+    const old = self
+    self[0]-- ; self[1]--
+    return old
+}
+
 function operator-(self: vec2&): vec2 {
     return new(-self[0], -self[1])
 }

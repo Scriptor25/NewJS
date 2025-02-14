@@ -14,6 +14,7 @@ namespace NJS
     typedef std::pair<TypePtr, unsigned> MemberT;
 
     TypePtr GetHigherOrderOf(TypeContext &type_context, const TypePtr &type_a, const TypePtr &type_b);
+    unsigned GetAssignmentError(const TypePtr &parameter_type, const TypePtr &argument_type);
 
     class Type
     {
@@ -266,7 +267,7 @@ namespace NJS
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsFunction() const override;
         [[nodiscard]] TypePtr GetResultType() const override;
-        [[nodiscard]] TypePtr ParameterType(unsigned index) const;
+        [[nodiscard]] TypePtr GetParameterType(unsigned index) const;
         [[nodiscard]] unsigned GetParameterCount() const;
         [[nodiscard]] bool IsVarArg() const;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;

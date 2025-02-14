@@ -450,6 +450,11 @@ NJS::ValuePtr NJS::OperatorDec(Builder &builder, const SourceLocation &where, co
             builder,
             type,
             builder.GetBuilder().CreateSub(val, llvm::ConstantInt::get(ty, 1, type->IsSigned())));
+    if (type->IsFloatingPoint())
+        return RValue::Create(
+            builder,
+            type,
+            builder.GetBuilder().CreateFSub(val, llvm::ConstantFP::get(ty, 1.0)));
 
     return {};
 }

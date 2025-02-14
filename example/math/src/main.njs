@@ -23,6 +23,9 @@ let e = vec2.new(123., 456.)
 println($"e = {e}")
 e *= 2.
 println($"e = {e}")
+println($"-e = {-e}")
+println($"e++ = {e++}")
+println($"--e = {--e}")
 
 let model = mat4.new()
 model *= mat4.translation(vec3.new(1, 2, 3))

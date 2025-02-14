@@ -37,13 +37,6 @@ NJS::ExpressionPtr NJS::Parser::ParseOperandExpression()
             continue;
         }
 
-        if (At("++") || At("--"))
-        {
-            const auto op = Skip().StringValue;
-            ptr = std::make_shared<UnaryExpression>(where, op, true, ptr);
-            continue;
-        }
-
         if (NextAt("as"))
         {
             const auto type = ParseType();

@@ -166,7 +166,7 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
     {
         const auto op = Skip().StringValue;
         const auto operand = ParseOperandExpression();
-        return std::make_shared<UnaryExpression>(where, op, false, operand);
+        return std::make_shared<UnaryExpression>(where, op, true, operand);
     }
 
     Error(m_Token.Where, "unused token {}", m_Token);

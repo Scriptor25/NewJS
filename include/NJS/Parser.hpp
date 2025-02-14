@@ -92,6 +92,7 @@ namespace NJS
         ExpressionPtr ParseStructExpression();
         ExpressionPtr ParseSwitchExpression();
         ExpressionPtr ParseTupleExpression();
+        ExpressionPtr ParseUnaryExpression();
 
         TypeContext &m_TypeContext;
         TemplateContext &m_TemplateContext;

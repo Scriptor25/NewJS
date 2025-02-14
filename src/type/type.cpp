@@ -34,6 +34,63 @@ NJS::TypePtr NJS::GetHigherOrderOf(TypeContext &type_context, const TypePtr &typ
     return {};
 }
 
+unsigned NJS::GetAssignmentError(const TypePtr &parameter_type, const TypePtr &argument_type)
+{
+    if (argument_type == parameter_type)
+        return 0u;
+
+    if (argument_type->IsInteger())
+    {
+        if (parameter_type->IsInteger())
+        {
+            const auto same_signage = argument_type->IsSigned() == parameter_type->IsSigned();
+            const auto bits_difference = static_cast<int>(argument_type->GetBits())
+                                         - static_cast<int>(parameter_type->GetBits());
+            return (same_signage ? 1u : 0u) + abs(bits_difference);
+        }
+        if (parameter_type->IsFloatingPoint())
+        {
+            const auto bits_difference = static_cast<int>(argument_type->GetBits())
+                                         - static_cast<int>(parameter_type->GetBits());
+            return 3u * abs(bits_difference);
+        }
+        if (parameter_type->IsPointer())
+        {
+            const auto same_signage = !argument_type->IsSigned();
+            const auto bits_difference = static_cast<int>(argument_type->GetBits()) - 64;
+            return 2u * ((same_signage ? 1u : 0u) + abs(bits_difference));
+        }
+    }
+
+    if (argument_type->IsFloatingPoint())
+    {
+        if (parameter_type->IsFloatingPoint())
+        {
+            const auto bits_difference = static_cast<int>(argument_type->GetBits())
+                                         - static_cast<int>(parameter_type->GetBits());
+            return abs(bits_difference);
+        }
+        if (parameter_type->IsInteger())
+        {
+            const auto bits_difference = static_cast<int>(argument_type->GetBits())
+                                         - static_cast<int>(parameter_type->GetBits());
+            return 2u * abs(bits_difference);
+        }
+    }
+
+    if (argument_type->IsPointer())
+    {
+        if (parameter_type->IsPointer())
+        {
+            const auto parameter_is_void = parameter_type->GetElement()->IsVoid();
+            const auto argument_is_void = argument_type->GetElement()->IsVoid();
+            return parameter_is_void || argument_is_void ? 1u : ~0u;
+        }
+    }
+
+    return ~0u;
+}
+
 std::ostream &NJS::Type::Print(std::ostream &stream) const
 {
     return stream << m_String;

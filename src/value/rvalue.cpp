@@ -27,7 +27,7 @@ void NJS::RValue::Store(const SourceLocation &where, llvm::Value *, bool force) 
     Error(where, "cannot assign to rvalue");
 }
 
-void NJS::RValue::Store(const SourceLocation &where, ValuePtr, bool force) const
+void NJS::RValue::Store(const SourceLocation &where, ValuePtr) const
 {
     Error(where, "cannot assign to rvalue");
 }

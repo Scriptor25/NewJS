@@ -78,22 +78,40 @@ namespace NJS
 
         [[nodiscard]] std::string GetName(bool absolute, const std::string_view &name) const;
 
+        void DefineFunction(const std::string_view &name, const FunctionTypePtr &type, llvm::Function *callee);
+        FunctionInfo GetFunction(const std::string_view &name, const FunctionTypePtr &type) const;
+        FunctionInfo FindFunction(const std::string_view &name, const std::vector<ValuePtr> &arguments) const;
+
         void DefineOperator(
-            const std::string_view &sym,
-            const TypePtr &val,
-            const TypePtr &result,
+            const std::string_view &name,
+            bool prefix,
+            const TypePtr &value_type,
+            const TypePtr &result_type,
             llvm::Value *callee);
         void DefineOperator(
-            const std::string_view &sym,
-            const TypePtr &lhs,
-            const TypePtr &rhs,
-            const TypePtr &result,
+            const std::string_view &name,
+            const TypePtr &left_type,
+            const TypePtr &right_type,
+            const TypePtr &result_type,
             llvm::Value *callee);
 
-        OperatorInfo<1> GetOperator(const std::string_view &sym, const TypePtr &val);
-        OperatorInfo<2> GetOperator(const std::string_view &sym, const TypePtr &lhs, const TypePtr &rhs);
+        OperatorInfo<1> GetOperator(
+            const std::string_view &name,
+            bool prefix,
+            const TypePtr &value_type) const;
+        OperatorInfo<2> GetOperator(
+            const std::string_view &name,
+            const TypePtr &left_type,
+            const TypePtr &right_type) const;
 
-        OperatorInfo<2> FindOperator(const std::string_view &sym, const TypePtr &lhs, bool lhs_is_ref_able, const TypePtr &rhs, bool rhs_is_ref_able);
+        OperatorInfo<1> FindOperator(
+            const std::string_view &name,
+            bool prefix,
+            const ValuePtr &value) const;
+        OperatorInfo<2> FindOperator(
+            const std::string_view &name,
+            const ValuePtr &left_operand,
+            const ValuePtr &right_operand) const;
 
         ValuePtr &DefineVariable(const SourceLocation &where, const std::string_view &name);
         ValuePtr &GetVariable(const SourceLocation &where, const std::string_view &name);
@@ -110,8 +128,10 @@ namespace NJS
         std::unique_ptr<llvm::Module> m_LLVMModule;
         std::unique_ptr<llvm::IRBuilder<>> m_LLVMBuilder;
 
-        std::map<std::string, std::map<TypePtr, OperatorInfo<1>>> m_UnaryOperators;
-        std::map<std::string, std::map<TypePtr, std::map<TypePtr, OperatorInfo<2>>>> m_BinaryOperators;
+        std::map<std::string, std::map<bool, std::map<TypePtr, OperatorInfo<1>>>> m_UnaryOperatorMap;
+        std::map<std::string, std::map<TypePtr, std::map<TypePtr, OperatorInfo<2>>>> m_BinaryOperatorMap;
+
+        std::map<std::string, std::vector<FunctionInfo>> m_FunctionMap;
 
         std::vector<StackFrame> m_Stack;
     };

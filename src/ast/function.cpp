@@ -36,7 +36,7 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
         if (Parameters.size() == 1)
             function_name = builder.GetName(
                 Flags & FunctionFlags_Absolute,
-                Parameters[0]->Type->GetString() + Name);
+                (IsVarArg ? "" : Name) + Parameters[0]->Type->GetString() + (IsVarArg ? Name : ""));
         else if (Parameters.size() == 2)
             function_name = builder.GetName(
                 Flags & FunctionFlags_Absolute,
@@ -61,7 +61,7 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
         if (Flags & FunctionFlags_Operator)
         {
             if (Parameters.size() == 1)
-                builder.DefineOperator(Name, Parameters[0]->Type, ResultType, function);
+                builder.DefineOperator(Name, !IsVarArg, Parameters[0]->Type, ResultType, function);
             else if (Parameters.size() == 2)
                 builder.DefineOperator(Name, Parameters[0]->Type, Parameters[1]->Type, ResultType, function);
         }

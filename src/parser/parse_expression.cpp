@@ -2,5 +2,5 @@
 
 NJS::ExpressionPtr NJS::Parser::ParseExpression()
 {
-    return ParseBinaryExpression(ParseOperandExpression(), 0);
+    return ParseBinaryExpression(ParseUnaryExpression(), 0);
 }

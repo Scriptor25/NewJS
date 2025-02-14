@@ -4,6 +4,7 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Operator.hpp>
+#include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
 using namespace std::string_view_literals;
@@ -11,11 +12,11 @@ using namespace std::string_view_literals;
 NJS::UnaryExpression::UnaryExpression(
     SourceLocation where,
     std::string_view operator_,
-    const bool post,
+    const bool prefix,
     ExpressionPtr operand)
     : Expression(std::move(where)),
       Operator(std::move(operator_)),
-      Post(post),
+      Prefix(prefix),
       Operand(std::move(operand))
 {
 }
@@ -34,28 +35,53 @@ NJS::ValuePtr NJS::UnaryExpression::GenLLVM(Builder &builder, const TypePtr &exp
     };
 
     auto operand = Operand->GenLLVM(builder, expected_type);
-    const auto value = operand->Load(Where);
+
+    if (auto [
+            result_type_,
+            value_type_,
+            callee_
+        ] = builder.FindOperator(Operator, Prefix, operand);
+        callee_)
+    {
+        const auto function_type = llvm::FunctionType::get(
+            result_type_->GetLLVM(Where, builder),
+            {
+                value_type_->GetLLVM(Where, builder),
+            },
+            false);
+        const auto result_value = builder.GetBuilder().CreateCall(
+            function_type,
+            callee_,
+            {
+                value_type_->IsReference() ? operand->GetPtr(Where) : operand->Load(Where),
+            });
+        if (result_type_->IsReference())
+            return LValue::Create(builder, result_type_->GetElement(), result_value);
+        return RValue::Create(builder, result_type_, result_value);
+    }
+
+    const auto bkp_value = operand->Load(Where);
 
     if (fns.contains(Operator))
     {
         auto &[assign_, operator_] = fns.at(Operator);
         if (auto result_value = operator_(builder, Where, operand); result_value)
         {
-            if (assign_)
-            {
-                operand->Store(Where, result_value);
-                if (Post)
-                    return RValue::Create(builder, operand->GetType(), value);
+            if (!assign_)
+                return result_value;
+
+            operand->Store(Where, result_value);
+            if (Prefix)
                 return operand;
-            }
-            return result_value;
+
+            return RValue::Create(builder, operand->GetType(), bkp_value);
         }
     }
 
-    Error(Where, "undefined unary operator {}{}", Operator, operand->GetType());
+    Error(Where, "undefined unary operator {}{}{}", Prefix ? Operator : "", operand->GetType(), Prefix ? "" : Operator);
 }
 
 std::ostream &NJS::UnaryExpression::Print(std::ostream &stream)
 {
-    return Operand->Print(stream << (Post ? "" : Operator)) << (Post ? Operator : "");
+    return Operand->Print(stream << (Prefix ? Operator : "")) << (Prefix ? "" : Operator);
 }

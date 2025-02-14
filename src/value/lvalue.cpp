@@ -31,7 +31,7 @@ void NJS::LValue::Store(const SourceLocation &where, llvm::Value *value, const b
     GetBuilder().GetBuilder().CreateStore(value, m_Ptr);
 }
 
-void NJS::LValue::Store(const SourceLocation &where, ValuePtr value, const bool force) const
+void NJS::LValue::Store(const SourceLocation &where, ValuePtr value) const
 {
     value = GetBuilder().CreateCast(where, value, GetType());
     GetBuilder().GetBuilder().CreateStore(value->Load(where), m_Ptr);

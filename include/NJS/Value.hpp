@@ -18,7 +18,7 @@ namespace NJS
 
         [[nodiscard]] virtual llvm::Value *Load(const SourceLocation &where) const = 0;
         virtual void Store(const SourceLocation &where, llvm::Value *value, bool force = false) const = 0;
-        virtual void Store(const SourceLocation &where, ValuePtr value, bool force = false) const = 0;
+        virtual void Store(const SourceLocation &where, ValuePtr value) const = 0;
 
     protected:
         Value(Builder &builder, TypePtr type);
@@ -38,7 +38,7 @@ namespace NJS
 
         [[nodiscard]] llvm::Value *Load(const SourceLocation &where) const override;
         void Store(const SourceLocation &where, llvm::Value *value, bool force = false) const override;
-        void Store(const SourceLocation &where, ValuePtr value, bool force = false) const override;
+        void Store(const SourceLocation &where, ValuePtr value) const override;
 
     private:
         RValue(Builder &builder, TypePtr type, llvm::Value *value);
@@ -56,7 +56,7 @@ namespace NJS
 
         [[nodiscard]] llvm::Value *Load(const SourceLocation &where) const override;
         void Store(const SourceLocation &where, llvm::Value *value, bool force = false) const override;
-        void Store(const SourceLocation &where, ValuePtr value, bool force = false) const override;
+        void Store(const SourceLocation &where, ValuePtr value) const override;
 
     private:
         LValue(Builder &builder, TypePtr type, llvm::Value *ptr);

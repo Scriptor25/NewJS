@@ -13,7 +13,7 @@ NJS::ValuePtr NJS::SymbolExpression::GenLLVM(Builder &builder, const TypePtr &) 
     return builder.GetVariable(Where, Name);
 }
 
-std::ostream &NJS::SymbolExpression::Print(std::ostream &os)
+std::ostream &NJS::SymbolExpression::Print(std::ostream &stream)
 {
-    return os << Name;
+    return stream << Name;
 }
