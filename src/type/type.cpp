@@ -2,7 +2,7 @@
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::TypePtr NJS::max(TypeContext &type_context, const TypePtr &type_a, const TypePtr &type_b)
+NJS::TypePtr NJS::GetHigherOrderOf(TypeContext &type_context, const TypePtr &type_a, const TypePtr &type_b)
 {
     if (type_a == type_b)
         return type_a;
@@ -31,7 +31,7 @@ NJS::TypePtr NJS::max(TypeContext &type_context, const TypePtr &type_a, const Ty
             return type_a;
     }
 
-    Error("no maximum type of {} and {}", type_a, type_b);
+    return {};
 }
 
 std::ostream &NJS::Type::Print(std::ostream &stream) const
@@ -129,11 +129,6 @@ NJS::MemberT NJS::Type::GetMember(const std::string_view &) const
 NJS::TypePtr NJS::Type::GetResultType() const
 {
     Error("type {} does not support 'GetResultType'", m_String);
-}
-
-bool NJS::Type::IsMutable() const
-{
-    Error("type {} does not support 'IsMutable'", m_String);
 }
 
 NJS::Type::Type(TypeContext &type_context, std::string_view string)

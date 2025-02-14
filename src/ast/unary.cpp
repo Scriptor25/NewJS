@@ -20,39 +20,42 @@ NJS::UnaryExpression::UnaryExpression(
 {
 }
 
-NJS::ValuePtr NJS::UnaryExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::UnaryExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
-    static const std::map<std::string_view, UnaryOperator> fns
+    static const std::map<std::string_view, std::pair<bool, UnaryOperator>> fns
     {
-        {"++"sv, OperatorInc},
-        {"--"sv, OperatorDec},
-        {"-"sv, OperatorNeg},
-        {"!"sv, OperatorLNot},
-        {"~"sv, OperatorNot},
-        {"&"sv, OperatorRef},
-        {"*"sv, OperatorDeref},
+        {"++"sv, {true, OperatorInc}},
+        {"--"sv, {true, OperatorDec}},
+        {"-"sv, {false, OperatorNeg}},
+        {"!"sv, {false, OperatorLNot}},
+        {"~"sv, {false, OperatorNot}},
+        {"&"sv, {false, OperatorRef}},
+        {"*"sv, {false, OperatorDeref}},
     };
 
-    auto operand = Operand->GenLLVM(builder, expected);
+    auto operand = Operand->GenLLVM(builder, expected_type);
     const auto value = operand->Load(Where);
 
     if (fns.contains(Operator))
-        if (auto [value_, assign_] = fns.at(Operator)(builder, Where, operand); value_)
+    {
+        auto &[assign_, operator_] = fns.at(Operator);
+        if (auto result_value = operator_(builder, Where, operand); result_value)
         {
             if (assign_)
             {
-                operand->Store(Where, value_);
+                operand->Store(Where, result_value);
                 if (Post)
                     return RValue::Create(builder, operand->GetType(), value);
                 return operand;
             }
-            return value_;
+            return result_value;
         }
+    }
 
     Error(Where, "undefined unary operator {}{}", Operator, operand->GetType());
 }
 
-std::ostream &NJS::UnaryExpression::Print(std::ostream &os)
+std::ostream &NJS::UnaryExpression::Print(std::ostream &stream)
 {
-    return Operand->Print(os << (Post ? "" : Operator)) << (Post ? Operator : "");
+    return Operand->Print(stream << (Post ? "" : Operator)) << (Post ? Operator : "");
 }

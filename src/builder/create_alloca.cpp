@@ -14,9 +14,8 @@ llvm::Value *NJS::Builder::CreateAlloca(llvm::Type *type, const unsigned size) c
 NJS::ValuePtr NJS::Builder::CreateAlloca(
     const SourceLocation &where,
     const TypePtr &type,
-    const bool is_mutable,
     const unsigned size)
 {
     const auto ptr = CreateAlloca(type->GetLLVM(where, *this), size);
-    return LValue::Create(*this, type, ptr, is_mutable);
+    return LValue::Create(*this, type, ptr);
 }

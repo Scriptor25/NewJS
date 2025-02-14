@@ -5,6 +5,7 @@
 #include <vector>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Module.h>
+#include <NJS/Info.hpp>
 #include <NJS/NJS.hpp>
 
 namespace NJS
@@ -22,17 +23,10 @@ namespace NJS
         std::map<std::string, ValuePtr> Values;
     };
 
-    struct ValueRef
-    {
-        llvm::Value *Val;
-        llvm::Value *Ptr;
-    };
-
-    struct OperatorRef
-    {
-        TypePtr Result;
-        llvm::Value *Callee;
-    };
+    using UnaryOperator = std::function<ValuePtr(
+        Builder &builder,
+        const SourceLocation &where,
+        const ValuePtr &value)>;
 
     using BinaryOperator = std::function<ValuePtr(
         Builder &builder,
@@ -40,17 +34,6 @@ namespace NJS
         const TypePtr &type,
         llvm::Value *lhs,
         llvm::Value *rhs)>;
-
-    struct UnaryResult
-    {
-        ValuePtr Value;
-        bool Assign;
-    };
-
-    using UnaryOperator = std::function<UnaryResult(
-        Builder &builder,
-        const SourceLocation &where,
-        const ValuePtr &value)>;
 
     class Builder
     {
@@ -68,13 +51,12 @@ namespace NJS
         [[nodiscard]] llvm::IRBuilder<> &GetBuilder() const;
 
         [[nodiscard]] llvm::Value *CreateAlloca(llvm::Type *type, unsigned size = 0) const;
-        ValuePtr CreateAlloca(const SourceLocation &where, const TypePtr &type, bool is_mutable, unsigned size = 0);
+        ValuePtr CreateAlloca(const SourceLocation &where, const TypePtr &type, unsigned size = 0);
         ValuePtr CreateGlobal(
             const SourceLocation &where,
             const std::string &name,
             const TypePtr &type,
-            bool initialize,
-            bool is_mutable);
+            bool initialize);
 
         ValuePtr CreateMember(const SourceLocation &where, const ValuePtr &object, const std::string &name);
 
@@ -85,7 +67,7 @@ namespace NJS
         ValuePtr CreateCast(const SourceLocation &where, const ValuePtr &value, const TypePtr &type);
         [[nodiscard]] llvm::Value *CreateCast(
             const SourceLocation &where,
-            const ValueRef &ref,
+            const ValueInfo &ref,
             const TypePtr &src_type,
             const TypePtr &dst_type) const;
 
@@ -107,8 +89,11 @@ namespace NJS
             const TypePtr &rhs,
             const TypePtr &result,
             llvm::Value *callee);
-        OperatorRef GetOperator(const std::string_view &sym, const TypePtr &val);
-        OperatorRef GetOperator(const std::string_view &sym, const TypePtr &lhs, const TypePtr &rhs);
+
+        OperatorInfo<1> GetOperator(const std::string_view &sym, const TypePtr &val);
+        OperatorInfo<2> GetOperator(const std::string_view &sym, const TypePtr &lhs, const TypePtr &rhs);
+
+        OperatorInfo<2> FindOperator(const std::string_view &sym, const TypePtr &lhs, bool lhs_is_ref_able, const TypePtr &rhs, bool rhs_is_ref_able);
 
         ValuePtr &DefineVariable(const SourceLocation &where, const std::string_view &name);
         ValuePtr &GetVariable(const SourceLocation &where, const std::string_view &name);
@@ -123,10 +108,10 @@ namespace NJS
         bool m_IsMain;
 
         std::unique_ptr<llvm::Module> m_LLVMModule;
-        std::unique_ptr<llvm::IRBuilder<> > m_LLVMBuilder;
+        std::unique_ptr<llvm::IRBuilder<>> m_LLVMBuilder;
 
-        std::map<std::string, std::map<TypePtr, OperatorRef> > m_UnaryOperators;
-        std::map<std::string, std::map<TypePtr, std::map<TypePtr, OperatorRef> > > m_BinaryOperators;
+        std::map<std::string, std::map<TypePtr, OperatorInfo<1>>> m_UnaryOperators;
+        std::map<std::string, std::map<TypePtr, std::map<TypePtr, OperatorInfo<2>>>> m_BinaryOperators;
 
         std::vector<StackFrame> m_Stack;
     };

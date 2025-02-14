@@ -14,7 +14,6 @@ namespace NJS
         [[nodiscard]] TypePtr GetType() const;
 
         [[nodiscard]] virtual bool IsLValue() const = 0;
-        [[nodiscard]] virtual bool IsMutable() const = 0;
         [[nodiscard]] virtual llvm::Value *GetPtr(const SourceLocation &where) const = 0;
 
         [[nodiscard]] virtual llvm::Value *Load(const SourceLocation &where) const = 0;
@@ -35,7 +34,6 @@ namespace NJS
         static ValuePtr Create(Builder &builder, const TypePtr &type, llvm::Value *value);
 
         [[nodiscard]] bool IsLValue() const override;
-        [[nodiscard]] bool IsMutable() const override;
         [[nodiscard]] llvm::Value *GetPtr(const SourceLocation &where) const override;
 
         [[nodiscard]] llvm::Value *Load(const SourceLocation &where) const override;
@@ -51,10 +49,9 @@ namespace NJS
     class LValue final : public Value
     {
     public:
-        static ValuePtr Create(Builder &builder, const TypePtr &type, llvm::Value *ptr, bool is_mutable);
+        static ValuePtr Create(Builder &builder, const TypePtr &type, llvm::Value *ptr);
 
         [[nodiscard]] bool IsLValue() const override;
-        [[nodiscard]] bool IsMutable() const override;
         [[nodiscard]] llvm::Value *GetPtr(const SourceLocation &where) const override;
 
         [[nodiscard]] llvm::Value *Load(const SourceLocation &where) const override;
@@ -62,9 +59,8 @@ namespace NJS
         void Store(const SourceLocation &where, ValuePtr value, bool force = false) const override;
 
     private:
-        LValue(Builder &builder, TypePtr type, llvm::Value *ptr, bool is_mutable);
+        LValue(Builder &builder, TypePtr type, llvm::Value *ptr);
 
-        bool m_IsMutable;
         llvm::Value *m_Ptr;
     };
 }

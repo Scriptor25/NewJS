@@ -11,7 +11,7 @@ NJS::StatementPtr NJS::Parser::ParseSwitchStatement()
 
     Expect(")");
 
-    std::map<StatementPtr, std::vector<ExpressionPtr> > cases;
+    std::map<StatementPtr, std::vector<ExpressionPtr>> cases;
     StatementPtr default_case;
 
     Expect("{");
@@ -56,7 +56,7 @@ NJS::ExpressionPtr NJS::Parser::ParseSwitchExpression()
 
     Expect(")");
 
-    std::map<ExpressionPtr, std::vector<ExpressionPtr> > cases;
+    std::map<ExpressionPtr, std::vector<ExpressionPtr>> cases;
     ExpressionPtr default_case;
 
     Expect("{");

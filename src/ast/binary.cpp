@@ -5,7 +5,6 @@
 #include <NJS/Error.hpp>
 #include <NJS/Operator.hpp>
 #include <NJS/Type.hpp>
-#include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
 using namespace std::string_view_literals;
@@ -86,50 +85,36 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
     const auto left_type = left_operand->GetType();
     const auto right_type = right_operand->GetType();
 
-    if (assignment_operators.contains(Operator))
+    if (auto [
+            result_type_,
+            left_type_,
+            right_type_,
+            callee_
+        ] = builder.FindOperator(
+            Operator,
+            left_type,
+            left_operand->IsLValue(),
+            right_type,
+            right_operand->IsLValue());
+        callee_)
     {
-        const auto left_type_reference = builder.GetTypeContext().GetReferenceType(left_type);
-        if (auto [result_type_, callee_] = builder.GetOperator(Operator, left_type_reference, right_type);
-            result_type_ && callee_)
-        {
-            const auto function_type = llvm::FunctionType::get(
-                result_type_->GetLLVM(Where, builder),
-                {
-                    left_type_reference->GetLLVM(Where, builder),
-                    right_type->GetLLVM(Where, builder),
-                },
-                false);
-            const auto result_pointer = builder.GetBuilder().CreateCall(
-                function_type,
-                callee_,
-                {
-                    left_operand->GetPtr(Where),
-                    right_operand->Load(Where)
-                });
-            return LValue::Create(builder, result_type_->GetElement(), result_pointer, result_type_->IsMutable());
-        }
-    }
-    else
-    {
-        if (auto [result_type_, callee_] = builder.GetOperator(Operator, left_type, right_type);
-            result_type_ && callee_)
-        {
-            const auto function_type = llvm::FunctionType::get(
-                result_type_->GetLLVM(Where, builder),
-                {
-                    left_type->GetLLVM(Where, builder),
-                    right_type->GetLLVM(Where, builder),
-                },
-                false);
-            const auto result_value = builder.GetBuilder().CreateCall(
-                function_type,
-                callee_,
-                {
-                    left_operand->Load(Where),
-                    right_operand->Load(Where),
-                });
-            return RValue::Create(builder, result_type_, result_value);
-        }
+        const auto function_type = llvm::FunctionType::get(
+            result_type_->GetLLVM(Where, builder),
+            {
+                left_type_->GetLLVM(Where, builder),
+                right_type_->GetLLVM(Where, builder),
+            },
+            false);
+        const auto result_value = builder.GetBuilder().CreateCall(
+            function_type,
+            callee_,
+            {
+                left_type_->IsReference() ? left_operand->GetPtr(Where) : left_operand->Load(Where),
+                right_type_->IsReference() ? right_operand->GetPtr(Where) : right_operand->Load(Where)
+            });
+        if (result_type_->IsReference())
+            return LValue::Create(builder, result_type_->GetElement(), result_value);
+        return RValue::Create(builder, result_type_, result_value);
     }
 
     if (Operator == "=")
@@ -138,7 +123,10 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
         return destination;
     }
 
-    const auto operand_type = max(builder.GetTypeContext(), left_type, right_type);
+    const auto operand_type = GetHigherOrderOf(builder.GetTypeContext(), left_type, right_type);
+    if (!operand_type)
+        Error(Where, "cannot determine higher order type of {} and {}", left_type, right_type);
+
     left_operand = builder.CreateCast(Where, left_operand, operand_type);
     right_operand = builder.CreateCast(Where, right_operand, operand_type);
 

@@ -8,7 +8,7 @@ namespace NJS
 {
     class ArgParser
     {
-        typedef unsigned ID;
+        using ID = unsigned;
 
         struct Arg
         {

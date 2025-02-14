@@ -1,9 +1,9 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Type.hpp>
 
-std::string NJS::ReferenceType::GenString(const TypePtr &element_type, const bool is_mutable)
+std::string NJS::ReferenceType::GenString(const TypePtr &element_type)
 {
-    return element_type->GetString() + (is_mutable ? "" : " const") + '&';
+    return element_type->GetString() + '&';
 }
 
 bool NJS::ReferenceType::IsPrimitive() const
@@ -21,11 +21,6 @@ NJS::TypePtr NJS::ReferenceType::GetElement() const
     return m_ElementType;
 }
 
-bool NJS::ReferenceType::IsMutable() const
-{
-    return m_IsMutable;
-}
-
 void NJS::ReferenceType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
 {
     m_ElementType->TypeInfo(where, builder, args);
@@ -34,11 +29,9 @@ void NJS::ReferenceType::TypeInfo(const SourceLocation &where, Builder &builder,
 NJS::ReferenceType::ReferenceType(
     TypeContext &type_context,
     std::string_view string,
-    TypePtr element_type,
-    const bool is_mutable)
+    TypePtr element_type)
     : Type(type_context, std::move(string)),
-      m_ElementType(std::move(element_type)),
-      m_IsMutable(is_mutable)
+      m_ElementType(std::move(element_type))
 {
 }
 

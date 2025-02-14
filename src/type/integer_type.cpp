@@ -35,7 +35,11 @@ void NJS::IntegerType::TypeInfo(const SourceLocation &, Builder &builder, std::v
     args.push_back(builder.GetBuilder().getInt32(m_IsSigned ? 1 : 0));
 }
 
-NJS::IntegerType::IntegerType(TypeContext &type_context, std::string_view string, const unsigned bits, const bool is_signed)
+NJS::IntegerType::IntegerType(
+    TypeContext &type_context,
+    std::string_view string,
+    const unsigned bits,
+    const bool is_signed)
     : Type(type_context, std::move(string)),
       m_Bits(bits),
       m_IsSigned(is_signed)

@@ -234,7 +234,7 @@ Type *ParseType(va_list &arg_ptr)
         case ID_STRUCT:
         {
             const auto element_count = va_arg(arg_ptr, unsigned);
-            const auto elements = New<Pair<const char *, Type *> >(element_count);
+            const auto elements = New<Pair<const char *, Type *>>(element_count);
             for (unsigned i = 0; i < element_count; ++i)
             {
                 const auto name = va_arg(arg_ptr, const char*);

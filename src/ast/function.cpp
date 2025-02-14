@@ -93,8 +93,7 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
             argument_value = LValue::Create(
                 builder,
                 parameter_type->GetElement(),
-                argument,
-                parameter_type->IsMutable());
+                argument);
         else
             argument_value = RValue::Create(builder, parameter_type, argument);
         parameter->CreateVars(builder, Where, argument_value, ParameterFlags_None);
@@ -201,8 +200,7 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
             argument_value = LValue::Create(
                 builder,
                 parameter_type->GetElement(),
-                argument,
-                parameter_type->IsMutable());
+                argument);
         else
             argument_value = RValue::Create(builder, parameter_type, argument);
         parameter->CreateVars(builder, Where, argument_value, ParameterFlags_None);

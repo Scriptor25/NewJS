@@ -13,7 +13,7 @@ namespace NJS
 {
     typedef std::pair<TypePtr, unsigned> MemberT;
 
-    TypePtr max(TypeContext &type_context, const TypePtr &type_a, const TypePtr &type_b);
+    TypePtr GetHigherOrderOf(TypeContext &type_context, const TypePtr &type_a, const TypePtr &type_b);
 
     class Type
     {
@@ -50,7 +50,6 @@ namespace NJS
         [[nodiscard]] virtual TypePtr GetElement(unsigned index) const;
         [[nodiscard]] virtual MemberT GetMember(const std::string_view &name) const;
         [[nodiscard]] virtual TypePtr GetResultType() const;
-        [[nodiscard]] virtual bool IsMutable() const;
 
         virtual void TypeInfo(
             const SourceLocation &where,
@@ -176,22 +175,20 @@ namespace NJS
         friend TypeContext;
 
     public:
-        static std::string GenString(const TypePtr &element_type, bool is_mutable);
+        static std::string GenString(const TypePtr &element_type);
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsReference() const override;
         [[nodiscard]] TypePtr GetElement() const override;
-        [[nodiscard]] bool IsMutable() const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
     private:
-        ReferenceType(TypeContext &type_context, std::string_view string, TypePtr element_type, bool is_mutable);
+        ReferenceType(TypeContext &type_context, std::string_view string, TypePtr element_type);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
         [[nodiscard]] unsigned GenSize() const override;
 
         TypePtr m_ElementType;
-        bool m_IsMutable;
     };
 
     class ArrayType final : public Type

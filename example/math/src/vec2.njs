@@ -14,12 +14,22 @@ function new(e0: f64, e1: f64): vec2 {
     return [ e0, e1 ]
 }
 
-function len(self: vec2): f64 {
+function len(self: vec2&): f64 {
     return sqrt(self[0] * self[0] + self[1] * self[1])
+}
+
+function operator-(self: vec2&): vec2 {
+    return new(-self[0], -self[1])
 }
 
 function operator-(self: vec2): vec2 {
     return new(-self[0], -self[1])
+}
+
+function operator=(self: vec2&, v: vec2&): vec2& {
+    self[0] = v[0]
+    self[1] = v[1]
+    return self
 }
 
 function operator=(self: vec2&, v: vec2): vec2& {
@@ -34,9 +44,21 @@ function operator=(self: vec2&, s: f64): vec2& {
     return self
 }
 
+function operator+=(self: vec2&, v: vec2&): vec2& {
+    self[0] += v[0]
+    self[1] += v[1]
+    return self
+}
+
 function operator+=(self: vec2&, v: vec2): vec2& {
     self[0] += v[0]
     self[1] += v[1]
+    return self
+}
+
+function operator-=(self: vec2&, v: vec2&): vec2& {
+    self[0] -= v[0]
+    self[1] -= v[1]
     return self
 }
 

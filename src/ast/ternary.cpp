@@ -2,6 +2,7 @@
 #include <llvm/IR/BasicBlock.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
@@ -42,7 +43,9 @@ NJS::ValuePtr NJS::TernaryExpression::GenLLVM(Builder &builder, const TypePtr &e
     else_block = builder.GetBuilder().GetInsertBlock();
     const auto else_term = builder.GetBuilder().CreateBr(end_block);
 
-    const auto result_type = max(builder.GetTypeContext(), then_value->GetType(), else_value->GetType());
+    const auto result_type = GetHigherOrderOf(builder.GetTypeContext(), then_value->GetType(), else_value->GetType());
+    if (!result_type)
+        Error(Where, "cannot determine higher order type of {} and {}", then_value->GetType(), else_value->GetType());
 
     builder.GetBuilder().SetInsertPoint(then_term);
     then_value = builder.CreateCast(Where, then_value, result_type);

@@ -22,7 +22,7 @@ let u1: User = {
 PRINT(u1)
 PRINT(println)
 
-function printUser({ name: n, surname: s, age: a, type: t }: User const&) {
+function printUser({ name: n, surname: s, age: a, type: t }: User&) {
     println($" - {n} {s} ({a}), {t}")
 }
 
@@ -84,7 +84,7 @@ function<T> vec_free(self: vec<T>&) {
     self.beg = self.end = 0
 }
 
-function<T> vec_size(self: vec<T> const&): u64 {
+function<T> vec_size(self: vec<T>&): u64 {
     return self.end - self.beg
 }
 

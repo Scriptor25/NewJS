@@ -7,7 +7,6 @@
 #include <llvm/IR/Constant.h>
 #include <NJS/Import.hpp>
 #include <NJS/NJS.hpp>
-#include <NJS/Parameter.hpp>
 #include <NJS/SourceLocation.hpp>
 
 namespace NJS
@@ -125,14 +124,14 @@ namespace NJS
         SwitchStatement(
             SourceLocation where,
             ExpressionPtr condition,
-            std::map<StatementPtr, std::vector<ExpressionPtr> > cases,
+            std::map<StatementPtr, std::vector<ExpressionPtr>> cases,
             StatementPtr default_case);
 
         void GenVoidLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Condition;
-        std::map<StatementPtr, std::vector<ExpressionPtr> > Cases;
+        std::map<StatementPtr, std::vector<ExpressionPtr>> Cases;
         StatementPtr DefaultCase;
     };
 
@@ -340,14 +339,14 @@ namespace NJS
         SwitchExpression(
             SourceLocation where,
             ExpressionPtr condition,
-            std::map<ExpressionPtr, std::vector<ExpressionPtr> > cases,
+            std::map<ExpressionPtr, std::vector<ExpressionPtr>> cases,
             ExpressionPtr default_case);
 
         ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Condition;
-        std::map<ExpressionPtr, std::vector<ExpressionPtr> > Cases;
+        std::map<ExpressionPtr, std::vector<ExpressionPtr>> Cases;
         ExpressionPtr DefaultCase;
     };
 

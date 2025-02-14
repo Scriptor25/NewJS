@@ -48,6 +48,6 @@ namespace NJS
         }
 
         std::map<std::string, TypePtr> m_Types;
-        std::vector<std::map<std::string, TypePtr> > m_TemplateStack;
+        std::vector<std::map<std::string, TypePtr>> m_TemplateStack;
     };
 }

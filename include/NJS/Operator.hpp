@@ -127,11 +127,11 @@ namespace NJS
         llvm::Value *lhs,
         llvm::Value *rhs);
 
-    UnaryResult OperatorInc(Builder &builder, const SourceLocation &where, const ValuePtr &value);
-    UnaryResult OperatorDec(Builder &builder, const SourceLocation &where, const ValuePtr &value);
-    UnaryResult OperatorNeg(Builder &builder, const SourceLocation &where, const ValuePtr &value);
-    UnaryResult OperatorLNot(Builder &builder, const SourceLocation &where, const ValuePtr &value);
-    UnaryResult OperatorNot(Builder &builder, const SourceLocation &where, const ValuePtr &value);
-    UnaryResult OperatorRef(Builder &builder, const SourceLocation &where, const ValuePtr &value);
-    UnaryResult OperatorDeref(Builder &builder, const SourceLocation &where, const ValuePtr &value);
+    ValuePtr OperatorInc(Builder &builder, const SourceLocation &where, const ValuePtr &value);
+    ValuePtr OperatorDec(Builder &builder, const SourceLocation &where, const ValuePtr &value);
+    ValuePtr OperatorNeg(Builder &builder, const SourceLocation &where, const ValuePtr &value);
+    ValuePtr OperatorLNot(Builder &builder, const SourceLocation &where, const ValuePtr &value);
+    ValuePtr OperatorNot(Builder &builder, const SourceLocation &where, const ValuePtr &value);
+    ValuePtr OperatorRef(Builder &builder, const SourceLocation &where, const ValuePtr &value);
+    ValuePtr OperatorDeref(Builder &builder, const SourceLocation &where, const ValuePtr &value);
 }

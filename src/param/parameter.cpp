@@ -34,13 +34,13 @@ void NJS::Parameter::CreateVars(
 
     if (is_extern)
     {
-        variable = builder.CreateGlobal(where, Name, type, false, !is_const);
+        variable = builder.CreateGlobal(where, Name, type, false);
         return;
     }
 
     if (Type && Type->IsReference())
     {
-        variable = LValue::Create(builder, type, value->GetPtr(where), !is_const);
+        variable = LValue::Create(builder, type, value->GetPtr(where));
         return;
     }
 
@@ -50,7 +50,7 @@ void NJS::Parameter::CreateVars(
         return;
     }
 
-    variable = builder.CreateAlloca(where, type, true);
+    variable = builder.CreateAlloca(where, type);
     if (value)
     {
         variable->Store(where, value);

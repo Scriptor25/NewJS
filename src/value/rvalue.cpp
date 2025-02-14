@@ -12,11 +12,6 @@ bool NJS::RValue::IsLValue() const
     return false;
 }
 
-bool NJS::RValue::IsMutable() const
-{
-    return false;
-}
-
 llvm::Value *NJS::RValue::GetPtr(const SourceLocation &where) const
 {
     Error(where, "cannot get pointer to rvalue");
@@ -29,12 +24,12 @@ llvm::Value *NJS::RValue::Load(const SourceLocation &) const
 
 void NJS::RValue::Store(const SourceLocation &where, llvm::Value *, bool force) const
 {
-    Error(where, "cannot assign to immutable rvalue");
+    Error(where, "cannot assign to rvalue");
 }
 
 void NJS::RValue::Store(const SourceLocation &where, ValuePtr, bool force) const
 {
-    Error(where, "cannot assign to immutable rvalue");
+    Error(where, "cannot assign to rvalue");
 }
 
 NJS::RValue::RValue(Builder &builder, TypePtr type, llvm::Value *value)

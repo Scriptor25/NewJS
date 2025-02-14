@@ -56,7 +56,7 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expe
 
     const auto result_type = callee_type->GetResultType();
     if (result_type->IsReference())
-        return LValue::Create(builder, result_type->GetElement(), result_value, result_type->IsMutable());
+        return LValue::Create(builder, result_type->GetElement(), result_value);
 
     return RValue::Create(builder, result_type, result_value);
 }

@@ -37,6 +37,36 @@ function operator*=(self: mat4&, other: mat4): mat4& {
     return self
 }
 
+function operator*(l: vec4&, r: mat4&): vec4 {
+    let v = vec4.zero()
+    let t = transpose(r)
+    for (let i = 0; i < 4; ++i)
+        v[i] = vec4.dot(l, t[i])
+    return v
+}
+
+function operator*(l: vec4, r: mat4&): vec4 {
+    let v = vec4.zero()
+    let t = transpose(r)
+    for (let i = 0; i < 4; ++i)
+        v[i] = vec4.dot(l, t[i])
+    return v
+}
+
+function operator*(l: mat4&, r: vec4&): vec4 {
+    let v = vec4.zero()
+    for (let i = 0; i < 4; ++i)
+        v[i] = vec4.dot(l[i], r)
+    return v
+}
+
+function operator*(l: mat4&, r: vec4): vec4 {
+    let v = vec4.zero()
+    for (let i = 0; i < 4; ++i)
+        v[i] = vec4.dot(l[i], r)
+    return v
+}
+
 function identity(self: mat4&): mat4& {
     return self = new()
 }

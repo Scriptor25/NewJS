@@ -17,7 +17,7 @@ NJS::Builder::Builder(
       m_IsMain(is_main)
 {
     m_LLVMModule = std::make_unique<llvm::Module>(module_id, m_LLVMContext);
-    m_LLVMBuilder = std::make_unique<llvm::IRBuilder<> >(m_LLVMContext);
+    m_LLVMBuilder = std::make_unique<llvm::IRBuilder<>>(m_LLVMContext);
 
     StackPush(m_ModuleID);
 
@@ -30,8 +30,7 @@ NJS::Builder::Builder(
                 {"argc", m_TypeContext.GetIntegerType(32, true)},
                 {"argv", m_TypeContext.GetPointerType(m_TypeContext.GetStringType())}
             }),
-        is_main,
-        false);
+        is_main);
 
     llvm::Function *function;
     if (is_main)
@@ -137,7 +136,7 @@ void NJS::Builder::DefineOperator(
     const TypePtr &result,
     llvm::Value *callee)
 {
-    m_UnaryOperators[std::string(sym)][val] = {result, callee};
+    m_UnaryOperators[std::string(sym)][val] = {result, val, callee};
 }
 
 void NJS::Builder::DefineOperator(
@@ -147,17 +146,37 @@ void NJS::Builder::DefineOperator(
     const TypePtr &result,
     llvm::Value *callee)
 {
-    m_BinaryOperators[std::string(sym)][lhs][rhs] = {result, callee};
+    m_BinaryOperators[std::string(sym)][lhs][rhs] = {result, lhs, rhs, callee};
 }
 
-NJS::OperatorRef NJS::Builder::GetOperator(const std::string_view &sym, const TypePtr &val)
+NJS::OperatorInfo<1> NJS::Builder::GetOperator(const std::string_view &sym, const TypePtr &val)
 {
     return m_UnaryOperators[std::string(sym)][val];
 }
 
-NJS::OperatorRef NJS::Builder::GetOperator(const std::string_view &sym, const TypePtr &lhs, const TypePtr &rhs)
+NJS::OperatorInfo<2> NJS::Builder::GetOperator(const std::string_view &sym, const TypePtr &lhs, const TypePtr &rhs)
 {
     return m_BinaryOperators[std::string(sym)][lhs][rhs];
+}
+
+NJS::OperatorInfo<2> NJS::Builder::FindOperator(
+    const std::string_view &sym,
+    const TypePtr &lhs,
+    const bool lhs_is_ref_able,
+    const TypePtr &rhs,
+    const bool rhs_is_ref_able)
+{
+    const auto lhs_ref = lhs_is_ref_able ? GetTypeContext().GetReferenceType(lhs) : lhs;
+    const auto rhs_ref = rhs_is_ref_able ? GetTypeContext().GetReferenceType(rhs) : rhs;
+    if (auto o = GetOperator(sym, lhs_ref, rhs_ref); o.Callee)
+        return o;
+    if (auto o = GetOperator(sym, lhs, rhs_ref); o.Callee)
+        return o;
+    if (auto o = GetOperator(sym, lhs_ref, rhs); o.Callee)
+        return o;
+    if (auto o = GetOperator(sym, lhs, rhs); o.Callee)
+        return o;
+    return {};
 }
 
 NJS::ValuePtr &NJS::Builder::DefineVariable(const SourceLocation &where, const std::string_view &name)

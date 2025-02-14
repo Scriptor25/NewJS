@@ -18,7 +18,7 @@ NJS::ValuePtr NJS::Builder::CreateCast(const SourceLocation &where, const ValueP
 
 llvm::Value *NJS::Builder::CreateCast(
     const SourceLocation &where,
-    const ValueRef &ref,
+    const ValueInfo &ref,
     const TypePtr &src_type,
     const TypePtr &dst_type) const
 {

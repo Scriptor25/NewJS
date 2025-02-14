@@ -76,8 +76,8 @@ static void print_description(const std::string_view &description)
 
 void NJS::ArgParser::Print() const
 {
-    std::map<ID, std::pair<std::vector<std::string_view>, std::string_view> > options;
-    std::map<ID, std::pair<std::vector<std::string_view>, std::string_view> > flags;
+    std::map<ID, std::pair<std::vector<std::string_view>, std::string_view>> options;
+    std::map<ID, std::pair<std::vector<std::string_view>, std::string_view>> flags;
 
     for (auto &[pat_, arg_]: m_Args)
     {

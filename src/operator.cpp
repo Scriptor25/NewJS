@@ -419,122 +419,97 @@ NJS::ValuePtr NJS::OperatorShR(
     return {};
 }
 
-NJS::UnaryResult NJS::OperatorInc(Builder &builder, const SourceLocation &where, const ValuePtr &value)
+NJS::ValuePtr NJS::OperatorInc(Builder &builder, const SourceLocation &where, const ValuePtr &value)
 {
     const auto val = value->Load(where);
     const auto type = value->GetType();
     const auto ty = type->GetLLVM(where, builder);
 
     if (type->IsInteger())
-        return {
-            RValue::Create(
-                builder,
-                type,
-                builder.GetBuilder().CreateAdd(val, llvm::ConstantInt::get(ty, 1, type->IsSigned()))),
-            true,
-        };
+        return RValue::Create(
+            builder,
+            type,
+            builder.GetBuilder().CreateAdd(val, llvm::ConstantInt::get(ty, 1, type->IsSigned())));
     if (type->IsFloatingPoint())
-        return {
-            RValue::Create(
-                builder,
-                type,
-                builder.GetBuilder().CreateFAdd(val, llvm::ConstantFP::get(ty, 1.0))),
-            true,
-        };
+        return RValue::Create(
+            builder,
+            type,
+            builder.GetBuilder().CreateFAdd(val, llvm::ConstantFP::get(ty, 1.0)));
 
     return {};
 }
 
-NJS::UnaryResult NJS::OperatorDec(Builder &builder, const SourceLocation &where, const ValuePtr &value)
+NJS::ValuePtr NJS::OperatorDec(Builder &builder, const SourceLocation &where, const ValuePtr &value)
 {
     const auto val = value->Load(where);
     const auto type = value->GetType();
     const auto ty = type->GetLLVM(where, builder);
 
     if (type->IsInteger())
-        return {
-            RValue::Create(
-                builder,
-                type,
-                builder.GetBuilder().CreateSub(val, llvm::ConstantInt::get(ty, 1, type->IsSigned()))),
-            true,
-        };
+        return RValue::Create(
+            builder,
+            type,
+            builder.GetBuilder().CreateSub(val, llvm::ConstantInt::get(ty, 1, type->IsSigned())));
 
     return {};
 }
 
-NJS::UnaryResult NJS::OperatorNeg(Builder &builder, const SourceLocation &where, const ValuePtr &value)
+NJS::ValuePtr NJS::OperatorNeg(Builder &builder, const SourceLocation &where, const ValuePtr &value)
 {
     const auto val = value->Load(where);
     const auto type = value->GetType();
 
     if (type->IsInteger())
-        return {
-            RValue::Create(
-                builder,
-                type,
-                builder.GetBuilder().CreateNeg(val)),
-            false,
-        };
+        return RValue::Create(
+            builder,
+            type,
+            builder.GetBuilder().CreateNeg(val));
     if (type->IsFloatingPoint())
-        return {
-            RValue::Create(
-                builder,
-                type,
-                builder.GetBuilder().CreateFNeg(val)),
-            false,
-        };
+        return RValue::Create(
+            builder,
+            type,
+            builder.GetBuilder().CreateFNeg(val));
 
     return {};
 }
 
-NJS::UnaryResult NJS::OperatorLNot(Builder &, const SourceLocation &, const ValuePtr &)
+NJS::ValuePtr NJS::OperatorLNot(Builder &, const SourceLocation &, const ValuePtr &)
 {
     return {};
 }
 
-NJS::UnaryResult NJS::OperatorNot(Builder &builder, const SourceLocation &where, const ValuePtr &value)
+NJS::ValuePtr NJS::OperatorNot(Builder &builder, const SourceLocation &where, const ValuePtr &value)
 {
     const auto val = value->Load(where);
     const auto type = value->GetType();
 
     if (type->IsInteger())
-        return {
-            RValue::Create(
-                builder,
-                type,
-                builder.GetBuilder().CreateNot(val)),
-            false,
-        };
+        return RValue::Create(
+            builder,
+            type,
+            builder.GetBuilder().CreateNot(val));
 
     return {};
 }
 
-NJS::UnaryResult NJS::OperatorRef(Builder &builder, const SourceLocation &where, const ValuePtr &value)
+NJS::ValuePtr NJS::OperatorRef(Builder &builder, const SourceLocation &where, const ValuePtr &value)
 {
     const auto ptr = value->GetPtr(where);
     const auto type = value->GetType();
 
-    return {
-        RValue::Create(
-            builder,
-            builder.GetTypeContext().GetPointerType(type),
-            ptr),
-        false,
-    };
+    return RValue::Create(
+        builder,
+        builder.GetTypeContext().GetPointerType(type),
+        ptr);
 }
 
-NJS::UnaryResult NJS::OperatorDeref(Builder &builder, const SourceLocation &where, const ValuePtr &value)
+NJS::ValuePtr NJS::OperatorDeref(Builder &builder, const SourceLocation &where, const ValuePtr &value)
 {
     const auto val = value->Load(where);
     const auto type = value->GetType();
 
-    return {
-        LValue::Create(
-            builder,
-            type->GetElement(),
-            val,
-            value->IsMutable()),
-        false,
-    };
+    return LValue::Create(
+        builder,
+        type->GetElement(),
+        val);
 }

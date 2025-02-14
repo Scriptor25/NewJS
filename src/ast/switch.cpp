@@ -7,7 +7,7 @@
 NJS::SwitchStatement::SwitchStatement(
     SourceLocation where,
     ExpressionPtr condition,
-    std::map<StatementPtr, std::vector<ExpressionPtr> > cases,
+    std::map<StatementPtr, std::vector<ExpressionPtr>> cases,
     StatementPtr default_case)
     : Statement(std::move(where)),
       Condition(std::move(condition)),
@@ -77,7 +77,7 @@ std::ostream &NJS::SwitchStatement::Print(std::ostream &os)
 NJS::SwitchExpression::SwitchExpression(
     SourceLocation where,
     ExpressionPtr condition,
-    std::map<ExpressionPtr, std::vector<ExpressionPtr> > cases,
+    std::map<ExpressionPtr, std::vector<ExpressionPtr>> cases,
     ExpressionPtr default_case)
     : Expression(std::move(where)),
       Condition(std::move(condition)),
@@ -95,7 +95,7 @@ NJS::ValuePtr NJS::SwitchExpression::GenLLVM(Builder &builder, const TypePtr &ex
     const auto condition = Condition->GenLLVM(builder, {});
     const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(Where), default_dest);
 
-    std::vector<std::pair<llvm::BasicBlock *, ValuePtr> > dest_blocks;
+    std::vector<std::pair<llvm::BasicBlock *, ValuePtr>> dest_blocks;
     TypePtr result_type;
     {
         builder.GetBuilder().SetInsertPoint(default_dest);
