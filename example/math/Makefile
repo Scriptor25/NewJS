@@ -4,15 +4,15 @@ OBJ = $(patsubst %.njs,%.o,$(SRC))
 %.o: %.njs
 	newjs -o $@ -t obj $<
 
-main.exe: $(OBJ)
-	gcc -o $@ $^ -lStdNewJS
+main: $(OBJ)
+	gcc -o $@ $^ -lstdnewjs -lm
 
-all: main.exe
+all: main
 
-launch: main.exe
-	main
+launch: main
+	./main
 
 clean:
-	cmd /c del $(subst /,\\,$(OBJ)) main.exe
+	-rm $(OBJ) main
 
 .PHONY: all launch clean

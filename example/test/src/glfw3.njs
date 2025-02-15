@@ -5,7 +5,7 @@ type GLFWwindow  = void
 #GLFW_KEY_ESCAPE "256:i32"
 #GLFW_RELEASE    "  0:i32"
 
-extern function glfwInit()
+extern function glfwInit(): i32
 extern function glfwTerminate()
 extern function glfwCreateWindow(width: i32, height: i32, title: i8[], monitor: GLFWmonitor[], share: GLFWwindow[]): GLFWwindow[]
 extern function glfwDestroyWindow(window: GLFWwindow[])
@@ -18,7 +18,7 @@ extern function glfwGetFramebufferSize(window: GLFWwindow[], width: i32[], heigh
 extern function glfwSetKeyCallback(window: GLFWwindow[], callback: (GLFWwindow[], i32, i32, i32, i32))
 extern function glfwSetWindowShouldClose(window: GLFWwindow[], closed: i32)
 
-function init() { glfwInit() }
+function init(): i32 { return glfwInit() }
 function terminate() { glfwTerminate() }
 function createWindow(width: i32, height: i32, title: i8[], monitor: GLFWmonitor[], share: GLFWwindow[]): GLFWwindow[] { return glfwCreateWindow(width, height, title, monitor, share) }
 function destroyWindow(window: GLFWwindow[]) { glfwDestroyWindow(window) }

@@ -2,21 +2,31 @@ import glfw from "./glfw3.njs"
 import   gl from    "./gl.njs"
 import    * from   "./vec.njs"
 
-glfw.init()
+extern function println(str: i8[])
+extern function malloc(count: u64): void[]
+extern function realloc(block: void[], count: u64): void[]
+extern function free(block: void[])
+
+if (!glfw.init()) {
+    println("failed to initialize glfw")
+    return 1
+}
+
 const window = glfw.createWindow(800, 600, "Test", 0, 0)
+if (!window) {
+    println("failed to create window")
+    return 1
+}
+
 glfw.makeContextCurrent(window)
 glfw.swapInterval(1)
+
 glfw.setKeyCallback(window, ?(window: GLFWwindow[], key: i32, scancode: i32, action: i32, mods: i32) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
         glfw.setWindowShouldClose(window, GLFW_TRUE)
 })
 
 gl.clearColor(0.2, 0.3, 1.0, 1.0)
-
-extern function println(str: i8[])
-extern function malloc(count: u64): void[]
-extern function realloc(block: void[], count: u64): void[]
-extern function free(block: void[])
 
 let v = vec_new<i8>()
 vec_push<i8>(v, 'A')

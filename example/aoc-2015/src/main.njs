@@ -20,6 +20,11 @@ extern function free(block: void[])
 
 println($"{process}")
 
+if (process.argc != 3) {
+    println($"not enough arguments, require 3, got {process.argc}")
+    return 1
+}
+
 const day = parse_int(process.argv[1])
 const part = parse_int(process.argv[2])
 

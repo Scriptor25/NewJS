@@ -4,13 +4,13 @@ OBJ = $(patsubst %.njs,%.o,$(SRC))
 %.o: %.njs
 	newjs -o $@ -t obj $<
 
-main.exe: $(OBJ)
-	gcc -o $@ $^ -Llib -lStdNewJS -lglfw3 -lgdi32 -lopengl32 -lglu32
+main: $(OBJ)
+	gcc -o $@ $^ -lstdnewjs -lglfw
 
-launch: main.exe
-	main
+launch: main
+	./main
 
 clean:
-	cmd /c del $(subst /,\\,$(OBJ)) main.exe
+	-rm $(OBJ) main
 
 .PHONY: launch clean
