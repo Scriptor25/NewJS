@@ -17,9 +17,9 @@ for (let j: u32; j < image.height; ++j) {
         const fg = (j as f32) / ((image.height - 1) as f32)
         const fb = 0.2:f32
 
-        const ir = (fr * 255.999) as i32
-        const ig = (fg * 255.999) as i32
-        const ib = (fb * 255.999) as i32
+        const ir: i32 = (fr * 255.999)
+        const ig: i32 = (fg * 255.999)
+        const ib: i32 = (fb * 255.999)
 
         ppm.write(image, ir, ig, ib)
     }

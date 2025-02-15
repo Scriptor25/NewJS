@@ -2,15 +2,44 @@ import vec2 from "./vec2.njs"
 import vec3 from "./vec3.njs"
 import vec4 from "./vec4.njs"
 
-type mat4 = f64[4][4]
+type mat4 = {
+    r0: vec4,
+    r1: vec4,
+    r2: vec4,
+    r3: vec4,
+}
 
 function new(): mat4 {
-    return [
-        [1., 0., 0., 0.],
-        [0., 1., 0., 0.],
-        [0., 0., 1., 0.],
-        [0., 0., 0., 1.],
-    ]
+    return {
+        r0: vec4.new(1.0, 0.0, 0.0, 0.0),
+        r1: vec4.new(0.0, 1.0, 0.0, 0.0),
+        r2: vec4.new(0.0, 0.0, 1.0, 0.0),
+        r3: vec4.new(0.0, 0.0, 0.0, 1.0),
+    }
+}
+
+function operator[(self: mat4&, index: i64): vec4& {
+    if (index == 0)
+        return self.r0
+    if (index == 1)
+        return self.r1
+    if (index == 2)
+        return self.r2
+    if (index == 3)
+        return self.r3
+    return *(0 as vec4[])
+}
+
+function operator[(self: mat4, index: i64): vec4 {
+    if (index == 0)
+        return self.r0
+    if (index == 1)
+        return self.r1
+    if (index == 2)
+        return self.r2
+    if (index == 3)
+        return self.r3
+    return vec4.zero()
 }
 
 function transpose(self: mat4&): mat4 {

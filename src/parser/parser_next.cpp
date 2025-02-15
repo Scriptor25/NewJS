@@ -52,6 +52,7 @@ NJS::Token &NJS::Parser::Next()
                         break;
 
                     case '.':
+                    case '[':
                     case '?':
                     case '!':
                     case '~':
@@ -75,7 +76,6 @@ NJS::Token &NJS::Parser::Next()
                     case ')':
                     case '{':
                     case '}':
-                    case '[':
                     case ']':
                     case '@':
                     case '#':
