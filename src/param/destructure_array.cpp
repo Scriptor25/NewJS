@@ -4,7 +4,7 @@
 #include <NJS/Type.hpp>
 
 NJS::DestructureArray::DestructureArray(std::vector<ParameterPtr> elements)
-    : Parameter(""),
+    : Parameter({}),
       Elements(std::move(elements))
 {
 }

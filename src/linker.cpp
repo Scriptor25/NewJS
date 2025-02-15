@@ -9,6 +9,7 @@
 #include <NJS/Linker.hpp>
 
 NJS::Linker::Linker(const std::string &module_id)
+    : m_AppendNames(module_id.empty())
 {
     m_LLVMContext = std::make_unique<llvm::LLVMContext>();
     m_LLVMModule = std::make_unique<llvm::Module>(module_id, *m_LLVMContext);
@@ -26,8 +27,17 @@ llvm::Module &NJS::Linker::LLVMModule() const
 
 void NJS::Linker::Link(std::unique_ptr<llvm::Module> &&module) const
 {
+    const auto module_id = module->getModuleIdentifier();
+    const auto source_name = module->getSourceFileName();
+
     if (llvm::Linker::linkModules(LLVMModule(), std::move(module)))
-        Error("failed to link modules");
+        Error("failed to link module '{}' (from '{}')", module_id, source_name);
+
+    if (m_AppendNames)
+    {
+        m_LLVMModule->setModuleIdentifier(m_LLVMModule->getModuleIdentifier() + '+' + module_id);
+        m_LLVMModule->setSourceFileName(m_LLVMModule->getSourceFileName() + '+' + source_name);
+    }
 }
 
 void NJS::Linker::Emit(llvm::raw_pwrite_stream &output_stream, const llvm::CodeGenFileType output_type) const

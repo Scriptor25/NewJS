@@ -36,7 +36,9 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
         if (Parameters.size() == 1)
             function_name = builder.GetName(
                 Flags & FunctionFlags_Absolute,
-                (IsVarArg ? "" : Name) + Parameters[0]->Type->GetString() + (IsVarArg ? Name : ""));
+                (IsVarArg ? std::string() : Name)
+                + Parameters[0]->Type->GetString()
+                + (IsVarArg ? Name : std::string()));
         else if (Parameters.size() == 2)
             function_name = builder.GetName(
                 Flags & FunctionFlags_Absolute,

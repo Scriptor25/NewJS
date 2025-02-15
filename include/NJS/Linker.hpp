@@ -18,6 +18,7 @@ namespace NJS
         void Emit(llvm::raw_pwrite_stream &output_stream, llvm::CodeGenFileType output_type) const;
 
     private:
+        bool m_AppendNames;
         std::unique_ptr<llvm::LLVMContext> m_LLVMContext;
         std::unique_ptr<llvm::Module> m_LLVMModule;
     };

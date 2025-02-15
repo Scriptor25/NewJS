@@ -47,9 +47,9 @@ void NJS::ImportMapping::MapFunctions(
         if (fn.Flags & FunctionFlags_Operator)
         {
             if (fn.Parameters.size() == 1)
-                name += (fn.IsVarArg ? "" : fn.Name)
+                name += (fn.IsVarArg ? std::string() : fn.Name)
                         + fn.Parameters[0]->Type->GetString()
-                        + (fn.IsVarArg ? fn.Name : "");
+                        + (fn.IsVarArg ? fn.Name : std::string());
             else if (fn.Parameters.size() == 2)
                 name += fn.Parameters[0]->Type->GetString() + fn.Name + fn.Parameters[1]->Type->GetString();
         }

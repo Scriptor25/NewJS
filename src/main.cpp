@@ -105,7 +105,7 @@ int main(const int argc, const char **argv)
     }
 
     const auto output_module_id = std::filesystem::path(output_filename).filename().replace_extension().string();
-    const NJS::Linker linker(output_module_id.empty() ? "module" : output_module_id);
+    const NJS::Linker linker(output_module_id.empty() ? std::string() : output_module_id);
 
     if (input_filenames.empty())
         parse(linker, "main", true, std::cin, {});

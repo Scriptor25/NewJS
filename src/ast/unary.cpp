@@ -78,7 +78,12 @@ NJS::ValuePtr NJS::UnaryExpression::GenLLVM(Builder &builder, const TypePtr &exp
         }
     }
 
-    Error(Where, "undefined unary operator {}{}{}", Prefix ? Operator : "", operand->GetType(), Prefix ? "" : Operator);
+    Error(
+        Where,
+        "undefined unary operator {}{}{}",
+        Prefix ? Operator : std::string(),
+        operand->GetType(),
+        Prefix ? std::string() : Operator);
 }
 
 std::ostream &NJS::UnaryExpression::Print(std::ostream &stream)
