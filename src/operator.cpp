@@ -477,8 +477,17 @@ NJS::ValuePtr NJS::OperatorNeg(Builder &builder, const SourceLocation &where, co
     return {};
 }
 
-NJS::ValuePtr NJS::OperatorLNot(Builder &, const SourceLocation &, const ValuePtr &)
+NJS::ValuePtr NJS::OperatorLNot(Builder &builder, const SourceLocation &where, const ValuePtr &value)
 {
+    const auto val = value->Load(where);
+    const auto type = value->GetType();
+
+    if (type->IsInteger())
+        return RValue::Create(
+            builder,
+            type,
+            builder.GetBuilder().CreateIsNotNull(val));
+
     return {};
 }
 
