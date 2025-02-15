@@ -1,4 +1,5 @@
 *.ll
 *.o
 *.exe
+main
 nul
