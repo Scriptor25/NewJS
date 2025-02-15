@@ -4,6 +4,7 @@
 #include <llvm/Transforms/Scalar/GVN.h>
 #include <llvm/Transforms/Scalar/Reassociate.h>
 #include <llvm/Transforms/Scalar/SimplifyCFG.h>
+#include <llvm/Transforms/Utils/Mem2Reg.h>
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/SourceLocation.hpp>
@@ -40,6 +41,7 @@ NJS::Builder::Builder(
     m_Passes.FPM->addPass(llvm::ReassociatePass());
     m_Passes.FPM->addPass(llvm::GVNPass());
     m_Passes.FPM->addPass(llvm::SimplifyCFGPass());
+    m_Passes.FPM->addPass(llvm::PromotePass());
 
     llvm::PassBuilder pass_builder;
     pass_builder.registerModuleAnalyses(*m_Passes.MAM);
