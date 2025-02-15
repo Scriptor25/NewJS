@@ -26,7 +26,7 @@ NJS::ValuePtr NJS::TernaryExpression::GenLLVM(Builder &builder, const TypePtr &e
     auto else_block = llvm::BasicBlock::Create(builder.GetContext(), "else", parent);
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
-    const auto cond = Condition->GenLLVM(builder, builder.GetTypeContext().GetBoolType());
+    const auto cond = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
     builder.GetBuilder().CreateCondBr(cond->Load(Where), then_block, else_block);
 
     builder.GetBuilder().SetInsertPoint(then_block);

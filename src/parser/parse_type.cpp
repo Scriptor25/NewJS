@@ -37,7 +37,7 @@ NJS::TypePtr NJS::Parser::ParseType()
         if (sym == "void")
             type = m_TypeContext.GetVoidType();
         else if (sym == "bool")
-            type = m_TypeContext.GetBoolType();
+            type = m_TypeContext.GetBooleanType();
         else if (sym == "char")
             type = m_TypeContext.GetCharType();
         else if (sym == "str")

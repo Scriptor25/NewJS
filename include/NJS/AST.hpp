@@ -152,6 +152,17 @@ namespace NJS
         ExpressionPtr Value;
     };
 
+    struct WhileStatement final : Statement
+    {
+        WhileStatement(SourceLocation where, ExpressionPtr condition, StatementPtr body);
+
+        void GenVoidLLVM(Builder &builder) const override;
+        std::ostream &Print(std::ostream &stream) override;
+
+        ExpressionPtr Condition;
+        StatementPtr Body;
+    };
+
     struct Expression : Statement
     {
         explicit Expression(SourceLocation where);

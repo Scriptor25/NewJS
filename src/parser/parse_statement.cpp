@@ -31,22 +31,24 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
         Error(where, "the extern keyword requires either a function or variable declaration to follow");
     }
 
-    if (At("import"))
-        return ParseImportStatement();
     if (At("{"))
         return ParseScopeStatement();
-    if (At("function"))
-        return ParseFunctionStatement(false);
-    if (At("let") || At("const"))
-        return ParseVariableStatement(false);
-    if (At("if"))
-        return ParseIfStatement();
     if (At("for"))
         return ParseForStatement();
+    if (At("function"))
+        return ParseFunctionStatement(false);
+    if (At("if"))
+        return ParseIfStatement();
+    if (At("import"))
+        return ParseImportStatement();
+    if (At("let") || At("const"))
+        return ParseVariableStatement(false);
     if (At("return"))
         return ParseReturnStatement();
     if (At("switch"))
         return ParseSwitchStatement();
+    if (At("while"))
+        return ParseWhileStatement();
 
     return ParseExpression();
 }

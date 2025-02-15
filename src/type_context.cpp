@@ -61,7 +61,7 @@ NJS::FunctionTypePtr NJS::TypeContext::GetFunctionType(
     return GetType<FunctionType>(result_type, argument_types, var_arg);
 }
 
-NJS::IntegerTypePtr NJS::TypeContext::GetBoolType()
+NJS::IntegerTypePtr NJS::TypeContext::GetBooleanType()
 {
     return GetIntegerType(1, false);
 }

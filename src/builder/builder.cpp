@@ -1,4 +1,9 @@
 #include <ranges>
+#include <llvm/Passes/PassBuilder.h>
+#include <llvm/Transforms/InstCombine/InstCombine.h>
+#include <llvm/Transforms/Scalar/GVN.h>
+#include <llvm/Transforms/Scalar/Reassociate.h>
+#include <llvm/Transforms/Scalar/SimplifyCFG.h>
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/SourceLocation.hpp>
@@ -18,6 +23,28 @@ NJS::Builder::Builder(
 {
     m_LLVMModule = std::make_unique<llvm::Module>(module_id, m_LLVMContext);
     m_LLVMBuilder = std::make_unique<llvm::IRBuilder<>>(m_LLVMContext);
+
+    m_Passes = {
+        .FPM = std::make_unique<llvm::FunctionPassManager>(),
+        .LAM = std::make_unique<llvm::LoopAnalysisManager>(),
+        .FAM = std::make_unique<llvm::FunctionAnalysisManager>(),
+        .CGAM = std::make_unique<llvm::CGSCCAnalysisManager>(),
+        .MAM = std::make_unique<llvm::ModuleAnalysisManager>(),
+        .PIC = std::make_unique<llvm::PassInstrumentationCallbacks>(),
+        .SI = std::make_unique<llvm::StandardInstrumentations>(m_LLVMContext, true),
+    };
+
+    m_Passes.SI->registerCallbacks(*m_Passes.PIC, m_Passes.MAM.get());
+
+    m_Passes.FPM->addPass(llvm::InstCombinePass());
+    m_Passes.FPM->addPass(llvm::ReassociatePass());
+    m_Passes.FPM->addPass(llvm::GVNPass());
+    m_Passes.FPM->addPass(llvm::SimplifyCFGPass());
+
+    llvm::PassBuilder pass_builder;
+    pass_builder.registerModuleAnalyses(*m_Passes.MAM);
+    pass_builder.registerFunctionAnalyses(*m_Passes.FAM);
+    pass_builder.crossRegisterProxies(*m_Passes.LAM, *m_Passes.FAM, *m_Passes.CGAM, *m_Passes.MAM);
 
     if (is_main)
         StackPush(m_ModuleID, m_TypeContext.GetIntegerType(32, true));
@@ -97,6 +124,11 @@ llvm::IRBuilder<> &NJS::Builder::GetBuilder() const
     return *m_LLVMBuilder;
 }
 
+void NJS::Builder::Optimize(llvm::Function *function) const
+{
+    m_Passes.FPM->run(*function, *m_Passes.FAM);
+}
+
 void NJS::Builder::GetFormat(llvm::FunctionCallee &callee) const
 {
     std::vector<llvm::Type *> param_types(2);
@@ -129,65 +161,6 @@ std::string NJS::Builder::GetName(const bool absolute, const std::string &name) 
     if (absolute)
         return m_ModuleID + '.' + std::string(name);
     return m_Stack.back().GetChildName(name);
-}
-
-void NJS::Builder::DefineFunction(const std::string &name, const FunctionTypePtr &type, llvm::Function *callee)
-{
-    m_FunctionMap[std::string(name)].emplace_back(type, callee);
-}
-
-NJS::FunctionInfo NJS::Builder::GetFunction(const std::string &name, const FunctionTypePtr &type) const
-{
-    if (!m_FunctionMap.contains(std::string(name)))
-        return {};
-    for (auto &info: m_FunctionMap.at(std::string(name)))
-        if (info.Type == type)
-            return info;
-    return {};
-}
-
-NJS::FunctionInfo NJS::Builder::FindFunction(const std::string &name, const std::vector<ValuePtr> &arguments) const
-{
-    auto max_error = ~0u;
-    FunctionInfo result_info;
-
-    for (auto &info: m_FunctionMap.at(std::string(name)))
-    {
-        auto info_error = 0u;
-        auto &[info_type_, info_callee_] = info;
-
-        const auto parameter_count = info_type_->GetParameterCount();
-        const auto count_difference = static_cast<int>(parameter_count) - static_cast<int>(arguments.size());
-        if (count_difference > 0)
-            continue;
-        if (count_difference < 0 && !info_type_->IsVarArg())
-            continue;
-
-        info_error += abs(count_difference);
-
-        unsigned i;
-        for (i = 0; i < parameter_count; ++i)
-        {
-            const auto parameter_type = info_type_->GetParameterType(i);
-            const auto argument_type = arguments[i]->GetType();
-            if (parameter_type->IsReference() && !arguments[i]->IsLValue())
-                break;
-            const auto assignment_error = GetAssignmentError(parameter_type, argument_type);
-            if (assignment_error == ~0u)
-                break;
-            info_error += assignment_error;
-        }
-        if (i < parameter_count)
-            continue;
-
-        if (info_error < max_error)
-        {
-            max_error = info_error;
-            result_info = info;
-        }
-    }
-
-    return result_info;
 }
 
 void NJS::Builder::DefineOperator(

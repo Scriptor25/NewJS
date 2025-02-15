@@ -75,13 +75,14 @@ namespace NJS
         ImportMapping ParseImportMapping();
 
         StatementPtr ParseStatement();
-        StatementPtr ParseVariableStatement(bool is_extern);
         StatementPtr ParseForStatement();
         StatementPtr ParseFunctionStatement(bool is_extern);
         StatementPtr ParseIfStatement();
         StatementPtr ParseReturnStatement();
         StatementPtr ParseScopeStatement();
         StatementPtr ParseSwitchStatement();
+        StatementPtr ParseVariableStatement(bool is_extern);
+        StatementPtr ParseWhileStatement();
 
         ExpressionPtr ParseExpression();
         ExpressionPtr ParseBinaryExpression(ExpressionPtr lhs, unsigned min_pre);

@@ -14,13 +14,13 @@ NJS::ValuePtr NJS::OperatorEQ(
     if (type->IsInteger())
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateICmpEQ(lhs, rhs));
 
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateFCmpOEQ(lhs, rhs));
 
     if (type->IsPointer())
@@ -43,13 +43,13 @@ NJS::ValuePtr NJS::OperatorNE(
     if (type->IsInteger())
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateICmpNE(lhs, rhs));
 
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateFCmpONE(lhs, rhs));
 
     if (type->IsPointer())
@@ -72,7 +72,7 @@ NJS::ValuePtr NJS::OperatorLT(
     if (type->IsInteger())
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSLT(lhs, rhs)
                 : builder.GetBuilder().CreateICmpULT(lhs, rhs));
@@ -80,7 +80,7 @@ NJS::ValuePtr NJS::OperatorLT(
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateFCmpOLT(lhs, rhs));
 
     if (type->IsPointer())
@@ -103,7 +103,7 @@ NJS::ValuePtr NJS::OperatorLE(
     if (type->IsInteger())
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSLE(lhs, rhs)
                 : builder.GetBuilder().CreateICmpULE(lhs, rhs));
@@ -111,7 +111,7 @@ NJS::ValuePtr NJS::OperatorLE(
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateFCmpOLE(lhs, rhs));
 
     if (type->IsPointer())
@@ -134,7 +134,7 @@ NJS::ValuePtr NJS::OperatorGT(
     if (type->IsInteger())
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSGT(lhs, rhs)
                 : builder.GetBuilder().CreateICmpUGT(lhs, rhs));
@@ -142,7 +142,7 @@ NJS::ValuePtr NJS::OperatorGT(
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateFCmpOGT(lhs, rhs));
 
     if (type->IsPointer())
@@ -165,7 +165,7 @@ NJS::ValuePtr NJS::OperatorGE(
     if (type->IsInteger())
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSGE(lhs, rhs)
                 : builder.GetBuilder().CreateICmpUGE(lhs, rhs));
@@ -173,7 +173,7 @@ NJS::ValuePtr NJS::OperatorGE(
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateFCmpOGE(lhs, rhs));
 
     if (type->IsPointer())
@@ -196,7 +196,7 @@ NJS::ValuePtr NJS::OperatorLOr(
     if (type->IsInteger() && type->GetBits() == 1)
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateOr(lhs, rhs));
 
     if (type->IsInteger())
@@ -206,7 +206,7 @@ NJS::ValuePtr NJS::OperatorLOr(
         return OperatorLOr(
             builder,
             where,
-            builder.GetTypeContext().GetIntegerType(1, true),
+            builder.GetTypeContext().GetBooleanType(),
             lhs_not_null,
             rhs_not_null);
     }
@@ -224,7 +224,7 @@ NJS::ValuePtr NJS::OperatorLXor(
     if (type->IsInteger() && type->GetBits() == 1)
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateXor(lhs, rhs));
 
     if (type->IsInteger())
@@ -234,7 +234,7 @@ NJS::ValuePtr NJS::OperatorLXor(
         return OperatorLXor(
             builder,
             where,
-            builder.GetTypeContext().GetIntegerType(1, true),
+            builder.GetTypeContext().GetBooleanType(),
             lhs_not_null,
             rhs_not_null);
     }
@@ -252,7 +252,7 @@ NJS::ValuePtr NJS::OperatorLAnd(
     if (type->IsInteger() && type->GetBits() == 1)
         return RValue::Create(
             builder,
-            builder.GetTypeContext().GetBoolType(),
+            builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateAnd(lhs, rhs));
 
     if (type->IsInteger())
@@ -262,7 +262,7 @@ NJS::ValuePtr NJS::OperatorLAnd(
         return OperatorLAnd(
             builder,
             where,
-            builder.GetTypeContext().GetIntegerType(1, true),
+            builder.GetTypeContext().GetBooleanType(),
             lhs_not_null,
             rhs_not_null);
     }

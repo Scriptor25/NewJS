@@ -134,3 +134,18 @@ vec_push<i8>(v, 0)
 
 println($"v = {v}")
 vec_free<i8>(v)
+
+type<T> promise = {
+    result: T,
+    done: i1,
+}
+
+function<T> await(p: promise<T>): T {
+    while (!p.done) {}
+    return p.result
+}
+
+function add(a: i32, b: i32): promise<i32> { return { result: a + b, done: true } }
+
+const result = await<i32>(add(123, 456))
+println($"result = {result}")

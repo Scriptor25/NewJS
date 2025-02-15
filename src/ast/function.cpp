@@ -123,6 +123,8 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
         Error(Where, "failed to verify function {} ({})", Name, function_name);
     }
 
+    builder.Optimize(function);
+
     builder.GetBuilder().SetInsertPoint(end_block);
 }
 
@@ -229,6 +231,8 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
         function->print(llvm::errs());
         Error(Where, "failed to verify function lambda ({})", function_name);
     }
+
+    builder.Optimize(function);
 
     builder.GetBuilder().SetInsertPoint(end_block);
     return RValue::Create(builder, type, function);

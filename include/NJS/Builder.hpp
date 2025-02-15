@@ -3,8 +3,12 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <llvm/Analysis/CGSCCPassManager.h>
+#include <llvm/Analysis/LoopAnalysisManager.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Module.h>
+#include <llvm/IR/PassManager.h>
+#include <llvm/Passes/StandardInstrumentations.h>
 #include <NJS/Info.hpp>
 #include <NJS/NJS.hpp>
 
@@ -35,6 +39,17 @@ namespace NJS
         llvm::Value *lhs,
         llvm::Value *rhs)>;
 
+    struct Passes
+    {
+        std::unique_ptr<llvm::FunctionPassManager> FPM;
+        std::unique_ptr<llvm::LoopAnalysisManager> LAM;
+        std::unique_ptr<llvm::FunctionAnalysisManager> FAM;
+        std::unique_ptr<llvm::CGSCCAnalysisManager> CGAM;
+        std::unique_ptr<llvm::ModuleAnalysisManager> MAM;
+        std::unique_ptr<llvm::PassInstrumentationCallbacks> PIC;
+        std::unique_ptr<llvm::StandardInstrumentations> SI;
+    };
+
     class Builder
     {
     public:
@@ -49,6 +64,8 @@ namespace NJS
         [[nodiscard]] llvm::LLVMContext &GetContext() const;
         [[nodiscard]] llvm::Module &GetModule() const;
         [[nodiscard]] llvm::IRBuilder<> &GetBuilder() const;
+
+        void Optimize(llvm::Function* function) const;
 
         [[nodiscard]] llvm::Value *CreateAlloca(llvm::Type *type, unsigned size = 0) const;
         ValuePtr CreateAlloca(const SourceLocation &where, const TypePtr &type, unsigned size = 0);
@@ -76,10 +93,6 @@ namespace NJS
         void StackPop();
 
         [[nodiscard]] std::string GetName(bool absolute, const std::string &name) const;
-
-        void DefineFunction(const std::string &name, const FunctionTypePtr &type, llvm::Function *callee);
-        [[nodiscard]] FunctionInfo GetFunction(const std::string &name, const FunctionTypePtr &type) const;
-        [[nodiscard]] FunctionInfo FindFunction(const std::string &name, const std::vector<ValuePtr> &arguments) const;
 
         void DefineOperator(
             const std::string &name,
@@ -118,19 +131,19 @@ namespace NJS
         TypePtr &CurrentFunctionResultType();
 
     private:
-        TypeContext &m_TypeContext;
-        llvm::LLVMContext &m_LLVMContext;
-
         std::string m_ModuleID;
         bool m_IsMain;
+
+        TypeContext &m_TypeContext;
+        llvm::LLVMContext &m_LLVMContext;
 
         std::unique_ptr<llvm::Module> m_LLVMModule;
         std::unique_ptr<llvm::IRBuilder<>> m_LLVMBuilder;
 
+        Passes m_Passes;
+
         std::map<std::string, std::map<bool, std::map<TypePtr, OperatorInfo<1>>>> m_UnaryOperatorMap;
         std::map<std::string, std::map<TypePtr, std::map<TypePtr, OperatorInfo<2>>>> m_BinaryOperatorMap;
-
-        std::map<std::string, std::vector<FunctionInfo>> m_FunctionMap;
 
         std::vector<StackFrame> m_Stack;
     };

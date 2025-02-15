@@ -26,7 +26,7 @@ namespace NJS
             const std::vector<TypePtr> &argument_types,
             bool var_arg);
 
-        IntegerTypePtr GetBoolType();
+        IntegerTypePtr GetBooleanType();
         IntegerTypePtr GetCharType();
         PointerTypePtr GetStringType();
 

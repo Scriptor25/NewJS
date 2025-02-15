@@ -36,7 +36,7 @@ void NJS::ForStatement::GenVoidLLVM(Builder &builder) const
     builder.GetBuilder().SetInsertPoint(head_block);
     if (Condition)
     {
-        const auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBoolType());
+        const auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
         builder.GetBuilder().CreateCondBr(condition->Load(Where), loop_block, end_block);
     }
     else

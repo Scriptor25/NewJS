@@ -26,7 +26,7 @@ void NJS::IfStatement::GenVoidLLVM(Builder &builder) const
                           : nullptr;
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent_function);
 
-    const auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBoolType());
+    const auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
     builder.GetBuilder().CreateCondBr(
         condition->Load(Condition->Where),
         then_block,

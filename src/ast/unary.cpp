@@ -23,52 +23,56 @@ NJS::UnaryExpression::UnaryExpression(
 
 NJS::ValuePtr NJS::UnaryExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
-    static const std::map<std::string_view, std::pair<bool, UnaryOperator>> fns
+    static const std::map<std::string_view, UnaryOperator> fns
     {
-        {"++"sv, {true, OperatorInc}},
-        {"--"sv, {true, OperatorDec}},
-        {"-"sv, {false, OperatorNeg}},
-        {"!"sv, {false, OperatorLNot}},
-        {"~"sv, {false, OperatorNot}},
-        {"&"sv, {false, OperatorRef}},
-        {"*"sv, {false, OperatorDeref}},
+        {"++"sv, OperatorInc},
+        {"--"sv, OperatorDec},
+        {"-"sv, OperatorNeg},
+        {"!"sv, OperatorLNot},
+        {"~"sv, OperatorNot},
+        {"&"sv, OperatorRef},
+        {"*"sv, OperatorDeref},
+    };
+
+    static const std::set assignment_operators
+    {
+        "++"sv,
+        "--"sv,
     };
 
     auto operand = Operand->GenLLVM(builder, expected_type);
 
     if (auto [
             result_type_,
-            value_type_,
+            operand_type_,
             callee_
         ] = builder.FindOperator(Operator, Prefix, operand);
         callee_)
     {
         const auto function_type = llvm::FunctionType::get(
             result_type_->GetLLVM(Where, builder),
-            {
-                value_type_->GetLLVM(Where, builder),
-            },
+            {operand_type_->GetLLVM(Where, builder),},
             false);
         const auto result_value = builder.GetBuilder().CreateCall(
             function_type,
             callee_,
-            {
-                value_type_->IsReference() ? operand->GetPtr(Where) : operand->Load(Where),
-            });
+            {operand_type_->IsReference() ? operand->GetPtr(Where) : operand->Load(Where),});
         if (result_type_->IsReference())
             return LValue::Create(builder, result_type_->GetElement(), result_value);
         return RValue::Create(builder, result_type_, result_value);
     }
 
-    const auto bkp_value = operand->Load(Where);
+    const auto assign = assignment_operators.contains(Operator);
 
     if (fns.contains(Operator))
     {
-        auto &[assign_, operator_] = fns.at(Operator);
+        auto &operator_ = fns.at(Operator);
         if (auto result_value = operator_(builder, Where, operand); result_value)
         {
-            if (!assign_)
+            if (!assign)
                 return result_value;
+
+            const auto bkp_value = Prefix ? nullptr : operand->Load(Where);
 
             operand->Store(Where, result_value);
             if (Prefix)
