@@ -19,7 +19,10 @@ NJS::Builder::Builder(
     m_LLVMModule = std::make_unique<llvm::Module>(module_id, m_LLVMContext);
     m_LLVMBuilder = std::make_unique<llvm::IRBuilder<>>(m_LLVMContext);
 
-    StackPush(m_ModuleID);
+    if (is_main)
+        StackPush(m_ModuleID, m_TypeContext.GetIntegerType(32, true));
+    else
+        StackPush(m_ModuleID, m_TypeContext.GetVoidType());
 
     auto &process = DefineVariable({}, "process");
     process = CreateGlobal(
@@ -32,14 +35,13 @@ NJS::Builder::Builder(
             }),
         is_main);
 
-    llvm::Function *function;
     if (is_main)
     {
         const auto type = llvm::FunctionType::get(
             GetBuilder().getInt32Ty(),
             {GetBuilder().getInt32Ty(), GetBuilder().getPtrTy()},
             false);
-        function = llvm::Function::Create(
+        const auto function = llvm::Function::Create(
             type,
             llvm::GlobalValue::ExternalLinkage,
             "main",
@@ -49,17 +51,16 @@ NJS::Builder::Builder(
         GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", function));
         CreateMember({}, process, "argc")->Store({}, function->getArg(0));
         CreateMember({}, process, "argv")->Store({}, function->getArg(1));
+        return;
     }
-    else
-    {
-        const auto type = llvm::FunctionType::get(GetBuilder().getVoidTy(), false);
-        function = llvm::Function::Create(
-            type,
-            llvm::GlobalValue::ExternalLinkage,
-            GetName(true, "main"),
-            GetModule());
-        GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", function));
-    }
+
+    const auto type = llvm::FunctionType::get(GetBuilder().getVoidTy(), false);
+    const auto function = llvm::Function::Create(
+        type,
+        llvm::GlobalValue::ExternalLinkage,
+        GetName(true, "main"),
+        GetModule());
+    GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", function));
 }
 
 void NJS::Builder::Close()

@@ -36,6 +36,7 @@ install(TARGETS stdnewjs)
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
     add_custom_command(TARGET newjs POST_BUILD
+            COMMENT "Separating debug information from executable"
             COMMAND ${CMAKE_OBJCOPY} --only-keep-debug $<TARGET_FILE:newjs> $<TARGET_FILE:newjs>.dbg
             COMMAND ${CMAKE_OBJCOPY} --strip-debug $<TARGET_FILE:newjs>
             COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink=$<TARGET_FILE:newjs>.dbg $<TARGET_FILE:newjs>
