@@ -5,7 +5,7 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-llvm::Constant *NJS::StringExpression::GetString(const Builder &builder, const std::string_view &value)
+llvm::Constant *NJS::StringExpression::GetString(const Builder &builder, const std::string &value)
 {
     static std::map<std::string, llvm::Constant *> string_table;
 
@@ -15,7 +15,7 @@ llvm::Constant *NJS::StringExpression::GetString(const Builder &builder, const s
     return ptr;
 }
 
-NJS::StringExpression::StringExpression(SourceLocation where, std::string_view value)
+NJS::StringExpression::StringExpression(SourceLocation where, std::string value)
     : Expression(std::move(where)),
       Value(std::move(value))
 {
@@ -28,7 +28,7 @@ NJS::ValuePtr NJS::StringExpression::GenLLVM(Builder &builder, const TypePtr &) 
     return RValue::Create(builder, type, value);
 }
 
-std::ostream &NJS::StringExpression::Print(std::ostream &os)
+std::ostream &NJS::StringExpression::Print(std::ostream &stream)
 {
-    return os << '"' << Value << '"';
+    return stream << '"' << Value << '"';
 }

@@ -28,7 +28,7 @@ void NJS::ReferenceType::TypeInfo(const SourceLocation &where, Builder &builder,
 
 NJS::ReferenceType::ReferenceType(
     TypeContext &type_context,
-    std::string_view string,
+    std::string string,
     TypePtr element_type)
     : Type(type_context, std::move(string)),
       m_ElementType(std::move(element_type))

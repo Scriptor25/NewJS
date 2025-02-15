@@ -19,7 +19,7 @@ NJS::TernaryExpression::TernaryExpression(
 {
 }
 
-NJS::ValuePtr NJS::TernaryExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::TernaryExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent);
@@ -30,14 +30,14 @@ NJS::ValuePtr NJS::TernaryExpression::GenLLVM(Builder &builder, const TypePtr &e
     builder.GetBuilder().CreateCondBr(cond->Load(Where), then_block, else_block);
 
     builder.GetBuilder().SetInsertPoint(then_block);
-    auto then_value = ThenBody->GenLLVM(builder, expected);
+    auto then_value = ThenBody->GenLLVM(builder, expected_type);
     if (then_value->IsLValue())
         then_value = RValue::Create(builder, then_value->GetType(), then_value->Load(Where));
     then_block = builder.GetBuilder().GetInsertBlock();
     const auto then_term = builder.GetBuilder().CreateBr(end_block);
 
     builder.GetBuilder().SetInsertPoint(else_block);
-    auto else_value = ElseBody->GenLLVM(builder, expected);
+    auto else_value = ElseBody->GenLLVM(builder, expected_type);
     if (else_value->IsLValue())
         else_value = RValue::Create(builder, else_value->GetType(), else_value->Load(Where));
     else_block = builder.GetBuilder().GetInsertBlock();
@@ -62,7 +62,7 @@ NJS::ValuePtr NJS::TernaryExpression::GenLLVM(Builder &builder, const TypePtr &e
     return RValue::Create(builder, result_type, phi_inst);
 }
 
-std::ostream &NJS::TernaryExpression::Print(std::ostream &os)
+std::ostream &NJS::TernaryExpression::Print(std::ostream &stream)
 {
-    return ElseBody->Print(ThenBody->Print(Condition->Print(os) << " ? ") << " : ");
+    return ElseBody->Print(ThenBody->Print(Condition->Print(stream) << " ? ") << " : ");
 }

@@ -11,7 +11,7 @@ NJS::TypeOfExpression::TypeOfExpression(SourceLocation where, ExpressionPtr oper
 {
 }
 
-NJS::ValuePtr NJS::TypeOfExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::TypeOfExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     const auto operand = Operand->GenLLVM(builder, {});
     const auto type = builder.GetTypeContext().GetStringType();
@@ -19,7 +19,7 @@ NJS::ValuePtr NJS::TypeOfExpression::GenLLVM(Builder &builder, const TypePtr &ex
     return RValue::Create(builder, type, value);
 }
 
-std::ostream &NJS::TypeOfExpression::Print(std::ostream &os)
+std::ostream &NJS::TypeOfExpression::Print(std::ostream &stream)
 {
-    return Operand->Print(os << "typeof(") << ")";
+    return Operand->Print(stream << "typeof(") << ")";
 }

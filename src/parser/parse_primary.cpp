@@ -5,15 +5,15 @@
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
-static std::string to_upper(const std::string_view &src)
+static std::string to_upper(const std::string &src)
 {
-    std::string string(src);
+    auto string = src;
     for (auto &c: string)
         c = static_cast<char>(std::toupper(c));
     return string;
 }
 
-static void replace_all(std::string &src, const std::string_view &find, const std::string_view &replace)
+static void replace_all(std::string &src, const std::string &find, const std::string &replace)
 {
     for (size_t pos; (pos = src.find(find)) != std::string::npos;)
         src.replace(pos, find.size(), replace);

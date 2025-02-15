@@ -13,15 +13,15 @@ namespace NJS
         struct Arg
         {
             ID Id;
-            std::string_view Description;
-            std::vector<std::string_view> Patterns;
+            std::string Description;
+            std::vector<std::string> Patterns;
             bool IsFlag;
         };
 
         struct ArgPattern
         {
             ID Id;
-            std::string_view Description;
+            std::string Description;
             bool IsFlag;
         };
 
@@ -33,13 +33,13 @@ namespace NJS
         [[nodiscard]] std::string Executable() const;
         void Values(std::vector<std::string> &values) const;
         [[nodiscard]] bool Flag(ID id) const;
-        void Option(ID id, std::string &option, const std::string_view &default_value = {}) const;
+        void Option(ID id, std::string &option, const std::string &default_value = {}) const;
 
         void Print() const;
         [[nodiscard]] bool IsEmpty() const;
 
     private:
-        std::map<std::string_view, ArgPattern> m_Args;
+        std::map<std::string, ArgPattern> m_Args;
 
         std::string m_Executable;
         std::vector<std::string> m_Values;

@@ -16,7 +16,7 @@ std::ostream &NJS::ImportMapping::Print(std::ostream &stream) const
     if (NameMap.empty())
         return stream << "{}";
     stream << "{ ";
-    bool first = true;
+    auto first = true;
     for (const auto &[name_, mapping_]: NameMap)
     {
         if (first)
@@ -33,7 +33,7 @@ std::ostream &NJS::ImportMapping::Print(std::ostream &stream) const
 void NJS::ImportMapping::MapFunctions(
     Builder &builder,
     const SourceLocation &where,
-    const std::string_view &module_id,
+    const std::string &module_id,
     const std::vector<StatementPtr> &functions) const
 {
     std::map<std::string, TypePtr> element_types;

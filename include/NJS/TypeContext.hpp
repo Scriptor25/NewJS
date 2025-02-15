@@ -10,9 +10,9 @@ namespace NJS
     class TypeContext
     {
     public:
-        TypePtr &GetType(const std::string_view &string);
+        TypePtr &GetType(const std::string &string);
 
-        NoTypePtr GetNoType(const std::string_view &name = {});
+        NoTypePtr GetNoType(const std::string &name = {});
         VoidTypePtr GetVoidType();
         IntegerTypePtr GetIntegerType(unsigned bits, bool is_signed);
         FloatingPointTypePtr GetFloatingPointType(unsigned bits);

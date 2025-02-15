@@ -1,25 +1,25 @@
 #include <NJS/Builder.hpp>
 
-bool NJS::StackFrame::Contains(const std::string_view &name) const
+bool NJS::StackFrame::Contains(const std::string &name) const
 {
     return Values.contains(std::string(name));
 }
 
-NJS::ValuePtr NJS::StackFrame::operator[](const std::string_view &name) const
+NJS::ValuePtr NJS::StackFrame::operator[](const std::string &name) const
 {
     return Values.at(std::string(name));
 }
 
-NJS::ValuePtr &NJS::StackFrame::operator[](const std::string_view &name)
+NJS::ValuePtr &NJS::StackFrame::operator[](const std::string &name)
 {
     return Values[std::string(name)];
 }
 
-std::string NJS::StackFrame::GetChildName(const std::string_view &name) const
+std::string NJS::StackFrame::GetChildName(const std::string &name) const
 {
     if (name.empty())
         return Name;
     if (Name.empty())
-        return std::string(name);
+        return name;
     return Name + '.' + std::string(name);
 }

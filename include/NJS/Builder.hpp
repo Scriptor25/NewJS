@@ -12,11 +12,11 @@ namespace NJS
 {
     struct StackFrame
     {
-        [[nodiscard]] bool Contains(const std::string_view &) const;
-        ValuePtr operator[](const std::string_view &) const;
-        ValuePtr &operator[](const std::string_view &);
+        [[nodiscard]] bool Contains(const std::string &) const;
+        ValuePtr operator[](const std::string &) const;
+        ValuePtr &operator[](const std::string &);
 
-        [[nodiscard]] std::string GetChildName(const std::string_view &) const;
+        [[nodiscard]] std::string GetChildName(const std::string &) const;
 
         std::string Name;
         TypePtr ResultType;
@@ -38,7 +38,7 @@ namespace NJS
     class Builder
     {
     public:
-        Builder(TypeContext &ctx, llvm::LLVMContext &context, const std::string_view &module_id, bool is_main);
+        Builder(TypeContext &ctx, llvm::LLVMContext &context, const std::string &module_id, bool is_main);
 
         void Close();
 
@@ -72,48 +72,48 @@ namespace NJS
 
         void GetFormat(llvm::FunctionCallee &callee) const;
 
-        void StackPush(const std::string_view &name = {}, const TypePtr &result_type = {});
+        void StackPush(const std::string &name = {}, const TypePtr &result_type = {});
         void StackPop();
 
-        [[nodiscard]] std::string GetName(bool absolute, const std::string_view &name) const;
+        [[nodiscard]] std::string GetName(bool absolute, const std::string &name) const;
 
-        void DefineFunction(const std::string_view &name, const FunctionTypePtr &type, llvm::Function *callee);
-        FunctionInfo GetFunction(const std::string_view &name, const FunctionTypePtr &type) const;
-        FunctionInfo FindFunction(const std::string_view &name, const std::vector<ValuePtr> &arguments) const;
+        void DefineFunction(const std::string &name, const FunctionTypePtr &type, llvm::Function *callee);
+        [[nodiscard]] FunctionInfo GetFunction(const std::string &name, const FunctionTypePtr &type) const;
+        [[nodiscard]] FunctionInfo FindFunction(const std::string &name, const std::vector<ValuePtr> &arguments) const;
 
         void DefineOperator(
-            const std::string_view &name,
+            const std::string &name,
             bool prefix,
             const TypePtr &value_type,
             const TypePtr &result_type,
             llvm::Value *callee);
         void DefineOperator(
-            const std::string_view &name,
+            const std::string &name,
             const TypePtr &left_type,
             const TypePtr &right_type,
             const TypePtr &result_type,
             llvm::Value *callee);
 
-        OperatorInfo<1> GetOperator(
-            const std::string_view &name,
+        [[nodiscard]] OperatorInfo<1> GetOperator(
+            const std::string &name,
             bool prefix,
             const TypePtr &value_type) const;
-        OperatorInfo<2> GetOperator(
-            const std::string_view &name,
+        [[nodiscard]] OperatorInfo<2> GetOperator(
+            const std::string &name,
             const TypePtr &left_type,
             const TypePtr &right_type) const;
 
-        OperatorInfo<1> FindOperator(
-            const std::string_view &name,
+        [[nodiscard]] OperatorInfo<1> FindOperator(
+            const std::string &name,
             bool prefix,
             const ValuePtr &value) const;
-        OperatorInfo<2> FindOperator(
-            const std::string_view &name,
+        [[nodiscard]] OperatorInfo<2> FindOperator(
+            const std::string &name,
             const ValuePtr &left_operand,
             const ValuePtr &right_operand) const;
 
-        ValuePtr &DefineVariable(const SourceLocation &where, const std::string_view &name);
-        ValuePtr &GetVariable(const SourceLocation &where, const std::string_view &name);
+        ValuePtr &DefineVariable(const SourceLocation &where, const std::string &name);
+        ValuePtr &GetVariable(const SourceLocation &where, const std::string &name);
 
         TypePtr &CurrentFunctionResultType();
 

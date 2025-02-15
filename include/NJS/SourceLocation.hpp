@@ -7,7 +7,7 @@ namespace NJS
     struct SourceLocation
     {
         SourceLocation() = default;
-        explicit SourceLocation(std::string_view filename);
+        explicit SourceLocation(std::string filename);
 
         std::string Filename;
         unsigned Row = 0;

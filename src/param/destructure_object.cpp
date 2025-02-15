@@ -30,7 +30,7 @@ void NJS::DestructureObject::CreateVars(
 std::ostream &NJS::DestructureObject::Print(std::ostream &stream)
 {
     stream << "{ ";
-    bool first = true;
+    auto first = true;
     for (const auto &[name, element]: Elements)
     {
         if (first)

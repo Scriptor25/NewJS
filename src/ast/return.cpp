@@ -26,9 +26,9 @@ void NJS::ReturnStatement::GenVoidLLVM(Builder &builder) const
         builder.GetBuilder().CreateRet(value->Load(Where));
 }
 
-std::ostream &NJS::ReturnStatement::Print(std::ostream &os)
+std::ostream &NJS::ReturnStatement::Print(std::ostream &stream)
 {
     if (Value)
-        return Value->Print(os << "return ");
-    return os << "return";
+        return Value->Print(stream << "return ");
+    return stream << "return";
 }

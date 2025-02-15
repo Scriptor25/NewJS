@@ -2,7 +2,7 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 
-NJS::SymbolExpression::SymbolExpression(SourceLocation where, std::string_view name)
+NJS::SymbolExpression::SymbolExpression(SourceLocation where, std::string name)
     : Expression(std::move(where)),
       Name(std::move(name))
 {

@@ -8,7 +8,7 @@
 std::string NJS::StructType::GenString(const std::map<std::string, TypePtr> &element_type_map)
 {
     std::string dst = "{ ";
-    bool first = true;
+    auto first = true;
     for (const auto &[name_, type_]: element_type_map)
     {
         if (first)
@@ -25,7 +25,7 @@ bool NJS::StructType::IsStruct() const
     return true;
 }
 
-NJS::MemberT NJS::StructType::GetMember(const std::string_view &name) const
+NJS::MemberT NJS::StructType::GetMember(const std::string &name) const
 {
     unsigned i = 0;
     for (const auto &[name_, type_]: m_ElementTypeMap)
@@ -50,7 +50,7 @@ void NJS::StructType::TypeInfo(const SourceLocation &where, Builder &builder, st
 
 NJS::StructType::StructType(
     TypeContext &type_context,
-    std::string_view string,
+    std::string string,
     std::map<std::string, TypePtr> element_type_map)
     : Type(type_context, std::move(string)),
       m_ElementTypeMap(std::move(element_type_map))

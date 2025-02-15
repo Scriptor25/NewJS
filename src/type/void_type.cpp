@@ -23,7 +23,7 @@ void NJS::VoidType::TypeInfo(const SourceLocation &, Builder &builder, std::vect
     args.push_back(builder.GetBuilder().getInt32(ID_VOID));
 }
 
-NJS::VoidType::VoidType(TypeContext &type_context, std::string_view string)
+NJS::VoidType::VoidType(TypeContext &type_context, std::string string)
     : Type(type_context, std::move(string))
 {
 }

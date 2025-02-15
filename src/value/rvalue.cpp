@@ -22,7 +22,7 @@ llvm::Value *NJS::RValue::Load(const SourceLocation &) const
     return m_Value;
 }
 
-void NJS::RValue::Store(const SourceLocation &where, llvm::Value *, bool force) const
+void NJS::RValue::Store(const SourceLocation &where, llvm::Value *) const
 {
     Error(where, "cannot assign to rvalue");
 }

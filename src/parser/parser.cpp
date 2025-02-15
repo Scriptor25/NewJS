@@ -70,7 +70,7 @@ bool NJS::Parser::At(const TokenType type) const
     return m_Token.Type == type;
 }
 
-bool NJS::Parser::At(const std::string_view &value) const
+bool NJS::Parser::At(const std::string &value) const
 {
     return m_Token.StringValue == value;
 }
@@ -85,7 +85,7 @@ bool NJS::Parser::NextAt(const TokenType type)
     return false;
 }
 
-bool NJS::Parser::NextAt(const std::string_view &value)
+bool NJS::Parser::NextAt(const std::string &value)
 {
     if (At(value))
     {
@@ -109,7 +109,7 @@ NJS::Token NJS::Parser::Expect(const TokenType type)
     Error(m_Token.Where, "unexpected token {}, expected {}", m_Token, type);
 }
 
-NJS::Token NJS::Parser::Expect(const std::string_view &value)
+NJS::Token NJS::Parser::Expect(const std::string &value)
 {
     if (At(value))
         return Skip();

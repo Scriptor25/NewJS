@@ -75,15 +75,15 @@ NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) 
     return RValue::Create(builder, builder.GetTypeContext().GetStringType(), buffer_pointer);
 }
 
-std::ostream &NJS::FormatExpression::Print(std::ostream &os)
+std::ostream &NJS::FormatExpression::Print(std::ostream &stream)
 {
-    os << "$\"";
+    stream << "$\"";
     for (unsigned i = 0; i < Count; ++i)
     {
         if (StaticExpressions.contains(i))
-            os << StaticExpressions[i];
+            stream << StaticExpressions[i];
         else if (DynamicExpressions.contains(i))
-            DynamicExpressions[i]->Print(os << '{') << '}';
+            DynamicExpressions[i]->Print(stream << '{') << '}';
     }
-    return os << '"';
+    return stream << '"';
 }

@@ -23,18 +23,18 @@ namespace NJS
         explicit TemplateContext(Builder &builder);
 
         void InsertType(
-            const std::string_view &name,
+            const std::string &name,
             const std::vector<std::string> &args,
             const SourceLocation &where,
-            const std::string_view &source);
+            const std::string &source);
         void InsertFunction(
-            const std::string_view &name,
+            const std::string &name,
             const std::vector<std::string> &args,
             const SourceLocation &where,
-            const std::string_view &source);
+            const std::string &source);
 
-        [[nodiscard]] bool HasFunction(const std::string_view &name) const;
-        [[nodiscard]] bool HasType(const std::string_view &name) const;
+        [[nodiscard]] bool HasFunction(const std::string &name) const;
+        [[nodiscard]] bool HasType(const std::string &name) const;
 
         std::string InflateFunctionTemplate(
             Parser &parent,

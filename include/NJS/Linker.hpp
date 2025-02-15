@@ -9,7 +9,7 @@ namespace NJS
     class Linker
     {
     public:
-        explicit Linker(const std::string_view &module_id);
+        explicit Linker(const std::string &module_id);
 
         [[nodiscard]] llvm::LLVMContext &LLVMContext() const;
         [[nodiscard]] llvm::Module &LLVMModule() const;

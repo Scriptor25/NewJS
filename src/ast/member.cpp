@@ -3,7 +3,7 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Type.hpp>
 
-NJS::MemberExpression::MemberExpression(SourceLocation where, ExpressionPtr object, std::string_view member)
+NJS::MemberExpression::MemberExpression(SourceLocation where, ExpressionPtr object, std::string member)
     : Expression(std::move(where)),
       Object(std::move(object)),
       Member(std::move(member))

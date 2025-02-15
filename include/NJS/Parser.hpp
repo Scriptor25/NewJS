@@ -46,26 +46,26 @@ namespace NJS
 
         [[nodiscard]] bool AtEof() const;
         [[nodiscard]] bool At(TokenType type) const;
-        [[nodiscard]] bool At(const std::string_view &value) const;
+        [[nodiscard]] bool At(const std::string &value) const;
 
         bool NextAt(TokenType type);
-        bool NextAt(const std::string_view &value);
+        bool NextAt(const std::string &value);
 
         Token Skip();
 
         Token Expect(TokenType type);
-        Token Expect(const std::string_view &value);
+        Token Expect(const std::string &value);
 
         TypePtr ParseType();
         TypePtr ParseTupleType();
         TypePtr ParseStructType();
         TypePtr ParseFunctionType();
-        bool ParseTypeList(std::vector<TypePtr> &types, const std::string_view &delim);
-        void ParseTypeMap(std::map<std::string, TypePtr> &types, const std::string_view &delim);
+        bool ParseTypeList(std::vector<TypePtr> &types, const std::string &delim);
+        void ParseTypeMap(std::map<std::string, TypePtr> &types, const std::string &delim);
 
         ParameterPtr ParseParameter();
-        bool ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string_view &delimiter);
-        void ParseParameterMap(std::map<std::string, ParameterPtr> &parameters, const std::string_view &delimiter);
+        bool ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string &delimiter);
+        void ParseParameterMap(std::map<std::string, ParameterPtr> &parameters, const std::string &delimiter);
 
         void ParseMacro();
         void ParseTypeAlias();

@@ -28,7 +28,7 @@ NJS::ParameterPtr NJS::Parser::ParseParameter()
     return parameter;
 }
 
-bool NJS::Parser::ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string_view &delimiter)
+bool NJS::Parser::ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string &delimiter)
 {
     while (!At(delimiter) && !AtEof())
     {
@@ -48,7 +48,7 @@ bool NJS::Parser::ParseParameterList(std::vector<ParameterPtr> &parameters, cons
     return false;
 }
 
-void NJS::Parser::ParseParameterMap(std::map<std::string, ParameterPtr> &parameters, const std::string_view &delimiter)
+void NJS::Parser::ParseParameterMap(std::map<std::string, ParameterPtr> &parameters, const std::string &delimiter)
 {
     while (!At(delimiter) && !AtEof())
     {

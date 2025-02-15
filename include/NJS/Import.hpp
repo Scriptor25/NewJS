@@ -13,7 +13,7 @@ namespace NJS
         void MapFunctions(
             Builder &builder,
             const SourceLocation &where,
-            const std::string_view &module_id,
+            const std::string &module_id,
             const std::vector<StatementPtr> &functions) const;
 
         bool All;

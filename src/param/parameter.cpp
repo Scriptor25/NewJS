@@ -1,3 +1,4 @@
+#include <utility>
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Parameter.hpp>
@@ -5,8 +6,8 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::Parameter::Parameter(const std::string_view name)
-    : Name(name)
+NJS::Parameter::Parameter(std::string name)
+    : Name(std::move(name))
 {
 }
 

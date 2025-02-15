@@ -8,7 +8,7 @@
 #include <NJS/Error.hpp>
 #include <NJS/Linker.hpp>
 
-NJS::Linker::Linker(const std::string_view &module_id)
+NJS::Linker::Linker(const std::string &module_id)
 {
     m_LLVMContext = std::make_unique<llvm::LLVMContext>();
     m_LLVMModule = std::make_unique<llvm::Module>(module_id, *m_LLVMContext);

@@ -13,7 +13,7 @@ void NJS::ArgParser::Parse(const int argc, const char **argv)
 {
     m_Executable = argv[0];
 
-    for (int i = 1; i < argc; ++i)
+    for (auto i = 1; i < argc; ++i)
     {
         const std::string pat(argv[i]);
 
@@ -52,17 +52,17 @@ bool NJS::ArgParser::Flag(const ID id) const
     return m_Flags.at(id);
 }
 
-void NJS::ArgParser::Option(const ID id, std::string &option, const std::string_view &alt) const
+void NJS::ArgParser::Option(const ID id, std::string &option, const std::string &default_value) const
 {
     if (m_Options.contains(id))
     {
         option = m_Options.at(id);
         return;
     }
-    option = alt;
+    option = default_value;
 }
 
-static void print_description(const std::string_view &description)
+static void print_description(const std::string &description)
 {
     unsigned i = 0;
     for (const auto c: description)
@@ -76,8 +76,8 @@ static void print_description(const std::string_view &description)
 
 void NJS::ArgParser::Print() const
 {
-    std::map<ID, std::pair<std::vector<std::string_view>, std::string_view>> options;
-    std::map<ID, std::pair<std::vector<std::string_view>, std::string_view>> flags;
+    std::map<ID, std::pair<std::vector<std::string>, std::string>> options;
+    std::map<ID, std::pair<std::vector<std::string>, std::string>> flags;
 
     for (auto &[pat_, arg_]: m_Args)
     {

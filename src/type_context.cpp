@@ -1,14 +1,14 @@
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::TypePtr &NJS::TypeContext::GetType(const std::string_view &string)
+NJS::TypePtr &NJS::TypeContext::GetType(const std::string &string)
 {
     if (!m_TemplateStack.empty())
         return m_TemplateStack.back()[std::string(string)];
     return m_Types[std::string(string)];
 }
 
-NJS::NoTypePtr NJS::TypeContext::GetNoType(const std::string_view &name)
+NJS::NoTypePtr NJS::TypeContext::GetNoType(const std::string &name)
 {
     return GetType<NoType>(name);
 }

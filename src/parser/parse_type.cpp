@@ -128,7 +128,7 @@ NJS::TypePtr NJS::Parser::ParseFunctionType()
     return m_TypeContext.GetFunctionType(result, args, vararg);
 }
 
-bool NJS::Parser::ParseTypeList(std::vector<TypePtr> &types, const std::string_view &delim)
+bool NJS::Parser::ParseTypeList(std::vector<TypePtr> &types, const std::string &delim)
 {
     while (!At(delim) && !AtEof())
     {
@@ -149,7 +149,7 @@ bool NJS::Parser::ParseTypeList(std::vector<TypePtr> &types, const std::string_v
     return false;
 }
 
-void NJS::Parser::ParseTypeMap(std::map<std::string, TypePtr> &types, const std::string_view &delim)
+void NJS::Parser::ParseTypeMap(std::map<std::string, TypePtr> &types, const std::string &delim)
 {
     while (!At(delim) && !AtEof())
     {

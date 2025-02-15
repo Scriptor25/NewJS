@@ -29,7 +29,7 @@ void NJS::ImportStatement::GenVoidLLVM(Builder &builder) const
     Mapping.MapFunctions(builder, Where, module_id, Functions);
 }
 
-std::ostream &NJS::ImportStatement::Print(std::ostream &os)
+std::ostream &NJS::ImportStatement::Print(std::ostream &stream)
 {
-    return Mapping.Print(os << "import ") << " from " << '"' << Filepath.string() << '"';
+    return Mapping.Print(stream << "import ") << " from " << '"' << Filepath.string() << '"';
 }

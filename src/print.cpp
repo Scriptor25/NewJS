@@ -14,11 +14,11 @@ void NJS::Exdent()
     depth -= 2;
 }
 
-std::ostream &NJS::Spacing(std::ostream &os)
+std::ostream &NJS::Spacing(std::ostream &stream)
 {
     for (unsigned i = 0; i < depth; ++i)
-        os << ' ';
-    return os;
+        stream << ' ';
+    return stream;
 }
 
 std::string NJS::TypeString(const TypePtr &type)

@@ -59,10 +59,10 @@ void NJS::IfStatement::GenVoidLLVM(Builder &builder) const
     builder.GetBuilder().SetInsertPoint(end_block);
 }
 
-std::ostream &NJS::IfStatement::Print(std::ostream &os)
+std::ostream &NJS::IfStatement::Print(std::ostream &stream)
 {
-    ThenBody->Print(Condition->Print(os << "if (") << ") ");
+    ThenBody->Print(Condition->Print(stream << "if (") << ") ");
     if (ElseBody)
-        ElseBody->Print(os << " else ");
-    return os;
+        ElseBody->Print(stream << " else ");
+    return stream;
 }

@@ -178,7 +178,7 @@ NJS::TypePtr NJS::Type::GetElement(unsigned) const
     Error("type {} does not support 'GetElement'", m_String);
 }
 
-NJS::MemberT NJS::Type::GetMember(const std::string_view &) const
+NJS::MemberT NJS::Type::GetMember(const std::string &) const
 {
     Error("type {} does not support 'GetMember'", m_String);
 }
@@ -188,7 +188,7 @@ NJS::TypePtr NJS::Type::GetResultType() const
     Error("type {} does not support 'GetResultType'", m_String);
 }
 
-NJS::Type::Type(TypeContext &type_context, std::string_view string)
+NJS::Type::Type(TypeContext &type_context, std::string string)
     : m_TypeContext(type_context),
       m_String(std::move(string)),
       m_LLVM(nullptr),

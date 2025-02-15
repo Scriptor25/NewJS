@@ -2,9 +2,9 @@
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
-std::string NJS::NoType::GenString(const std::string_view &name)
+std::string NJS::NoType::GenString(const std::string &name)
 {
-    return std::string(name);
+    return name;
 }
 
 NJS::TypePtr NJS::NoType::GetResultType() const
@@ -17,7 +17,7 @@ void NJS::NoType::TypeInfo(const SourceLocation &, Builder &, std::vector<llvm::
     Error("the no-type does not provide type information");
 }
 
-NJS::NoType::NoType(TypeContext &type_context, std::string_view string, std::string_view name)
+NJS::NoType::NoType(TypeContext &type_context, std::string string, std::string name)
     : Type(type_context, std::move(string)),
       m_Name(std::move(name))
 {

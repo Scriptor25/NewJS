@@ -35,7 +35,7 @@ void NJS::TupleType::TypeInfo(const SourceLocation &where, Builder &builder, std
 
 NJS::TupleType::TupleType(
     TypeContext &type_context,
-    std::string_view string,
+    std::string string,
     std::vector<TypePtr> element_types)
     : Type(type_context, std::move(string)),
       m_ElementTypes(std::move(element_types))

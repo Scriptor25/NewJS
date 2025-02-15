@@ -16,17 +16,17 @@ void NJS::ScopeStatement::GenVoidLLVM(Builder &builder) const
     builder.StackPop();
 }
 
-std::ostream &NJS::ScopeStatement::Print(std::ostream &os)
+std::ostream &NJS::ScopeStatement::Print(std::ostream &stream)
 {
     if (Children.empty())
-        return os << "{}";
+        return stream << "{}";
 
-    os << '{' << std::endl;
+    stream << '{' << std::endl;
     Indent();
     for (const auto &child: Children)
-        child->Print(Spacing(os)) << std::endl;
+        child->Print(Spacing(stream)) << std::endl;
     Exdent();
-    return Spacing(os) << '}';
+    return Spacing(stream) << '}';
 }
 
 NJS::ScopeExpression::ScopeExpression(SourceLocation where, std::vector<StatementPtr> children, ExpressionPtr last)
@@ -36,26 +36,26 @@ NJS::ScopeExpression::ScopeExpression(SourceLocation where, std::vector<Statemen
 {
 }
 
-NJS::ValuePtr NJS::ScopeExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::ScopeExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     builder.StackPush();
     for (const auto &child: Children)
         child->GenVoidLLVM(builder);
-    auto result = Last->GenLLVM(builder, expected);
+    auto result = Last->GenLLVM(builder, expected_type);
     builder.StackPop();
     return result;
 }
 
-std::ostream &NJS::ScopeExpression::Print(std::ostream &os)
+std::ostream &NJS::ScopeExpression::Print(std::ostream &stream)
 {
     if (Children.empty())
-        return Last->Print(os << "{ ") << " }";
+        return Last->Print(stream << "{ ") << " }";
 
-    os << '{' << std::endl;
+    stream << '{' << std::endl;
     Indent();
     for (const auto &child: Children)
-        child->Print(Spacing(os)) << std::endl;
-    Last->Print(Spacing(os)) << std::endl;
+        child->Print(Spacing(stream)) << std::endl;
+    Last->Print(Spacing(stream)) << std::endl;
     Exdent();
-    return Spacing(os) << '}';
+    return Spacing(stream) << '}';
 }

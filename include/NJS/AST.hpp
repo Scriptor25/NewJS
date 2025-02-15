@@ -159,7 +159,7 @@ namespace NJS
     {
         BinaryExpression(
             SourceLocation where,
-            std::string_view operator_,
+            std::string operator_,
             ExpressionPtr left_operand,
             ExpressionPtr right_operand);
 
@@ -271,7 +271,7 @@ namespace NJS
 
     struct MemberExpression final : Expression
     {
-        MemberExpression(SourceLocation where, ExpressionPtr object, std::string_view member);
+        MemberExpression(SourceLocation where, ExpressionPtr object, std::string member);
 
         ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
@@ -303,9 +303,9 @@ namespace NJS
 
     struct StringExpression final : Expression
     {
-        static llvm::Constant *GetString(const Builder &builder, const std::string_view &value);
+        static llvm::Constant *GetString(const Builder &builder, const std::string &value);
 
-        StringExpression(SourceLocation where, std::string_view value);
+        StringExpression(SourceLocation where, std::string value);
 
         ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
@@ -352,7 +352,7 @@ namespace NJS
 
     struct SymbolExpression final : Expression
     {
-        SymbolExpression(SourceLocation where, std::string_view name);
+        SymbolExpression(SourceLocation where, std::string name);
 
         ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
@@ -398,7 +398,7 @@ namespace NJS
 
     struct UnaryExpression final : Expression
     {
-        UnaryExpression(SourceLocation where, std::string_view operator_, bool prefix, ExpressionPtr operand);
+        UnaryExpression(SourceLocation where, std::string operator_, bool prefix, ExpressionPtr operand);
 
         ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;

@@ -29,7 +29,7 @@ void NJS::PointerType::TypeInfo(const SourceLocation &where, Builder &builder, s
     m_ElementType->TypeInfo(where, builder, args);
 }
 
-NJS::PointerType::PointerType(TypeContext &type_context, std::string_view string, TypePtr element_type)
+NJS::PointerType::PointerType(TypeContext &type_context, std::string string, TypePtr element_type)
     : Type(type_context, std::move(string)),
       m_ElementType(std::move(element_type))
 {

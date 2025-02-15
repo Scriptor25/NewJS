@@ -29,7 +29,7 @@ void NJS::FloatingPointType::TypeInfo(const SourceLocation &, Builder &builder, 
     args.push_back(builder.GetBuilder().getInt32(m_Bits));
 }
 
-NJS::FloatingPointType::FloatingPointType(TypeContext &type_context, std::string_view string, const unsigned bits)
+NJS::FloatingPointType::FloatingPointType(TypeContext &type_context, std::string string, const unsigned bits)
     : Type(type_context, std::move(string)),
       m_Bits(bits)
 {

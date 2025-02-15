@@ -18,7 +18,7 @@ NJS::ValuePtr NJS::CharacterExpression::GenLLVM(Builder &builder, const TypePtr 
     return RValue::Create(builder, result_type, result_value);
 }
 
-std::ostream &NJS::CharacterExpression::Print(std::ostream &os)
+std::ostream &NJS::CharacterExpression::Print(std::ostream &stream)
 {
-    return os << '\'' << Value << '\'';
+    return stream << '\'' << Value << '\'';
 }

@@ -74,7 +74,7 @@ llvm::FunctionType *NJS::FunctionType::GenFnLLVM(const SourceLocation &where, co
 
 NJS::FunctionType::FunctionType(
     TypeContext &type_context,
-    std::string_view string,
+    std::string string,
     TypePtr result_type,
     std::vector<TypePtr> parameter_types,
     const bool var_arg)

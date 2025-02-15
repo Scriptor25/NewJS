@@ -11,29 +11,29 @@ NJS::TemplateContext::TemplateContext(Builder &builder)
 }
 
 void NJS::TemplateContext::InsertType(
-    const std::string_view &name,
+    const std::string &name,
     const std::vector<std::string> &args,
     const SourceLocation &where,
-    const std::string_view &source)
+    const std::string &source)
 {
     m_TypeTemplates[std::string(name)] = {std::string(name), args, where, std::string(source)};
 }
 
 void NJS::TemplateContext::InsertFunction(
-    const std::string_view &name,
+    const std::string &name,
     const std::vector<std::string> &args,
     const SourceLocation &where,
-    const std::string_view &source)
+    const std::string &source)
 {
     m_FunctionTemplates[std::string(name)] = {std::string(name), args, where, std::string(source)};
 }
 
-bool NJS::TemplateContext::HasFunction(const std::string_view &name) const
+bool NJS::TemplateContext::HasFunction(const std::string &name) const
 {
     return m_FunctionTemplates.contains(std::string(name));
 }
 
-bool NJS::TemplateContext::HasType(const std::string_view &name) const
+bool NJS::TemplateContext::HasType(const std::string &name) const
 {
     return m_TypeTemplates.contains(std::string(name));
 }

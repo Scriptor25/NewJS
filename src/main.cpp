@@ -25,9 +25,9 @@ static llvm::CodeGenFileType to_type(const std::string_view &str)
 {
     static const std::map<std::string_view, llvm::CodeGenFileType> map
     {
-        {"llvm", llvm::CodeGenFileType::Null},
-        {"obj", llvm::CodeGenFileType::ObjectFile},
-        {"asm", llvm::CodeGenFileType::AssemblyFile},
+        {"llvm"sv, llvm::CodeGenFileType::Null},
+        {"obj"sv, llvm::CodeGenFileType::ObjectFile},
+        {"asm"sv, llvm::CodeGenFileType::AssemblyFile},
     };
     if (map.contains(str))
         return map.at(str);
@@ -36,7 +36,7 @@ static llvm::CodeGenFileType to_type(const std::string_view &str)
 
 static void parse(
     const NJS::Linker &linker,
-    const std::string_view &module_id,
+    const std::string &module_id,
     const bool is_main,
     std::istream &input_stream,
     const std::filesystem::path &input_path)
@@ -62,16 +62,16 @@ int main(const int argc, const char **argv)
 {
     NJS::ArgParser args(
         {
-            {ARG_ID_HELP, "Display this help text."sv, {"--help"sv, "-h"sv}, true},
-            {ARG_ID_VERSION, "Display the program version."sv, {"--version"sv, "-v"sv}, true},
-            {ARG_ID_OUTPUT, "Specify the output filename."sv, {"--output"sv, "-o"sv}, false},
+            {ARG_ID_HELP, "Display this help text.", {"--help", "-h"}, true},
+            {ARG_ID_VERSION, "Display the program version.", {"--version", "-v"}, true},
+            {ARG_ID_OUTPUT, "Specify the output filename.", {"--output", "-o"}, false},
             {
                 ARG_ID_TYPE,
-                "Specify the output file type. Available values are 'llvm' for the intermediate representation, 'obj' for a compiled object file and 'asm' for an assembler file."sv,
-                {"--type"sv, "-t"sv},
+                "Specify the output file type. Available values are 'llvm' for the intermediate representation, 'obj' for a compiled object file and 'asm' for an assembler file.",
+                {"--type", "-t"},
                 false
             },
-            {ARG_ID_MAIN, "Specify which module name is the main module."sv, {"--main"sv, "-m"sv}, false},
+            {ARG_ID_MAIN, "Specify which module name is the main module.", {"--main", "-m"}, false},
         });
     args.Parse(argc, argv);
 
@@ -95,20 +95,20 @@ int main(const int argc, const char **argv)
     args.Option(ARG_ID_OUTPUT, output_filename);
 
     std::string module_main;
-    args.Option(ARG_ID_MAIN, module_main, "main"sv);
+    args.Option(ARG_ID_MAIN, module_main, "main");
 
     llvm::CodeGenFileType output_type;
     {
         std::string type_str;
-        args.Option(ARG_ID_TYPE, type_str, "llvm"sv);
+        args.Option(ARG_ID_TYPE, type_str, "llvm");
         output_type = to_type(type_str);
     }
 
     const auto output_module_id = std::filesystem::path(output_filename).filename().replace_extension().string();
-    const NJS::Linker linker(output_module_id.empty() ? "module"sv : output_module_id);
+    const NJS::Linker linker(output_module_id.empty() ? "module" : output_module_id);
 
     if (input_filenames.empty())
-        parse(linker, "main"sv, true, std::cin, {});
+        parse(linker, "main", true, std::cin, {});
 
     for (const auto &input_filename: input_filenames)
     {

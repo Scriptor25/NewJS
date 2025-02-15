@@ -11,14 +11,14 @@ NJS::TupleExpression::TupleExpression(SourceLocation where, std::vector<Expressi
 {
 }
 
-NJS::ValuePtr NJS::TupleExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::TupleExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     std::vector<ValuePtr> elements;
     std::vector<TypePtr> element_types;
-    bool is_array = true;
+    auto is_array = true;
     for (unsigned i = 0; i < Elements.size(); ++i)
     {
-        const auto type = expected ? expected->GetElement(i) : nullptr;
+        const auto type = expected_type ? expected_type->GetElement(i) : nullptr;
         const auto value = Elements[i]->GenLLVM(builder, type);
         elements.push_back(value);
         element_types.push_back(value->GetType());
@@ -27,8 +27,8 @@ NJS::ValuePtr NJS::TupleExpression::GenLLVM(Builder &builder, const TypePtr &exp
     }
 
     TypePtr type;
-    if (expected)
-        type = expected;
+    if (expected_type)
+        type = expected_type;
     else if (is_array)
         type = builder.GetTypeContext().GetArrayType(element_types.front(), element_types.size());
     else
@@ -45,15 +45,15 @@ NJS::ValuePtr NJS::TupleExpression::GenLLVM(Builder &builder, const TypePtr &exp
     return RValue::Create(builder, type, value);
 }
 
-std::ostream &NJS::TupleExpression::Print(std::ostream &os)
+std::ostream &NJS::TupleExpression::Print(std::ostream &stream)
 {
     if (Elements.empty())
-        return os << "[]";
+        return stream << "[]";
 
-    os << '[' << std::endl;
+    stream << '[' << std::endl;
     Indent();
     for (const auto &entry: Elements)
-        entry->Print(Spacing(os)) << ',' << std::endl;
+        entry->Print(Spacing(stream)) << ',' << std::endl;
     Exdent();
-    return Spacing(os) << ']';
+    return Spacing(stream) << ']';
 }

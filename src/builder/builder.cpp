@@ -9,7 +9,7 @@
 NJS::Builder::Builder(
     TypeContext &ctx,
     llvm::LLVMContext &context,
-    const std::string_view &module_id,
+    const std::string &module_id,
     const bool is_main)
     : m_TypeContext(ctx),
       m_LLVMContext(context),
@@ -47,8 +47,8 @@ NJS::Builder::Builder(
         function->getArg(0)->setName("argc");
         function->getArg(1)->setName("argv");
         GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", function));
-        CreateMember({}, process, "argc")->Store({}, function->getArg(0), true);
-        CreateMember({}, process, "argv")->Store({}, function->getArg(1), true);
+        CreateMember({}, process, "argc")->Store({}, function->getArg(0));
+        CreateMember({}, process, "argv")->Store({}, function->getArg(1));
     }
     else
     {
@@ -105,7 +105,7 @@ void NJS::Builder::GetFormat(llvm::FunctionCallee &callee) const
     callee = GetModule().getOrInsertFunction("format", type);
 }
 
-void NJS::Builder::StackPush(const std::string_view &name, const TypePtr &result_type)
+void NJS::Builder::StackPush(const std::string &name, const TypePtr &result_type)
 {
     const auto frame_name = m_Stack.empty()
                                 ? std::string(name)
@@ -123,19 +123,19 @@ void NJS::Builder::StackPop()
     m_Stack.pop_back();
 }
 
-std::string NJS::Builder::GetName(const bool absolute, const std::string_view &name) const
+std::string NJS::Builder::GetName(const bool absolute, const std::string &name) const
 {
     if (absolute)
         return m_ModuleID + '.' + std::string(name);
     return m_Stack.back().GetChildName(name);
 }
 
-void NJS::Builder::DefineFunction(const std::string_view &name, const FunctionTypePtr &type, llvm::Function *callee)
+void NJS::Builder::DefineFunction(const std::string &name, const FunctionTypePtr &type, llvm::Function *callee)
 {
     m_FunctionMap[std::string(name)].emplace_back(type, callee);
 }
 
-NJS::FunctionInfo NJS::Builder::GetFunction(const std::string_view &name, const FunctionTypePtr &type) const
+NJS::FunctionInfo NJS::Builder::GetFunction(const std::string &name, const FunctionTypePtr &type) const
 {
     if (!m_FunctionMap.contains(std::string(name)))
         return {};
@@ -145,7 +145,7 @@ NJS::FunctionInfo NJS::Builder::GetFunction(const std::string_view &name, const 
     return {};
 }
 
-NJS::FunctionInfo NJS::Builder::FindFunction(const std::string_view &name, const std::vector<ValuePtr> &arguments) const
+NJS::FunctionInfo NJS::Builder::FindFunction(const std::string &name, const std::vector<ValuePtr> &arguments) const
 {
     auto max_error = ~0u;
     FunctionInfo result_info;
@@ -190,7 +190,7 @@ NJS::FunctionInfo NJS::Builder::FindFunction(const std::string_view &name, const
 }
 
 void NJS::Builder::DefineOperator(
-    const std::string_view &name,
+    const std::string &name,
     const bool prefix,
     const TypePtr &value_type,
     const TypePtr &result_type,
@@ -200,7 +200,7 @@ void NJS::Builder::DefineOperator(
 }
 
 void NJS::Builder::DefineOperator(
-    const std::string_view &name,
+    const std::string &name,
     const TypePtr &left_type,
     const TypePtr &right_type,
     const TypePtr &result_type,
@@ -210,7 +210,7 @@ void NJS::Builder::DefineOperator(
 }
 
 NJS::OperatorInfo<1> NJS::Builder::GetOperator(
-    const std::string_view &name,
+    const std::string &name,
     const bool prefix,
     const TypePtr &value_type) const
 {
@@ -226,7 +226,7 @@ NJS::OperatorInfo<1> NJS::Builder::GetOperator(
 }
 
 NJS::OperatorInfo<2> NJS::Builder::GetOperator(
-    const std::string_view &name,
+    const std::string &name,
     const TypePtr &left_type,
     const TypePtr &right_type) const
 {
@@ -242,7 +242,7 @@ NJS::OperatorInfo<2> NJS::Builder::GetOperator(
 }
 
 NJS::OperatorInfo<1> NJS::Builder::FindOperator(
-    const std::string_view &name,
+    const std::string &name,
     const bool prefix,
     const ValuePtr &value) const
 {
@@ -258,7 +258,7 @@ NJS::OperatorInfo<1> NJS::Builder::FindOperator(
 }
 
 NJS::OperatorInfo<2> NJS::Builder::FindOperator(
-    const std::string_view &name,
+    const std::string &name,
     const ValuePtr &left_operand,
     const ValuePtr &right_operand) const
 {
@@ -281,7 +281,7 @@ NJS::OperatorInfo<2> NJS::Builder::FindOperator(
     return {};
 }
 
-NJS::ValuePtr &NJS::Builder::DefineVariable(const SourceLocation &where, const std::string_view &name)
+NJS::ValuePtr &NJS::Builder::DefineVariable(const SourceLocation &where, const std::string &name)
 {
     auto &stack = m_Stack.back();
     if (stack.Contains(name))
@@ -289,7 +289,7 @@ NJS::ValuePtr &NJS::Builder::DefineVariable(const SourceLocation &where, const s
     return stack[name];
 }
 
-NJS::ValuePtr &NJS::Builder::GetVariable(const SourceLocation &where, const std::string_view &name)
+NJS::ValuePtr &NJS::Builder::GetVariable(const SourceLocation &where, const std::string &name)
 {
     for (auto &stack: std::ranges::reverse_view(m_Stack))
         if (stack.Contains(name))

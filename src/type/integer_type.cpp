@@ -37,7 +37,7 @@ void NJS::IntegerType::TypeInfo(const SourceLocation &, Builder &builder, std::v
 
 NJS::IntegerType::IntegerType(
     TypeContext &type_context,
-    std::string_view string,
+    std::string string,
     const unsigned bits,
     const bool is_signed)
     : Type(type_context, std::move(string)),

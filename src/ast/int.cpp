@@ -12,12 +12,12 @@ NJS::IntegerExpression::IntegerExpression(SourceLocation where, TypePtr type, co
 {
 }
 
-NJS::ValuePtr NJS::IntegerExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::IntegerExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     const auto result_type = Type
                                  ? Type
-                                 : expected && expected->IsInteger()
-                                       ? expected
+                                 : expected_type && expected_type->IsInteger()
+                                       ? expected_type
                                        : builder.GetTypeContext().GetIntegerType(64, true);
     const auto result_value = llvm::ConstantInt::get(
         result_type->GetLLVM(Where, builder),
@@ -26,7 +26,7 @@ NJS::ValuePtr NJS::IntegerExpression::GenLLVM(Builder &builder, const TypePtr &e
     return RValue::Create(builder, result_type, result_value);
 }
 
-std::ostream &NJS::IntegerExpression::Print(std::ostream &os)
+std::ostream &NJS::IntegerExpression::Print(std::ostream &stream)
 {
-    return os << Value;
+    return stream << Value;
 }

@@ -34,7 +34,7 @@ void NJS::ArrayType::TypeInfo(const SourceLocation &where, Builder &builder, std
 
 NJS::ArrayType::ArrayType(
     TypeContext &type_context,
-    std::string_view string,
+    std::string string,
     TypePtr element_type,
     const unsigned count)
     : Type(type_context, std::move(string)),

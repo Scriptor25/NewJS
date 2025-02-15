@@ -1,5 +1,4 @@
 #include <NJS/Builder.hpp>
-#include <NJS/Error.hpp>
 #include <NJS/Operator.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>

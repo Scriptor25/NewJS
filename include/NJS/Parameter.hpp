@@ -17,7 +17,7 @@ namespace NJS
 
     struct Parameter
     {
-        explicit Parameter(std::string_view name);
+        explicit Parameter(std::string name);
         virtual ~Parameter() = default;
 
         virtual bool RequireValue();

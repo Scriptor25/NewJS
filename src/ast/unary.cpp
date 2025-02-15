@@ -11,7 +11,7 @@ using namespace std::string_view_literals;
 
 NJS::UnaryExpression::UnaryExpression(
     SourceLocation where,
-    std::string_view operator_,
+    std::string operator_,
     const bool prefix,
     ExpressionPtr operand)
     : Expression(std::move(where)),

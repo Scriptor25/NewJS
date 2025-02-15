@@ -18,7 +18,7 @@ NJS::ValuePtr NJS::BooleanExpression::GenLLVM(Builder &builder, const TypePtr &)
     return RValue::Create(builder, result_type, result_value);
 }
 
-std::ostream &NJS::BooleanExpression::Print(std::ostream &os)
+std::ostream &NJS::BooleanExpression::Print(std::ostream &stream)
 {
-    return os << (Value ? "true" : "false");
+    return stream << (Value ? "true" : "false");
 }

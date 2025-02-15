@@ -1,6 +1,6 @@
 #include <NJS/AST.hpp>
-#include <NJS/TypeContext.hpp>
 #include <NJS/Parser.hpp>
+#include <NJS/TypeContext.hpp>
 
 NJS::ExpressionPtr NJS::Parser::ParseStructExpression()
 {

@@ -11,7 +11,7 @@ using namespace std::string_view_literals;
 
 NJS::BinaryExpression::BinaryExpression(
     SourceLocation where,
-    std::string_view operator_,
+    std::string operator_,
     ExpressionPtr left_operand,
     ExpressionPtr right_operand)
     : Expression(std::move(where)),

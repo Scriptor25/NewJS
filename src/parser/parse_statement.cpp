@@ -5,7 +5,9 @@
 
 NJS::StatementPtr NJS::Parser::ParseStatement()
 {
-    while (NextAt(";"));
+    while (NextAt(";"))
+    {
+    }
 
     if (At("#"))
     {

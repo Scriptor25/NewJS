@@ -52,16 +52,16 @@ void NJS::ForStatement::GenVoidLLVM(Builder &builder) const
     builder.StackPop();
 }
 
-std::ostream &NJS::ForStatement::Print(std::ostream &os)
+std::ostream &NJS::ForStatement::Print(std::ostream &stream)
 {
-    os << "for (";
+    stream << "for (";
     if (Initializer)
-        Initializer->Print(os);
-    os << ';';
+        Initializer->Print(stream);
+    stream << ';';
     if (Condition)
-        Condition->Print(os << ' ');
-    os << ';';
+        Condition->Print(stream << ' ');
+    stream << ';';
     if (Loop)
-        Loop->Print(os << ' ');
-    return Body->Print(os << ") ");
+        Loop->Print(stream << ' ');
+    return Body->Print(stream << ") ");
 }

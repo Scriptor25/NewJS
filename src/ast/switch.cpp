@@ -46,32 +46,32 @@ void NJS::SwitchStatement::GenVoidLLVM(Builder &builder) const
     builder.GetBuilder().SetInsertPoint(end_block);
 }
 
-std::ostream &NJS::SwitchStatement::Print(std::ostream &os)
+std::ostream &NJS::SwitchStatement::Print(std::ostream &stream)
 {
-    Condition->Print(os << "switch (") << ") {" << std::endl;
+    Condition->Print(stream << "switch (") << ") {" << std::endl;
     Indent();
     for (const auto &[case_, entries_]: Cases)
     {
-        Spacing(os) << "case ";
+        Spacing(stream) << "case ";
         for (unsigned i = 0; i < entries_.size(); ++i)
         {
             if (i > 0)
-                os << ", ";
-            entries_[i]->Print(os);
+                stream << ", ";
+            entries_[i]->Print(stream);
         }
         if (const auto p = std::dynamic_pointer_cast<ScopeStatement>(case_))
-            case_->Print(os << ' ');
+            case_->Print(stream << ' ');
         else
-            case_->Print(os << " -> ");
-        os << std::endl;
+            case_->Print(stream << " -> ");
+        stream << std::endl;
     }
-    Spacing(os) << "default";
+    Spacing(stream) << "default";
     if (const auto p = std::dynamic_pointer_cast<ScopeStatement>(DefaultCase))
-        DefaultCase->Print(os << ' ');
+        DefaultCase->Print(stream << ' ');
     else
-        DefaultCase->Print(os << " -> ");
+        DefaultCase->Print(stream << " -> ");
     Exdent();
-    return Spacing(os << std::endl) << '}';
+    return Spacing(stream << std::endl) << '}';
 }
 
 NJS::SwitchExpression::SwitchExpression(
@@ -86,7 +86,7 @@ NJS::SwitchExpression::SwitchExpression(
 {
 }
 
-NJS::ValuePtr NJS::SwitchExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
+NJS::ValuePtr NJS::SwitchExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto default_dest = llvm::BasicBlock::Create(builder.GetContext(), "default", parent);
@@ -99,10 +99,10 @@ NJS::ValuePtr NJS::SwitchExpression::GenLLVM(Builder &builder, const TypePtr &ex
     TypePtr result_type;
     {
         builder.GetBuilder().SetInsertPoint(default_dest);
-        auto default_value = DefaultCase->GenLLVM(builder, expected);
+        auto default_value = DefaultCase->GenLLVM(builder, expected_type);
         if (default_value->IsLValue())
             default_value = RValue::Create(builder, default_value->GetType(), default_value->Load(Where));
-        result_type = expected ? expected : default_value->GetType();
+        result_type = expected_type ? expected_type : default_value->GetType();
         default_value = builder.CreateCast(Where, default_value, result_type);
         default_dest = builder.GetBuilder().GetInsertBlock();
         dest_blocks.emplace_back(default_dest, default_value);
@@ -137,30 +137,30 @@ NJS::ValuePtr NJS::SwitchExpression::GenLLVM(Builder &builder, const TypePtr &ex
     return RValue::Create(builder, result_type, phi_inst);
 }
 
-std::ostream &NJS::SwitchExpression::Print(std::ostream &os)
+std::ostream &NJS::SwitchExpression::Print(std::ostream &stream)
 {
-    Condition->Print(os << "switch (") << ") {" << std::endl;
+    Condition->Print(stream << "switch (") << ") {" << std::endl;
     Indent();
     for (const auto &[case_, entries_]: Cases)
     {
-        Spacing(os) << "case ";
+        Spacing(stream) << "case ";
         for (unsigned i = 0; i < entries_.size(); ++i)
         {
             if (i > 0)
-                os << ", ";
-            entries_[i]->Print(os);
+                stream << ", ";
+            entries_[i]->Print(stream);
         }
         if (const auto p = std::dynamic_pointer_cast<ScopeExpression>(case_))
-            case_->Print(os << ' ');
+            case_->Print(stream << ' ');
         else
-            case_->Print(os << " -> ");
-        os << std::endl;
+            case_->Print(stream << " -> ");
+        stream << std::endl;
     }
-    Spacing(os) << "default";
+    Spacing(stream) << "default";
     if (const auto p = std::dynamic_pointer_cast<ScopeExpression>(DefaultCase))
-        DefaultCase->Print(os << ' ');
+        DefaultCase->Print(stream << ' ');
     else
-        DefaultCase->Print(os << " -> ");
+        DefaultCase->Print(stream << " -> ");
     Exdent();
-    return Spacing(os << std::endl) << '}';
+    return Spacing(stream << std::endl) << '}';
 }
