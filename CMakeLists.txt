@@ -41,10 +41,4 @@ if (CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
             COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink=$<TARGET_FILE:NewJS>.dbg $<TARGET_FILE:NewJS>
     )
     install(FILES $<TARGET_FILE:NewJS>.dbg DESTINATION bin)
-    add_custom_command(TARGET StdNewJS POST_BUILD
-            COMMAND ${CMAKE_OBJCOPY} --only-keep-debug $<TARGET_FILE:StdNewJS> $<TARGET_FILE:StdNewJS>.dbg
-            COMMAND ${CMAKE_OBJCOPY} --strip-debug $<TARGET_FILE:StdNewJS>
-            COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink=$<TARGET_FILE:StdNewJS>.dbg $<TARGET_FILE:StdNewJS>
-    )
-    install(FILES $<TARGET_FILE:StdNewJS>.dbg DESTINATION lib)
 endif ()
