@@ -10,12 +10,14 @@ NJS::Parser::Parser(
     std::istream &stream,
     SourceLocation where,
     std::map<std::string, Macro> &macro_map,
+    const bool is_main,
     const bool is_import,
     std::set<std::filesystem::path> parsed_set)
     : m_TypeContext(type_context),
       m_TemplateContext(template_context),
       m_Stream(stream),
       m_MacroMap(macro_map),
+      m_IsMain(is_main),
       m_IsImport(is_import),
       m_ParsedSet(std::move(parsed_set)),
       m_Where(std::move(where))

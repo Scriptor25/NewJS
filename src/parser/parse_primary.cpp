@@ -133,7 +133,7 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
             }
 
             std::stringstream stream(source);
-            Parser parser(m_TypeContext, m_TemplateContext, stream, SourceLocation("<macro>"), m_MacroMap);
+            Parser parser(m_TypeContext, m_TemplateContext, stream, SourceLocation("<macro>"), m_MacroMap, m_IsMain);
             return parser.ParseExpression();
         }
 

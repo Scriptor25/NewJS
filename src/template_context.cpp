@@ -61,7 +61,7 @@ std::string NJS::TemplateContext::InflateFunctionTemplate(
     parent.m_TypeContext.PushTemplate(args_, args);
 
     std::stringstream stream('?' + source_, std::ios_base::in);
-    Parser parser(parent.m_TypeContext, parent.m_TemplateContext, stream, where_, parent.m_MacroMap);
+    Parser parser(parent.m_TypeContext, parent.m_TemplateContext, stream, where_, parent.m_MacroMap, parent.m_IsMain);
     const auto inflated = std::dynamic_pointer_cast<FunctionExpression>(parser.ParseFunctionExpression());
     FunctionStatement(
         inflated->Where,
@@ -99,7 +99,7 @@ NJS::TypePtr NJS::TemplateContext::InflateType(
     parent.m_TypeContext.PushTemplate(args_, args);
 
     std::stringstream stream(source_, std::ios_base::in);
-    Parser parser(parent.m_TypeContext, parent.m_TemplateContext, stream, where_, parent.m_MacroMap);
+    Parser parser(parent.m_TypeContext, parent.m_TemplateContext, stream, where_, parent.m_MacroMap, parent.m_IsMain);
     const auto inflated = parser.ParseType();
 
     parent.m_TypeContext.PopTemplate();

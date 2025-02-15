@@ -20,17 +20,30 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
         stream,
         SourceLocation(filepath.string()),
         m_MacroMap,
+        m_IsMain,
         true,
         m_ParsedSet);
 
     std::vector<StatementPtr> functions;
+    std::set<std::string> import_module_ids;
+
     parser.Parse(
         [&](const StatementPtr &ptr)
         {
+            if (m_IsMain)
+                if (const auto import_ = std::dynamic_pointer_cast<ImportStatement>(ptr))
+                {
+                    for (auto &import_module_id: import_->ImportModuleIDs)
+                        import_module_ids.emplace(import_module_id);
+                    const auto module_id = filepath.filename().replace_extension().string();
+                    import_module_ids.emplace(module_id);
+                    return;
+                }
+
             if (m_IsImport)
                 return;
 
-            const auto function = std::dynamic_pointer_cast<FunctionStatement>(ptr);
+            auto function = std::dynamic_pointer_cast<FunctionStatement>(ptr);
             if (!function)
                 return;
 
@@ -38,10 +51,10 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
                 return;
 
             function->Body = {};
-            functions.push_back(function);
+            functions.emplace_back(function);
         });
 
-    return std::make_shared<ImportStatement>(where, mapping, filepath, functions);
+    return std::make_shared<ImportStatement>(where, mapping, filepath, functions, import_module_ids);
 }
 
 NJS::ImportMapping NJS::Parser::ParseImportMapping()

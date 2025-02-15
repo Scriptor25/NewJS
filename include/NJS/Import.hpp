@@ -16,7 +16,7 @@ namespace NJS
             const std::string &module_id,
             const std::vector<StatementPtr> &functions) const;
 
-        bool All;
+        bool All{};
         std::string Name;
         std::map<std::string, std::string> NameMap;
     };

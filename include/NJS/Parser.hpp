@@ -31,6 +31,7 @@ namespace NJS
             std::istream &stream,
             SourceLocation where,
             std::map<std::string, Macro> &macro_map,
+            bool is_main,
             bool is_import = false,
             std::set<std::filesystem::path> parsed_set = {});
 
@@ -99,6 +100,7 @@ namespace NJS
 
         std::istream &m_Stream;
         std::map<std::string, Macro> &m_MacroMap;
+        bool m_IsMain;
         bool m_IsImport;
         std::set<std::filesystem::path> m_ParsedSet;
 

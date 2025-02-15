@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <set>
 #include <vector>
 #include <llvm/IR/Constant.h>
 #include <NJS/Import.hpp>
@@ -89,7 +90,10 @@ namespace NJS
             SourceLocation where,
             ImportMapping mapping,
             std::filesystem::path filepath,
-            std::vector<StatementPtr> functions);
+            std::vector<StatementPtr> functions,
+            std::set<std::string> import_module_ids);
+
+        static void CreateModuleCall(const Builder &builder, const std::string &module_id);
 
         void GenVoidLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
@@ -97,6 +101,7 @@ namespace NJS
         ImportMapping Mapping;
         std::filesystem::path Filepath;
         std::vector<StatementPtr> Functions;
+        std::set<std::string> ImportModuleIDs;
     };
 
     struct ReturnStatement final : Statement

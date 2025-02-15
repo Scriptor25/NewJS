@@ -26,7 +26,7 @@ NJS::ExpressionPtr NJS::Parser::ParseFormatExpression()
         source.erase(0, beg + 1);
 
         std::stringstream stream(source);
-        Parser parser(m_TypeContext, m_TemplateContext, stream, SourceLocation("<dynamic>"), m_MacroMap);
+        Parser parser(m_TypeContext, m_TemplateContext, stream, SourceLocation("<dynamic>"), m_MacroMap, m_IsMain);
         dynamics[index++] = parser.ParseExpression();
 
         source.erase(0, static_cast<unsigned>(stream.tellg()) - 1);

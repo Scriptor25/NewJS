@@ -46,7 +46,7 @@ static void parse(
 
     NJS::TemplateContext template_ctx(builder);
     std::map<std::string, NJS::Macro> macros;
-    NJS::Parser parser(type_ctx, template_ctx, input_stream, NJS::SourceLocation(input_path.string()), macros);
+    NJS::Parser parser(type_ctx, template_ctx, input_stream, NJS::SourceLocation(input_path.string()), macros, is_main);
 
     parser.Parse(
         [&](const NJS::StatementPtr &ptr)
