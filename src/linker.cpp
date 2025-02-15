@@ -35,8 +35,11 @@ void NJS::Linker::Link(std::unique_ptr<llvm::Module> &&module) const
 
     if (m_AppendNames)
     {
-        m_LLVMModule->setModuleIdentifier(m_LLVMModule->getModuleIdentifier() + '+' + module_id);
-        m_LLVMModule->setSourceFileName(m_LLVMModule->getSourceFileName() + '+' + source_name);
+        const auto my_module_id = m_LLVMModule->getModuleIdentifier();
+        const auto my_source_name = m_LLVMModule->getSourceFileName();
+
+        m_LLVMModule->setModuleIdentifier((my_module_id.empty() ? std::string() : my_module_id + '+') + module_id);
+        m_LLVMModule->setSourceFileName((my_source_name.empty() ? std::string() : my_source_name + '+') + source_name);
     }
 }
 
