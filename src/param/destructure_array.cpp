@@ -17,7 +17,7 @@ bool NJS::DestructureArray::RequireValue()
 void NJS::DestructureArray::CreateVars(
     Builder &builder,
     const SourceLocation &where,
-    const ValuePtr &value,
+    const ValuePtr value,
     const unsigned flags)
 {
     for (unsigned i = 0; i < Elements.size(); ++i)

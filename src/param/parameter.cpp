@@ -19,7 +19,7 @@ bool NJS::Parameter::RequireValue()
 void NJS::Parameter::CreateVars(
     Builder &builder,
     const SourceLocation &where,
-    const ValuePtr &value,
+    ValuePtr value,
     const unsigned flags)
 {
     const auto type = !Type
@@ -41,12 +41,19 @@ void NJS::Parameter::CreateVars(
 
     if (Type && Type->IsReference())
     {
+        if (value->GetType() != type)
+            Error(
+                where,
+                "type mismatch: cannot create reference with type {} from value of type {}",
+                type,
+                value->GetType());
         variable = LValue::Create(builder, type, value->GetPtr(where));
         return;
     }
 
     if (is_const)
     {
+        value = builder.CreateCast(where, value, type);
         variable = RValue::Create(builder, type, value->Load(where));
         return;
     }

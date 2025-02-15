@@ -17,7 +17,7 @@ bool NJS::DestructureObject::RequireValue()
 void NJS::DestructureObject::CreateVars(
     Builder &builder,
     const SourceLocation &where,
-    const ValuePtr &value,
+    const ValuePtr value,
     const unsigned flags)
 {
     for (const auto &[name_, element_]: Elements)

@@ -24,7 +24,7 @@ namespace NJS
         virtual void CreateVars(
             Builder &builder,
             const SourceLocation &where,
-            const ValuePtr &value,
+            ValuePtr value,
             unsigned flags);
 
         virtual std::ostream &Print(std::ostream &stream);
@@ -41,7 +41,7 @@ namespace NJS
         void CreateVars(
             Builder &builder,
             const SourceLocation &where,
-            const ValuePtr &value,
+            ValuePtr value,
             unsigned flags) override;
 
         std::ostream &Print(std::ostream &stream) override;
@@ -57,7 +57,7 @@ namespace NJS
         void CreateVars(
             Builder &builder,
             const SourceLocation &where,
-            const ValuePtr &value,
+            ValuePtr value,
             unsigned flags) override;
 
         std::ostream &Print(std::ostream &stream) override;
