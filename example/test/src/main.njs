@@ -7,13 +7,17 @@ extern function malloc(count: u64): void[]
 extern function realloc(block: void[], count: u64): void[]
 extern function free(block: void[])
 
+glfw.setErrorCallback(?(error_code: i32, description: i8[]) {
+    println($"[GLFW {error_code}] {description}")
+})
+
 if (!glfw.init()) {
     println("failed to initialize glfw")
     return 1
 }
 
 const window = glfw.createWindow(800, 600, "Test", 0, 0)
-if (!window) {
+if (window == 0) {
     println("failed to create window")
     return 1
 }

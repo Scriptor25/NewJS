@@ -17,6 +17,8 @@ extern function glfwSwapBuffers(window: GLFWwindow[])
 extern function glfwGetFramebufferSize(window: GLFWwindow[], width: i32[], height: i32[])
 extern function glfwSetKeyCallback(window: GLFWwindow[], callback: (GLFWwindow[], i32, i32, i32, i32))
 extern function glfwSetWindowShouldClose(window: GLFWwindow[], closed: i32)
+extern function glfwGetError(description: i8[][]): i32
+extern function glfwSetErrorCallback(callback: (i32, i32)): (i32, i32)
 
 function init(): i32 { return glfwInit() }
 function terminate() { glfwTerminate() }
@@ -30,3 +32,5 @@ function swapBuffers(window: GLFWwindow[]) { glfwSwapBuffers(window) }
 function getFramebufferSize(window: GLFWwindow[], width: i32[], height: i32[]) { glfwGetFramebufferSize(window, width, height) }
 function setKeyCallback(window: GLFWwindow[], callback: (GLFWwindow[], i32, i32, i32, i32)) { glfwSetKeyCallback(window, callback) }
 function setWindowShouldClose(window: GLFWwindow[], closed: i32) { glfwSetWindowShouldClose(window, closed) }
+function getError(description: i8[][]): i32 { return glfwGetError(description) }
+function setErrorCallback(callback: (i32, i32)): (i32, i32) { return glfwSetErrorCallback(callback) }
