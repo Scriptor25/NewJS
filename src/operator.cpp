@@ -6,7 +6,7 @@
 
 NJS::ValuePtr NJS::OperatorEQ(
     Builder &builder,
-    const SourceLocation &,
+    const SourceLocation &where,
     const TypePtr &type,
     llvm::Value *lhs,
     llvm::Value *rhs)
@@ -16,18 +16,26 @@ NJS::ValuePtr NJS::OperatorEQ(
             builder,
             builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateICmpEQ(lhs, rhs));
+
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateFCmpOEQ(lhs, rhs));
 
+    if (type->IsPointer())
+    {
+        const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
+        const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
+        return OperatorEQ(builder, where, builder.GetTypeContext().GetIntegerType(64, false), lhs_int, rhs_int);
+    }
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorNE(
     Builder &builder,
-    const SourceLocation &,
+    const SourceLocation &where,
     const TypePtr &type,
     llvm::Value *lhs,
     llvm::Value *rhs)
@@ -37,18 +45,26 @@ NJS::ValuePtr NJS::OperatorNE(
             builder,
             builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateICmpNE(lhs, rhs));
+
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateFCmpONE(lhs, rhs));
 
+    if (type->IsPointer())
+    {
+        const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
+        const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
+        return OperatorNE(builder, where, builder.GetTypeContext().GetIntegerType(64, false), lhs_int, rhs_int);
+    }
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorLT(
     Builder &builder,
-    const SourceLocation &,
+    const SourceLocation &where,
     const TypePtr &type,
     llvm::Value *lhs,
     llvm::Value *rhs)
@@ -60,18 +76,26 @@ NJS::ValuePtr NJS::OperatorLT(
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSLT(lhs, rhs)
                 : builder.GetBuilder().CreateICmpULT(lhs, rhs));
+
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateFCmpOLT(lhs, rhs));
 
+    if (type->IsPointer())
+    {
+        const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
+        const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
+        return OperatorLT(builder, where, builder.GetTypeContext().GetIntegerType(64, false), lhs_int, rhs_int);
+    }
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorLE(
     Builder &builder,
-    const SourceLocation &,
+    const SourceLocation &where,
     const TypePtr &type,
     llvm::Value *lhs,
     llvm::Value *rhs)
@@ -83,18 +107,26 @@ NJS::ValuePtr NJS::OperatorLE(
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSLE(lhs, rhs)
                 : builder.GetBuilder().CreateICmpULE(lhs, rhs));
+
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateFCmpOLE(lhs, rhs));
 
+    if (type->IsPointer())
+    {
+        const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
+        const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
+        return OperatorLE(builder, where, builder.GetTypeContext().GetIntegerType(64, false), lhs_int, rhs_int);
+    }
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorGT(
     Builder &builder,
-    const SourceLocation &,
+    const SourceLocation &where,
     const TypePtr &type,
     llvm::Value *lhs,
     llvm::Value *rhs)
@@ -106,18 +138,26 @@ NJS::ValuePtr NJS::OperatorGT(
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSGT(lhs, rhs)
                 : builder.GetBuilder().CreateICmpUGT(lhs, rhs));
+
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateFCmpOGT(lhs, rhs));
 
+    if (type->IsPointer())
+    {
+        const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
+        const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
+        return OperatorGT(builder, where, builder.GetTypeContext().GetIntegerType(64, false), lhs_int, rhs_int);
+    }
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorGE(
     Builder &builder,
-    const SourceLocation &,
+    const SourceLocation &where,
     const TypePtr &type,
     llvm::Value *lhs,
     llvm::Value *rhs)
@@ -129,18 +169,26 @@ NJS::ValuePtr NJS::OperatorGE(
             type->IsSigned()
                 ? builder.GetBuilder().CreateICmpSGE(lhs, rhs)
                 : builder.GetBuilder().CreateICmpUGE(lhs, rhs));
+
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateFCmpOGE(lhs, rhs));
 
+    if (type->IsPointer())
+    {
+        const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
+        const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
+        return OperatorGE(builder, where, builder.GetTypeContext().GetIntegerType(64, false), lhs_int, rhs_int);
+    }
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorLOr(
     Builder &builder,
-    const SourceLocation &,
+    const SourceLocation &where,
     const TypePtr &type,
     llvm::Value *lhs,
     llvm::Value *rhs)
@@ -151,12 +199,24 @@ NJS::ValuePtr NJS::OperatorLOr(
             builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateOr(lhs, rhs));
 
+    if (type->IsInteger())
+    {
+        const auto lhs_not_null = builder.GetBuilder().CreateIsNotNull(lhs);
+        const auto rhs_not_null = builder.GetBuilder().CreateIsNotNull(rhs);
+        return OperatorLOr(
+            builder,
+            where,
+            builder.GetTypeContext().GetIntegerType(1, true),
+            lhs_not_null,
+            rhs_not_null);
+    }
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorLXor(
     Builder &builder,
-    const SourceLocation &,
+    const SourceLocation &where,
     const TypePtr &type,
     llvm::Value *lhs,
     llvm::Value *rhs)
@@ -167,12 +227,24 @@ NJS::ValuePtr NJS::OperatorLXor(
             builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateXor(lhs, rhs));
 
+    if (type->IsInteger())
+    {
+        const auto lhs_not_null = builder.GetBuilder().CreateIsNotNull(lhs);
+        const auto rhs_not_null = builder.GetBuilder().CreateIsNotNull(rhs);
+        return OperatorLXor(
+            builder,
+            where,
+            builder.GetTypeContext().GetIntegerType(1, true),
+            lhs_not_null,
+            rhs_not_null);
+    }
+
     return {};
 }
 
 NJS::ValuePtr NJS::OperatorLAnd(
     Builder &builder,
-    const SourceLocation &,
+    const SourceLocation &where,
     const TypePtr &type,
     llvm::Value *lhs,
     llvm::Value *rhs)
@@ -182,6 +254,18 @@ NJS::ValuePtr NJS::OperatorLAnd(
             builder,
             builder.GetTypeContext().GetBoolType(),
             builder.GetBuilder().CreateAnd(lhs, rhs));
+
+    if (type->IsInteger())
+    {
+        const auto lhs_not_null = builder.GetBuilder().CreateIsNotNull(lhs);
+        const auto rhs_not_null = builder.GetBuilder().CreateIsNotNull(rhs);
+        return OperatorLAnd(
+            builder,
+            where,
+            builder.GetTypeContext().GetIntegerType(1, true),
+            lhs_not_null,
+            rhs_not_null);
+    }
 
     return {};
 }
@@ -360,13 +444,13 @@ NJS::ValuePtr NJS::OperatorPow(
     {
         const auto dst_ty = builder.GetTypeContext().GetFloatingPointType(type->GetBits())->GetLLVM(where, builder);
         const auto src_ty = type->GetLLVM(where, builder);
-        const auto l = type->IsSigned()
-                           ? builder.GetBuilder().CreateSIToFP(lhs, dst_ty)
-                           : builder.GetBuilder().CreateUIToFP(lhs, dst_ty);
-        const auto r = type->IsSigned()
-                           ? builder.GetBuilder().CreateSIToFP(rhs, dst_ty)
-                           : builder.GetBuilder().CreateUIToFP(rhs, dst_ty);
-        const auto val = builder.GetBuilder().CreateBinaryIntrinsic(llvm::Intrinsic::pow, l, r);
+        const auto lhs_fp = type->IsSigned()
+                                ? builder.GetBuilder().CreateSIToFP(lhs, dst_ty)
+                                : builder.GetBuilder().CreateUIToFP(lhs, dst_ty);
+        const auto rhs_fp = type->IsSigned()
+                                ? builder.GetBuilder().CreateSIToFP(rhs, dst_ty)
+                                : builder.GetBuilder().CreateUIToFP(rhs, dst_ty);
+        const auto val = builder.GetBuilder().CreateBinaryIntrinsic(llvm::Intrinsic::pow, lhs_fp, rhs_fp);
         return RValue::Create(
             builder,
             type,
@@ -429,6 +513,7 @@ NJS::ValuePtr NJS::OperatorInc(Builder &builder, const SourceLocation &where, co
             builder,
             type,
             builder.GetBuilder().CreateAdd(val, llvm::ConstantInt::get(ty, 1, type->IsSigned())));
+
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
@@ -449,6 +534,7 @@ NJS::ValuePtr NJS::OperatorDec(Builder &builder, const SourceLocation &where, co
             builder,
             type,
             builder.GetBuilder().CreateSub(val, llvm::ConstantInt::get(ty, 1, type->IsSigned())));
+
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
@@ -468,6 +554,7 @@ NJS::ValuePtr NJS::OperatorNeg(Builder &builder, const SourceLocation &where, co
             builder,
             type,
             builder.GetBuilder().CreateNeg(val));
+
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
@@ -486,7 +573,7 @@ NJS::ValuePtr NJS::OperatorLNot(Builder &builder, const SourceLocation &where, c
         return RValue::Create(
             builder,
             type,
-            builder.GetBuilder().CreateIsNotNull(val));
+            builder.GetBuilder().CreateIsNull(val));
 
     return {};
 }
