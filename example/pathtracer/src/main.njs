@@ -7,7 +7,7 @@ extern let std_err: FILE[]
 extern function fprintf(stream: FILE[], format: i8[], ...)
 extern function fflush(stream: FILE[])
 
-let image = ppm.begin("bin/out.ppm", 100, 100)
+let image = ppm.begin("./bin/out.ppm", 100, 100)
 for (let j: u32; j < image.height; ++j) {
     fprintf(std_err, "\r[%4d / %4d]", j + 1:u32, image.height)
     fflush(std_err)
@@ -25,3 +25,5 @@ for (let j: u32; j < image.height; ++j) {
     }
 }
 ppm.end(image)
+
+fprintf(std_err, "\rDone         \n")

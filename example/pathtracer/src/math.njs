@@ -1,3 +1,5 @@
+extern function sqrt(x: f64): f64
+
 type vec3 = f64[3]
 type point3 = vec3
 
