@@ -10,32 +10,35 @@ namespace NJS
     class TypeContext
     {
     public:
-        TypePtr& GetType(const std::string&);
+        TypePtr &GetType(const std::string_view &string);
 
-        NoTypePtr GetNoType(const std::string& = {});
+        NoTypePtr GetNoType(const std::string_view &name = {});
         VoidTypePtr GetVoidType();
-        IntTypePtr GetIntType(unsigned, bool);
-        FPTypePtr GetFPType(unsigned);
-        PtrTypePtr GetPointerType(const TypePtr&);
-        RefTypePtr GetRefType(const TypePtr&);
-        ArrayTypePtr GetArrayType(const TypePtr&, unsigned);
-        StructTypePtr GetStructType(const std::map<std::string, TypePtr>&);
-        TupleTypePtr GetTupleType(const std::vector<TypePtr>&);
-        FunctionTypePtr GetFunctionType(const TypePtr&, const std::vector<TypePtr>&, bool);
+        IntegerTypePtr GetIntegerType(unsigned bits, bool is_signed);
+        FloatingPointTypePtr GetFloatingPointType(unsigned bits);
+        PointerTypePtr GetPointerType(const TypePtr &element_type);
+        ReferenceTypePtr GetReferenceType(const TypePtr &element_type);
+        ArrayTypePtr GetArrayType(const TypePtr &element_type, unsigned count);
+        StructTypePtr GetStructType(const std::map<std::string, TypePtr> &element_type_map);
+        TupleTypePtr GetTupleType(const std::vector<TypePtr> &element_types);
+        FunctionTypePtr GetFunctionType(
+            const TypePtr &result_type,
+            const std::vector<TypePtr> &argument_types,
+            bool var_arg);
 
-        IntTypePtr GetBoolType();
-        IntTypePtr GetCharType();
-        PtrTypePtr GetStringType();
+        IntegerTypePtr GetBoolType();
+        IntegerTypePtr GetCharType();
+        PointerTypePtr GetStringType();
 
-        void PushTemplate(const std::vector<std::string>&, const std::vector<TypePtr>&);
+        void PushTemplate(const std::vector<std::string> &names, const std::vector<TypePtr> &types);
         void PopTemplate();
 
     private:
-        template <typename T, typename... Args>
-        std::shared_ptr<T> GetType(Args&&... args)
+        template<typename T, typename... Args>
+        std::shared_ptr<T> GetType(Args &&... args)
         {
             auto string = T::GenString(args...);
-            auto& ref = GetType(string);
+            auto &ref = GetType(string);
             if (!ref)
             {
                 const auto ptr = new T(*this, string, std::forward<Args>(args)...);

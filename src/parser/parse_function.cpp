@@ -1,88 +1,91 @@
 #include <NJS/AST.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/Param.hpp>
+#include <NJS/Parameter.hpp>
 #include <NJS/Parser.hpp>
 #include <NJS/TemplateContext.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::StmtPtr NJS::Parser::ParseFunctionStmt()
+NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_extern)
 {
-    const auto where = m_Token.Where;
+    const auto where = Expect("function").Where;
 
-    const auto fn = NextAt("extern")
-                        ? FnType_Extern
-                        : NextAt("operator")
-                        ? FnType_Operator
-                        : NextAt("template")
-                        ? FnType_Template
-                        : (Expect("function"), FnType_Function);
+    unsigned flags = FunctionFlags_None;
+    if (is_extern)
+        flags |= FunctionFlags_Extern;
 
-    std::vector<std::string> templ_args;
-    const auto parent_template = m_IsTemplate;
-    if (fn == FnType_Template)
+    std::vector<std::string> template_arguments;
+    const auto parent_is_template = m_IsTemplate;
+    if (NextAt("<"))
     {
+        flags |= FunctionFlags_Template;
+
         m_IsTemplate = true;
 
-        Expect("<");
-        while (!At(">") && !AtEof())
+        while (!At(">"))
         {
-            templ_args.push_back(Expect(TokenType_Symbol).StringValue);
+            template_arguments.push_back(Expect(TokenType_Symbol).StringValue);
 
             if (!At(">"))
                 Expect(",");
         }
         Expect(">");
 
-        if (!parent_template)
+        if (!parent_is_template)
             ResetBuffer();
     }
 
-    const auto name = (fn == FnType_Operator ? Expect(TokenType_Operator) : Expect(TokenType_Symbol)).StringValue;
+    std::string name;
+    if (NextAt("operator"))
+    {
+        flags |= FunctionFlags_Operator;
+        name = Expect(TokenType_Operator).StringValue;
+    }
+    else
+        name = Expect(TokenType_Symbol).StringValue;
 
-    std::vector<ParamPtr> args;
+    std::vector<ParameterPtr> parameters;
     Expect("(");
-    const auto vararg = ParseParamList(args, ")");
+    const auto is_var_arg = ParseParameterList(parameters, ")");
 
     TypePtr result_type;
     if (NextAt(":"))
         result_type = ParseType();
-    else result_type = m_TypeCtx.GetVoidType();
+    else
+        result_type = m_TypeContext.GetVoidType();
 
-    StmtPtr body;
-    if (fn != FnType_Extern && At("{"))
-        body = ParseScopeStmt();
+    StatementPtr body;
+    if (~flags & FunctionFlags_Extern && At("{"))
+        body = ParseScopeStatement();
 
-    if (fn == FnType_Template)
+    if (flags & FunctionFlags_Template)
     {
-        if (parent_template)
-            return {};
-
-        m_IsTemplate = false;
-        m_TemplateCtx.InsertFunction(name, templ_args, m_TemplateWhere, m_TemplateBuffer.str());
+        if (!parent_is_template)
+        {
+            m_IsTemplate = false;
+            m_TemplateContext.InsertFunction(name, template_arguments, m_TemplateWhere, m_TemplateBuffer.str());
+        }
+        return {};
     }
 
-    return std::make_shared<FunctionStmt>(where, false, fn, name, args, vararg, result_type, body);
+    return std::make_shared<FunctionStatement>(where, flags, name, parameters, is_var_arg, result_type, body);
 }
 
-NJS::ExprPtr NJS::Parser::ParseFunctionExpr()
+NJS::ExpressionPtr NJS::Parser::ParseFunctionExpression()
 {
     const auto where = Expect("?").Where;
 
-    std::vector<ParamPtr> args;
-    bool vararg = false;
+    std::vector<ParameterPtr> parameters;
+    auto is_var_arg = false;
     if (NextAt("("))
-        vararg = ParseParamList(args, ")");
+        is_var_arg = ParseParameterList(parameters, ")");
 
     TypePtr result_type;
     if (NextAt(":"))
         result_type = ParseType();
-    else result_type = m_TypeCtx.GetVoidType();
+    else
+        result_type = m_TypeContext.GetVoidType();
 
-    std::vector<TypePtr> arg_types;
-    for (const auto& arg : args)
-        arg_types.push_back(arg->Type);
+    const auto body = ParseScopeStatement();
 
-    const auto body = ParseScopeStmt();
-
-    return std::make_shared<FunctionExpr>(where, args, vararg, result_type, body);
+    return std::make_shared<FunctionExpression>(where, parameters, is_var_arg, result_type, body);
 }

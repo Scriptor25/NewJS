@@ -3,19 +3,19 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 
-NJS::ImportStmt::ImportStmt(
+NJS::ImportStatement::ImportStatement(
     SourceLocation where,
     ImportMapping mapping,
     std::filesystem::path filepath,
-    std::vector<StmtPtr> functions)
-    : Stmt(std::move(where)),
+    std::vector<StatementPtr> functions)
+    : Statement(std::move(where)),
       Mapping(std::move(mapping)),
       Filepath(std::move(filepath)),
       Functions(std::move(functions))
 {
 }
 
-void NJS::ImportStmt::GenVoidLLVM(Builder& builder) const
+void NJS::ImportStatement::GenVoidLLVM(Builder &builder) const
 {
     const auto module_id = Filepath.filename().replace_extension().string();
     if (module_id != "main")
@@ -29,7 +29,7 @@ void NJS::ImportStmt::GenVoidLLVM(Builder& builder) const
     Mapping.MapFunctions(builder, Where, module_id, Functions);
 }
 
-std::ostream& NJS::ImportStmt::Print(std::ostream& os)
+std::ostream &NJS::ImportStatement::Print(std::ostream &os)
 {
     return Mapping.Print(os << "import ") << " from " << '"' << Filepath.string() << '"';
 }

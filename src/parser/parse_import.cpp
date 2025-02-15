@@ -2,7 +2,7 @@
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::StmtPtr NJS::Parser::ParseImportStmt()
+NJS::StatementPtr NJS::Parser::ParseImportStatement()
 {
     const auto where = Expect("import").Where;
     const auto mapping = ParseImportMapping();
@@ -10,30 +10,38 @@ NJS::StmtPtr NJS::Parser::ParseImportStmt()
     const auto filename = Expect(TokenType_String).StringValue;
     const auto filepath = canonical(std::filesystem::path(where.Filename).parent_path() / filename);
 
-    if (m_Parsed.contains(filepath))
+    if (m_ParsedSet.contains(filepath))
         return {};
 
     std::ifstream stream(filepath);
-    Parser parser(m_TypeCtx, m_TemplateCtx, stream, SourceLocation(filepath.string()), m_Macros, true, m_Parsed);
+    Parser parser(
+        m_TypeContext,
+        m_TemplateContext,
+        stream,
+        SourceLocation(filepath.string()),
+        m_MacroMap,
+        true,
+        m_ParsedSet);
 
-    std::vector<StmtPtr> functions;
-    parser.Parse([&](const StmtPtr& ptr)
-    {
-        if (m_Imported)
-            return;
+    std::vector<StatementPtr> functions;
+    parser.Parse(
+        [&](const StatementPtr &ptr)
+        {
+            if (m_IsImport)
+                return;
 
-        const auto function = std::dynamic_pointer_cast<FunctionStmt>(ptr);
-        if (!function)
-            return;
+            const auto function = std::dynamic_pointer_cast<FunctionStatement>(ptr);
+            if (!function)
+                return;
 
-        if (function->Fn == FnType_Extern)
-            return;
+            if (function->Flags & FunctionFlags_Extern)
+                return;
 
-        function->Body = {};
-        functions.push_back(function);
-    });
+            function->Body = {};
+            functions.push_back(function);
+        });
 
-    return std::make_shared<ImportStmt>(where, mapping, filepath, functions);
+    return std::make_shared<ImportStatement>(where, mapping, filepath, functions);
 }
 
 NJS::ImportMapping NJS::Parser::ParseImportMapping()
@@ -64,7 +72,8 @@ NJS::ImportMapping NJS::Parser::ParseImportMapping()
 
         if (!At("}"))
             Expect(",");
-        else NextAt(",");
+        else
+            NextAt(",");
     }
     Expect("}");
 

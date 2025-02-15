@@ -10,57 +10,57 @@ namespace NJS
     public:
         virtual ~Value() = default;
 
-        [[nodiscard]] Builder& GetBuilder() const;
+        [[nodiscard]] Builder &GetBuilder() const;
         [[nodiscard]] TypePtr GetType() const;
 
-        [[nodiscard]] virtual bool IsL() const = 0;
-        [[nodiscard]] virtual llvm::Value* GetPtr(const SourceLocation&) const = 0;
+        [[nodiscard]] virtual bool IsLValue() const = 0;
+        [[nodiscard]] virtual llvm::Value *GetPtr(const SourceLocation &where) const = 0;
 
-        [[nodiscard]] virtual llvm::Value* Load(const SourceLocation&) const = 0;
-        virtual void Store(const SourceLocation&, llvm::Value*) const = 0;
-        virtual void Store(const SourceLocation&, ValuePtr) const = 0;
+        [[nodiscard]] virtual llvm::Value *Load(const SourceLocation &where) const = 0;
+        virtual void Store(const SourceLocation &where, llvm::Value *value, bool force = false) const = 0;
+        virtual void Store(const SourceLocation &where, ValuePtr value) const = 0;
 
     protected:
-        Value(Builder&, TypePtr);
+        Value(Builder &builder, TypePtr type);
 
     private:
-        Builder& m_Builder;
+        Builder &m_Builder;
         TypePtr m_Type;
     };
 
     class RValue final : public Value
     {
     public:
-        static ValuePtr Create(Builder&, const TypePtr&, llvm::Value*);
+        static ValuePtr Create(Builder &builder, const TypePtr &type, llvm::Value *value);
 
-        [[nodiscard]] bool IsL() const override;
-        [[nodiscard]] llvm::Value* GetPtr(const SourceLocation&) const override;
+        [[nodiscard]] bool IsLValue() const override;
+        [[nodiscard]] llvm::Value *GetPtr(const SourceLocation &where) const override;
 
-        [[nodiscard]] llvm::Value* Load(const SourceLocation&) const override;
-        void Store(const SourceLocation&, llvm::Value*) const override;
-        void Store(const SourceLocation&, ValuePtr) const override;
+        [[nodiscard]] llvm::Value *Load(const SourceLocation &where) const override;
+        void Store(const SourceLocation &where, llvm::Value *value, bool force = false) const override;
+        void Store(const SourceLocation &where, ValuePtr value) const override;
 
     private:
-        RValue(Builder&, TypePtr, llvm::Value*);
+        RValue(Builder &builder, TypePtr type, llvm::Value *value);
 
-        llvm::Value* m_Value;
+        llvm::Value *m_Value;
     };
 
     class LValue final : public Value
     {
     public:
-        static ValuePtr Create(Builder&, const TypePtr&, llvm::Value*);
+        static ValuePtr Create(Builder &builder, const TypePtr &type, llvm::Value *ptr);
 
-        [[nodiscard]] bool IsL() const override;
-        [[nodiscard]] llvm::Value* GetPtr(const SourceLocation&) const override;
+        [[nodiscard]] bool IsLValue() const override;
+        [[nodiscard]] llvm::Value *GetPtr(const SourceLocation &where) const override;
 
-        [[nodiscard]] llvm::Value* Load(const SourceLocation&) const override;
-        void Store(const SourceLocation&, llvm::Value*) const override;
-        void Store(const SourceLocation&, ValuePtr) const override;
+        [[nodiscard]] llvm::Value *Load(const SourceLocation &where) const override;
+        void Store(const SourceLocation &where, llvm::Value *value, bool force = false) const override;
+        void Store(const SourceLocation &where, ValuePtr value) const override;
 
     private:
-        LValue(Builder&, TypePtr, llvm::Value*);
+        LValue(Builder &builder, TypePtr type, llvm::Value *ptr);
 
-        llvm::Value* m_Ptr;
+        llvm::Value *m_Ptr;
     };
 }

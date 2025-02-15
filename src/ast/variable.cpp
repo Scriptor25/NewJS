@@ -1,29 +1,37 @@
 #include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
-#include <NJS/Param.hpp>
+#include <NJS/Parameter.hpp>
 
-NJS::VariableStmt::VariableStmt(
+NJS::VariableStatement::VariableStatement(
     SourceLocation where,
-    const bool is_const,
-    ParamPtr name,
-    ExprPtr value)
-    : Stmt(std::move(where)),
-      IsConst(is_const),
+    ParameterPtr name,
+    const unsigned flags,
+    ExpressionPtr value)
+    : Statement(std::move(where)),
       Name(std::move(name)),
+      Flags(flags),
       Value(std::move(value))
 {
 }
 
-void NJS::VariableStmt::GenVoidLLVM(Builder& builder) const
+void NJS::VariableStatement::GenVoidLLVM(Builder &builder) const
 {
     const auto value = Value ? Value->GenLLVM(builder, Name->Type) : nullptr;
-    Name->CreateVars(builder, Where, IsConst, value);
+    Name->CreateVars(builder, Where, value, Flags);
 }
 
-std::ostream& NJS::VariableStmt::Print(std::ostream& os)
+std::ostream &NJS::VariableStatement::Print(std::ostream &stream)
 {
-    Name->Print(os << (IsConst ? "const" : "let") << ' ');
-    if (Value) Value->Print(os << " = ");
-    return os;
+    if (Flags & ParameterFlags_Extern)
+        stream << "extern ";
+    if (Flags & ParameterFlags_Const)
+        stream << "const ";
+    else
+        stream << "let ";
+
+    Name->Print(stream);
+    if (Value)
+        Value->Print(stream << " = ");
+    return stream;
 }

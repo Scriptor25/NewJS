@@ -2,39 +2,98 @@
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::TypePtr NJS::max(TypeContext& ctx, const TypePtr& lhs, const TypePtr& rhs)
+NJS::TypePtr NJS::GetHigherOrderOf(TypeContext &type_context, const TypePtr &type_a, const TypePtr &type_b)
 {
-    if (lhs == rhs)
-        return lhs;
+    if (type_a == type_b)
+        return type_a;
 
-    if (lhs->IsInt())
+    if (type_a->IsInteger())
     {
-        if (rhs->IsInt())
-            return ctx.GetIntType(std::max(lhs->GetBits(), rhs->GetBits()), lhs->IsSigned() || rhs->IsSigned());
-        if (rhs->IsFP())
-            return ctx.GetFPType(std::max(lhs->GetBits(), rhs->GetBits()));
-        if (rhs->IsPtr())
-            return rhs;
+        if (type_b->IsInteger())
+            return type_context.GetIntegerType(
+                std::max(type_a->GetBits(), type_b->GetBits()),
+                type_a->IsSigned() || type_b->IsSigned());
+        if (type_b->IsFloatingPoint())
+            return type_context.GetFloatingPointType(std::max(type_a->GetBits(), type_b->GetBits()));
+        if (type_b->IsPointer())
+            return type_b;
     }
 
-    if (lhs->IsFP())
+    if (type_a->IsFloatingPoint())
     {
-        if (rhs->IsInt() || rhs->IsFP())
-            return ctx.GetFPType(std::max(lhs->GetBits(), rhs->GetBits()));
+        if (type_b->IsInteger() || type_b->IsFloatingPoint())
+            return type_context.GetFloatingPointType(std::max(type_a->GetBits(), type_b->GetBits()));
     }
 
-    if (lhs->IsPtr())
+    if (type_a->IsPointer())
     {
-        if (rhs->IsInt())
-            return lhs;
+        if (type_b->IsInteger())
+            return type_a;
     }
 
-    Error("no maximum type of {} and {}", lhs, rhs);
+    return {};
 }
 
-std::ostream& NJS::Type::Print(std::ostream& os) const
+unsigned NJS::GetAssignmentError(const TypePtr &parameter_type, const TypePtr &argument_type)
 {
-    return os << m_String;
+    if (argument_type == parameter_type)
+        return 0u;
+
+    if (argument_type->IsInteger())
+    {
+        if (parameter_type->IsInteger())
+        {
+            const auto same_signage = argument_type->IsSigned() == parameter_type->IsSigned();
+            const auto bits_difference = static_cast<int>(argument_type->GetBits())
+                                         - static_cast<int>(parameter_type->GetBits());
+            return (same_signage ? 1u : 0u) + abs(bits_difference);
+        }
+        if (parameter_type->IsFloatingPoint())
+        {
+            const auto bits_difference = static_cast<int>(argument_type->GetBits())
+                                         - static_cast<int>(parameter_type->GetBits());
+            return 3u * abs(bits_difference);
+        }
+        if (parameter_type->IsPointer())
+        {
+            const auto same_signage = !argument_type->IsSigned();
+            const auto bits_difference = static_cast<int>(argument_type->GetBits()) - 64;
+            return 2u * ((same_signage ? 1u : 0u) + abs(bits_difference));
+        }
+    }
+
+    if (argument_type->IsFloatingPoint())
+    {
+        if (parameter_type->IsFloatingPoint())
+        {
+            const auto bits_difference = static_cast<int>(argument_type->GetBits())
+                                         - static_cast<int>(parameter_type->GetBits());
+            return abs(bits_difference);
+        }
+        if (parameter_type->IsInteger())
+        {
+            const auto bits_difference = static_cast<int>(argument_type->GetBits())
+                                         - static_cast<int>(parameter_type->GetBits());
+            return 2u * abs(bits_difference);
+        }
+    }
+
+    if (argument_type->IsPointer())
+    {
+        if (parameter_type->IsPointer())
+        {
+            const auto parameter_is_void = parameter_type->GetElement()->IsVoid();
+            const auto argument_is_void = argument_type->GetElement()->IsVoid();
+            return parameter_is_void || argument_is_void ? 1u : ~0u;
+        }
+    }
+
+    return ~0u;
+}
+
+std::ostream &NJS::Type::Print(std::ostream &stream) const
+{
+    return stream << m_String;
 }
 
 std::string NJS::Type::GetString() const
@@ -59,22 +118,22 @@ bool NJS::Type::IsVoid() const
     return false;
 }
 
-bool NJS::Type::IsInt() const
+bool NJS::Type::IsInteger() const
 {
     return false;
 }
 
-bool NJS::Type::IsFP() const
+bool NJS::Type::IsFloatingPoint() const
 {
     return false;
 }
 
-bool NJS::Type::IsPtr() const
+bool NJS::Type::IsPointer() const
 {
     return false;
 }
 
-bool NJS::Type::IsRef() const
+bool NJS::Type::IsReference() const
 {
     return false;
 }
@@ -119,17 +178,20 @@ NJS::TypePtr NJS::Type::GetElement(unsigned) const
     Error("type {} does not support 'GetElement'", m_String);
 }
 
-NJS::MemberT NJS::Type::GetMember(const std::string&) const
+NJS::MemberT NJS::Type::GetMember(const std::string_view &) const
 {
     Error("type {} does not support 'GetMember'", m_String);
 }
 
-NJS::TypePtr NJS::Type::GetResult() const
+NJS::TypePtr NJS::Type::GetResultType() const
 {
-    Error("type {} does not support 'GetResult'", m_String);
+    Error("type {} does not support 'GetResultType'", m_String);
 }
 
-NJS::Type::Type(TypeContext& ctx, std::string string)
-    : m_Ctx(ctx), m_String(std::move(string)), m_LLVM(nullptr), m_Size(~0u)
+NJS::Type::Type(TypeContext &type_context, std::string_view string)
+    : m_TypeContext(type_context),
+      m_String(std::move(string)),
+      m_LLVM(nullptr),
+      m_Size(~0u)
 {
 }

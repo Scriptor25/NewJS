@@ -12,10 +12,11 @@
 
 namespace NJS
 {
-    typedef std::function<void(const StmtPtr&)> Callback;
+    using Consumer = std::function<void(const StatementPtr &)>;
 
     struct Macro
     {
+        std::vector<std::string> Parameters;
         std::string Source;
     };
 
@@ -25,15 +26,15 @@ namespace NJS
 
     public:
         Parser(
-            TypeContext&,
-            TemplateContext&,
-            std::istream&,
-            SourceLocation,
-            std::map<std::string, Macro>&,
-            bool = false,
-            std::set<std::filesystem::path>  = {});
+            TypeContext &type_context,
+            TemplateContext &template_context,
+            std::istream &stream,
+            SourceLocation where,
+            std::map<std::string, Macro> &macro_map,
+            bool is_import = false,
+            std::set<std::filesystem::path> parsed_set = {});
 
-        void Parse(const Callback&);
+        void Parse(const Consumer &consumer);
 
     private:
         void ResetBuffer();
@@ -41,63 +42,65 @@ namespace NJS
         int Get();
         void NewLine();
         void Escape();
-        Token& Next();
+        Token &Next();
 
         [[nodiscard]] bool AtEof() const;
-        [[nodiscard]] bool At(TokenType) const;
-        [[nodiscard]] bool At(const std::string&) const;
+        [[nodiscard]] bool At(TokenType type) const;
+        [[nodiscard]] bool At(const std::string_view &value) const;
 
-        bool NextAt(TokenType);
-        bool NextAt(const std::string&);
+        bool NextAt(TokenType type);
+        bool NextAt(const std::string_view &value);
 
         Token Skip();
 
-        Token Expect(TokenType);
-        Token Expect(const std::string&);
+        Token Expect(TokenType type);
+        Token Expect(const std::string_view &value);
 
         TypePtr ParseType();
         TypePtr ParseTupleType();
         TypePtr ParseStructType();
         TypePtr ParseFunctionType();
-        bool ParseTypeList(std::vector<TypePtr>&, const std::string&);
-        void ParseTypeMap(std::map<std::string, TypePtr>&, const std::string&);
+        bool ParseTypeList(std::vector<TypePtr> &types, const std::string_view &delim);
+        void ParseTypeMap(std::map<std::string, TypePtr> &types, const std::string_view &delim);
 
-        ParamPtr ParseParam();
-        bool ParseParamList(std::vector<ParamPtr>&, const std::string&);
-        void ParseParamMap(std::map<std::string, ParamPtr>&, const std::string&);
+        ParameterPtr ParseParameter();
+        bool ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string_view &delimiter);
+        void ParseParameterMap(std::map<std::string, ParameterPtr> &parameters, const std::string_view &delimiter);
 
+        void ParseMacro();
         void ParseTypeAlias();
 
-        StmtPtr ParseImportStmt();
+        StatementPtr ParseImportStatement();
         ImportMapping ParseImportMapping();
 
-        StmtPtr ParseStmt();
-        StmtPtr ParseVariableStmt();
-        StmtPtr ParseForStmt();
-        StmtPtr ParseFunctionStmt();
-        StmtPtr ParseIfStmt();
-        StmtPtr ParseReturnStmt();
-        StmtPtr ParseScopeStmt();
-        StmtPtr ParseSwitchStmt();
+        StatementPtr ParseStatement();
+        StatementPtr ParseVariableStatement(bool is_extern);
+        StatementPtr ParseForStatement();
+        StatementPtr ParseFunctionStatement(bool is_extern);
+        StatementPtr ParseIfStatement();
+        StatementPtr ParseReturnStatement();
+        StatementPtr ParseScopeStatement();
+        StatementPtr ParseSwitchStatement();
 
-        ExprPtr ParseExpr();
-        ExprPtr ParseBinaryExpr(ExprPtr lhs, unsigned min_pre);
-        ExprPtr ParseFormatExpr();
-        ExprPtr ParseFunctionExpr();
-        ExprPtr ParseOperandExpr();
-        ExprPtr ParsePrimaryExpr();
-        ExprPtr ParseScopeExpr();
-        ExprPtr ParseStructExpr();
-        ExprPtr ParseSwitchExpr();
-        ExprPtr ParseTupleExpr();
+        ExpressionPtr ParseExpression();
+        ExpressionPtr ParseBinaryExpression(ExpressionPtr lhs, unsigned min_pre);
+        ExpressionPtr ParseFormatExpression();
+        ExpressionPtr ParseFunctionExpression();
+        ExpressionPtr ParseOperandExpression();
+        ExpressionPtr ParsePrimaryExpression();
+        ExpressionPtr ParseScopeExpression();
+        ExpressionPtr ParseStructExpression();
+        ExpressionPtr ParseSwitchExpression();
+        ExpressionPtr ParseTupleExpression();
+        ExpressionPtr ParseUnaryExpression();
 
-        TypeContext& m_TypeCtx;
-        TemplateContext& m_TemplateCtx;
+        TypeContext &m_TypeContext;
+        TemplateContext &m_TemplateContext;
 
-        std::istream& m_Stream;
-        std::map<std::string, Macro>& m_Macros;
-        bool m_Imported;
-        std::set<std::filesystem::path> m_Parsed;
+        std::istream &m_Stream;
+        std::map<std::string, Macro> &m_MacroMap;
+        bool m_IsImport;
+        std::set<std::filesystem::path> m_ParsedSet;
 
         int m_C;
         SourceLocation m_Where;

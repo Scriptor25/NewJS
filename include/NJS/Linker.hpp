@@ -9,13 +9,13 @@ namespace NJS
     class Linker
     {
     public:
-        explicit Linker(const std::string&);
+        explicit Linker(const std::string_view &module_id);
 
-        [[nodiscard]] llvm::LLVMContext& LLVMContext() const;
-        [[nodiscard]] llvm::Module& LLVMModule() const;
+        [[nodiscard]] llvm::LLVMContext &LLVMContext() const;
+        [[nodiscard]] llvm::Module &LLVMModule() const;
 
-        void Link(std::unique_ptr<llvm::Module>&&) const;
-        void Emit(llvm::raw_pwrite_stream&, llvm::CodeGenFileType) const;
+        void Link(std::unique_ptr<llvm::Module> &&module) const;
+        void Emit(llvm::raw_pwrite_stream &output_stream, llvm::CodeGenFileType output_type) const;
 
     private:
         std::unique_ptr<llvm::LLVMContext> m_LLVMContext;

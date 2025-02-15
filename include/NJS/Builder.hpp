@@ -5,77 +5,121 @@
 #include <vector>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Module.h>
+#include <NJS/Info.hpp>
 #include <NJS/NJS.hpp>
-#include <NJS/Operator.hpp>
 
 namespace NJS
 {
     struct StackFrame
     {
-        [[nodiscard]] bool contains(const std::string&) const;
-        ValuePtr operator[](const std::string&) const;
-        ValuePtr& operator[](const std::string&);
+        [[nodiscard]] bool Contains(const std::string_view &) const;
+        ValuePtr operator[](const std::string_view &) const;
+        ValuePtr &operator[](const std::string_view &);
 
-        [[nodiscard]] std::string ValueName(const std::string&) const;
+        [[nodiscard]] std::string GetChildName(const std::string_view &) const;
 
-        std::string ParentName;
+        std::string Name;
         TypePtr ResultType;
         std::map<std::string, ValuePtr> Values;
     };
 
-    typedef std::pair<llvm::Value*, llvm::Value*> ValRef;
-    typedef std::pair<TypePtr, llvm::Value*> OpRef;
-    typedef std::function<ValuePtr(Builder&, const SourceLocation&, const TypePtr&, llvm::Value*, llvm::Value*)> BinaryOperator;
-    typedef std::function<UnaryResult(Builder&, const SourceLocation&, const ValuePtr&)> UnOp;
+    using UnaryOperator = std::function<ValuePtr(
+        Builder &builder,
+        const SourceLocation &where,
+        const ValuePtr &value)>;
+
+    using BinaryOperator = std::function<ValuePtr(
+        Builder &builder,
+        const SourceLocation &where,
+        const TypePtr &type,
+        llvm::Value *lhs,
+        llvm::Value *rhs)>;
 
     class Builder
     {
     public:
-        Builder(TypeContext&, llvm::LLVMContext&, const std::string&, bool);
+        Builder(TypeContext &ctx, llvm::LLVMContext &context, const std::string_view &module_id, bool is_main);
 
         void Close();
 
-        [[nodiscard]] TypeContext& GetCtx() const;
+        [[nodiscard]] TypeContext &GetTypeContext() const;
 
-        std::unique_ptr<llvm::Module>&& MoveModule();
+        std::unique_ptr<llvm::Module> &&MoveModule();
 
-        [[nodiscard]] llvm::LLVMContext& GetContext() const;
-        [[nodiscard]] llvm::Module& GetModule() const;
-        [[nodiscard]] llvm::IRBuilder<>& GetBuilder() const;
+        [[nodiscard]] llvm::LLVMContext &GetContext() const;
+        [[nodiscard]] llvm::Module &GetModule() const;
+        [[nodiscard]] llvm::IRBuilder<> &GetBuilder() const;
 
-        [[nodiscard]] llvm::Value* CreateAlloca(llvm::Type*, unsigned = 0) const;
-        ValuePtr CreateAlloca(const SourceLocation&, const TypePtr&, unsigned = 0);
-        ValuePtr CreateGlobal(const SourceLocation&, const std::string&, const TypePtr&, bool);
+        [[nodiscard]] llvm::Value *CreateAlloca(llvm::Type *type, unsigned size = 0) const;
+        ValuePtr CreateAlloca(const SourceLocation &where, const TypePtr &type, unsigned size = 0);
+        ValuePtr CreateGlobal(
+            const SourceLocation &where,
+            const std::string &name,
+            const TypePtr &type,
+            bool initialize);
 
-        ValuePtr CreateMember(const SourceLocation&, const ValuePtr&, const std::string&);
+        ValuePtr CreateMember(const SourceLocation &where, const ValuePtr &object, const std::string &name);
 
-        ValuePtr CreateSubscript(const SourceLocation&, const ValuePtr&, const ValuePtr&);
-        ValuePtr CreateSubscript(const SourceLocation&, const ValuePtr&, llvm::Value*);
-        ValuePtr CreateSubscript(const SourceLocation&, const ValuePtr&, unsigned);
+        ValuePtr CreateSubscript(const SourceLocation &where, ValuePtr array, const ValuePtr &index);
+        ValuePtr CreateSubscript(const SourceLocation &where, const ValuePtr &array, unsigned index);
 
-        ValuePtr CreateCast(const SourceLocation&, const ValuePtr&, const TypePtr&);
-        [[nodiscard]] llvm::Value* CreateCast(const SourceLocation&, ValRef, const TypePtr&, const TypePtr&) const;
+        ValuePtr CreateCast(const SourceLocation &where, const ValuePtr &value, const TypePtr &type);
+        [[nodiscard]] llvm::Value *CreateCast(
+            const SourceLocation &where,
+            const ValueInfo &ref,
+            const TypePtr &src_type,
+            const TypePtr &dst_type) const;
 
-        void GetFormat(llvm::FunctionCallee&) const;
+        void GetFormat(llvm::FunctionCallee &callee) const;
 
-        void Push(const std::string& = {}, const TypePtr& = {});
-        void Pop();
+        void StackPush(const std::string_view &name = {}, const TypePtr &result_type = {});
+        void StackPop();
 
-        [[nodiscard]] std::string GetName(bool, const std::string&) const;
+        [[nodiscard]] std::string GetName(bool absolute, const std::string_view &name) const;
 
-        void DefOp(const std::string&, const TypePtr&, const TypePtr&, llvm::Value*);
-        void DefOp(const std::string&, const TypePtr&, const TypePtr&, const TypePtr&, llvm::Value*);
-        OpRef GetOp(const std::string&, const TypePtr&);
-        OpRef GetOp(const std::string&, const TypePtr&, const TypePtr&);
+        void DefineFunction(const std::string_view &name, const FunctionTypePtr &type, llvm::Function *callee);
+        FunctionInfo GetFunction(const std::string_view &name, const FunctionTypePtr &type) const;
+        FunctionInfo FindFunction(const std::string_view &name, const std::vector<ValuePtr> &arguments) const;
 
-        ValuePtr& DefVar(const SourceLocation&, const std::string&);
-        ValuePtr& GetVar(const SourceLocation&, const std::string&);
+        void DefineOperator(
+            const std::string_view &name,
+            bool prefix,
+            const TypePtr &value_type,
+            const TypePtr &result_type,
+            llvm::Value *callee);
+        void DefineOperator(
+            const std::string_view &name,
+            const TypePtr &left_type,
+            const TypePtr &right_type,
+            const TypePtr &result_type,
+            llvm::Value *callee);
 
-        TypePtr& ResultType();
+        OperatorInfo<1> GetOperator(
+            const std::string_view &name,
+            bool prefix,
+            const TypePtr &value_type) const;
+        OperatorInfo<2> GetOperator(
+            const std::string_view &name,
+            const TypePtr &left_type,
+            const TypePtr &right_type) const;
+
+        OperatorInfo<1> FindOperator(
+            const std::string_view &name,
+            bool prefix,
+            const ValuePtr &value) const;
+        OperatorInfo<2> FindOperator(
+            const std::string_view &name,
+            const ValuePtr &left_operand,
+            const ValuePtr &right_operand) const;
+
+        ValuePtr &DefineVariable(const SourceLocation &where, const std::string_view &name);
+        ValuePtr &GetVariable(const SourceLocation &where, const std::string_view &name);
+
+        TypePtr &CurrentFunctionResultType();
 
     private:
-        TypeContext& m_Ctx;
-        llvm::LLVMContext& m_LLVMContext;
+        TypeContext &m_TypeContext;
+        llvm::LLVMContext &m_LLVMContext;
 
         std::string m_ModuleID;
         bool m_IsMain;
@@ -83,8 +127,10 @@ namespace NJS
         std::unique_ptr<llvm::Module> m_LLVMModule;
         std::unique_ptr<llvm::IRBuilder<>> m_LLVMBuilder;
 
-        std::map<std::string, std::map<TypePtr, OpRef>> m_UnOps;
-        std::map<std::string, std::map<TypePtr, std::map<TypePtr, OpRef>>> m_BinOps;
+        std::map<std::string, std::map<bool, std::map<TypePtr, OperatorInfo<1>>>> m_UnaryOperatorMap;
+        std::map<std::string, std::map<TypePtr, std::map<TypePtr, OperatorInfo<2>>>> m_BinaryOperatorMap;
+
+        std::map<std::string, std::vector<FunctionInfo>> m_FunctionMap;
 
         std::vector<StackFrame> m_Stack;
     };

@@ -2,21 +2,22 @@
 #include <NJS/Parser.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::ExprPtr NJS::Parser::ParseTupleExpr()
+NJS::ExpressionPtr NJS::Parser::ParseTupleExpression()
 {
     const auto where = Expect("[").Where;
 
-    std::vector<ExprPtr> elements;
+    std::vector<ExpressionPtr> elements;
     while (!At("]") && !AtEof())
     {
-        const auto value = ParseExpr();
+        const auto value = ParseExpression();
         elements.push_back(value);
 
         if (!At("]"))
             Expect(",");
-        else NextAt(",");
+        else
+            NextAt(",");
     }
     Expect("]");
 
-    return std::make_shared<TupleExpr>(where, elements);
+    return std::make_shared<TupleExpression>(where, elements);
 }

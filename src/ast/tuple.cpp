@@ -5,12 +5,13 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::TupleExpr::TupleExpr(SourceLocation where, std::vector<ExprPtr> elements)
-    : Expr(std::move(where)), Elements(std::move(elements))
+NJS::TupleExpression::TupleExpression(SourceLocation where, std::vector<ExpressionPtr> elements)
+    : Expression(std::move(where)),
+      Elements(std::move(elements))
 {
 }
 
-NJS::ValuePtr NJS::TupleExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
+NJS::ValuePtr NJS::TupleExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
     std::vector<ValuePtr> elements;
     std::vector<TypePtr> element_types;
@@ -29,10 +30,11 @@ NJS::ValuePtr NJS::TupleExpr::GenLLVM(Builder& builder, const TypePtr& expected)
     if (expected)
         type = expected;
     else if (is_array)
-        type = builder.GetCtx().GetArrayType(element_types.front(), element_types.size());
-    else type = builder.GetCtx().GetTupleType(element_types);
+        type = builder.GetTypeContext().GetArrayType(element_types.front(), element_types.size());
+    else
+        type = builder.GetTypeContext().GetTupleType(element_types);
 
-    llvm::Value* value = llvm::Constant::getNullValue(type->GetLLVM(Where, builder));
+    llvm::Value *value = llvm::Constant::getNullValue(type->GetLLVM(Where, builder));
 
     for (unsigned i = 0; i < elements.size(); ++i)
     {
@@ -43,13 +45,14 @@ NJS::ValuePtr NJS::TupleExpr::GenLLVM(Builder& builder, const TypePtr& expected)
     return RValue::Create(builder, type, value);
 }
 
-std::ostream& NJS::TupleExpr::Print(std::ostream& os)
+std::ostream &NJS::TupleExpression::Print(std::ostream &os)
 {
-    if (Elements.empty()) return os << "[]";
+    if (Elements.empty())
+        return os << "[]";
 
     os << '[' << std::endl;
     Indent();
-    for (const auto& entry : Elements)
+    for (const auto &entry: Elements)
         entry->Print(Spacing(os)) << ',' << std::endl;
     Exdent();
     return Spacing(os) << ']';

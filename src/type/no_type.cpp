@@ -2,27 +2,28 @@
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
-std::string NJS::NoType::GenString(const std::string& name)
+std::string NJS::NoType::GenString(const std::string_view &name)
 {
-    return name;
+    return std::string(name);
 }
 
-NJS::TypePtr NJS::NoType::GetResult() const
+NJS::TypePtr NJS::NoType::GetResultType() const
 {
-    return m_Ctx.GetNoType(m_Name + "::RESULT");
+    return m_TypeContext.GetNoType(m_Name + "::RESULT");
 }
 
-void NJS::NoType::TypeInfo(const SourceLocation&, Builder&, std::vector<llvm::Value*>&) const
+void NJS::NoType::TypeInfo(const SourceLocation &, Builder &, std::vector<llvm::Value *> &) const
 {
     Error("the no-type does not provide type information");
 }
 
-NJS::NoType::NoType(TypeContext& ctx, std::string string, std::string name)
-    : Type(ctx, std::move(string)), m_Name(std::move(name))
+NJS::NoType::NoType(TypeContext &type_context, std::string_view string, std::string_view name)
+    : Type(type_context, std::move(string)),
+      m_Name(std::move(name))
 {
 }
 
-llvm::Type* NJS::NoType::GenLLVM(const SourceLocation& where, const Builder&) const
+llvm::Type *NJS::NoType::GenLLVM(const SourceLocation &where, const Builder &) const
 {
     Error(where, "the no-type does not have a llvm representation");
 }

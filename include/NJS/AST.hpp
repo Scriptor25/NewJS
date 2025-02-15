@@ -11,359 +11,400 @@
 
 namespace NJS
 {
-    enum FnType
+    enum FunctionFlags
     {
-        FnType_Function,
-        FnType_Extern,
-        FnType_Operator,
-        FnType_Template,
+        FunctionFlags_None = 0,
+        FunctionFlags_Extern = 1,
+        FunctionFlags_Operator = 2,
+        FunctionFlags_Template = 4,
+        FunctionFlags_Absolute = 8,
     };
 
-    struct Stmt
+    struct Statement
     {
-        explicit Stmt(SourceLocation);
+        explicit Statement(SourceLocation where);
 
-        virtual ~Stmt() = default;
-        virtual void GenVoidLLVM(Builder&) const = 0;
-        virtual std::ostream& Print(std::ostream&) = 0;
+        virtual ~Statement() = default;
+        virtual void GenVoidLLVM(Builder &builder) const = 0;
+        virtual std::ostream &Print(std::ostream &stream) = 0;
 
         SourceLocation Where;
     };
 
-    struct ForStmt final : Stmt
+    struct ForStatement final : Statement
     {
-        ForStmt(SourceLocation, StmtPtr, ExprPtr, StmtPtr, StmtPtr);
+        ForStatement(
+            SourceLocation where,
+            StatementPtr initializer,
+            ExpressionPtr condition,
+            StatementPtr loop,
+            StatementPtr body);
 
-        void GenVoidLLVM(Builder&) const override;
-        std::ostream& Print(std::ostream&) override;
+        void GenVoidLLVM(Builder &builder) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        StmtPtr Init;
-        ExprPtr Condition;
-        StmtPtr Loop;
-        StmtPtr Body;
+        StatementPtr Initializer;
+        ExpressionPtr Condition;
+        StatementPtr Loop;
+        StatementPtr Body;
     };
 
-    struct FunctionStmt final : Stmt
+    struct FunctionStatement final : Statement
     {
-        FunctionStmt(SourceLocation, bool, FnType, std::string, std::vector<ParamPtr>, bool, TypePtr, StmtPtr);
+        FunctionStatement(
+            SourceLocation where,
+            unsigned flags,
+            std::string name,
+            std::vector<ParameterPtr> parameters,
+            bool is_var_arg,
+            TypePtr result_type,
+            StatementPtr body);
 
-        void GenVoidLLVM(Builder&) const override;
-        std::ostream& Print(std::ostream&) override;
+        void GenVoidLLVM(Builder &builder) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        bool Absolute;
-        FnType Fn;
+        unsigned Flags;
         std::string Name;
-        std::vector<ParamPtr> Args;
-        bool VarArg;
+        std::vector<ParameterPtr> Parameters;
+        bool IsVarArg;
         TypePtr ResultType;
-        StmtPtr Body;
+        StatementPtr Body;
     };
 
-    struct IfStmt final : Stmt
+    struct IfStatement final : Statement
     {
-        IfStmt(SourceLocation, ExprPtr, StmtPtr, StmtPtr);
+        IfStatement(SourceLocation where, ExpressionPtr condition, StatementPtr then_body, StatementPtr else_body);
 
-        void GenVoidLLVM(Builder&) const override;
-        std::ostream& Print(std::ostream&) override;
+        void GenVoidLLVM(Builder &builder) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        ExprPtr Condition;
-        StmtPtr Then;
-        StmtPtr Else;
+        ExpressionPtr Condition;
+        StatementPtr ThenBody;
+        StatementPtr ElseBody;
     };
 
-    struct ImportStmt final : Stmt
+    struct ImportStatement final : Statement
     {
-        ImportStmt(SourceLocation, ImportMapping, std::filesystem::path, std::vector<StmtPtr>);
+        ImportStatement(
+            SourceLocation where,
+            ImportMapping mapping,
+            std::filesystem::path filepath,
+            std::vector<StatementPtr> functions);
 
-        void GenVoidLLVM(Builder&) const override;
-        std::ostream& Print(std::ostream&) override;
+        void GenVoidLLVM(Builder &builder) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
         ImportMapping Mapping;
         std::filesystem::path Filepath;
-        std::vector<StmtPtr> Functions;
+        std::vector<StatementPtr> Functions;
     };
 
-    struct ReturnStmt final : Stmt
+    struct ReturnStatement final : Statement
     {
-        ReturnStmt(SourceLocation, ExprPtr);
+        ReturnStatement(SourceLocation where, ExpressionPtr value);
 
-        void GenVoidLLVM(Builder&) const override;
-        std::ostream& Print(std::ostream&) override;
+        void GenVoidLLVM(Builder &builder) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        ExprPtr Value;
+        ExpressionPtr Value;
     };
 
-    struct ScopeStmt final : Stmt
+    struct ScopeStatement final : Statement
     {
-        ScopeStmt(SourceLocation, std::vector<StmtPtr>);
+        ScopeStatement(SourceLocation where, std::vector<StatementPtr> children);
 
-        void GenVoidLLVM(Builder&) const override;
-        std::ostream& Print(std::ostream&) override;
+        void GenVoidLLVM(Builder &builder) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        std::vector<StmtPtr> Children;
+        std::vector<StatementPtr> Children;
     };
 
-    struct SwitchStmt final : Stmt
+    struct SwitchStatement final : Statement
     {
-        SwitchStmt(SourceLocation, ExprPtr, std::map<StmtPtr, std::vector<ExprPtr>>, StmtPtr);
+        SwitchStatement(
+            SourceLocation where,
+            ExpressionPtr condition,
+            std::map<StatementPtr, std::vector<ExpressionPtr>> cases,
+            StatementPtr default_case);
 
-        void GenVoidLLVM(Builder&) const override;
-        std::ostream& Print(std::ostream&) override;
+        void GenVoidLLVM(Builder &builder) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        ExprPtr Condition;
-        std::map<StmtPtr, std::vector<ExprPtr>> Cases;
-        StmtPtr DefaultCase;
+        ExpressionPtr Condition;
+        std::map<StatementPtr, std::vector<ExpressionPtr>> Cases;
+        StatementPtr DefaultCase;
     };
 
-    struct VariableStmt final : Stmt
+    struct VariableStatement final : Statement
     {
-        VariableStmt(SourceLocation, bool, ParamPtr, ExprPtr);
+        VariableStatement(SourceLocation where, ParameterPtr name, unsigned flags, ExpressionPtr value);
 
-        void GenVoidLLVM(Builder&) const override;
-        std::ostream& Print(std::ostream&) override;
+        void GenVoidLLVM(Builder &builder) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        bool IsConst;
-        ParamPtr Name;
-        ExprPtr Value;
+        ParameterPtr Name;
+        unsigned Flags;
+        ExpressionPtr Value;
     };
 
-    struct Expr : Stmt
+    struct Expression : Statement
     {
-        explicit Expr(SourceLocation);
+        explicit Expression(SourceLocation where);
 
-        void GenVoidLLVM(Builder&) const override;
-        virtual ValuePtr GenLLVM(Builder&, const TypePtr&) const = 0;
+        void GenVoidLLVM(Builder &builder) const override;
+        virtual ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const = 0;
     };
 
-    struct BinaryExpr final : Expr
+    struct BinaryExpression final : Expression
     {
-        BinaryExpr(SourceLocation, std::string, ExprPtr, ExprPtr);
+        BinaryExpression(
+            SourceLocation where,
+            std::string_view operator_,
+            ExpressionPtr left_operand,
+            ExpressionPtr right_operand);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
         std::string Operator;
-        ExprPtr LeftOperand;
-        ExprPtr RightOperand;
+        ExpressionPtr LeftOperand;
+        ExpressionPtr RightOperand;
     };
 
-    struct BoolExpr final : Expr
+    struct BooleanExpression final : Expression
     {
-        BoolExpr(SourceLocation, bool);
+        BooleanExpression(SourceLocation where, bool value);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
         bool Value;
     };
 
-    struct CallExpr final : Expr
+    struct CallExpression final : Expression
     {
-        CallExpr(SourceLocation, ExprPtr, std::vector<ExprPtr>);
+        CallExpression(SourceLocation where, ExpressionPtr callee, std::vector<ExpressionPtr> arguments);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        ExprPtr Callee;
-        std::vector<ExprPtr> Args;
+        ExpressionPtr Callee;
+        std::vector<ExpressionPtr> Arguments;
     };
 
-    struct CastExpr final : Expr
+    struct CastExpression final : Expression
     {
-        CastExpr(SourceLocation, TypePtr, ExprPtr);
+        CastExpression(SourceLocation where, TypePtr type, ExpressionPtr operand);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
         TypePtr Type;
-        ExprPtr Value;
+        ExpressionPtr Operand;
     };
 
-    struct CharExpr final : Expr
+    struct CharacterExpression final : Expression
     {
-        CharExpr(SourceLocation, char);
+        CharacterExpression(SourceLocation where, char value);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
         char Value;
     };
 
-    struct FormatExpr final : Expr
+    struct FormatExpression final : Expression
     {
-        FormatExpr(SourceLocation, unsigned, std::map<unsigned, std::string>, std::map<unsigned, ExprPtr>);
+        FormatExpression(
+            SourceLocation where,
+            unsigned count,
+            std::map<unsigned, std::string> static_expressions,
+            std::map<unsigned, ExpressionPtr> dynamic_expressions);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
         unsigned Count;
-        std::map<unsigned, std::string> Statics;
-        std::map<unsigned, ExprPtr> Dynamics;
+        std::map<unsigned, std::string> StaticExpressions;
+        std::map<unsigned, ExpressionPtr> DynamicExpressions;
     };
 
-    struct FPExpr final : Expr
+    struct FloatingPointExpression final : Expression
     {
-        FPExpr(SourceLocation, TypePtr, double);
+        FloatingPointExpression(SourceLocation where, TypePtr type, double value);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
         TypePtr Type;
         double Value;
     };
 
-    struct FunctionExpr final : Expr
+    struct FunctionExpression final : Expression
     {
-        FunctionExpr(SourceLocation, std::vector<ParamPtr>, bool, TypePtr, StmtPtr);
+        FunctionExpression(
+            SourceLocation where,
+            std::vector<ParameterPtr> parameters,
+            bool is_var_arg,
+            TypePtr result_type,
+            StatementPtr body);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        std::vector<ParamPtr> Args;
-        bool VarArg;
+        std::vector<ParameterPtr> Parameters;
+        bool IsVarArg;
         TypePtr ResultType;
-        StmtPtr Body;
+        StatementPtr Body;
     };
 
-    struct IntExpr final : Expr
+    struct IntegerExpression final : Expression
     {
-        IntExpr(SourceLocation, TypePtr, uint64_t);
+        IntegerExpression(SourceLocation where, TypePtr type, uint64_t value);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
         TypePtr Type;
         uint64_t Value;
     };
 
-    struct MemberExpr final : Expr
+    struct MemberExpression final : Expression
     {
-        MemberExpr(SourceLocation, ExprPtr, std::string);
+        MemberExpression(SourceLocation where, ExpressionPtr object, std::string_view member);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        ExprPtr Object;
+        ExpressionPtr Object;
         std::string Member;
     };
 
-    struct ScopeExpr final : Expr
+    struct ScopeExpression final : Expression
     {
-        ScopeExpr(SourceLocation, std::vector<StmtPtr>, ExprPtr);
+        ScopeExpression(SourceLocation where, std::vector<StatementPtr> children, ExpressionPtr last);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        std::vector<StmtPtr> Children;
-        ExprPtr Last;
+        std::vector<StatementPtr> Children;
+        ExpressionPtr Last;
     };
 
-    struct SizeOfExpr final : Expr
+    struct SizeOfExpression final : Expression
     {
-        SizeOfExpr(SourceLocation, ExprPtr);
+        SizeOfExpression(SourceLocation where, ExpressionPtr operand);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        ExprPtr Operand;
+        ExpressionPtr Operand;
     };
 
-    struct StringExpr final : Expr
+    struct StringExpression final : Expression
     {
-        StringExpr(SourceLocation, std::string);
+        static llvm::Constant *GetString(const Builder &builder, const std::string_view &value);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        StringExpression(SourceLocation where, std::string_view value);
+
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
         std::string Value;
-
-        static llvm::Constant* GetString(const Builder&, const std::string&);
     };
 
-    struct StructExpr final : Expr
+    struct StructExpression final : Expression
     {
-        StructExpr(SourceLocation, std::map<std::string, ExprPtr>);
+        StructExpression(SourceLocation where, std::map<std::string, ExpressionPtr> elements);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        std::map<std::string, ExprPtr> Elements;
+        std::map<std::string, ExpressionPtr> Elements;
     };
 
-    struct SubscriptExpr final : Expr
+    struct SubscriptExpression final : Expression
     {
-        SubscriptExpr(SourceLocation, ExprPtr, ExprPtr);
+        SubscriptExpression(SourceLocation where, ExpressionPtr array, ExpressionPtr index);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        ExprPtr Array;
-        ExprPtr Index;
+        ExpressionPtr Array;
+        ExpressionPtr Index;
     };
 
-    struct SwitchExpr final : Expr
+    struct SwitchExpression final : Expression
     {
-        SwitchExpr(SourceLocation, ExprPtr, std::map<ExprPtr, std::vector<ExprPtr>>, ExprPtr);
+        SwitchExpression(
+            SourceLocation where,
+            ExpressionPtr condition,
+            std::map<ExpressionPtr, std::vector<ExpressionPtr>> cases,
+            ExpressionPtr default_case);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        ExprPtr Condition;
-        std::map<ExprPtr, std::vector<ExprPtr>> Cases;
-        ExprPtr DefaultCase;
+        ExpressionPtr Condition;
+        std::map<ExpressionPtr, std::vector<ExpressionPtr>> Cases;
+        ExpressionPtr DefaultCase;
     };
 
-    struct SymbolExpr final : Expr
+    struct SymbolExpression final : Expression
     {
-        SymbolExpr(SourceLocation, std::string);
+        SymbolExpression(SourceLocation where, std::string_view name);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
         std::string Name;
     };
 
-    struct TernaryExpr final : Expr
+    struct TernaryExpression final : Expression
     {
-        TernaryExpr(SourceLocation, ExprPtr, ExprPtr, ExprPtr);
+        TernaryExpression(
+            SourceLocation where,
+            ExpressionPtr condition,
+            ExpressionPtr then_body,
+            ExpressionPtr else_body);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        ExprPtr Condition;
-        ExprPtr Then;
-        ExprPtr Else;
+        ExpressionPtr Condition;
+        ExpressionPtr ThenBody;
+        ExpressionPtr ElseBody;
     };
 
-    struct TupleExpr final : Expr
+    struct TupleExpression final : Expression
     {
-        TupleExpr(SourceLocation, std::vector<ExprPtr>);
+        TupleExpression(SourceLocation where, std::vector<ExpressionPtr> elements);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        std::vector<ExprPtr> Elements;
+        std::vector<ExpressionPtr> Elements;
     };
 
-    struct TypeOfExpr final : Expr
+    struct TypeOfExpression final : Expression
     {
-        TypeOfExpr(SourceLocation, ExprPtr);
+        TypeOfExpression(SourceLocation where, ExpressionPtr operand);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        ExprPtr Operand;
+        ExpressionPtr Operand;
     };
 
-    struct UnaryExpr final : Expr
+    struct UnaryExpression final : Expression
     {
-        UnaryExpr(SourceLocation, std::string, bool, ExprPtr);
+        UnaryExpression(SourceLocation where, std::string_view operator_, bool prefix, ExpressionPtr operand);
 
-        ValuePtr GenLLVM(Builder&, const TypePtr&) const override;
-        std::ostream& Print(std::ostream&) override;
+        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        std::ostream &Print(std::ostream &stream) override;
 
-        std::string Op;
-        bool OpRight;
-        ExprPtr Operand;
+        std::string Operator;
+        bool Prefix;
+        ExpressionPtr Operand;
     };
 }

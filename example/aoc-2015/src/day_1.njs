@@ -1,7 +1,7 @@
 import { part_err } from "./main.njs"
 
-extern strlen(str: i8[]): u64
-extern println(str: i8[])
+extern function strlen(str: i8[]): u64
+extern function println(str: i8[])
 
 function part_1(input: i8[]): u64 {
     let level: i64
@@ -28,6 +28,6 @@ function part_2(input: i8[]): u64 {
     return 0
 }
 
-function day(part: u64): (i8[]): u64 {
+function day(part: u64): (i8[]) => u64 {
     return part == 1 ? part_1 : part == 2 ? part_2 : part_err
 }

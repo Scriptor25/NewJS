@@ -8,29 +8,29 @@
 #include <NJS/Error.hpp>
 #include <NJS/Linker.hpp>
 
-NJS::Linker::Linker(const std::string& module_id)
+NJS::Linker::Linker(const std::string_view &module_id)
 {
     m_LLVMContext = std::make_unique<llvm::LLVMContext>();
     m_LLVMModule = std::make_unique<llvm::Module>(module_id, *m_LLVMContext);
 }
 
-llvm::LLVMContext& NJS::Linker::LLVMContext() const
+llvm::LLVMContext &NJS::Linker::LLVMContext() const
 {
     return *m_LLVMContext;
 }
 
-llvm::Module& NJS::Linker::LLVMModule() const
+llvm::Module &NJS::Linker::LLVMModule() const
 {
     return *m_LLVMModule;
 }
 
-void NJS::Linker::Link(std::unique_ptr<llvm::Module>&& module) const
+void NJS::Linker::Link(std::unique_ptr<llvm::Module> &&module) const
 {
     if (llvm::Linker::linkModules(LLVMModule(), std::move(module)))
         Error("failed to link modules");
 }
 
-void NJS::Linker::Emit(llvm::raw_pwrite_stream& output_stream, const llvm::CodeGenFileType output_type) const
+void NJS::Linker::Emit(llvm::raw_pwrite_stream &output_stream, const llvm::CodeGenFileType output_type) const
 {
     if (output_type == llvm::CodeGenFileType::Null)
     {

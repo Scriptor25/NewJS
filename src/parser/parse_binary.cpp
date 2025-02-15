@@ -2,7 +2,7 @@
 #include <NJS/Error.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::ExprPtr NJS::Parser::ParseBinaryExpr(ExprPtr lhs, const unsigned min_pre)
+NJS::ExpressionPtr NJS::Parser::ParseBinaryExpression(ExpressionPtr lhs, const unsigned min_pre)
 {
     static const std::map<std::string, unsigned> OPS
     {
@@ -54,19 +54,19 @@ NJS::ExprPtr NJS::Parser::ParseBinaryExpr(ExprPtr lhs, const unsigned min_pre)
         const auto op_pre = get_pre();
         const auto [where_, type_, op_, int_, fp_] = Skip();
 
-        auto rhs = ParseOperandExpr();
+        auto rhs = ParseUnaryExpression();
         while (At(TokenType_Operator) && has_pre() && (get_pre() > op_pre || (!get_pre() && get_pre() >= op_pre)))
-            rhs = ParseBinaryExpr(rhs, op_pre + (get_pre() > op_pre ? 1 : 0));
+            rhs = ParseBinaryExpression(rhs, op_pre + (get_pre() > op_pre ? 1 : 0));
 
         if (op_ == "?")
         {
             Expect(":");
-            const auto else_ = ParseExpr();
-            lhs = std::make_shared<TernaryExpr>(where_, lhs, rhs, else_);
+            const auto else_ = ParseExpression();
+            lhs = std::make_shared<TernaryExpression>(where_, lhs, rhs, else_);
             continue;
         }
 
-        lhs = std::make_shared<BinaryExpr>(where_, op_, lhs, rhs);
+        lhs = std::make_shared<BinaryExpression>(where_, op_, lhs, rhs);
     }
 
     return lhs;

@@ -31,13 +31,13 @@ namespace NJS
 
 namespace std
 {
-    template <>
-    struct formatter<NJS::TokenType> : formatter<string>
+    template<>
+    struct formatter<NJS::TokenType> final : formatter<string>
     {
-        template <typename FormatContext>
-        auto format(const NJS::TokenType type, FormatContext& ctx) const
+        template<typename FormatContext>
+        auto format(const NJS::TokenType type, FormatContext &ctx) const
         {
-            static map<NJS::TokenType, const char*> names
+            static map<NJS::TokenType, const char *> names
             {
                 {NJS::TokenType_EOF, "EOF"},
                 {NJS::TokenType_Int, "Int"},
@@ -52,11 +52,11 @@ namespace std
         }
     };
 
-    template <>
-    struct formatter<NJS::Token> : formatter<string>
+    template<>
+    struct formatter<NJS::Token> final : formatter<string>
     {
-        template <typename FormatContext>
-        auto format(const NJS::Token& token, FormatContext& ctx) const
+        template<typename FormatContext>
+        auto format(const NJS::Token &token, FormatContext &ctx) const
         {
             return format_to(
                 ctx.out(),

@@ -2,7 +2,7 @@ import { random_key, mix_keys, base64 } from "./key.njs"
 import { create_user } from "./user.njs"
 import { xor } from "./xor.njs"
 
-extern println(str: i8[])
+extern function println(str: i8[])
 
 let global: i8[16]
 random_key(global, 4)
@@ -13,8 +13,8 @@ let user2 = create_user()
 mix_keys(user1.pub, user1.pvt, global, 4)
 mix_keys(user2.pub, user2.pvt, global, 4)
 
-mix_keys(user1.key, user1.pvt, user2.pub)
-mix_keys(user2.key, user2.pvt, user1.pub)
+mix_keys(user1.key, user1.pvt, user2.pub, 4)
+mix_keys(user2.key, user2.pvt, user1.pub, 4)
 
 let dst: i8[1024]
 

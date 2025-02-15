@@ -2,14 +2,14 @@
 #include <ranges>
 #include <NJS/ArgParser.hpp>
 
-NJS::ArgParser::ArgParser(const std::vector<Arg>& args)
+NJS::ArgParser::ArgParser(const std::vector<Arg> &args)
 {
-    for (auto& [id_, description_, patterns_, is_flag_] : args)
-        for (const auto& pattern : patterns_)
+    for (auto &[id_, description_, patterns_, is_flag_]: args)
+        for (const auto &pattern: patterns_)
             m_Args[pattern] = {id_, description_, is_flag_};
 }
 
-void NJS::ArgParser::Parse(const int argc, const char** argv)
+void NJS::ArgParser::Parse(const int argc, const char **argv)
 {
     m_Executable = argv[0];
 
@@ -23,7 +23,7 @@ void NJS::ArgParser::Parse(const int argc, const char** argv)
             continue;
         }
 
-        auto& [id_, description_, is_flag_] = m_Args[pat];
+        auto &[id_, description_, is_flag_] = m_Args[pat];
 
         if (is_flag_)
         {
@@ -40,7 +40,7 @@ std::string NJS::ArgParser::Executable() const
     return m_Executable;
 }
 
-void NJS::ArgParser::Values(std::vector<std::string>& values) const
+void NJS::ArgParser::Values(std::vector<std::string> &values) const
 {
     values = m_Values;
 }
@@ -52,7 +52,7 @@ bool NJS::ArgParser::Flag(const ID id) const
     return m_Flags.at(id);
 }
 
-void NJS::ArgParser::Option(const ID id, std::string& option, const std::string& alt) const
+void NJS::ArgParser::Option(const ID id, std::string &option, const std::string_view &alt) const
 {
     if (m_Options.contains(id))
     {
@@ -62,10 +62,10 @@ void NJS::ArgParser::Option(const ID id, std::string& option, const std::string&
     option = alt;
 }
 
-static void print_description(const std::string& description)
+static void print_description(const std::string_view &description)
 {
     unsigned i = 0;
-    for (const auto c : description)
+    for (const auto c: description)
     {
         if (i++ % 100 == 0)
             std::cerr << std::endl << "    ";
@@ -76,10 +76,10 @@ static void print_description(const std::string& description)
 
 void NJS::ArgParser::Print() const
 {
-    std::map<ID, std::pair<std::vector<std::string>, std::string>> options;
-    std::map<ID, std::pair<std::vector<std::string>, std::string>> flags;
+    std::map<ID, std::pair<std::vector<std::string_view>, std::string_view>> options;
+    std::map<ID, std::pair<std::vector<std::string_view>, std::string_view>> flags;
 
-    for (auto& [pat_, arg_] : m_Args)
+    for (auto &[pat_, arg_]: m_Args)
     {
         if (arg_.IsFlag)
         {
@@ -95,22 +95,24 @@ void NJS::ArgParser::Print() const
 
     std::cerr << m_Executable << " [OPTION <VALUE> | FLAG | FILENAME]..." << std::endl;
     std::cerr << "OPTION" << std::endl;
-    for (const auto& [pat_, description_] : options | std::ranges::views::values)
+    for (const auto &[pat_, description_]: options | std::ranges::views::values)
     {
         for (unsigned i = 0; i < pat_.size(); ++i)
         {
-            if (i > 0) std::cerr << ", ";
+            if (i > 0)
+                std::cerr << ", ";
             std::cerr << pat_[i];
         }
         print_description(description_);
         std::cerr << std::endl;
     }
     std::cerr << "FLAG" << std::endl;
-    for (const auto& [pat_, description_] : flags | std::ranges::views::values)
+    for (const auto &[pat_, description_]: flags | std::ranges::views::values)
     {
         for (unsigned i = 0; i < pat_.size(); ++i)
         {
-            if (i > 0) std::cerr << ", ";
+            if (i > 0)
+                std::cerr << ", ";
             std::cerr << pat_[i];
         }
         print_description(description_);
@@ -121,6 +123,6 @@ void NJS::ArgParser::Print() const
 bool NJS::ArgParser::IsEmpty() const
 {
     return m_Options.empty()
-        && m_Flags.empty()
-        && m_Values.empty();
+           && m_Flags.empty()
+           && m_Values.empty();
 }

@@ -3,123 +3,109 @@
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/Param.hpp>
+#include <NJS/Parameter.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::FunctionStmt::FunctionStmt(
+NJS::FunctionStatement::FunctionStatement(
     SourceLocation where,
-    const bool absolute,
-    const FnType fn,
+    const unsigned flags,
     std::string name,
-    std::vector<ParamPtr> args,
-    const bool vararg,
+    std::vector<ParameterPtr> parameters,
+    const bool is_var_arg,
     TypePtr result_type,
-    StmtPtr body)
-    : Stmt(std::move(where)),
-      Absolute(absolute),
-      Fn(fn),
+    StatementPtr body)
+    : Statement(std::move(where)),
+      Flags(flags),
       Name(std::move(name)),
-      Args(std::move(args)),
-      VarArg(vararg),
+      Parameters(std::move(parameters)),
+      IsVarArg(is_var_arg),
       ResultType(std::move(result_type)),
       Body(std::move(body))
 {
 }
 
-void NJS::FunctionStmt::GenVoidLLVM(Builder& builder) const
+void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
 {
     std::string function_name;
-    switch (Fn)
-    {
-    case FnType_Function:
-        function_name = builder.GetName(Absolute, Name);
-        break;
-    case FnType_Extern:
+    if (Flags & FunctionFlags_Extern)
         function_name = Name;
-        break;
-    case FnType_Operator:
-        switch (Args.size())
-        {
-        case 1:
-            function_name = builder.GetName(Absolute, Args[0]->Type->GetString() + Name);
-            break;
-        case 2:
-            function_name = builder.GetName(Absolute, Args[0]->Type->GetString() + Name + Args[1]->Type->GetString());
-            break;
-        default:
-            break;
-        }
-        break;
-    case FnType_Template:
-        return;
+    else if (Flags & FunctionFlags_Operator)
+    {
+        if (Parameters.size() == 1)
+            function_name = builder.GetName(
+                Flags & FunctionFlags_Absolute,
+                (IsVarArg ? "" : Name) + Parameters[0]->Type->GetString() + (IsVarArg ? Name : ""));
+        else if (Parameters.size() == 2)
+            function_name = builder.GetName(
+                Flags & FunctionFlags_Absolute,
+                Parameters[0]->Type->GetString() + Name + Parameters[1]->Type->GetString());
     }
+    else
+        function_name = builder.GetName(Flags & FunctionFlags_Absolute, Name);
 
     auto function = builder.GetModule().getFunction(function_name);
     if (!function)
     {
-        std::vector<TypePtr> args;
-        for (const auto& arg : Args)
-            args.push_back(arg->Type);
-        const auto type = builder.GetCtx().GetFunctionType(ResultType, args, VarArg);
+        std::vector<TypePtr> parameter_types;
+        for (const auto &parameter: Parameters)
+            parameter_types.push_back(parameter->Type);
+        const auto type = builder.GetTypeContext().GetFunctionType(ResultType, parameter_types, IsVarArg);
         function = llvm::Function::Create(
             type->GenFnLLVM(Where, builder),
             llvm::GlobalValue::ExternalLinkage,
             function_name,
             builder.GetModule());
 
-        switch (Fn)
+        if (Flags & FunctionFlags_Operator)
         {
-        case FnType_Function:
-        case FnType_Extern:
-            builder.DefVar(Where, Name) = RValue::Create(builder, type, function);
-            break;
-        case FnType_Operator:
-            switch (Args.size())
-            {
-            case 1:
-                builder.DefOp(Name, Args[0]->Type, ResultType, function);
-                break;
-            case 2:
-                builder.DefOp(Name, Args[0]->Type, Args[1]->Type, ResultType, function);
-                break;
-            default:
-                break;
-            }
-            break;
-        default:
-            break;
+            if (Parameters.size() == 1)
+                builder.DefineOperator(Name, !IsVarArg, Parameters[0]->Type, ResultType, function);
+            else if (Parameters.size() == 2)
+                builder.DefineOperator(Name, Parameters[0]->Type, Parameters[1]->Type, ResultType, function);
         }
+        else
+            builder.DefineVariable(Where, Name) = RValue::Create(builder, type, function);
     }
 
-    if (!Body) return;
-    if (!function->empty()) Error(Where, "redefining function {} ({})", Name, function_name);
+    if (!Body)
+        return;
+
+    if (!function->empty())
+        Error(Where, "redefining function {} ({})", Name, function_name);
 
     const auto end_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
     builder.GetBuilder().SetInsertPoint(entry_block);
 
-    builder.Push(Name, ResultType);
-    for (unsigned i = 0; i < Args.size(); ++i)
+    builder.StackPush(Name, ResultType);
+    for (unsigned i = 0; i < Parameters.size(); ++i)
     {
-        const auto& arg = Args[i];
-        const auto llvm_arg = function->getArg(i);
-        llvm_arg->setName(arg->Name);
+        const auto &parameter = Parameters[i];
+        const auto argument = function->getArg(i);
+        argument->setName(parameter->Name);
 
-        ValuePtr arg_value;
-        if (arg->Type->IsRef())
-            arg_value = LValue::Create(builder, arg->Type->GetElement(), llvm_arg);
-        else arg_value = RValue::Create(builder, arg->Type, llvm_arg);
-        arg->CreateVars(builder, Where, false, arg_value);
+        const auto parameter_type = parameter->Type;
+
+        ValuePtr argument_value;
+        if (parameter_type->IsReference())
+            argument_value = LValue::Create(
+                builder,
+                parameter_type->GetElement(),
+                argument);
+        else
+            argument_value = RValue::Create(builder, parameter_type, argument);
+        parameter->CreateVars(builder, Where, argument_value, ParameterFlags_None);
     }
 
     Body->GenVoidLLVM(builder);
-    builder.Pop();
+    builder.StackPop();
 
-    for (auto& block : *function)
+    for (auto &block: *function)
     {
-        if (block.getTerminator()) continue;
+        if (block.getTerminator())
+            continue;
         if (function->getReturnType()->isVoidTy())
         {
             builder.GetBuilder().SetInsertPoint(&block);
@@ -138,61 +124,58 @@ void NJS::FunctionStmt::GenVoidLLVM(Builder& builder) const
     builder.GetBuilder().SetInsertPoint(end_block);
 }
 
-std::ostream& NJS::FunctionStmt::Print(std::ostream& os)
+std::ostream &NJS::FunctionStatement::Print(std::ostream &stream)
 {
-    switch (Fn)
+    if (Flags & FunctionFlags_Extern)
+        stream << "extern ";
+
+    stream << "function ";
+
+    if (Flags & FunctionFlags_Operator)
+        stream << "operator";
+
+    stream << Name << "(";
+    for (unsigned i = 0; i < Parameters.size(); ++i)
     {
-    case FnType_Function:
-        os << "function ";
-        break;
-    case FnType_Extern:
-        os << "extern ";
-        break;
-    case FnType_Operator:
-        os << "operator";
-        break;
-    default:
-        break;
+        if (i > 0)
+            stream << ", ";
+        Parameters[i]->Print(stream);
     }
-    os << Name << "(";
-    for (unsigned i = 0; i < Args.size(); ++i)
+    if (IsVarArg)
     {
-        if (i > 0) os << ", ";
-        Args[i]->Print(os);
+        if (!Parameters.empty())
+            stream << ", ";
+        stream << "...";
     }
-    if (VarArg)
-    {
-        if (!Args.empty()) os << ", ";
-        os << "...";
-    }
-    ResultType->Print(os << "): ");
-    if (Body) Body->Print(os << ' ');
-    return os;
+    ResultType->Print(stream << "): ");
+    if (Body)
+        Body->Print(stream << ' ');
+    return stream;
 }
 
-NJS::FunctionExpr::FunctionExpr(
+NJS::FunctionExpression::FunctionExpression(
     SourceLocation where,
-    std::vector<ParamPtr> args,
-    const bool vararg,
+    std::vector<ParameterPtr> parameters,
+    const bool is_var_arg,
     TypePtr result_type,
-    StmtPtr body)
-    : Expr(std::move(where)),
-      Args(std::move(args)),
-      VarArg(vararg),
+    StatementPtr body)
+    : Expression(std::move(where)),
+      Parameters(std::move(parameters)),
+      IsVarArg(is_var_arg),
       ResultType(std::move(result_type)),
       Body(std::move(body))
 {
 }
 
-NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&) const
+NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
     static unsigned id = 0;
     const auto function_name = std::to_string(id++);
 
-    std::vector<TypePtr> args;
-    for (const auto& arg : Args)
-        args.push_back(arg->Type);
-    const auto type = builder.GetCtx().GetFunctionType(ResultType, args, VarArg);
+    std::vector<TypePtr> parameter_types;
+    for (const auto &parameter: Parameters)
+        parameter_types.push_back(parameter->Type);
+    const auto type = builder.GetTypeContext().GetFunctionType(ResultType, parameter_types, IsVarArg);
     const auto function = llvm::Function::Create(
         type->GenFnLLVM(Where, builder),
         llvm::GlobalValue::InternalLinkage,
@@ -203,26 +186,33 @@ NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&) const
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
     builder.GetBuilder().SetInsertPoint(entry_block);
 
-    builder.Push(function_name, ResultType);
-    for (unsigned i = 0; i < Args.size(); ++i)
+    builder.StackPush(function_name, ResultType);
+    for (unsigned i = 0; i < Parameters.size(); ++i)
     {
-        const auto& arg = Args[i];
-        const auto llvm_arg = function->getArg(i);
-        llvm_arg->setName(arg->Name);
+        auto &parameter = Parameters[i];
+        const auto argument = function->getArg(i);
+        argument->setName(parameter->Name);
 
-        ValuePtr arg_value;
-        if (arg->Type->IsRef())
-            arg_value = LValue::Create(builder, arg->Type->GetElement(), llvm_arg);
-        else arg_value = RValue::Create(builder, arg->Type, llvm_arg);
-        arg->CreateVars(builder, Where, false, arg_value);
+        const auto parameter_type = parameter->Type;
+
+        ValuePtr argument_value;
+        if (parameter_type->IsReference())
+            argument_value = LValue::Create(
+                builder,
+                parameter_type->GetElement(),
+                argument);
+        else
+            argument_value = RValue::Create(builder, parameter_type, argument);
+        parameter->CreateVars(builder, Where, argument_value, ParameterFlags_None);
     }
 
     Body->GenVoidLLVM(builder);
-    builder.Pop();
+    builder.StackPop();
 
-    for (auto& block : *function)
+    for (auto &block: *function)
     {
-        if (block.getTerminator()) continue;
+        if (block.getTerminator())
+            continue;
         if (function->getReturnType()->isVoidTy())
         {
             builder.GetBuilder().SetInsertPoint(&block);
@@ -242,24 +232,25 @@ NJS::ValuePtr NJS::FunctionExpr::GenLLVM(Builder& builder, const TypePtr&) const
     return RValue::Create(builder, type, function);
 }
 
-std::ostream& NJS::FunctionExpr::Print(std::ostream& os)
+std::ostream &NJS::FunctionExpression::Print(std::ostream &stream)
 {
-    os << '?';
-    if (!Args.empty())
+    stream << '?';
+    if (!Parameters.empty())
     {
-        os << '(';
-        for (unsigned i = 0; i < Args.size(); ++i)
+        stream << '(';
+        for (unsigned i = 0; i < Parameters.size(); ++i)
         {
-            if (i > 0) os << ", ";
-            Args[i]->Print(os);
+            if (i > 0)
+                stream << ", ";
+            Parameters[i]->Print(stream);
         }
-        if (VarArg)
+        if (IsVarArg)
         {
-            if (!Args.empty())
-                os << ", ";
-            os << "...";
+            if (!Parameters.empty())
+                stream << ", ";
+            stream << "...";
         }
-        ResultType->Print(os << "): ") << ' ';
+        ResultType->Print(stream << "): ") << ' ';
     }
-    return Body->Print(os);
+    return Body->Print(stream);
 }

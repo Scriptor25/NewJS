@@ -1,10 +1,11 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/Param.hpp>
+#include <NJS/Parameter.hpp>
 #include <NJS/Type.hpp>
 
-NJS::DestructureObject::DestructureObject(std::map<std::string, ParamPtr> elements)
-    : Param(""), Elements(std::move(elements))
+NJS::DestructureObject::DestructureObject(std::map<std::string, ParameterPtr> elements)
+    : Parameter(""),
+      Elements(std::move(elements))
 {
 }
 
@@ -14,29 +15,32 @@ bool NJS::DestructureObject::RequireValue()
 }
 
 void NJS::DestructureObject::CreateVars(
-    Builder& builder,
-    const SourceLocation& where,
-    const bool is_const,
-    const ValuePtr& value)
+    Builder &builder,
+    const SourceLocation &where,
+    const ValuePtr &value,
+    const unsigned flags)
 {
-    for (const auto& [name_, element_] : Elements)
+    for (const auto &[name_, element_]: Elements)
     {
         const auto member = builder.CreateMember(where, value, name_);
-        element_->CreateVars(builder, where, is_const, member);
+        element_->CreateVars(builder, where, member, flags);
     }
 }
 
-std::ostream& NJS::DestructureObject::Print(std::ostream& os)
+std::ostream &NJS::DestructureObject::Print(std::ostream &stream)
 {
-    os << "{ ";
+    stream << "{ ";
     bool first = true;
-    for (const auto& [name, element] : Elements)
+    for (const auto &[name, element]: Elements)
     {
-        if (first) first = false;
-        else os << ", ";
-        element->Print(os << name << ": ");
+        if (first)
+            first = false;
+        else
+            stream << ", ";
+        element->Print(stream << name << ": ");
     }
-    os << " }";
-    if (Type) Type->Print(os << ": ");
-    return os;
+    stream << " }";
+    if (Type)
+        Type->Print(stream << ": ");
+    return stream;
 }

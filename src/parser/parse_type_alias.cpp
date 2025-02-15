@@ -31,14 +31,15 @@ void NJS::Parser::ParseTypeAlias()
     TypePtr type;
     if ((m_IsTemplate && (Expect("="), true)) || NextAt("="))
         type = ParseType();
-    else type = m_TypeCtx.GetNoType(name);
+    else
+        type = m_TypeContext.GetNoType(name);
 
     if (m_IsTemplate)
     {
         m_IsTemplate = false;
-        m_TemplateCtx.InsertType(name, templ_args, m_TemplateWhere, m_TemplateBuffer.str());
+        m_TemplateContext.InsertType(name, templ_args, m_TemplateWhere, m_TemplateBuffer.str());
         return;
     }
 
-    m_TypeCtx.GetType(name) = type;
+    m_TypeContext.GetType(name) = type;
 }

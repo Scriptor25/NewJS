@@ -5,20 +5,23 @@
 #include <NJS/Error.hpp>
 #include <NJS/Operator.hpp>
 #include <NJS/Type.hpp>
-#include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
 using namespace std::string_view_literals;
 
-NJS::BinaryExpr::BinaryExpr(SourceLocation where, std::string operator_, ExprPtr left_operand, ExprPtr right_operand)
-    : Expr(std::move(where)),
+NJS::BinaryExpression::BinaryExpression(
+    SourceLocation where,
+    std::string_view operator_,
+    ExpressionPtr left_operand,
+    ExpressionPtr right_operand)
+    : Expression(std::move(where)),
       Operator(std::move(operator_)),
       LeftOperand(std::move(left_operand)),
       RightOperand(std::move(right_operand))
 {
 }
 
-NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder, const TypePtr& expected_type) const
+NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     static const std::map<std::string_view, BinaryOperator> binary_operators
     {
@@ -77,98 +80,77 @@ NJS::ValuePtr NJS::BinaryExpr::GenLLVM(Builder& builder, const TypePtr& expected
     auto left_operand = LeftOperand->GenLLVM(builder, !is_comparator ? expected_type : nullptr);
     auto right_operand = RightOperand->GenLLVM(builder, !is_comparator ? expected_type : nullptr);
 
+    if (auto [
+            result_type_,
+            left_type_,
+            right_type_,
+            callee_
+        ] = builder.FindOperator(
+            Operator,
+            left_operand,
+            right_operand);
+        callee_)
+    {
+        const auto function_type = llvm::FunctionType::get(
+            result_type_->GetLLVM(Where, builder),
+            {
+                left_type_->GetLLVM(Where, builder),
+                right_type_->GetLLVM(Where, builder),
+            },
+            false);
+        const auto result_value = builder.GetBuilder().CreateCall(
+            function_type,
+            callee_,
+            {
+                left_type_->IsReference() ? left_operand->GetPtr(Where) : left_operand->Load(Where),
+                right_type_->IsReference() ? right_operand->GetPtr(Where) : right_operand->Load(Where)
+            });
+        if (result_type_->IsReference())
+            return LValue::Create(builder, result_type_->GetElement(), result_value);
+        return RValue::Create(builder, result_type_, result_value);
+    }
+
     auto destination = left_operand;
 
-    const auto left_type = left_operand->GetType();
-    const auto right_type = right_operand->GetType();
-
-    if (assignment_operators.contains(Operator))
-    {
-        const auto left_type_reference = builder.GetCtx().GetRefType(left_type);
-        if (auto [result_, callee_] = builder.GetOp(Operator, left_type_reference, right_type); result_ && callee_)
-        {
-            const auto function_type = llvm::FunctionType::get(
-                result_->GetLLVM(Where, builder),
-                {
-                    left_type_reference->GetLLVM(Where, builder),
-                    right_type->GetLLVM(Where, builder),
-                },
-                false);
-            const auto result_pointer = builder.GetBuilder().CreateCall(
-                function_type,
-                callee_,
-                {
-                    left_operand->GetPtr(Where),
-                    right_operand->Load(Where)
-                });
-            return LValue::Create(builder, result_->GetElement(), result_pointer);
-        }
-    }
-    else
-    {
-        if (auto [result_, callee_] = builder.GetOp(Operator, left_type, right_type); result_ && callee_)
-        {
-            const auto function_type = llvm::FunctionType::get(
-                result_->GetLLVM(Where, builder),
-                {
-                    left_type->GetLLVM(Where, builder),
-                    right_type->GetLLVM(Where, builder),
-                },
-                false);
-            const auto result_value = builder.GetBuilder().CreateCall(
-                function_type,
-                callee_,
-                {
-                    left_operand->Load(Where),
-                    right_operand->Load(Where),
-                });
-            return RValue::Create(builder, result_, result_value);
-        }
-    }
-
-    auto operator_ = Operator;
-    if (operator_ == "=")
+    if (Operator == "=")
     {
         destination->Store(Where, right_operand);
         return destination;
     }
 
-    const auto result_type = max(builder.GetCtx(), left_type, right_type);
-    left_operand = builder.CreateCast(Where, left_operand, result_type);
-    right_operand = builder.CreateCast(Where, right_operand, result_type);
+    const auto left_type = left_operand->GetType();
+    const auto right_type = right_operand->GetType();
+    const auto operand_type = GetHigherOrderOf(builder.GetTypeContext(), left_type, right_type);
+    if (!operand_type)
+        Error(Where, "cannot determine higher order type of {} and {}", left_type, right_type);
+
+    left_operand = builder.CreateCast(Where, left_operand, operand_type);
+    right_operand = builder.CreateCast(Where, right_operand, operand_type);
+
+    auto operator_ = Operator;
+    const auto assign = assignment_operators.contains(operator_);
+    if (assign)
+        operator_.pop_back();
 
     if (binary_operators.contains(operator_))
         if (auto result_value = binary_operators.at(operator_)(
             builder,
             Where,
-            result_type,
-            left_operand->Load(Where),
-            right_operand->Load(Where)))
-            return result_value;
-
-    const auto assign = operator_.back() == '=';
-    if (assign) operator_.pop_back();
-
-    if (binary_operators.contains(operator_))
-        if (auto result_value = binary_operators.at(operator_)(
-            builder,
-            Where,
-            result_type,
+            operand_type,
             left_operand->Load(Where),
             right_operand->Load(Where)))
         {
-            if (assign)
-            {
-                destination->Store(Where, result_value);
-                return destination;
-            }
-            return result_value;
+            if (!assign)
+                return result_value;
+
+            destination->Store(Where, result_value);
+            return destination;
         }
 
-    Error(Where, "undefined binary operator '{} {} {}'", result_type, Operator, result_type);
+    Error(Where, "undefined binary operator '{} {} {}'", operand_type, Operator, operand_type);
 }
 
-std::ostream& NJS::BinaryExpr::Print(std::ostream& os)
+std::ostream &NJS::BinaryExpression::Print(std::ostream &stream)
 {
-    return RightOperand->Print(LeftOperand->Print(os) << ' ' << Operator << ' ');
+    return RightOperand->Print(LeftOperand->Print(stream) << ' ' << Operator << ' ');
 }

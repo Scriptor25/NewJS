@@ -2,43 +2,50 @@
 #include <llvm/IR/BasicBlock.h>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::TernaryExpr::TernaryExpr(SourceLocation where, ExprPtr condition, ExprPtr then, ExprPtr else_)
-    : Expr(std::move(where)),
+NJS::TernaryExpression::TernaryExpression(
+    SourceLocation where,
+    ExpressionPtr condition,
+    ExpressionPtr then_body,
+    ExpressionPtr else_body)
+    : Expression(std::move(where)),
       Condition(std::move(condition)),
-      Then(std::move(then)),
-      Else(std::move(else_))
+      ThenBody(std::move(then_body)),
+      ElseBody(std::move(else_body))
 {
 }
 
-NJS::ValuePtr NJS::TernaryExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
+NJS::ValuePtr NJS::TernaryExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent);
     auto else_block = llvm::BasicBlock::Create(builder.GetContext(), "else", parent);
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
-    const auto cond = Condition->GenLLVM(builder, builder.GetCtx().GetBoolType());
+    const auto cond = Condition->GenLLVM(builder, builder.GetTypeContext().GetBoolType());
     builder.GetBuilder().CreateCondBr(cond->Load(Where), then_block, else_block);
 
     builder.GetBuilder().SetInsertPoint(then_block);
-    auto then_value = Then->GenLLVM(builder, expected);
-    if (then_value->IsL())
+    auto then_value = ThenBody->GenLLVM(builder, expected);
+    if (then_value->IsLValue())
         then_value = RValue::Create(builder, then_value->GetType(), then_value->Load(Where));
     then_block = builder.GetBuilder().GetInsertBlock();
     const auto then_term = builder.GetBuilder().CreateBr(end_block);
 
     builder.GetBuilder().SetInsertPoint(else_block);
-    auto else_value = Else->GenLLVM(builder, expected);
-    if (else_value->IsL())
+    auto else_value = ElseBody->GenLLVM(builder, expected);
+    if (else_value->IsLValue())
         else_value = RValue::Create(builder, else_value->GetType(), else_value->Load(Where));
     else_block = builder.GetBuilder().GetInsertBlock();
     const auto else_term = builder.GetBuilder().CreateBr(end_block);
 
-    const auto result_type = max(builder.GetCtx(), then_value->GetType(), else_value->GetType());
+    const auto result_type = GetHigherOrderOf(builder.GetTypeContext(), then_value->GetType(), else_value->GetType());
+    if (!result_type)
+        Error(Where, "cannot determine higher order type of {} and {}", then_value->GetType(), else_value->GetType());
 
     builder.GetBuilder().SetInsertPoint(then_term);
     then_value = builder.CreateCast(Where, then_value, result_type);
@@ -55,7 +62,7 @@ NJS::ValuePtr NJS::TernaryExpr::GenLLVM(Builder& builder, const TypePtr& expecte
     return RValue::Create(builder, result_type, phi_inst);
 }
 
-std::ostream& NJS::TernaryExpr::Print(std::ostream& os)
+std::ostream &NJS::TernaryExpression::Print(std::ostream &os)
 {
-    return Else->Print(Then->Print(Condition->Print(os) << " ? ") << " : ");
+    return ElseBody->Print(ThenBody->Print(Condition->Print(os) << " ? ") << " : ");
 }

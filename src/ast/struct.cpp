@@ -5,17 +5,18 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::StructExpr::StructExpr(SourceLocation where, std::map<std::string, ExprPtr> elements)
-    : Expr(std::move(where)), Elements(std::move(elements))
+NJS::StructExpression::StructExpression(SourceLocation where, std::map<std::string, ExpressionPtr> elements)
+    : Expression(std::move(where)),
+      Elements(std::move(elements))
 {
 }
 
-NJS::ValuePtr NJS::StructExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
+NJS::ValuePtr NJS::StructExpression::GenLLVM(Builder &builder, const TypePtr &expected) const
 {
     std::map<std::string, ValuePtr> elements;
     std::map<std::string, TypePtr> element_types;
 
-    for (const auto& [name_, element_] : Elements)
+    for (const auto &[name_, element_]: Elements)
     {
         const auto type = expected ? expected->GetMember(name_).first : nullptr;
         const auto value = element_->GenLLVM(builder, type);
@@ -23,11 +24,11 @@ NJS::ValuePtr NJS::StructExpr::GenLLVM(Builder& builder, const TypePtr& expected
         element_types[name_] = value->GetType();
     }
 
-    const auto type = expected ? expected : builder.GetCtx().GetStructType(element_types);
+    const auto type = expected ? expected : builder.GetTypeContext().GetStructType(element_types);
 
-    llvm::Value* object = llvm::ConstantStruct::getNullValue(type->GetLLVM<llvm::StructType>(Where, builder));
+    llvm::Value *object = llvm::ConstantStruct::getNullValue(type->GetLLVM<llvm::StructType>(Where, builder));
 
-    for (auto [name_, value_] : elements)
+    for (auto [name_, value_]: elements)
     {
         const auto [type_, index_] = type->GetMember(name_);
         value_ = builder.CreateCast(Where, value_, type_);
@@ -37,13 +38,14 @@ NJS::ValuePtr NJS::StructExpr::GenLLVM(Builder& builder, const TypePtr& expected
     return RValue::Create(builder, type, object);
 }
 
-std::ostream& NJS::StructExpr::Print(std::ostream& os)
+std::ostream &NJS::StructExpression::Print(std::ostream &os)
 {
-    if (Elements.empty()) return os << "{}";
+    if (Elements.empty())
+        return os << "{}";
 
     os << '{' << std::endl;
     Indent();
-    for (const auto& [name, value] : Elements)
+    for (const auto &[name, value]: Elements)
         value->Print(Spacing(os) << name << ": ") << ',' << std::endl;
     Exdent();
     return Spacing(os) << '}';

@@ -2,18 +2,20 @@
 #include <NJS/Builder.hpp>
 #include <NJS/Type.hpp>
 
-NJS::CastExpr::CastExpr(SourceLocation where, TypePtr type, ExprPtr value)
-    : Expr(std::move(where)), Type(std::move(type)), Value(std::move(value))
+NJS::CastExpression::CastExpression(SourceLocation where, TypePtr type, ExpressionPtr operand)
+    : Expression(std::move(where)),
+      Type(std::move(type)),
+      Operand(std::move(operand))
 {
 }
 
-NJS::ValuePtr NJS::CastExpr::GenLLVM(Builder& builder, const TypePtr&) const
+NJS::ValuePtr NJS::CastExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
-    const auto result_value = Value->GenLLVM(builder, Type);
-    return builder.CreateCast(Where, result_value, Type);
+    const auto value = Operand->GenLLVM(builder, Type);
+    return builder.CreateCast(Where, value, Type);
 }
 
-std::ostream& NJS::CastExpr::Print(std::ostream& os)
+std::ostream &NJS::CastExpression::Print(std::ostream &stream)
 {
-    return Type->Print(Value->Print(os) << " as ");
+    return Type->Print(Operand->Print(stream) << " as ");
 }

@@ -8,38 +8,38 @@ namespace NJS
 {
     class ArgParser
     {
-        typedef unsigned ID;
+        using ID = unsigned;
 
         struct Arg
         {
             ID Id;
-            std::string Description;
-            std::vector<std::string> Patterns;
+            std::string_view Description;
+            std::vector<std::string_view> Patterns;
             bool IsFlag;
         };
 
         struct ArgPattern
         {
             ID Id;
-            std::string Description;
+            std::string_view Description;
             bool IsFlag;
         };
 
     public:
-        explicit ArgParser(const std::vector<Arg>& args);
+        explicit ArgParser(const std::vector<Arg> &args);
 
-        void Parse(int argc, const char** argv);
+        void Parse(int argc, const char **argv);
 
         [[nodiscard]] std::string Executable() const;
-        void Values(std::vector<std::string>&) const;
-        [[nodiscard]] bool Flag(ID) const;
-        void Option(ID, std::string&, const std::string& = {}) const;
+        void Values(std::vector<std::string> &values) const;
+        [[nodiscard]] bool Flag(ID id) const;
+        void Option(ID id, std::string &option, const std::string_view &default_value = {}) const;
 
         void Print() const;
         [[nodiscard]] bool IsEmpty() const;
 
     private:
-        std::map<std::string, ArgPattern> m_Args;
+        std::map<std::string_view, ArgPattern> m_Args;
 
         std::string m_Executable;
         std::vector<std::string> m_Values;

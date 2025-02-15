@@ -1,36 +1,36 @@
 #include <NJS/AST.hpp>
 #include <NJS/Error.hpp>
-#include <NJS/Param.hpp>
+#include <NJS/Parameter.hpp>
 #include <NJS/Parser.hpp>
 
-NJS::StmtPtr NJS::Parser::ParseForStmt()
+NJS::StatementPtr NJS::Parser::ParseForStatement()
 {
     const auto where = Expect("for").Where;
 
     Expect("(");
 
-    StmtPtr init;
+    StatementPtr init;
     if (!NextAt(";"))
     {
-        init = ParseStmt();
+        init = ParseStatement();
         Expect(";");
     }
 
-    ExprPtr condition;
+    ExpressionPtr condition;
     if (!NextAt(";"))
     {
-        condition = ParseExpr();
+        condition = ParseExpression();
         Expect(";");
     }
 
-    StmtPtr loop;
+    StatementPtr loop;
     if (!NextAt(")"))
     {
-        loop = ParseStmt();
+        loop = ParseStatement();
         Expect(")");
     }
 
-    const auto body = ParseStmt();
+    const auto body = ParseStatement();
 
-    return std::make_shared<ForStmt>(where, init, condition, loop, body);
+    return std::make_shared<ForStatement>(where, init, condition, loop, body);
 }

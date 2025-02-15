@@ -6,53 +6,69 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::CallExpr::CallExpr(SourceLocation where, ExprPtr callee, std::vector<ExprPtr> args)
-    : Expr(std::move(where)), Callee(std::move(callee)), Args(std::move(args))
+NJS::CallExpression::CallExpression(SourceLocation where, ExpressionPtr callee, std::vector<ExpressionPtr> arguments)
+    : Expression(std::move(where)),
+      Callee(std::move(callee)),
+      Arguments(std::move(arguments))
 {
 }
 
-NJS::ValuePtr NJS::CallExpr::GenLLVM(Builder& builder, const TypePtr& expected) const
+NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     const auto callee = Callee->GenLLVM(builder, {});
     const auto callee_type = std::dynamic_pointer_cast<FunctionType>(callee->GetType());
     if (!callee_type)
         Error(Where, "invalid callee: callee is not a function");
 
-    std::vector<llvm::Value*> arg_values(Args.size());
-    for (unsigned i = 0; i < Args.size(); ++i)
+    const auto parameter_count = callee_type->GetParameterCount();
+    if (Arguments.size() < parameter_count)
+        Error(Where, "not enough arguments");
+    if (Arguments.size() > parameter_count && !callee_type->IsVarArg())
+        Error(Where, "too many arguments");
+
+    std::vector<llvm::Value *> argument_values(Arguments.size());
+    for (unsigned i = 0; i < Arguments.size(); ++i)
     {
-        auto param_type = callee_type->Param(i);
-        auto& arg = Args[i];
-        auto arg_value = arg->GenLLVM(builder, param_type);
+        const auto has_parameter = i < parameter_count;
+        auto parameter_type = has_parameter
+                                  ? callee_type->GetParameterType(i)
+                                  : nullptr;
 
-        const auto param_is_ref = param_type->IsRef();
-        if (param_is_ref) param_type = param_type->GetElement();
+        auto &argument = Arguments[i];
+        auto argument_value = argument->GenLLVM(builder, parameter_type);
 
-        arg_value = builder.CreateCast(arg->Where, arg_value, param_type);
+        const auto parameter_is_reference = has_parameter && parameter_type->IsReference();
+        if (parameter_is_reference)
+            parameter_type = parameter_type->GetElement();
 
-        arg_values[i] = param_is_ref
-                            ? arg_value->GetPtr(arg->Where)
-                            : arg_value->Load(arg->Where);
+        if (has_parameter)
+            argument_value = builder.CreateCast(argument->Where, argument_value, parameter_type);
+
+        argument_values[i] = parameter_is_reference
+                                 ? argument_value->GetPtr(argument->Where)
+                                 : argument_value->Load(argument->Where);
     }
 
     const auto result_value = builder.GetBuilder().CreateCall(
         callee_type->GenFnLLVM(Where, builder),
         callee->Load(Where),
-        arg_values);
+        argument_values);
 
-    if (callee_type->GetResult()->IsRef())
-        return LValue::Create(builder, callee_type->GetResult()->GetElement(), result_value);
+    const auto result_type = callee_type->GetResultType();
+    if (result_type->IsReference())
+        return LValue::Create(builder, result_type->GetElement(), result_value);
 
-    return RValue::Create(builder, callee_type->GetResult(), result_value);
+    return RValue::Create(builder, result_type, result_value);
 }
 
-std::ostream& NJS::CallExpr::Print(std::ostream& os)
+std::ostream &NJS::CallExpression::Print(std::ostream &stream)
 {
-    Callee->Print(os) << '(';
-    for (unsigned i = 0; i < Args.size(); ++i)
+    Callee->Print(stream) << '(';
+    for (unsigned i = 0; i < Arguments.size(); ++i)
     {
-        if (i > 0) os << ", ";
-        Args[i]->Print(os);
+        if (i > 0)
+            stream << ", ";
+        Arguments[i]->Print(stream);
     }
-    return os << ')';
+    return stream << ')';
 }
