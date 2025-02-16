@@ -30,12 +30,12 @@ const part = parse_int(process.argv[2])
 
 function part_err(input: i8[]): u64 {
     println("invalid part")
-    return 0
+    return 1
 }
 
 function day_err(input: i8[]): u64 {
     println("invalid day")
-    return 0
+    return 1
 }
 
 const fn = switch (day) {
@@ -43,6 +43,9 @@ const fn = switch (day) {
     case 2  -> day_2(part)
     default -> day_err
 }
+
+if (fn == day_err || fn == part_err)
+    return fn(0)
 
 const stream = fopen($"input/{day}.txt", "r")
 fseek(stream, 0, SEEK_END)
@@ -52,7 +55,9 @@ const input: i8[] = malloc(stream_size)
 fread(input, 1, stream_size, stream)
 fclose(stream)
 
-let result = fn(input)
+const result = fn(input)
 println($"result: {result}")
 
 free(input)
+
+return result
