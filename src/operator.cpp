@@ -23,7 +23,7 @@ NJS::ValuePtr NJS::OperatorEQ(
             builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateFCmpOEQ(lhs, rhs));
 
-    if (type->IsPointer())
+    if (type->IsPointer() || type->IsFunction())
     {
         const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
         const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
@@ -52,7 +52,7 @@ NJS::ValuePtr NJS::OperatorNE(
             builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateFCmpONE(lhs, rhs));
 
-    if (type->IsPointer())
+    if (type->IsPointer() || type->IsFunction())
     {
         const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
         const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
@@ -83,7 +83,7 @@ NJS::ValuePtr NJS::OperatorLT(
             builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateFCmpOLT(lhs, rhs));
 
-    if (type->IsPointer())
+    if (type->IsPointer() || type->IsFunction())
     {
         const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
         const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
@@ -114,7 +114,7 @@ NJS::ValuePtr NJS::OperatorLE(
             builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateFCmpOLE(lhs, rhs));
 
-    if (type->IsPointer())
+    if (type->IsPointer() || type->IsFunction())
     {
         const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
         const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
@@ -145,7 +145,7 @@ NJS::ValuePtr NJS::OperatorGT(
             builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateFCmpOGT(lhs, rhs));
 
-    if (type->IsPointer())
+    if (type->IsPointer() || type->IsFunction())
     {
         const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
         const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
@@ -176,7 +176,7 @@ NJS::ValuePtr NJS::OperatorGE(
             builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateFCmpOGE(lhs, rhs));
 
-    if (type->IsPointer())
+    if (type->IsPointer() || type->IsFunction())
     {
         const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
         const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
