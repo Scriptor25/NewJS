@@ -2,17 +2,17 @@
 
 bool NJS::StackFrame::Contains(const std::string &name) const
 {
-    return Values.contains(std::string(name));
+    return Values.contains(name);
 }
 
 NJS::ValuePtr NJS::StackFrame::operator[](const std::string &name) const
 {
-    return Values.at(std::string(name));
+    return Values.at(name);
 }
 
 NJS::ValuePtr &NJS::StackFrame::operator[](const std::string &name)
 {
-    return Values[std::string(name)];
+    return Values[name];
 }
 
 std::string NJS::StackFrame::GetChildName(const std::string &name) const
@@ -21,5 +21,5 @@ std::string NJS::StackFrame::GetChildName(const std::string &name) const
         return Name;
     if (Name.empty())
         return name;
-    return Name + '.' + std::string(name);
+    return Name + '.' + name;
 }

@@ -43,7 +43,7 @@ void NJS::ImportMapping::MapFunctions(
     {
         const auto &fn = *std::dynamic_pointer_cast<FunctionStatement>(function);
 
-        auto name = std::string(module_id) + '.';
+        auto name = module_id + '.';
         if (fn.Flags & FunctionFlags_Operator)
         {
             if (fn.Parameters.size() == 1)

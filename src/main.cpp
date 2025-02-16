@@ -41,12 +41,14 @@ static void parse(
     std::istream &input_stream,
     const std::filesystem::path &input_path)
 {
+    const auto input_filename = input_path.string();
+
     NJS::TypeContext type_ctx;
-    NJS::Builder builder(type_ctx, linker.LLVMContext(), module_id, is_main);
+    NJS::Builder builder(type_ctx, linker.LLVMContext(), module_id, input_filename, is_main);
 
     NJS::TemplateContext template_ctx(builder);
     std::map<std::string, NJS::Macro> macros;
-    NJS::Parser parser(type_ctx, template_ctx, input_stream, NJS::SourceLocation(input_path.string()), macros, is_main);
+    NJS::Parser parser(type_ctx, template_ctx, input_stream, NJS::SourceLocation(input_filename), macros, is_main);
 
     parser.Parse(
         [&](const NJS::StatementPtr &ptr)
@@ -105,7 +107,9 @@ int main(const int argc, const char **argv)
     }
 
     const auto output_module_id = std::filesystem::path(output_filename).filename().replace_extension().string();
-    const NJS::Linker linker(output_module_id.empty() ? std::string() : output_module_id);
+    const NJS::Linker linker(
+        output_module_id.empty() ? std::string() : output_module_id,
+        output_filename.empty() ? std::string() : output_filename);
 
     if (input_filenames.empty())
         parse(linker, "main", true, std::cin, {});

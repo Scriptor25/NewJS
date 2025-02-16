@@ -53,7 +53,12 @@ namespace NJS
     class Builder
     {
     public:
-        Builder(TypeContext &ctx, llvm::LLVMContext &context, const std::string &module_id, bool is_main);
+        Builder(
+            TypeContext &ctx,
+            llvm::LLVMContext &context,
+            const std::string &module_id,
+            const std::string &source_filename,
+            bool is_main);
 
         void Close();
 
@@ -65,7 +70,7 @@ namespace NJS
         [[nodiscard]] llvm::Module &GetModule() const;
         [[nodiscard]] llvm::IRBuilder<> &GetBuilder() const;
 
-        void Optimize(llvm::Function* function) const;
+        void Optimize(llvm::Function *function) const;
 
         [[nodiscard]] llvm::Value *CreateAlloca(llvm::Type *type, unsigned size = 0) const;
         ValuePtr CreateAlloca(const SourceLocation &where, const TypePtr &type, unsigned size = 0);

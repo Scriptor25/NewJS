@@ -16,7 +16,7 @@ void NJS::TemplateContext::InsertType(
     const SourceLocation &where,
     const std::string &source)
 {
-    m_TypeTemplates[std::string(name)] = {std::string(name), args, where, std::string(source)};
+    m_TypeTemplates[name] = {name, args, where, source};
 }
 
 void NJS::TemplateContext::InsertFunction(
@@ -25,17 +25,17 @@ void NJS::TemplateContext::InsertFunction(
     const SourceLocation &where,
     const std::string &source)
 {
-    m_FunctionTemplates[std::string(name)] = {std::string(name), args, where, std::string(source)};
+    m_FunctionTemplates[name] = {name, args, where, source};
 }
 
 bool NJS::TemplateContext::HasFunction(const std::string &name) const
 {
-    return m_FunctionTemplates.contains(std::string(name));
+    return m_FunctionTemplates.contains(name);
 }
 
 bool NJS::TemplateContext::HasType(const std::string &name) const
 {
-    return m_TypeTemplates.contains(std::string(name));
+    return m_TypeTemplates.contains(name);
 }
 
 std::string NJS::TemplateContext::InflateFunctionTemplate(

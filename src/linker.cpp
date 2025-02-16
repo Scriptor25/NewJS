@@ -8,11 +8,12 @@
 #include <NJS/Error.hpp>
 #include <NJS/Linker.hpp>
 
-NJS::Linker::Linker(const std::string &module_id)
+NJS::Linker::Linker(const std::string &module_id, const std::string &source_filename)
     : m_AppendNames(module_id.empty())
 {
     m_LLVMContext = std::make_unique<llvm::LLVMContext>();
     m_LLVMModule = std::make_unique<llvm::Module>(module_id, *m_LLVMContext);
+    m_LLVMModule->setSourceFileName(source_filename);
 }
 
 llvm::LLVMContext &NJS::Linker::LLVMContext() const

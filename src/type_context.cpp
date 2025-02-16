@@ -4,8 +4,8 @@
 NJS::TypePtr &NJS::TypeContext::GetType(const std::string &string)
 {
     if (!m_TemplateStack.empty())
-        return m_TemplateStack.back()[std::string(string)];
-    return m_Types[std::string(string)];
+        return m_TemplateStack.back()[string];
+    return m_Types[string];
 }
 
 NJS::NoTypePtr NJS::TypeContext::GetNoType(const std::string &name)

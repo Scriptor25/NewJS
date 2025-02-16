@@ -16,14 +16,16 @@ NJS::Builder::Builder(
     TypeContext &ctx,
     llvm::LLVMContext &context,
     const std::string &module_id,
+    const std::string &source_filename,
     const bool is_main)
     : m_TypeContext(ctx),
       m_LLVMContext(context),
       m_ModuleID(module_id),
       m_IsMain(is_main)
 {
-    m_LLVMModule = std::make_unique<llvm::Module>(module_id, m_LLVMContext);
     m_LLVMBuilder = std::make_unique<llvm::IRBuilder<>>(m_LLVMContext);
+    m_LLVMModule = std::make_unique<llvm::Module>(module_id, m_LLVMContext);
+    m_LLVMModule->setSourceFileName(source_filename);
 
     m_Passes = {
         .FPM = std::make_unique<llvm::FunctionPassManager>(),
@@ -143,7 +145,7 @@ void NJS::Builder::GetFormat(llvm::FunctionCallee &callee) const
 void NJS::Builder::StackPush(const std::string &name, const TypePtr &result_type)
 {
     const auto frame_name = m_Stack.empty()
-                                ? std::string(name)
+                                ? name
                                 : m_Stack.back().GetChildName(name);
     const auto frame_result_type = result_type
                                        ? result_type
@@ -161,7 +163,7 @@ void NJS::Builder::StackPop()
 std::string NJS::Builder::GetName(const bool absolute, const std::string &name) const
 {
     if (absolute)
-        return m_ModuleID + '.' + std::string(name);
+        return m_ModuleID + '.' + name;
     return m_Stack.back().GetChildName(name);
 }
 
@@ -172,7 +174,7 @@ void NJS::Builder::DefineOperator(
     const TypePtr &result_type,
     llvm::Value *callee)
 {
-    m_UnaryOperatorMap[std::string(name)][prefix][value_type] = {result_type, value_type, callee};
+    m_UnaryOperatorMap[name][prefix][value_type] = {result_type, value_type, callee};
 }
 
 void NJS::Builder::DefineOperator(
@@ -182,7 +184,7 @@ void NJS::Builder::DefineOperator(
     const TypePtr &result_type,
     llvm::Value *callee)
 {
-    m_BinaryOperatorMap[std::string(name)][left_type][right_type] = {result_type, left_type, right_type, callee};
+    m_BinaryOperatorMap[name][left_type][right_type] = {result_type, left_type, right_type, callee};
 }
 
 NJS::OperatorInfo<1> NJS::Builder::GetOperator(
@@ -190,9 +192,9 @@ NJS::OperatorInfo<1> NJS::Builder::GetOperator(
     const bool prefix,
     const TypePtr &value_type) const
 {
-    if (!m_UnaryOperatorMap.contains(std::string(name)))
+    if (!m_UnaryOperatorMap.contains(name))
         return {};
-    auto &for_name = m_UnaryOperatorMap.at(std::string(name));
+    auto &for_name = m_UnaryOperatorMap.at(name);
     if (!for_name.contains(prefix))
         return {};
     auto &for_prefix = for_name.at(prefix);
@@ -206,9 +208,9 @@ NJS::OperatorInfo<2> NJS::Builder::GetOperator(
     const TypePtr &left_type,
     const TypePtr &right_type) const
 {
-    if (!m_BinaryOperatorMap.contains(std::string(name)))
+    if (!m_BinaryOperatorMap.contains(name))
         return {};
-    auto &for_name = m_BinaryOperatorMap.at(std::string(name));
+    auto &for_name = m_BinaryOperatorMap.at(name);
     if (!for_name.contains(left_type))
         return {};
     auto &for_left = for_name.at(left_type);

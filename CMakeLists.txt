@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(LLVM 18.1 REQUIRED CONFIG)
 
 execute_process(
-        COMMAND ${LLVM_TOOLS_BINARY_DIR}/llvm-config --system-libs --libnames
+        COMMAND ${LLVM_TOOLS_BINARY_DIR}/llvm-config --system-libs --libnames core support passes all-targets
         OUTPUT_VARIABLE LLVM_LIBNAMES
         OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -22,10 +22,10 @@ message(STATUS "LLVM lib dirs ${LLVM_LIBRARY_DIRS}")
 
 file(GLOB_RECURSE sources src/*.cpp include/*.hpp)
 add_executable(newjs ${sources})
-target_compile_definitions(newjs PUBLIC ${LLVM_DEFS_LIST})
-target_include_directories(newjs PUBLIC include ${LLVM_INCLUDE_DIRS})
-target_link_directories(newjs PUBLIC ${LLVM_LIBRARY_DIRS})
-target_link_libraries(newjs PUBLIC ${LLVM_LIBNAMES_LIST})
+target_compile_definitions(newjs PRIVATE ${LLVM_DEFS_LIST})
+target_include_directories(newjs PRIVATE include ${LLVM_INCLUDE_DIRS})
+target_link_directories(newjs PRIVATE ${LLVM_LIBRARY_DIRS})
+target_link_libraries(newjs PRIVATE ${LLVM_LIBNAMES_LIST})
 
 file(GLOB_RECURSE lib_sources lib/*.cpp)
 add_library(stdnewjs ${lib_sources})
@@ -36,10 +36,10 @@ install(TARGETS stdnewjs)
 
 if (CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
     add_custom_command(TARGET newjs POST_BUILD
-            COMMENT "Separating debug information from executable"
             COMMAND ${CMAKE_OBJCOPY} --only-keep-debug $<TARGET_FILE:newjs> $<TARGET_FILE:newjs>.dbg
             COMMAND ${CMAKE_OBJCOPY} --strip-debug $<TARGET_FILE:newjs>
             COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink=$<TARGET_FILE:newjs>.dbg $<TARGET_FILE:newjs>
+            COMMENT "Separating debug information from executable"
     )
     install(FILES $<TARGET_FILE:newjs>.dbg DESTINATION bin)
 endif ()
