@@ -1,5 +1,6 @@
 #include <fstream>
 #include <NJS/AST.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/Parser.hpp>
 
 NJS::StatementPtr NJS::Parser::ParseImportStatement()
@@ -8,12 +9,19 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
     const auto mapping = ParseImportMapping();
     Expect("from");
     const auto filename = Expect(TokenType_String).StringValue;
-    const auto filepath = canonical(std::filesystem::path(where.Filename).parent_path() / filename);
+
+    auto filepath = std::filesystem::path(where.Filename).parent_path() / filename;
+    if (!exists(filepath))
+        Error(where, "failed to open import file '{}': file does not exist", filepath.string());
+    filepath = canonical(filepath);
 
     if (m_ParsedSet.contains(filepath))
         return {};
 
     std::ifstream stream(filepath);
+    if (!stream)
+        Error(where, "failed to open import file '{}'", filepath.string());
+
     Parser parser(
         m_TypeContext,
         m_TemplateContext,
@@ -53,6 +61,8 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
             function->Body = {};
             functions.emplace_back(function);
         });
+
+    stream.close();
 
     return std::make_shared<ImportStatement>(where, mapping, filepath, functions, import_module_ids);
 }

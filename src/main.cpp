@@ -116,7 +116,10 @@ int main(const int argc, const char **argv)
 
     for (const auto &input_filename: input_filenames)
     {
-        const std::filesystem::path input_path(input_filename);
+        if (!std::filesystem::exists(input_filename))
+            NJS::Error("failed to open input file '{}': file does not exist", input_filename);
+
+        const auto input_path = std::filesystem::canonical(input_filename);
         const auto module_id = input_path.filename().replace_extension().string();
 
         std::ifstream input_stream(input_path);
