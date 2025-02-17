@@ -91,7 +91,8 @@ namespace NJS
             ImportMapping mapping,
             std::filesystem::path filepath,
             std::vector<StatementPtr> functions,
-            std::set<std::string> import_module_ids);
+            std::string module_id,
+            std::set<std::string> sub_module_ids);
 
         static void CreateModuleCall(const Builder &builder, const std::string &module_id);
 
@@ -101,7 +102,8 @@ namespace NJS
         ImportMapping Mapping;
         std::filesystem::path Filepath;
         std::vector<StatementPtr> Functions;
-        std::set<std::string> ImportModuleIDs;
+        std::string ModuleID;
+        std::set<std::string> SubModuleIDs;
     };
 
     struct ReturnStatement final : Statement

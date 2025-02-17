@@ -7,14 +7,13 @@ namespace NJS
 {
     class TypeContext;
     class TemplateContext;
+
     class Parser;
     class Builder;
     class Linker;
 
     struct SourceLocation;
     struct Token;
-
-    struct UnaryResult;
 
     using TypePtr = std::shared_ptr<class Type>;
     using NoTypePtr = std::shared_ptr<class NoType>;

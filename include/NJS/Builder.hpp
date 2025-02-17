@@ -27,18 +27,6 @@ namespace NJS
         std::map<std::string, ValuePtr> Values;
     };
 
-    using UnaryOperator = std::function<ValuePtr(
-        Builder &builder,
-        const SourceLocation &where,
-        const ValuePtr &value)>;
-
-    using BinaryOperator = std::function<ValuePtr(
-        Builder &builder,
-        const SourceLocation &where,
-        const TypePtr &type,
-        llvm::Value *lhs,
-        llvm::Value *rhs)>;
-
     struct Passes
     {
         std::unique_ptr<llvm::FunctionPassManager> FPM;

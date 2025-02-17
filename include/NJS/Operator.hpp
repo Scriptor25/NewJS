@@ -4,6 +4,18 @@
 
 namespace NJS
 {
+    using BinaryOperator = std::function<ValuePtr(
+        Builder &builder,
+        const SourceLocation &where,
+        const TypePtr &type,
+        llvm::Value *lhs,
+        llvm::Value *rhs)>;
+
+    using UnaryOperator = std::function<ValuePtr(
+        Builder &builder,
+        const SourceLocation &where,
+        const ValuePtr &value)>;
+
     ValuePtr OperatorEQ(
         Builder &builder,
         const SourceLocation &where,

@@ -37,7 +37,7 @@ void NJS::Parser::ParseTypeAlias()
     if (m_IsTemplate)
     {
         m_IsTemplate = false;
-        m_TemplateContext.InsertType(name, templ_args, m_TemplateWhere, m_TemplateBuffer.str());
+        m_TemplateContext.InsertType(m_TemplateWhere, name, templ_args, m_TemplateBuffer);
         return;
     }
 

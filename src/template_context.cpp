@@ -1,9 +1,6 @@
-#include <sstream>
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
 #include <NJS/TemplateContext.hpp>
-#include <NJS/Type.hpp>
-#include <NJS/TypeContext.hpp>
 
 NJS::TemplateContext::TemplateContext(Builder &builder)
     : m_Builder(builder)
@@ -11,21 +8,21 @@ NJS::TemplateContext::TemplateContext(Builder &builder)
 }
 
 void NJS::TemplateContext::InsertType(
-    const std::string &name,
-    const std::vector<std::string> &args,
     const SourceLocation &where,
+    const std::string &name,
+    const std::vector<std::string> &parameters,
     const std::string &source)
 {
-    m_TypeTemplates[name] = {name, args, where, source};
+    m_TypeTemplates[name] = {where, name, parameters, source};
 }
 
 void NJS::TemplateContext::InsertFunction(
-    const std::string &name,
-    const std::vector<std::string> &args,
     const SourceLocation &where,
+    const std::string &name,
+    const std::vector<std::string> &parameters,
     const std::string &source)
 {
-    m_FunctionTemplates[name] = {name, args, where, source};
+    m_FunctionTemplates[name] = {where, name, parameters, source};
 }
 
 bool NJS::TemplateContext::HasFunction(const std::string &name) const
@@ -38,71 +35,32 @@ bool NJS::TemplateContext::HasType(const std::string &name) const
     return m_TypeTemplates.contains(name);
 }
 
-std::string NJS::TemplateContext::InflateFunctionTemplate(
+std::string NJS::TemplateContext::InflateFunction(
     Parser &parent,
-    const std::string &templ_name,
-    const std::vector<TypePtr> &args)
+    const std::string &template_name,
+    const std::vector<TypePtr> &arguments)
 {
-    const auto &[name_, args_, where_, source_] = m_FunctionTemplates[templ_name];
-
-    auto name = name_ + '<';
-    for (unsigned i = 0; i < args.size(); ++i)
-    {
-        if (i > 0)
-            name += ", ";
-        name += args[i]->GetString();
-    }
-    name += '>';
+    const auto &template_ = m_FunctionTemplates.at(template_name);
+    auto name = template_.GetName(arguments);
 
     if (m_InflatedFunctions.contains(name))
         return name;
     m_InflatedFunctions.emplace(name);
 
-    parent.m_TypeContext.PushTemplate(args_, args);
-
-    std::stringstream stream('?' + source_, std::ios_base::in);
-    Parser parser(parent.m_TypeContext, parent.m_TemplateContext, stream, where_, parent.m_MacroMap, parent.m_IsMain);
-    const auto inflated = std::dynamic_pointer_cast<FunctionExpression>(parser.ParseFunctionExpression());
-    FunctionStatement(
-        inflated->Where,
-        FunctionFlags_Absolute,
-        name,
-        inflated->Parameters,
-        inflated->IsVarArg,
-        inflated->ResultType,
-        inflated->Body).GenVoidLLVM(m_Builder);
-
-    parent.m_TypeContext.PopTemplate();
+    template_.InflateFunction(parent, arguments).GenVoidLLVM(m_Builder);
     return name;
 }
 
 NJS::TypePtr NJS::TemplateContext::InflateType(
     Parser &parent,
-    const std::string &templ_name,
-    const std::vector<TypePtr> &args)
+    const std::string &template_name,
+    const std::vector<TypePtr> &arguments)
 {
-    const auto &[name_, args_, where_, source_] = m_TypeTemplates[templ_name];
-
-    auto name = name_ + '<';
-    for (unsigned i = 0; i < args.size(); ++i)
-    {
-        if (i > 0)
-            name += ", ";
-        name += args[i]->GetString();
-    }
-    name += '>';
+    const auto &template_ = m_TypeTemplates.at(template_name);
+    const auto name = template_.GetName(arguments);
 
     auto &ref = m_InflatedTypes[name];
-    if (ref)
-        return ref;
-
-    parent.m_TypeContext.PushTemplate(args_, args);
-
-    std::stringstream stream(source_, std::ios_base::in);
-    Parser parser(parent.m_TypeContext, parent.m_TemplateContext, stream, where_, parent.m_MacroMap, parent.m_IsMain);
-    const auto inflated = parser.ParseType();
-
-    parent.m_TypeContext.PopTemplate();
-
-    return ref = inflated;
+    if (!ref)
+        ref = template_.InflateType(parent, arguments);
+    return ref;
 }

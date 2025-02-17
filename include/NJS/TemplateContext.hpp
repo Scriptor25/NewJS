@@ -4,46 +4,38 @@
 #include <string>
 #include <vector>
 #include <NJS/NJS.hpp>
-#include <NJS/SourceLocation.hpp>
+#include <NJS/Template.hpp>
 #include <NJS/Type.hpp>
 
 namespace NJS
 {
-    struct Template
-    {
-        std::string Name;
-        std::vector<std::string> Args;
-        SourceLocation Where;
-        std::string Source;
-    };
-
     class TemplateContext
     {
     public:
         explicit TemplateContext(Builder &builder);
 
         void InsertType(
-            const std::string &name,
-            const std::vector<std::string> &args,
             const SourceLocation &where,
+            const std::string &name,
+            const std::vector<std::string> &parameters,
             const std::string &source);
         void InsertFunction(
-            const std::string &name,
-            const std::vector<std::string> &args,
             const SourceLocation &where,
+            const std::string &name,
+            const std::vector<std::string> &parameters,
             const std::string &source);
 
         [[nodiscard]] bool HasFunction(const std::string &name) const;
         [[nodiscard]] bool HasType(const std::string &name) const;
 
-        std::string InflateFunctionTemplate(
+        std::string InflateFunction(
             Parser &parent,
-            const std::string &templ_name,
-            const std::vector<TypePtr> &args);
+            const std::string &template_name,
+            const std::vector<TypePtr> &arguments);
         TypePtr InflateType(
             Parser &parent,
-            const std::string &templ_name,
-            const std::vector<TypePtr> &args);
+            const std::string &template_name,
+            const std::vector<TypePtr> &arguments);
 
     private:
         Builder &m_Builder;

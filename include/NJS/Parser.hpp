@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <NJS/Import.hpp>
+#include <NJS/Macro.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Token.hpp>
 
@@ -14,16 +15,8 @@ namespace NJS
 {
     using Consumer = std::function<void(const StatementPtr &)>;
 
-    struct Macro
-    {
-        std::vector<std::string> Parameters;
-        std::string Source;
-    };
-
     class Parser
     {
-        friend TemplateContext;
-
     public:
         Parser(
             TypeContext &type_context,
@@ -35,14 +28,20 @@ namespace NJS
             bool is_import = false,
             std::set<std::filesystem::path> parsed_set = {});
 
+        TypeContext &GetTypeContext() const;
+        TemplateContext &GetTemplateContext() const;
+        std::map<std::string, Macro> &GetMacroMap() const;
+        bool IsMain() const;
+        bool IsImport() const;
+
         void Parse(const Consumer &consumer);
 
-    private:
         void ResetBuffer();
 
         int Get();
+        void UnGet();
         void NewLine();
-        void Escape();
+        int Escape(int c);
         Token &Next();
 
         [[nodiscard]] bool AtEof() const;
@@ -96,6 +95,7 @@ namespace NJS
         ExpressionPtr ParseTupleExpression();
         ExpressionPtr ParseUnaryExpression();
 
+    private:
         TypeContext &m_TypeContext;
         TemplateContext &m_TemplateContext;
 
@@ -105,12 +105,11 @@ namespace NJS
         bool m_IsImport;
         std::set<std::filesystem::path> m_ParsedSet;
 
-        int m_C;
         SourceLocation m_Where;
         Token m_Token;
 
         bool m_IsTemplate = false;
         SourceLocation m_TemplateWhere;
-        std::stringstream m_TemplateBuffer;
+        std::string m_TemplateBuffer;
     };
 }

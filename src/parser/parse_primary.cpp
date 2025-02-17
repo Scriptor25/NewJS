@@ -5,20 +5,6 @@
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
-static std::string to_upper(const std::string &src)
-{
-    auto string = src;
-    for (auto &c: string)
-        c = static_cast<char>(std::toupper(c));
-    return string;
-}
-
-static void replace_all(std::string &src, const std::string &find, const std::string &replace)
-{
-    for (size_t pos; (pos = src.find(find)) != std::string::npos;)
-        src.replace(pos, find.size(), replace);
-}
-
 NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
 {
     const auto where = m_Token.Where;
@@ -109,33 +95,7 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
         const auto name = Skip().StringValue;
 
         if (m_MacroMap.contains(name))
-        {
-            const auto &[parameters_, source_] = m_MacroMap[name];
-
-            auto source = source_;
-            if (!parameters_.empty())
-            {
-                Expect("(");
-                for (const auto &parameter: parameters_)
-                {
-                    std::string argument;
-                    while (!At(",") && !At(")") && !AtEof())
-                        argument += Skip().StringValue + ' ';
-                    argument.pop_back();
-
-                    replace_all(source, "##" + parameter, to_upper(argument));
-                    replace_all(source, "#" + parameter, argument);
-
-                    if (!At(")"))
-                        Expect(",");
-                }
-                Expect(")");
-            }
-
-            std::stringstream stream(source);
-            Parser parser(m_TypeContext, m_TemplateContext, stream, SourceLocation("<macro>"), m_MacroMap, m_IsMain);
-            return parser.ParseExpression();
-        }
+            return m_MacroMap.at(name).Inflate(*this);
 
         if (m_TemplateContext.HasFunction(name))
         {
@@ -153,7 +113,7 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
 
             std::string inflated_name;
             if (!m_IsTemplate)
-                inflated_name = m_TemplateContext.InflateFunctionTemplate(*this, name, args);
+                inflated_name = m_TemplateContext.InflateFunction(*this, name, args);
             else
                 inflated_name = name;
             return std::make_shared<SymbolExpression>(where, inflated_name);

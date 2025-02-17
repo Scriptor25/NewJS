@@ -29,8 +29,32 @@ NJS::Parser::Parser(
         m_ParsedSet.insert(filepath);
     }
 
-    m_C = m_Stream.get();
     Next();
+}
+
+NJS::TypeContext &NJS::Parser::GetTypeContext() const
+{
+    return m_TypeContext;
+}
+
+NJS::TemplateContext &NJS::Parser::GetTemplateContext() const
+{
+    return m_TemplateContext;
+}
+
+std::map<std::string, NJS::Macro> &NJS::Parser::GetMacroMap() const
+{
+    return m_MacroMap;
+}
+
+bool NJS::Parser::IsMain() const
+{
+    return m_IsMain;
+}
+
+bool NJS::Parser::IsImport() const
+{
+    return m_IsImport;
 }
 
 void NJS::Parser::Parse(const Consumer &consumer)
@@ -42,7 +66,6 @@ void NJS::Parser::Parse(const Consumer &consumer)
 
 void NJS::Parser::ResetBuffer()
 {
-    m_TemplateBuffer.str({});
     m_TemplateBuffer.clear();
     m_TemplateWhere = m_Where;
     --m_TemplateWhere.Col;
@@ -50,10 +73,17 @@ void NJS::Parser::ResetBuffer()
 
 int NJS::Parser::Get()
 {
-    m_TemplateBuffer.put(static_cast<char>(m_C));
+    m_Where.Col++;
+    const auto c = m_Stream.get();
+    m_TemplateBuffer.push_back(c);
+    return c;
+}
 
-    ++m_Where.Col;
-    return m_C = m_Stream.get();
+void NJS::Parser::UnGet()
+{
+    m_Where.Col--;
+    m_Stream.unget();
+    m_TemplateBuffer.pop_back();
 }
 
 void NJS::Parser::NewLine()

@@ -62,7 +62,7 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_extern)
         if (!parent_is_template)
         {
             m_IsTemplate = false;
-            m_TemplateContext.InsertFunction(name, template_arguments, m_TemplateWhere, m_TemplateBuffer.str());
+            m_TemplateContext.InsertFunction(m_TemplateWhere, name, template_arguments, m_TemplateBuffer);
         }
         return {};
     }

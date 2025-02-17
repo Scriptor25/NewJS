@@ -30,9 +30,9 @@ namespace NJS
         llvm::Value *Callee{};
     };
 
-    struct FunctionInfo
+    struct MemberInfo
     {
-        FunctionTypePtr Type;
-        llvm::Function *Callee{};
+        TypePtr Type;
+        unsigned Index;
     };
 }

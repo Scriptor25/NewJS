@@ -1,50 +1,39 @@
 #include <NJS/Parser.hpp>
 
-void NJS::Parser::Escape()
+int NJS::Parser::Escape(const int c)
 {
     std::string value;
 
-    Get();
-    switch (m_C)
+    switch (c)
     {
         case 'a':
-            m_C = '\a';
-            break;
+            return '\a';
         case 'b':
-            m_C = '\b';
-            break;
+            return '\b';
         case 'e':
-            m_C = '\x1B';
-            break;
+            return '\x1B';
         case 'f':
-            m_C = '\f';
-            break;
+            return '\f';
         case 'n':
-            m_C = '\n';
-            break;
+            return '\n';
         case 'r':
-            m_C = '\r';
-            break;
+            return '\r';
         case 't':
-            m_C = '\t';
-            break;
+            return '\t';
         case 'v':
-            m_C = '\v';
-            break;
+            return '\v';
         case 'x':
             value += static_cast<char>(Get());
             value += static_cast<char>(Get());
-            m_C = std::stoi(value, nullptr, 16);
-            break;
+            return std::stoi(value, nullptr, 16);
         default:
-            if ('0' <= m_C && m_C <= '7')
+            if ('0' <= c && c <= '7')
             {
-                value += static_cast<char>(m_C);
+                value += static_cast<char>(c);
                 value += static_cast<char>(Get());
                 value += static_cast<char>(Get());
-                m_C = std::stoi(value, nullptr, 8);
-                break;
+                return std::stoi(value, nullptr, 8);
             }
-            break;
+            return c;
     }
 }

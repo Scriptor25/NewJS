@@ -7,14 +7,12 @@
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
+#include <NJS/Info.hpp>
 #include <NJS/NJS.hpp>
 
 namespace NJS
 {
-    typedef std::pair<TypePtr, unsigned> MemberT;
-
     TypePtr GetHigherOrderOf(TypeContext &type_context, const TypePtr &type_a, const TypePtr &type_b);
-    unsigned GetAssignmentError(const TypePtr &parameter_type, const TypePtr &argument_type);
 
     class Type
     {
@@ -49,7 +47,7 @@ namespace NJS
         [[nodiscard]] virtual unsigned GetBits() const;
         [[nodiscard]] virtual TypePtr GetElement() const;
         [[nodiscard]] virtual TypePtr GetElement(unsigned index) const;
-        [[nodiscard]] virtual MemberT GetMember(const std::string &name) const;
+        [[nodiscard]] virtual MemberInfo GetMember(const std::string &name) const;
         [[nodiscard]] virtual TypePtr GetResultType() const;
 
         virtual void TypeInfo(
@@ -222,7 +220,7 @@ namespace NJS
         static std::string GenString(const std::map<std::string, TypePtr> &element_type_map);
 
         [[nodiscard]] bool IsStruct() const override;
-        [[nodiscard]] MemberT GetMember(const std::string &name) const override;
+        [[nodiscard]] MemberInfo GetMember(const std::string &name) const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
     private:

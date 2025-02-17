@@ -18,7 +18,7 @@ NJS::ValuePtr NJS::StructExpression::GenLLVM(Builder &builder, const TypePtr &ex
 
     for (const auto &[name_, element_]: Elements)
     {
-        const auto type = expected_type ? expected_type->GetMember(name_).first : nullptr;
+        const auto type = expected_type ? expected_type->GetMember(name_).Type : nullptr;
         const auto value = element_->GenLLVM(builder, type);
         elements[name_] = value;
         element_types[name_] = value->GetType();

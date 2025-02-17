@@ -23,32 +23,17 @@ NJS::Token &NJS::Parser::Next()
     std::string value;
     auto is_float = false;
 
-    while (m_C >= 0 || state != State_Idle)
+    auto c = Get();
+    while (c >= 0 || state != State_Idle)
     {
         switch (state)
         {
             case State_Idle:
-                switch (m_C)
+                switch (c)
                 {
-                    case '/':
-                        where = m_Where;
-                        Get();
-                        if (m_C == '/')
-                        {
-                            state = State_Comment_Line;
-                            break;
-                        }
-                        if (m_C == '*')
-                        {
-                            state = State_Comment_Block;
-                            break;
-                        }
-                        value += '/';
-                        state = State_Operator;
-                        continue;
-
                     case '\n':
                         NewLine();
+                        c = Get();
                         break;
 
                     case '.':
@@ -59,6 +44,7 @@ NJS::Token &NJS::Parser::Next()
                     case '+':
                     case '-':
                     case '*':
+                    case '/':
                     case '%':
                     case '&':
                     case '|':
@@ -68,8 +54,9 @@ NJS::Token &NJS::Parser::Next()
                     case '=':
                     case '$':
                         where = m_Where;
-                        value += static_cast<char>(m_C);
+                        value += static_cast<char>(c);
                         state = State_Operator;
+                        c = Get();
                         break;
 
                     case '(':
@@ -83,27 +70,27 @@ NJS::Token &NJS::Parser::Next()
                     case ';':
                     case ':':
                         where = m_Where;
-                        value += static_cast<char>(m_C);
-                        Get();
+                        value += static_cast<char>(c);
                         return m_Token = {where, TokenType_Other, value};
 
                     case '0':
                         where = m_Where;
-                        Get();
-                        if (m_C == 'b' || m_C == 'B')
+                        c = Get();
+                        if (c == 'b' || c == 'B')
                         {
                             state = State_Bin;
+                            c = Get();
                             break;
                         }
-                        if (m_C == 'x' || m_C == 'X')
+                        if (c == 'x' || c == 'X')
                         {
                             state = State_Hex;
+                            c = Get();
                             break;
                         }
-                        if ('0' <= m_C && m_C <= '7')
+                        if ('0' <= c && c <= '7')
                         {
                             value += '0';
-                            value += static_cast<char>(m_C);
                             state = State_Oct;
                             break;
                         }
@@ -115,214 +102,264 @@ NJS::Token &NJS::Parser::Next()
                     case '"':
                         where = m_Where;
                         state = State_String;
+                        c = Get();
                         break;
 
                     case '\'':
                         where = m_Where;
                         state = State_Char;
+                        c = Get();
                         break;
 
                     default:
                         where = m_Where;
-                        if (isdigit(m_C))
+                        if (isdigit(c))
                         {
-                            value += static_cast<char>(m_C);
                             state = State_Dec;
                             break;
                         }
-                        if (isalpha(m_C) || m_C == '_')
+                        if (isalpha(c) || c == '_')
                         {
-                            value += static_cast<char>(m_C);
                             state = State_Symbol;
                             break;
                         }
+                        c = Get();
                         break;
                 }
                 break;
 
             case State_Comment_Line:
-                if (m_C == '\n')
+                if (c == '\n')
                 {
                     state = State_Idle;
                     NewLine();
                 }
+                c = Get();
                 break;
 
             case State_Comment_Block:
-                if (m_C == '*')
+                if (c == '*')
                 {
-                    Get();
-                    if (m_C == '/')
+                    c = Get();
+                    if (c == '/')
                         state = State_Idle;
-                    else if (m_C == '\n')
+                    else if (c == '\n')
                         NewLine();
                 }
-                else if (m_C == '\n')
+                else if (c == '\n')
                     NewLine();
+                c = Get();
                 break;
 
             case State_Operator:
-                if (value == "." && m_C == '.')
+                if (value == "/" && c == '/')
                 {
-                    value += static_cast<char>(m_C);
+                    state = State_Comment_Line;
+                    value.clear();
+                    c = Get();
                     break;
                 }
-                if (value == ".." && m_C == '.')
+                if (value == "/" && c == '*')
                 {
-                    value += static_cast<char>(m_C);
+                    state = State_Comment_Block;
+                    value.clear();
+                    c = Get();
                     break;
                 }
-                if (value == "+" && (m_C == '+' || m_C == '='))
+                if (value == "." && c == '.')
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "-" && (m_C == '-' || m_C == '=' || m_C == '>'))
+                if (value == ".." && c == '.')
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "*" && (m_C == '*' || m_C == '='))
+                if (value == "+" && (c == '+' || c == '='))
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "**" && m_C == '=')
+                if (value == "-" && (c == '-' || c == '=' || c == '>'))
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "/" && m_C == '=')
+                if (value == "*" && (c == '*' || c == '='))
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "%" && m_C == '=')
+                if (value == "**" && c == '=')
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "|" && (m_C == '|' || m_C == '='))
+                if (value == "/" && c == '=')
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "||" && m_C == '=')
+                if (value == "%" && c == '=')
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "^" && (m_C == '^' || m_C == '='))
+                if (value == "|" && (c == '|' || c == '='))
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "&" && (m_C == '&' || m_C == '='))
+                if (value == "||" && c == '=')
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "&&" && m_C == '=')
+                if (value == "^" && (c == '^' || c == '='))
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "<" && (m_C == '<' || m_C == '='))
+                if (value == "&" && (c == '&' || c == '='))
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "<<" && m_C == '=')
+                if (value == "&&" && c == '=')
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == ">" && (m_C == '>' || m_C == '='))
+                if (value == "<" && (c == '<' || c == '='))
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == ">>" && m_C == '=')
+                if (value == "<<" && c == '=')
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "=" && (m_C == '=' || m_C == '>'))
+                if (value == ">" && (c == '>' || c == '='))
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (value == "!" && m_C == '=')
+                if (value == ">>" && c == '=')
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
+                if (value == "=" && (c == '=' || c == '>'))
+                {
+                    value += static_cast<char>(c);
+                    c = Get();
+                    break;
+                }
+                if (value == "!" && c == '=')
+                {
+                    value += static_cast<char>(c);
+                    c = Get();
+                    break;
+                }
+                UnGet();
                 return m_Token = {where, TokenType_Operator, value};
 
             case State_Bin:
-                if ('0' > m_C || m_C > '1')
+                if ('0' > c || c > '1')
+                {
+                    UnGet();
                     return m_Token = {where, TokenType_Int, value, (std::stoull(value, nullptr, 2))};
-                value += static_cast<char>(m_C);
+                }
+                value += static_cast<char>(c);
+                c = Get();
                 break;
 
             case State_Oct:
-                if ('0' > m_C || m_C > '7')
+                if ('0' > c || c > '7')
+                {
+                    UnGet();
                     return m_Token = {where, TokenType_Int, value, (std::stoull(value, nullptr, 8))};
-                value += static_cast<char>(m_C);
+                }
+                value += static_cast<char>(c);
+                c = Get();
                 break;
 
             case State_Dec:
-                if (isdigit(m_C))
+                if (isdigit(c))
                 {
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
-                if (m_C == '.')
+                if (c == '.')
                 {
                     is_float = true;
-                    value += static_cast<char>(m_C);
+                    value += static_cast<char>(c);
+                    c = Get();
                     break;
                 }
+                UnGet();
                 if (is_float)
                     return m_Token = {where, TokenType_FP, value, 0, std::stod(value)};
                 return m_Token = {where, TokenType_Int, value, std::stoull(value, nullptr, 10)};
 
             case State_Hex:
-                if (!isxdigit(m_C))
+                if (!isxdigit(c))
+                {
+                    UnGet();
                     return m_Token = {where, TokenType_Int, value, (std::stoull(value, nullptr, 16))};
-                value += static_cast<char>(m_C);
+                }
+                value += static_cast<char>(c);
+                c = Get();
                 break;
 
             case State_Symbol:
-                if (!(isalnum(m_C) || m_C == '_'))
+                if (!(isalnum(c) || c == '_'))
+                {
+                    UnGet();
                     return m_Token = {where, TokenType_Symbol, value};
-                value += static_cast<char>(m_C);
+                }
+                value += static_cast<char>(c);
+                c = Get();
                 break;
 
             case State_String:
-                if (m_C == '"')
-                {
-                    Get();
+                if (c == '"')
                     return m_Token = {where, TokenType_String, value};
-                }
-                if (m_C == '\\')
-                    Escape();
-                value += static_cast<char>(m_C);
+                if (c == '\\')
+                    c = Escape(Get());
+                value += static_cast<char>(c);
+                c = Get();
                 break;
 
             case State_Char:
-                if (m_C == '\'')
-                {
-                    Get();
+                if (c == '\'')
                     return m_Token = {where, TokenType_Char, value};
-                }
-                if (m_C == '\\')
-                    Escape();
-                value += static_cast<char>(m_C);
+                if (c == '\\')
+                    c = Escape(Get());
+                value += static_cast<char>(c);
+                c = Get();
                 break;
         }
-
-        Get();
     }
 
     return m_Token = {m_Where};

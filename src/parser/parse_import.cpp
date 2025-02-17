@@ -10,7 +10,12 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
     Expect("from");
     const auto filename = Expect(TokenType_String).StringValue;
 
-    auto filepath = std::filesystem::path(where.Filename).parent_path() / filename;
+    if (m_IsImport && !m_IsMain)
+        return {};
+
+    auto filepath = std::filesystem::path(filename);
+    if (filepath.is_relative())
+        filepath = std::filesystem::path(where.Filename).parent_path() / filepath;
     if (!exists(filepath))
         Error(where, "failed to open import file '{}': file does not exist", filepath.string());
     filepath = canonical(filepath);
@@ -33,38 +38,36 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
         m_ParsedSet);
 
     std::vector<StatementPtr> functions;
-    std::set<std::string> import_module_ids;
+    std::set<std::string> sub_module_ids;
 
     parser.Parse(
         [&](const StatementPtr &ptr)
         {
-            if (m_IsMain)
-                if (const auto import_ = std::dynamic_pointer_cast<ImportStatement>(ptr))
-                {
-                    for (auto &import_module_id: import_->ImportModuleIDs)
-                        import_module_ids.emplace(import_module_id);
-                    const auto module_id = filepath.filename().replace_extension().string();
-                    import_module_ids.emplace(module_id);
-                    return;
-                }
+            if (const auto import_ = std::dynamic_pointer_cast<ImportStatement>(ptr))
+            {
+                for (auto &sub_module_id: import_->SubModuleIDs)
+                    sub_module_ids.emplace(sub_module_id);
+                sub_module_ids.emplace(import_->ModuleID);
+                return;
+            }
 
             if (m_IsImport)
                 return;
 
-            auto function = std::dynamic_pointer_cast<FunctionStatement>(ptr);
-            if (!function)
+            if (auto function = std::dynamic_pointer_cast<FunctionStatement>(ptr);
+                function && !(function->Flags & FunctionFlags_Extern))
+            {
+                function->Body = {};
+                functions.emplace_back(function);
                 return;
-
-            if (function->Flags & FunctionFlags_Extern)
-                return;
-
-            function->Body = {};
-            functions.emplace_back(function);
+            }
         });
 
     stream.close();
 
-    return std::make_shared<ImportStatement>(where, mapping, filepath, functions, import_module_ids);
+    auto module_id = filepath.filename().replace_extension().string();
+
+    return std::make_shared<ImportStatement>(where, mapping, filepath, functions, module_id, sub_module_ids);
 }
 
 NJS::ImportMapping NJS::Parser::ParseImportMapping()

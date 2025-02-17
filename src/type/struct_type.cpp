@@ -25,7 +25,7 @@ bool NJS::StructType::IsStruct() const
     return true;
 }
 
-NJS::MemberT NJS::StructType::GetMember(const std::string &name) const
+NJS::MemberInfo NJS::StructType::GetMember(const std::string &name) const
 {
     unsigned i = 0;
     for (const auto &[name_, type_]: m_ElementTypeMap)
