@@ -1,3 +1,5 @@
+import { fib } from "./fib.njs"
+
 extern function println(message: i8[])
 extern function malloc(n: u64): void[]
 extern function realloc(block: void[], n: u64): void[]
