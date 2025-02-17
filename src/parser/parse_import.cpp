@@ -66,6 +66,8 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
     stream.close();
 
     auto module_id = filepath.filename().replace_extension().string();
+    if (m_IsMain)
+        sub_module_ids.emplace(module_id);
 
     return std::make_shared<ImportStatement>(where, mapping, filepath, functions, module_id, sub_module_ids);
 }

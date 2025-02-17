@@ -34,8 +34,6 @@ void NJS::ImportStatement::GenVoidLLVM(Builder &builder) const
 {
     for (auto &sub_module_id: SubModuleIDs)
         CreateModuleCall(builder, sub_module_id);
-    if (!SubModuleIDs.contains(ModuleID))
-        CreateModuleCall(builder, ModuleID);
 
     Mapping.MapFunctions(builder, Where, ModuleID, Functions);
 }
