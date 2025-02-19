@@ -4,6 +4,10 @@
 NJS::StatementPtr NJS::Parser::ParseReturnStatement()
 {
     const auto where = Expect("return").Where;
-    const auto value = ParseExpression();
+
+    ExpressionPtr value;
+    if (!NextAt("void"))
+        value = ParseExpression();
+
     return std::make_shared<ReturnStatement>(where, value);
 }

@@ -11,6 +11,7 @@
 #include <llvm/Passes/StandardInstrumentations.h>
 #include <NJS/Info.hpp>
 #include <NJS/NJS.hpp>
+#include <NJS/SourceLocation.hpp>
 
 namespace NJS
 {
@@ -120,6 +121,7 @@ namespace NJS
 
         ValuePtr &DefineVariable(const SourceLocation &where, const std::string &name);
         ValuePtr &GetVariable(const SourceLocation &where, const std::string &name);
+        ValuePtr &GetOrDefineVariable(const std::string &name);
 
         TypePtr &CurrentFunctionResultType();
 

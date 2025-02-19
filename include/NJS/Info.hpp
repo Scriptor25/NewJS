@@ -32,7 +32,7 @@ namespace NJS
 
     struct MemberInfo
     {
-        TypePtr Type;
         unsigned Index;
+        TypePtr Type;
     };
 }

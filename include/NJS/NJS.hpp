@@ -15,23 +15,89 @@ namespace NJS
     struct SourceLocation;
     struct Token;
 
-    using TypePtr = std::shared_ptr<class Type>;
-    using NoTypePtr = std::shared_ptr<class NoType>;
-    using VoidTypePtr = std::shared_ptr<class VoidType>;
-    using IntegerTypePtr = std::shared_ptr<class IntegerType>;
-    using FloatingPointTypePtr = std::shared_ptr<class FloatingPointType>;
-    using PointerTypePtr = std::shared_ptr<class PointerType>;
-    using ReferenceTypePtr = std::shared_ptr<class ReferenceType>;
-    using ArrayTypePtr = std::shared_ptr<class ArrayType>;
-    using StructTypePtr = std::shared_ptr<class StructType>;
-    using TupleTypePtr = std::shared_ptr<class TupleType>;
-    using FunctionTypePtr = std::shared_ptr<class FunctionType>;
+    class Type;
+    class NoType;
+    class VoidType;
+    class IntegerType;
+    class FloatingPointType;
+    class PointerType;
+    class ReferenceType;
+    class ArrayType;
+    class StructType;
+    class TupleType;
+    class FunctionType;
 
-    using ParameterPtr = std::shared_ptr<struct Parameter>;
-    using ValuePtr = std::shared_ptr<class Value>;
+    using TypePtr = std::shared_ptr<Type>;
+    using NoTypePtr = std::shared_ptr<NoType>;
+    using VoidTypePtr = std::shared_ptr<VoidType>;
+    using IntegerTypePtr = std::shared_ptr<IntegerType>;
+    using FloatingPointTypePtr = std::shared_ptr<FloatingPointType>;
+    using PointerTypePtr = std::shared_ptr<PointerType>;
+    using ReferenceTypePtr = std::shared_ptr<ReferenceType>;
+    using ArrayTypePtr = std::shared_ptr<ArrayType>;
+    using StructTypePtr = std::shared_ptr<StructType>;
+    using TupleTypePtr = std::shared_ptr<TupleType>;
+    using FunctionTypePtr = std::shared_ptr<FunctionType>;
 
-    using StatementPtr = std::shared_ptr<struct Statement>;
-    using ExpressionPtr = std::shared_ptr<struct Expression>;
+    struct Parameter;
+    struct DestructureTuple;
+    struct DestructureObject;
+
+    using ParameterPtr = std::shared_ptr<Parameter>;
+
+    class Value;
+    class LValue;
+    class RValue;
+
+    using ValuePtr = std::shared_ptr<Value>;
+
+    struct Statement;
+    struct ForStatement;
+    struct FunctionStatement;
+    struct IfStatement;
+    struct ImportStatement;
+    struct ReturnStatement;
+    struct ScopeStatement;
+    struct SwitchStatement;
+    struct VariableStatement;
+    struct WhileStatement;
+
+    using StatementPtr = std::shared_ptr<Statement>;
+    using FunctionStatementPtr = std::shared_ptr<FunctionStatement>;
+
+    struct Expression;
+    struct BinaryExpression;
+    struct BooleanExpression;
+    struct CallExpression;
+    struct CastExpression;
+    struct CharExpression;
+    struct FormatExpression;
+    struct FloatingPointExpression;
+    struct FunctionExpression;
+    struct IntegerExpression;
+    struct MemberExpression;
+    struct ScopeExpression;
+    struct SizeOfExpression;
+    struct StringExpression;
+    struct StructExpression;
+    struct SubscriptExpression;
+    struct SwitchExpression;
+    struct SymbolExpression;
+    struct TernaryExpression;
+    struct TupleExpression;
+    struct TypeOfExpression;
+    struct UnaryExpression;
+
+    using ExpressionPtr = std::shared_ptr<Expression>;
+
+    enum FunctionFlags
+    {
+        FunctionFlags_None = 0,
+        FunctionFlags_Extern = 1,
+        FunctionFlags_Operator = 2,
+        FunctionFlags_Template = 4,
+        FunctionFlags_Absolute = 8,
+    };
 
     void Indent();
     void Exdent();

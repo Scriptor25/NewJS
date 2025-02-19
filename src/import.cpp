@@ -1,4 +1,3 @@
-#include <ranges>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Import.hpp>
@@ -34,65 +33,65 @@ void NJS::ImportMapping::MapFunctions(
     Builder &builder,
     const SourceLocation &where,
     const std::string &module_id,
-    const std::vector<StatementPtr> &functions) const
+    const std::vector<FunctionStatementPtr> &functions) const
 {
-    std::map<std::string, TypePtr> element_types;
-    std::map<std::string, ValuePtr> element_values;
+    std::vector<std::pair<std::string, TypePtr>> element_types;
+    std::vector<std::pair<std::string, ValuePtr>> element_values;
 
     for (const auto &function: functions)
     {
-        const auto &fn = *std::dynamic_pointer_cast<FunctionStatement>(function);
-
-        auto name = module_id + '.';
-        if (fn.Flags & FunctionFlags_Operator)
+        auto name = (function->Flags & FunctionFlags_Extern) ? std::string() : module_id + '.';
+        if (function->Flags & FunctionFlags_Operator)
         {
-            if (fn.Parameters.size() == 1)
-                name += (fn.IsVarArg ? std::string() : fn.Name)
-                        + fn.Parameters[0]->Type->GetString()
-                        + (fn.IsVarArg ? fn.Name : std::string());
-            else if (fn.Parameters.size() == 2)
-                name += fn.Parameters[0]->Type->GetString() + fn.Name + fn.Parameters[1]->Type->GetString();
+            if (function->Parameters.size() == 1)
+                name += (function->IsVarArg ? std::string() : function->Name)
+                        + function->Parameters[0]->Type->GetString()
+                        + (function->IsVarArg ? function->Name : std::string());
+            else if (function->Parameters.size() == 2)
+                name += function->Parameters[0]->Type->GetString()
+                        + function->Name
+                        + function->Parameters[1]->Type->GetString();
         }
         else
-            name += fn.Name;
+            name += function->Name;
 
         std::vector<TypePtr> parameter_types;
-        for (const auto &parameter: fn.Parameters)
+        for (const auto &parameter: function->Parameters)
             parameter_types.push_back(parameter->Type);
 
         const auto type = builder.GetTypeContext().GetFunctionType(
-            fn.ResultType,
+            function->ResultType,
             parameter_types,
-            fn.IsVarArg);
+            function->IsVarArg);
 
         auto callee = builder.GetModule().getOrInsertFunction(name, type->GenFnLLVM(where, builder));
         const auto value = RValue::Create(builder, type, callee.getCallee());
 
-        if (fn.Flags & FunctionFlags_Operator)
+        if (function->Flags & FunctionFlags_Operator)
         {
-            if (fn.Parameters.size() == 1)
+            if (function->Parameters.size() == 1)
                 builder.DefineOperator(
-                    fn.Name,
-                    !fn.IsVarArg,
-                    fn.Parameters[0]->Type,
-                    fn.ResultType,
+                    function->Name,
+                    !function->IsVarArg,
+                    function->Parameters[0]->Type,
+                    function->ResultType,
                     callee.getCallee());
-            else if (fn.Parameters.size() == 2)
+            else if (function->Parameters.size() == 2)
                 builder.DefineOperator(
-                    fn.Name,
-                    fn.Parameters[0]->Type,
-                    fn.Parameters[1]->Type,
-                    fn.ResultType,
+                    function->Name,
+                    function->Parameters[0]->Type,
+                    function->Parameters[1]->Type,
+                    function->ResultType,
                     callee.getCallee());
         }
         else if (All)
-            builder.DefineVariable(where, fn.Name) = value;
-        else if (NameMap.contains(fn.Name))
-            builder.DefineVariable(where, NameMap.at(fn.Name)) = value;
+            builder.DefineVariable(where, function->Name) = value;
+        else if (NameMap.contains(function->Name))
+            builder.DefineVariable(where, NameMap.at(function->Name)) = value;
         else
         {
-            element_values[fn.Name] = value;
-            element_types[fn.Name] = type;
+            element_values.emplace_back(function->Name, value);
+            element_types.emplace_back(function->Name, type);
         }
     }
 
@@ -100,9 +99,11 @@ void NJS::ImportMapping::MapFunctions(
     {
         const auto module_type = builder.GetTypeContext().GetStructType(element_types);
         llvm::Value *module = llvm::Constant::getNullValue(module_type->GetLLVM(where, builder));
-        unsigned i = 0;
-        for (const auto &value_: element_values | std::ranges::views::values)
-            module = builder.GetBuilder().CreateInsertValue(module, value_->Load(where), i++);
+        for (const auto &[name_, value_]: element_values)
+            module = builder.GetBuilder().CreateInsertValue(
+                module,
+                value_->Load(where),
+                module_type->GetMember(where, name_).Index);
         builder.DefineVariable(where, Name) = RValue::Create(builder, module_type, module);
     }
 }

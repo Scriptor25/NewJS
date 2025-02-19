@@ -23,8 +23,9 @@ void NJS::WhileStatement::GenVoidLLVM(Builder &builder) const
     builder.GetBuilder().CreateBr(head_block);
 
     builder.GetBuilder().SetInsertPoint(head_block);
-    const auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
-    builder.GetBuilder().CreateCondBr(condition->Load(Where), loop_block, end_block);
+    auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
+    condition = builder.CreateCast(Condition->Where, condition, builder.GetTypeContext().GetBooleanType());
+    builder.GetBuilder().CreateCondBr(condition->Load(Condition->Where), loop_block, end_block);
 
     builder.GetBuilder().SetInsertPoint(loop_block);
     Body->GenVoidLLVM(builder);

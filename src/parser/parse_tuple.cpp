@@ -19,5 +19,9 @@ NJS::ExpressionPtr NJS::Parser::ParseTupleExpression()
     }
     Expect("]");
 
-    return std::make_shared<TupleExpression>(where, elements);
+    TypePtr type;
+    if (NextAt(":"))
+        type = ParseType();
+
+    return std::make_shared<TupleExpression>(where, type, elements);
 }

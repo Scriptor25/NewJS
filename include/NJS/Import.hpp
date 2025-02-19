@@ -14,7 +14,7 @@ namespace NJS
             Builder &builder,
             const SourceLocation &where,
             const std::string &module_id,
-            const std::vector<StatementPtr> &functions) const;
+            const std::vector<FunctionStatementPtr> &functions) const;
 
         bool All{};
         std::string Name;

@@ -175,27 +175,14 @@ struct TupleType final : Type
 
 struct FunctionType final : Type
 {
-    FunctionType(Type *result_type, Type **parameter_types, const unsigned parameter_count, const bool var_arg)
-        : Type(Function_AppendV, Function_AppendP),
-          ResultType(result_type),
-          ParameterTypes(parameter_types),
-          ParameterCount(parameter_count),
-          VarArg(var_arg)
+    FunctionType()
+        : Type(Function_AppendV, Function_AppendP)
     {
     }
 
     ~FunctionType()
     {
-        delete ResultType;
-        for (unsigned i = 0; i < ParameterCount; ++i)
-            delete ParameterTypes[i];
-        delete[] ParameterTypes;
     }
-
-    Type *ResultType;
-    Type **ParameterTypes;
-    unsigned ParameterCount;
-    bool VarArg;
 };
 
 Type *ParseType(va_list &arg_ptr)
@@ -254,15 +241,7 @@ Type *ParseType(va_list &arg_ptr)
         }
 
         case ID_FUNCTION:
-        {
-            const auto result_type = ParseType(arg_ptr);
-            const auto parameter_count = va_arg(arg_ptr, unsigned);
-            const auto parameter_types = New<Type *>(parameter_count);
-            for (unsigned i = 0; i < parameter_count; ++i)
-                parameter_types[i] = ParseType(arg_ptr);
-            const auto var_arg = va_arg(arg_ptr, unsigned);
-            return new FunctionType(result_type, parameter_types, parameter_count, var_arg);
-        }
+            return new FunctionType();
 
         default:
             return nullptr;
@@ -523,18 +502,12 @@ void Tuple_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsigne
 
 void Function_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, va_list &arg_ptr)
 {
-    const auto self = reinterpret_cast<FunctionType *>(type);
-    (void) self;
-
     const auto ptr = va_arg(arg_ptr, char*);
     offset += snprintf(buffer + offset, buffer_size - offset, "fn[%p]", ptr);
 }
 
 void Function_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, char *&ptr)
 {
-    const auto self = reinterpret_cast<FunctionType *>(type);
-    (void) self;
-
     offset += snprintf(buffer + offset, buffer_size - offset, "fn[%p]", *reinterpret_cast<char **>(ptr));
     ptr += sizeof(char *);
 }

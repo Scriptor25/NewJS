@@ -12,9 +12,9 @@ NJS::TypePtr NJS::NoType::GetResultType() const
     return m_TypeContext.GetNoType(m_Name + "::RESULT");
 }
 
-void NJS::NoType::TypeInfo(const SourceLocation &, Builder &, std::vector<llvm::Value *> &) const
+void NJS::NoType::TypeInfo(const SourceLocation &where, Builder &, std::vector<llvm::Value *> &) const
 {
-    Error("the no-type does not provide type information");
+    Error(where, "the incomplete type '{}' does not provide type information", m_Name);
 }
 
 NJS::NoType::NoType(TypeContext &type_context, std::string string, std::string name)
@@ -25,7 +25,7 @@ NJS::NoType::NoType(TypeContext &type_context, std::string string, std::string n
 
 llvm::Type *NJS::NoType::GenLLVM(const SourceLocation &where, const Builder &) const
 {
-    Error(where, "the no-type does not have a llvm representation");
+    Error(where, "the incomplete type '{}' does not have a llvm representation", m_Name);
 }
 
 unsigned NJS::NoType::GenSize() const

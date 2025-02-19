@@ -7,7 +7,7 @@ NJS::ValuePtr NJS::Builder::CreateMember(const SourceLocation &where, const Valu
 {
     const auto object_type = object->GetType();
 
-    const auto [type_, index_] = object_type->GetMember(name);
+    const auto [index_, type_] = object_type->GetMember(where, name);
 
     if (object->IsLValue())
     {

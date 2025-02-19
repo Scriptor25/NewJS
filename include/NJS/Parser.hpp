@@ -61,7 +61,7 @@ namespace NJS
         TypePtr ParseStructType();
         TypePtr ParseFunctionType();
         bool ParseTypeList(std::vector<TypePtr> &types, const std::string &delim);
-        void ParseTypeMap(std::map<std::string, TypePtr> &types, const std::string &delim);
+        void ParseTypeMap(std::vector<std::pair<std::string, TypePtr>> &types, const std::string &delim);
 
         ParameterPtr ParseParameter();
         bool ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string &delimiter);

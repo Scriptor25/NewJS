@@ -14,7 +14,7 @@ NJS::ParameterPtr NJS::Parser::ParseParameter()
     {
         std::vector<ParameterPtr> parameters;
         ParseParameterList(parameters, "]");
-        parameter = std::make_shared<DestructureArray>(parameters);
+        parameter = std::make_shared<DestructureTuple>(parameters);
     }
     else
     {

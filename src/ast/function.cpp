@@ -47,28 +47,42 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
     else
         function_name = builder.GetName(Flags & FunctionFlags_Absolute, Name);
 
+    std::vector<TypePtr> parameter_types;
+    for (const auto &parameter: Parameters)
+        parameter_types.push_back(parameter->Type);
+    const auto type = builder.GetTypeContext().GetFunctionType(ResultType, parameter_types, IsVarArg);
+
     auto function = builder.GetModule().getFunction(function_name);
-    if (!function)
+    const auto new_define = !function;
+
+    if (new_define)
     {
-        std::vector<TypePtr> parameter_types;
-        for (const auto &parameter: Parameters)
-            parameter_types.push_back(parameter->Type);
-        const auto type = builder.GetTypeContext().GetFunctionType(ResultType, parameter_types, IsVarArg);
         function = llvm::Function::Create(
             type->GenFnLLVM(Where, builder),
             llvm::GlobalValue::ExternalLinkage,
             function_name,
             builder.GetModule());
+    }
 
-        if (Flags & FunctionFlags_Operator)
-        {
-            if (Parameters.size() == 1)
-                builder.DefineOperator(Name, !IsVarArg, Parameters[0]->Type, ResultType, function);
-            else if (Parameters.size() == 2)
-                builder.DefineOperator(Name, Parameters[0]->Type, Parameters[1]->Type, ResultType, function);
-        }
+    if (Flags & FunctionFlags_Operator)
+    {
+        if (Parameters.size() == 1)
+            builder.DefineOperator(Name, !IsVarArg, Parameters[0]->Type, ResultType, function);
+        else if (Parameters.size() == 2)
+            builder.DefineOperator(Name, Parameters[0]->Type, Parameters[1]->Type, ResultType, function);
+    }
+    else
+    {
+        auto value = RValue::Create(builder, type, function);
+        if (new_define)
+            builder.DefineVariable(Where, Name) = std::move(value);
         else
-            builder.DefineVariable(Where, Name) = RValue::Create(builder, type, function);
+        {
+            auto &reference = builder.GetOrDefineVariable(Name);
+            if (reference && reference->GetType() != value->GetType())
+                Error(Where, "function prototype mismatch: {} != {}", reference->GetType(), value->GetType());
+            reference = std::move(value);
+        }
     }
 
     if (!Body)

@@ -6,20 +6,17 @@ NJS::ExpressionPtr NJS::Parser::ParseStructExpression()
 {
     const auto where = Expect("{").Where;
 
-    std::map<std::string, ExpressionPtr> elements;
+    std::vector<std::pair<std::string, ExpressionPtr>> elements;
     while (!At("}") && !AtEof())
     {
         const auto [where_, type_, name_, int_, fp_] = Expect(TokenType_Symbol);
+
+        ExpressionPtr value;
         if (!NextAt(":"))
-        {
-            const auto value = std::make_shared<SymbolExpression>(where_, name_);
-            elements[name_] = value;
-        }
+            value = std::make_shared<SymbolExpression>(where_, name_);
         else
-        {
-            const auto value = ParseExpression();
-            elements[name_] = value;
-        }
+            value = ParseExpression();
+        elements.emplace_back(name_, value);
 
         if (!At("}"))
             Expect(",");
@@ -28,5 +25,9 @@ NJS::ExpressionPtr NJS::Parser::ParseStructExpression()
     }
     Expect("}");
 
-    return std::make_shared<StructExpression>(where, elements);
+    TypePtr type;
+    if (NextAt(":"))
+        type = ParseType();
+
+    return std::make_shared<StructExpression>(where, type, elements);
 }

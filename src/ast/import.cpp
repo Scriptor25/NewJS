@@ -7,7 +7,7 @@ NJS::ImportStatement::ImportStatement(
     SourceLocation where,
     ImportMapping mapping,
     std::filesystem::path filepath,
-    std::vector<StatementPtr> functions,
+    std::vector<FunctionStatementPtr> functions,
     std::string module_id,
     std::set<std::string> sub_module_ids)
     : Statement(std::move(where)),

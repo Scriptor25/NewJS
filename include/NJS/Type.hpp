@@ -47,7 +47,7 @@ namespace NJS
         [[nodiscard]] virtual unsigned GetBits() const;
         [[nodiscard]] virtual TypePtr GetElement() const;
         [[nodiscard]] virtual TypePtr GetElement(unsigned index) const;
-        [[nodiscard]] virtual MemberInfo GetMember(const std::string &name) const;
+        [[nodiscard]] virtual MemberInfo GetMember(const SourceLocation &where, const std::string &name) const;
         [[nodiscard]] virtual TypePtr GetResultType() const;
 
         virtual void TypeInfo(
@@ -217,19 +217,20 @@ namespace NJS
         friend TypeContext;
 
     public:
-        static std::string GenString(const std::map<std::string, TypePtr> &element_type_map);
+        static std::string GenString(const std::vector<std::pair<std::string, TypePtr>> &element_types);
 
         [[nodiscard]] bool IsStruct() const override;
-        [[nodiscard]] MemberInfo GetMember(const std::string &name) const override;
+        [[nodiscard]] MemberInfo GetMember(const SourceLocation &where, const std::string &name) const override;
+        [[nodiscard]] MemberInfo GetMember(const SourceLocation &where, unsigned index) const;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
     private:
-        StructType(TypeContext &type_context, std::string string, std::map<std::string, TypePtr> element_type_map);
+        StructType(TypeContext &type_context, std::string string, std::vector<std::pair<std::string, TypePtr>> element_types);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
         [[nodiscard]] unsigned GenSize() const override;
 
-        std::map<std::string, TypePtr> m_ElementTypeMap;
+        std::vector<std::pair<std::string, TypePtr>> m_ElementTypes;
     };
 
     class TupleType final : public Type

@@ -12,15 +12,6 @@
 
 namespace NJS
 {
-    enum FunctionFlags
-    {
-        FunctionFlags_None = 0,
-        FunctionFlags_Extern = 1,
-        FunctionFlags_Operator = 2,
-        FunctionFlags_Template = 4,
-        FunctionFlags_Absolute = 8,
-    };
-
     struct Statement
     {
         explicit Statement(SourceLocation where);
@@ -90,7 +81,7 @@ namespace NJS
             SourceLocation where,
             ImportMapping mapping,
             std::filesystem::path filepath,
-            std::vector<StatementPtr> functions,
+            std::vector<FunctionStatementPtr> functions,
             std::string module_id,
             std::set<std::string> sub_module_ids);
 
@@ -101,7 +92,7 @@ namespace NJS
 
         ImportMapping Mapping;
         std::filesystem::path Filepath;
-        std::vector<StatementPtr> Functions;
+        std::vector<FunctionStatementPtr> Functions;
         std::string ModuleID;
         std::set<std::string> SubModuleIDs;
     };
@@ -221,9 +212,9 @@ namespace NJS
         ExpressionPtr Operand;
     };
 
-    struct CharacterExpression final : Expression
+    struct CharExpression final : Expression
     {
-        CharacterExpression(SourceLocation where, char value);
+        CharExpression(SourceLocation where, char value);
 
         ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
@@ -333,12 +324,16 @@ namespace NJS
 
     struct StructExpression final : Expression
     {
-        StructExpression(SourceLocation where, std::map<std::string, ExpressionPtr> elements);
+        StructExpression(
+            SourceLocation where,
+            TypePtr type,
+            std::vector<std::pair<std::string, ExpressionPtr>> elements);
 
         ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
-        std::map<std::string, ExpressionPtr> Elements;
+        TypePtr Type;
+        std::vector<std::pair<std::string, ExpressionPtr>> Elements;
     };
 
     struct SubscriptExpression final : Expression
@@ -396,11 +391,12 @@ namespace NJS
 
     struct TupleExpression final : Expression
     {
-        TupleExpression(SourceLocation where, std::vector<ExpressionPtr> elements);
+        TupleExpression(SourceLocation where, TypePtr type, std::vector<ExpressionPtr> elements);
 
         ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
+        TypePtr Type;
         std::vector<ExpressionPtr> Elements;
     };
 

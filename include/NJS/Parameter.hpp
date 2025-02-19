@@ -49,9 +49,9 @@ namespace NJS
         std::map<std::string, ParameterPtr> Elements;
     };
 
-    struct DestructureArray final : Parameter
+    struct DestructureTuple final : Parameter
     {
-        explicit DestructureArray(std::vector<ParameterPtr> elements);
+        explicit DestructureTuple(std::vector<ParameterPtr> elements);
 
         bool RequireValue() override;
         void CreateVars(

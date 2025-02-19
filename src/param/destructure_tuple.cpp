@@ -3,18 +3,18 @@
 #include <NJS/Parameter.hpp>
 #include <NJS/Type.hpp>
 
-NJS::DestructureArray::DestructureArray(std::vector<ParameterPtr> elements)
+NJS::DestructureTuple::DestructureTuple(std::vector<ParameterPtr> elements)
     : Parameter({}),
       Elements(std::move(elements))
 {
 }
 
-bool NJS::DestructureArray::RequireValue()
+bool NJS::DestructureTuple::RequireValue()
 {
     return true;
 }
 
-void NJS::DestructureArray::CreateVars(
+void NJS::DestructureTuple::CreateVars(
     Builder &builder,
     const SourceLocation &where,
     const ValuePtr value,
@@ -27,7 +27,7 @@ void NJS::DestructureArray::CreateVars(
     }
 }
 
-std::ostream &NJS::DestructureArray::Print(std::ostream &stream)
+std::ostream &NJS::DestructureTuple::Print(std::ostream &stream)
 {
     stream << "[ ";
     for (unsigned i = 0; i < Elements.size(); ++i)

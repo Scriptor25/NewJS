@@ -19,7 +19,7 @@ namespace NJS
         PointerTypePtr GetPointerType(const TypePtr &element_type);
         ReferenceTypePtr GetReferenceType(const TypePtr &element_type);
         ArrayTypePtr GetArrayType(const TypePtr &element_type, unsigned count);
-        StructTypePtr GetStructType(const std::map<std::string, TypePtr> &element_type_map);
+        StructTypePtr GetStructType(const std::vector<std::pair<std::string, TypePtr>> &element_types);
         TupleTypePtr GetTupleType(const std::vector<TypePtr> &element_types);
         FunctionTypePtr GetFunctionType(
             const TypePtr &result_type,

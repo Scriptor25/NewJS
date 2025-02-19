@@ -121,7 +121,7 @@ NJS::TypePtr NJS::Type::GetElement(unsigned) const
     Error("type {} does not support 'GetElement'", m_String);
 }
 
-NJS::MemberInfo NJS::Type::GetMember(const std::string &) const
+NJS::MemberInfo NJS::Type::GetMember(const SourceLocation &where, const std::string &) const
 {
     Error("type {} does not support 'GetMember'", m_String);
 }

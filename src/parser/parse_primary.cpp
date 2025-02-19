@@ -37,7 +37,7 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
     }
 
     if (At(TokenType_Char))
-        return std::make_shared<CharacterExpression>(where, Skip().StringValue[0]);
+        return std::make_shared<CharExpression>(where, Skip().StringValue[0]);
 
     if (NextAt("true"))
         return std::make_shared<BooleanExpression>(where, true);

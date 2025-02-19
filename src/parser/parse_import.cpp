@@ -10,9 +10,6 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
     Expect("from");
     const auto filename = Expect(TokenType_String).StringValue;
 
-    if (m_IsImport && !m_IsMain)
-        return {};
-
     auto filepath = std::filesystem::path(filename);
     if (filepath.is_relative())
         filepath = std::filesystem::path(where.Filename).parent_path() / filepath;
@@ -37,13 +34,13 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
         true,
         m_ParsedSet);
 
-    std::vector<StatementPtr> functions;
+    std::vector<FunctionStatementPtr> functions;
     std::set<std::string> sub_module_ids;
 
     parser.Parse(
         [&](const StatementPtr &ptr)
         {
-            if (const auto import_ = std::dynamic_pointer_cast<ImportStatement>(ptr))
+            if (const auto import_ = std::dynamic_pointer_cast<ImportStatement>(ptr); m_IsMain && import_)
             {
                 for (auto &sub_module_id: import_->SubModuleIDs)
                     sub_module_ids.emplace(sub_module_id);
@@ -51,15 +48,10 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
                 return;
             }
 
-            if (m_IsImport)
-                return;
-
-            if (auto function = std::dynamic_pointer_cast<FunctionStatement>(ptr);
-                function && !(function->Flags & FunctionFlags_Extern))
+            if (auto function = std::dynamic_pointer_cast<FunctionStatement>(ptr))
             {
                 function->Body = {};
                 functions.emplace_back(function);
-                return;
             }
         });
 

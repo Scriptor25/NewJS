@@ -110,7 +110,7 @@ NJS::TypePtr NJS::Parser::ParseTupleType()
 NJS::TypePtr NJS::Parser::ParseStructType()
 {
     Expect("{");
-    std::map<std::string, TypePtr> types;
+    std::vector<std::pair<std::string, TypePtr>> types;
     ParseTypeMap(types, "}");
     return m_TypeContext.GetStructType(types);
 }
@@ -142,25 +142,21 @@ bool NJS::Parser::ParseTypeList(std::vector<TypePtr> &types, const std::string &
         types.push_back(ParseType());
         if (!At(delim))
             Expect(",");
-        else
-            NextAt(",");
     }
     Expect(delim);
     return false;
 }
 
-void NJS::Parser::ParseTypeMap(std::map<std::string, TypePtr> &types, const std::string &delim)
+void NJS::Parser::ParseTypeMap(std::vector<std::pair<std::string, TypePtr>> &types, const std::string &delim)
 {
     while (!At(delim) && !AtEof())
     {
         const auto name = Expect(TokenType_Symbol).StringValue;
         Expect(":");
-        types[name] = ParseType();
+        types.emplace_back(name, ParseType());
 
         if (!At(delim))
             Expect(",");
-        else
-            NextAt(",");
     }
     Expect(delim);
 }

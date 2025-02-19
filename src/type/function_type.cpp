@@ -54,14 +54,9 @@ bool NJS::FunctionType::IsVarArg() const
     return m_VarArg;
 }
 
-void NJS::FunctionType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
+void NJS::FunctionType::TypeInfo(const SourceLocation &, Builder &builder, std::vector<llvm::Value *> &args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_FUNCTION));
-    m_ResultType->TypeInfo(where, builder, args);
-    args.push_back(builder.GetBuilder().getInt32(m_ParameterTypes.size()));
-    for (const auto &arg_type: m_ParameterTypes)
-        arg_type->TypeInfo(where, builder, args);
-    args.push_back(builder.GetBuilder().getInt32(m_VarArg ? 1 : 0));
 }
 
 llvm::FunctionType *NJS::FunctionType::GenFnLLVM(const SourceLocation &where, const Builder &builder) const

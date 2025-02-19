@@ -1,0 +1,48 @@
+import hittable from "./hittable.njs"
+import math     from "./math.njs"
+import ray      from "./ray.njs"
+import record   from "./record.njs"
+
+extern function sqrt(x: f64): f64
+
+type sphere = {
+    hit: (hittable[], ray, f64, f64, record&) => u1,
+    center: point3,
+    radius: f64,
+}
+
+function hit(self: sphere&, r: ray, ray_t_min: f64, ray_t_max: f64, rec: record&): u1 {
+    const oc = self.center - r.origin
+    const a = math.length_squared(r.direction)
+    const b = math.dot(r.direction, oc)
+    const c = math.length_squared(oc) - self.radius * self.radius
+
+    const discriminant = b * b - a * c
+    if (discriminant < 0)
+        return false
+
+    const sqrtd = sqrt(discriminant)
+
+    let root = (b - sqrtd) / a
+    if (root <= ray_t_min || ray_t_max <= root) {
+        root = (b + sqrtd) / a
+        if (root <= ray_t_min || ray_t_max <= root)
+            return false
+    }
+
+    rec.t = root
+    rec.p = ray.at(r, rec.t)
+
+    const outward_normal = (rec.p - self.center) / self.radius
+    record.set_face_normal(rec, r, outward_normal)
+
+    return true
+}
+
+function create(center: point3, radius: f64): sphere {
+    return {
+        hit,
+        center,
+        radius,
+    }
+}

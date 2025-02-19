@@ -275,6 +275,15 @@ NJS::ValuePtr &NJS::Builder::GetVariable(const SourceLocation &where, const std:
     Error(where, "undefined symbol '{}'", name);
 }
 
+NJS::ValuePtr &NJS::Builder::GetOrDefineVariable(const std::string &name)
+{
+    for (auto &stack: std::ranges::reverse_view(m_Stack))
+        if (stack.Contains(name))
+            return stack[name];
+    auto &stack = m_Stack.back();
+    return stack[name];
+}
+
 NJS::TypePtr &NJS::Builder::CurrentFunctionResultType()
 {
     return m_Stack.back().ResultType;
