@@ -29,7 +29,7 @@ NJS::ExpressionPtr NJS::Parser::ParseFormatExpression()
         Parser parser(m_TypeContext, m_TemplateContext, stream, SourceLocation("<dynamic>"), m_MacroMap, m_IsMain);
         dynamics[index++] = parser.ParseExpression();
 
-        source.erase(0, static_cast<unsigned>(stream.tellg()) - 1);
+        source.erase(0, stream.tellg());
     }
     if (!source.empty())
         statics[index++] = source;

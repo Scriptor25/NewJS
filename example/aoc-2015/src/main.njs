@@ -18,8 +18,6 @@ extern function fread(buffer: void[], size: u32, count: u32, stream: FILE[]): u3
 extern function malloc(count: u32): void[]
 extern function free(block: void[])
 
-println($"{process}")
-
 if (process.argc != 3) {
     println($"not enough arguments, require 3, got {process.argc}")
     return 1
