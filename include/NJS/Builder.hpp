@@ -51,6 +51,8 @@ namespace NJS
 
         void Close();
 
+        const std::string &GetModuleID() const;
+
         [[nodiscard]] TypeContext &GetTypeContext() const;
 
         std::unique_ptr<llvm::Module> &&MoveModule();

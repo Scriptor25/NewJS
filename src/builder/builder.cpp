@@ -106,6 +106,11 @@ void NJS::Builder::Close()
     StackPop();
 }
 
+const std::string &NJS::Builder::GetModuleID() const
+{
+    return m_ModuleID;
+}
+
 NJS::TypeContext &NJS::Builder::GetTypeContext() const
 {
     return m_TypeContext;
@@ -138,11 +143,19 @@ void NJS::Builder::Optimize(llvm::Function *function) const
 
 void NJS::Builder::GetFormat(llvm::FunctionCallee &callee) const
 {
-    std::vector<llvm::Type *> param_types(2);
-    param_types[0] = GetBuilder().getPtrTy();
-    param_types[1] = GetBuilder().getInt64Ty();
-    const auto type = llvm::FunctionType::get(GetBuilder().getVoidTy(), param_types, true);
-    callee = GetModule().getOrInsertFunction("format", type);
+    const auto type = llvm::FunctionType::get(
+        GetBuilder().getVoidTy(),
+        {GetBuilder().getPtrTy(), GetBuilder().getInt64Ty()},
+        true);
+
+    if (const auto function = GetModule().getFunction("format"))
+    {
+        callee = llvm::FunctionCallee(type, function);
+        return;
+    }
+
+    const auto function = llvm::Function::Create(type, llvm::Function::ExternalLinkage, "format", GetModule());
+    callee = llvm::FunctionCallee(type, function);
 }
 
 void NJS::Builder::StackPush(const std::string &name, const TypePtr &result_type)

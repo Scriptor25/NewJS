@@ -26,7 +26,13 @@ void NJS::ImportStatement::CreateModuleCall(const Builder &builder, const std::s
 
     const auto module_main = module_id + ".main";
     const auto function_type = llvm::FunctionType::get(builder.GetBuilder().getVoidTy(), false);
-    const auto function_callee = builder.GetModule().getOrInsertFunction(module_main, function_type);
+    auto function_callee = builder.GetModule().getFunction(module_main);
+    if (!function_callee)
+        function_callee = llvm::Function::Create(
+            function_type,
+            llvm::Function::ExternalLinkage,
+            module_main,
+            builder.GetModule());
     builder.GetBuilder().CreateCall(function_callee);
 }
 

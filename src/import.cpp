@@ -64,8 +64,14 @@ void NJS::ImportMapping::MapFunctions(
             parameter_types,
             function->IsVarArg);
 
-        auto callee = builder.GetModule().getOrInsertFunction(name, type->GenFnLLVM(where, builder));
-        const auto value = RValue::Create(builder, type, callee.getCallee());
+        auto function_callee = builder.GetModule().getFunction(name);
+        if (!function_callee)
+            function_callee = llvm::Function::Create(
+                type->GenFnLLVM(where, builder),
+                llvm::Function::ExternalLinkage,
+                name,
+                builder.GetModule());
+        const auto value = RValue::Create(builder, type, function_callee);
 
         if (function->Flags & FunctionFlags_Operator)
         {
@@ -75,14 +81,14 @@ void NJS::ImportMapping::MapFunctions(
                     !function->IsVarArg,
                     function->Parameters[0]->Type,
                     function->ResultType,
-                    callee.getCallee());
+                    function_callee);
             else if (function->Parameters.size() == 2)
                 builder.DefineOperator(
                     function->Name,
                     function->Parameters[0]->Type,
                     function->Parameters[1]->Type,
                     function->ResultType,
-                    callee.getCallee());
+                    function_callee);
         }
         else if (All)
             builder.DefineVariable(where, function->Name) = value;
