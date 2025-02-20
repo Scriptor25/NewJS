@@ -1,25 +1,19 @@
-SRC_DIR = src
-BIN_DIR = bin
+SRC = $(wildcard src/*.njs)
+OBJ = $(patsubst %.njs,%.o,$(SRC))
+TARGET = main
 
-SRC = $(wildcard $(SRC_DIR)/*.njs)
-BIN = $(patsubst $(SRC_DIR)/%.njs,$(BIN_DIR)/%.o,$(SRC))
-TARGET = $(BIN_DIR)/main
-
-.PHONY: all launch clean
+.PHONY: all clean launch
 
 all: $(TARGET)
+
+clean:
+	-rm $(OBJ) $(TARGET)
 
 launch: $(TARGET)
 	$(TARGET)
 
-clean:
-	-rm $(BIN) $(TARGET)
-
-$(BIN_DIR):
-	mkdir -p $(BIN_DIR)
-
-$(BIN_DIR)/%.o: $(SRC_DIR)/%.njs $(BIN_DIR)
+%.o: %.njs
 	newjs -o $@ -t obj $<
 
-$(TARGET): $(BIN)
+$(TARGET): $(OBJ)
 	gcc -o $@ $^ -lstdnewjs -lm
