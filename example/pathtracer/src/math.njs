@@ -2,6 +2,7 @@ import common from "./common.njs"
 
 extern function sqrt(x: f64): f64
 extern function fabs(x: f64): f64
+extern function fmin(a: f64, b: f64): f64
 
 type vec3 = f64[3]
 type point3 = vec3
@@ -145,6 +146,25 @@ function random_on_hemisphere(normal: vec3): vec3 {
     return -on_unit_sphere
 }
 
+function random_in_unit_disk(): vec3 {
+    for (;;) {
+        const p = [
+            common.random_range(-1, 1),
+            common.random_range(-1, 1),
+            0.0,
+        ]:vec3
+        if (length_squared(p) < 1.0)
+            return p
+    }
+}
+
 function reflect(v: vec3, n: vec3): vec3 {
     return v - 2.0 * dot(v, n) * n
+}
+
+function refract(v: vec3, n: vec3, eta: f64): vec3 {
+    const cos_theta = fmin(dot(-v, n), 1.0)
+    const r_out_perp = eta * (v + cos_theta * n)
+    const r_out_para = -sqrt(fabs(1.0 - length_squared(r_out_perp))) * n
+    return r_out_perp + r_out_para
 }

@@ -14,6 +14,8 @@ extern let std_err: FILE[]
 extern function fprintf(stream: FILE[], format: i8[], ...)
 extern function fflush(stream: FILE[])
 
+extern function tan(x: f64): f64
+
 type camera = {
     aspect_ratio: f64,
 
@@ -25,11 +27,26 @@ type camera = {
 
     max_depth: u32,
 
+    vfov: f64,
+    lookfrom: point3,
+    lookat: point3,
+    vup: vec3,
+
+    defocus_angle: f64,
+    focus_dist: f64,
+
     center: point3,
     pixel00_loc: point3,
 
     pixel_delta_u: vec3,
     pixel_delta_v: vec3,
+
+    u: vec3,
+    v: vec3,
+    w: vec3,
+
+    defocus_disk_u: vec3,
+    defocus_disk_v: vec3,
 }
 
 function initialize(self: camera&) {
@@ -37,20 +54,29 @@ function initialize(self: camera&) {
 
     self.pixel_sample_scale = 1.0 / self.samples_per_pixel
 
-    self.center = [ 0.0, 0.0, 0.0 ]
+    self.center = self.lookfrom
 
-    const focal_length = 1.0
-    const viewport_height = 2.0
+    const theta = common.to_radians(self.vfov)
+    const h = tan(theta / 2)
+    const viewport_height = 2 * h * self.focus_dist
     const viewport_width = viewport_height * ((self.image_width as f64) / (self.image_height as f64))
 
-    const viewport_u: vec3 = [ viewport_width, 0.0, 0.0 ]
-    const viewport_v: vec3 = [ 0.0, -viewport_height, 0.0 ]
+    self.w = math.unit_vector(self.lookfrom - self.lookat)
+    self.u = math.unit_vector(math.cross(self.vup, self.w))
+    self.v = math.cross(self.w, self.u)
+
+    const viewport_u = viewport_width * self.u
+    const viewport_v = -viewport_height * self.v
 
     self.pixel_delta_u = viewport_u / (self.image_width as f64)
     self.pixel_delta_v = viewport_v / (self.image_height as f64)
 
-    const viewport_upper_left = self.center - [ 0.0, 0.0, focal_length ]:vec3 - viewport_u / 2.0 - viewport_v / 2.0
+    const viewport_upper_left = self.center - (self.focus_dist * self.w) - viewport_u / 2.0 - viewport_v / 2.0
     self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v)
+
+    const defocus_radius = self.focus_dist * tan(common.to_radians(self.defocus_angle / 2))
+    self.defocus_disk_u = self.u * defocus_radius
+    self.defocus_disk_v = self.v * defocus_radius
 }
 
 function ray_color(self: camera&, r: ray, depth: u32, world: hittable[]): color {
@@ -76,13 +102,20 @@ function sample_square(self: camera&): vec3 {
     return [ common.random() - 0.5, common.random() - 0.5, 0.0 ]
 }
 
+function defocus_disk_sample(self: camera&): point3 {
+    const p = math.random_in_unit_disk()
+    return self.center + (p[0] * self.defocus_disk_u) + (p[1] * self.defocus_disk_v)
+}
+
 function get_ray(self: camera&, i: u32, j: u32): ray {
     const offset = sample_square(self)
     const pixel_sample = self.pixel00_loc
                        + ((i + offset[0]) * self.pixel_delta_u)
                        + ((j + offset[1]) * self.pixel_delta_v)
 
-    const origin = self.center
+    const origin = (self.defocus_angle <= 0)
+                 ? self.center
+                 : defocus_disk_sample(self)
     const direction = pixel_sample - origin
 
     return { origin, direction }
