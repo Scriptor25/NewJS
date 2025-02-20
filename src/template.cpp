@@ -9,10 +9,10 @@ std::string NJS::Template::GetName(const std::vector<TypePtr> &arguments) const
     for (unsigned i = 0; i < arguments.size(); ++i)
     {
         if (i > 0)
-            arguments_string += ", ";
+            arguments_string += '.';
         arguments_string += arguments[i]->GetString();
     }
-    return Name + '<' + arguments_string + '>';
+    return Name + '.' + arguments_string;
 }
 
 NJS::FunctionStatement NJS::Template::InflateFunction(Parser &parent, const std::vector<TypePtr> &arguments) const

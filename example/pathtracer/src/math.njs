@@ -1,9 +1,17 @@
+import common from "./common.njs"
+
 extern function sqrt(x: f64): f64
 
 type vec3 = f64[3]
 type point3 = vec3
 
-function operator-(self: vec3&): vec3 { return [ -self[0], -self[1], -self[2] ] }
+function operator-(self: vec3&): vec3 {
+    return [
+        -self[0],
+        -self[1],
+        -self[2],
+    ]
+}
 
 function operator+=(self: vec3&, other: vec3): vec3& {
     self[0] += other[0]
@@ -72,7 +80,9 @@ function operator/(a: vec3, b: f64): vec3 {
 }
 
 function dot(a: vec3, b: vec3): f64 {
-    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+    return a[0] * b[0]
+         + a[1] * b[1]
+         + a[2] * b[2]
 }
 
 function cross(a: vec3, b: vec3): vec3 {
@@ -85,4 +95,29 @@ function cross(a: vec3, b: vec3): vec3 {
 
 function unit_vector(v: vec3): vec3 {
     return v / length(v)
+}
+
+function random_vector(): vec3 {
+    return [
+        common.random(),
+        common.random(),
+        common.random(),
+    ]
+}
+
+function random_range_vector(min: f64, max: f64): vec3 {
+    return [
+        common.random_range(min, max),
+        common.random_range(min, max),
+        common.random_range(min, max),
+    ]
+}
+
+function random_unit_vector(): vec3 {
+    for (;;) {
+        const p = random_range_vector(-1, 1)
+        const len_sq = length_squared(p)
+        if (1e-160 < len_sq && len_sq <= 1)
+            return p / sqrt(len_sq)
+    }
 }

@@ -23,7 +23,7 @@ NJS::UnaryExpression::UnaryExpression(
 
 NJS::ValuePtr NJS::UnaryExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
-    static const std::map<std::string_view, UnaryOperator> fns
+    static const std::map<std::string_view, UnaryOperator> operators
     {
         {"++"sv, OperatorInc},
         {"--"sv, OperatorDec},
@@ -51,28 +51,26 @@ NJS::ValuePtr NJS::UnaryExpression::GenLLVM(Builder &builder, const TypePtr &exp
     {
         const auto function_type = llvm::FunctionType::get(
             result_type_->GetLLVM(Where, builder),
-            {operand_type_->GetLLVM(Where, builder),},
+            {operand_type_->GetLLVM(Operand->Where, builder),},
             false);
         const auto result_value = builder.GetBuilder().CreateCall(
             function_type,
             callee_,
-            {operand_type_->IsReference() ? operand->GetPtr(Where) : operand->Load(Where),});
+            {operand_type_->IsReference() ? operand->GetPtr(Operand->Where) : operand->Load(Operand->Where)});
         if (result_type_->IsReference())
-            return LValue::Create(builder, result_type_->GetElement(), result_value);
+            return LValue::Create(builder, result_type_->GetElement(Where), result_value);
         return RValue::Create(builder, result_type_, result_value);
     }
 
     const auto assign = assignment_operators.contains(Operator);
 
-    if (fns.contains(Operator))
-    {
-        auto &operator_ = fns.at(Operator);
-        if (auto result_value = operator_(builder, Where, operand); result_value)
+    if (operators.contains(Operator))
+        if (auto result_value = operators.at(Operator)(builder, Where, operand))
         {
             if (!assign)
                 return result_value;
 
-            const auto bkp_value = Prefix ? nullptr : operand->Load(Where);
+            const auto bkp_value = Prefix ? nullptr : operand->Load(Operand->Where);
 
             operand->Store(Where, result_value);
             if (Prefix)
@@ -80,7 +78,6 @@ NJS::ValuePtr NJS::UnaryExpression::GenLLVM(Builder &builder, const TypePtr &exp
 
             return RValue::Create(builder, operand->GetType(), bkp_value);
         }
-    }
 
     Error(
         Where,

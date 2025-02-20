@@ -20,8 +20,10 @@ bool NJS::TupleType::IsTuple() const
     return true;
 }
 
-NJS::TypePtr NJS::TupleType::GetElement(const unsigned index) const
+NJS::TypePtr NJS::TupleType::GetElement(const SourceLocation &where, const unsigned index) const
 {
+    if (index >= m_ElementTypes.size())
+        Error(where, "tuple index out of bounds: {} !E [0,{})", index, m_ElementTypes.size());
     return m_ElementTypes[index];
 }
 
@@ -33,21 +35,29 @@ void NJS::TupleType::TypeInfo(const SourceLocation &where, Builder &builder, std
         element->TypeInfo(where, builder, args);
 }
 
+static unsigned tuple_count = 0;
+
 NJS::TupleType::TupleType(
     TypeContext &type_context,
     std::string string,
     std::vector<TypePtr> element_types)
     : Type(type_context, std::move(string)),
-      m_ElementTypes(std::move(element_types))
+      m_ElementTypes(std::move(element_types)),
+      m_Index(tuple_count++)
 {
 }
 
 llvm::Type *NJS::TupleType::GenLLVM(const SourceLocation &where, const Builder &builder) const
 {
+    const auto tuple_name = "tuple." + std::to_string(m_Index);
+    if (const auto tuple_type = llvm::StructType::getTypeByName(builder.GetContext(), tuple_name))
+        return tuple_type;
+
     std::vector<llvm::Type *> types;
     for (const auto &element: m_ElementTypes)
         types.push_back(element->GetLLVM(where, builder));
-    return llvm::StructType::get(builder.GetContext(), types, true);
+
+    return llvm::StructType::create(builder.GetContext(), types, tuple_name, true);
 }
 
 unsigned NJS::TupleType::GenSize() const

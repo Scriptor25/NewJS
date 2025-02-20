@@ -22,7 +22,7 @@ NJS::ValuePtr NJS::SizeOfExpression::GenLLVM(Builder &builder, const TypePtr &ex
     const auto value = llvm::ConstantInt::get(
         type->GetLLVM(Where, builder),
         operand->GetType()->GetSize(),
-        type->IsSigned());
+        type->IsSigned(Where));
     return RValue::Create(builder, type, value);
 }
 

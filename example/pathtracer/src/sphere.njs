@@ -1,4 +1,5 @@
 import hittable from "./hittable.njs"
+import interval from "./interval.njs"
 import math     from "./math.njs"
 import ray      from "./ray.njs"
 import record   from "./record.njs"
@@ -6,12 +7,12 @@ import record   from "./record.njs"
 extern function sqrt(x: f64): f64
 
 type sphere = {
-    hit: (hittable[], ray, f64, f64, record&) => u1,
+    hit: (hittable[], ray, interval, record&) => u1,
     center: point3,
     radius: f64,
 }
 
-function hit(self: sphere&, r: ray, ray_t_min: f64, ray_t_max: f64, rec: record&): u1 {
+function hit(self: sphere&, r: ray, ray_t: interval, rec: record&): u1 {
     const oc = self.center - r.origin
     const a = math.length_squared(r.direction)
     const b = math.dot(r.direction, oc)
@@ -24,9 +25,9 @@ function hit(self: sphere&, r: ray, ray_t_min: f64, ray_t_max: f64, rec: record&
     const sqrtd = sqrt(discriminant)
 
     let root = (b - sqrtd) / a
-    if (root <= ray_t_min || ray_t_max <= root) {
+    if (!interval.surrounds(ray_t, root)) {
         root = (b + sqrtd) / a
-        if (root <= ray_t_min || ray_t_max <= root)
+        if (!interval.surrounds(ray_t, root))
             return false
     }
 

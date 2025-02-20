@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <NJS/NJS.hpp>
+#include <NJS/SourceLocation.hpp>
 
 namespace NJS
 {
@@ -17,30 +18,29 @@ namespace NJS
 
     struct Parameter
     {
-        explicit Parameter(std::string name);
+        Parameter(SourceLocation where, std::string name);
         virtual ~Parameter() = default;
 
         virtual bool RequireValue();
         virtual void CreateVars(
             Builder &builder,
-            const SourceLocation &where,
             ValuePtr value,
             unsigned flags);
 
         virtual std::ostream &Print(std::ostream &stream);
 
+        SourceLocation Where;
         std::string Name;
         TypePtr Type;
     };
 
     struct DestructureObject final : Parameter
     {
-        explicit DestructureObject(std::map<std::string, ParameterPtr> elements);
+        DestructureObject(SourceLocation where, std::map<std::string, ParameterPtr> elements);
 
         bool RequireValue() override;
         void CreateVars(
             Builder &builder,
-            const SourceLocation &where,
             ValuePtr value,
             unsigned flags) override;
 
@@ -51,12 +51,11 @@ namespace NJS
 
     struct DestructureTuple final : Parameter
     {
-        explicit DestructureTuple(std::vector<ParameterPtr> elements);
+        DestructureTuple(SourceLocation where, std::vector<ParameterPtr> elements);
 
         bool RequireValue() override;
         void CreateVars(
             Builder &builder,
-            const SourceLocation &where,
             ValuePtr value,
             unsigned flags) override;
 

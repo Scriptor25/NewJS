@@ -16,7 +16,12 @@ bool NJS::ReferenceType::IsReference() const
     return true;
 }
 
-NJS::TypePtr NJS::ReferenceType::GetElement() const
+NJS::TypePtr NJS::ReferenceType::GetElement(const SourceLocation &where) const
+{
+    return m_ElementType;
+}
+
+NJS::TypePtr NJS::ReferenceType::GetElement(const SourceLocation &, unsigned) const
 {
     return m_ElementType;
 }

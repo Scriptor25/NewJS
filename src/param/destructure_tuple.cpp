@@ -3,8 +3,8 @@
 #include <NJS/Parameter.hpp>
 #include <NJS/Type.hpp>
 
-NJS::DestructureTuple::DestructureTuple(std::vector<ParameterPtr> elements)
-    : Parameter({}),
+NJS::DestructureTuple::DestructureTuple(SourceLocation where, std::vector<ParameterPtr> elements)
+    : Parameter(std::move(where), {}),
       Elements(std::move(elements))
 {
 }
@@ -16,14 +16,13 @@ bool NJS::DestructureTuple::RequireValue()
 
 void NJS::DestructureTuple::CreateVars(
     Builder &builder,
-    const SourceLocation &where,
     const ValuePtr value,
     const unsigned flags)
 {
     for (unsigned i = 0; i < Elements.size(); ++i)
     {
-        const auto element = builder.CreateSubscript(where, value, i);
-        Elements[i]->CreateVars(builder, where, element, flags);
+        const auto element = builder.CreateSubscript(Where, value, i);
+        Elements[i]->CreateVars(builder, element, flags);
     }
 }
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -12,7 +11,11 @@
 
 namespace NJS
 {
-    TypePtr GetHigherOrderOf(TypeContext &type_context, const TypePtr &type_a, const TypePtr &type_b);
+    TypePtr GetHigherOrderOf(
+        const SourceLocation &where,
+        TypeContext &type_context,
+        const TypePtr &type_a,
+        const TypePtr &type_b);
 
     class Type
     {
@@ -43,12 +46,11 @@ namespace NJS
         [[nodiscard]] virtual bool IsStruct() const;
         [[nodiscard]] virtual bool IsTuple() const;
         [[nodiscard]] virtual bool IsFunction() const;
-        [[nodiscard]] virtual bool IsSigned() const;
-        [[nodiscard]] virtual unsigned GetBits() const;
-        [[nodiscard]] virtual TypePtr GetElement() const;
-        [[nodiscard]] virtual TypePtr GetElement(unsigned index) const;
+        [[nodiscard]] virtual bool IsSigned(const SourceLocation &where) const;
+        [[nodiscard]] virtual unsigned GetBits(const SourceLocation &where) const;
+        [[nodiscard]] virtual TypePtr GetElement(const SourceLocation &where) const;
+        [[nodiscard]] virtual TypePtr GetElement(const SourceLocation &where, unsigned index) const;
         [[nodiscard]] virtual MemberInfo GetMember(const SourceLocation &where, const std::string &name) const;
-        [[nodiscard]] virtual TypePtr GetResultType() const;
 
         virtual void TypeInfo(
             const SourceLocation &where,
@@ -74,7 +76,6 @@ namespace NJS
     public:
         static std::string GenString(const std::string &name);
 
-        [[nodiscard]] TypePtr GetResultType() const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
     private:
@@ -113,8 +114,8 @@ namespace NJS
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsInteger() const override;
-        [[nodiscard]] bool IsSigned() const override;
-        [[nodiscard]] unsigned GetBits() const override;
+        [[nodiscard]] bool IsSigned(const SourceLocation &where) const override;
+        [[nodiscard]] unsigned GetBits(const SourceLocation &where) const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
     private:
@@ -136,7 +137,7 @@ namespace NJS
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsFloatingPoint() const override;
-        [[nodiscard]] unsigned GetBits() const override;
+        [[nodiscard]] unsigned GetBits(const SourceLocation &where) const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
     private:
@@ -157,7 +158,8 @@ namespace NJS
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsPointer() const override;
-        [[nodiscard]] TypePtr GetElement() const override;
+        [[nodiscard]] TypePtr GetElement(const SourceLocation &where) const override;
+        [[nodiscard]] TypePtr GetElement(const SourceLocation &where, unsigned index) const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
     private:
@@ -178,7 +180,8 @@ namespace NJS
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsReference() const override;
-        [[nodiscard]] TypePtr GetElement() const override;
+        [[nodiscard]] TypePtr GetElement(const SourceLocation &where) const override;
+        [[nodiscard]] TypePtr GetElement(const SourceLocation &where, unsigned index) const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
     private:
@@ -198,8 +201,8 @@ namespace NJS
         static std::string GenString(const TypePtr &element_type, unsigned count);
 
         [[nodiscard]] bool IsArray() const override;
-        [[nodiscard]] TypePtr GetElement() const override;
-        [[nodiscard]] TypePtr GetElement(unsigned) const override;
+        [[nodiscard]] TypePtr GetElement(const SourceLocation &where) const override;
+        [[nodiscard]] TypePtr GetElement(const SourceLocation &where, unsigned index) const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
     private:
@@ -225,12 +228,16 @@ namespace NJS
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
     private:
-        StructType(TypeContext &type_context, std::string string, std::vector<std::pair<std::string, TypePtr>> element_types);
+        StructType(
+            TypeContext &type_context,
+            std::string string,
+            std::vector<std::pair<std::string, TypePtr>> element_types);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
         [[nodiscard]] unsigned GenSize() const override;
 
         std::vector<std::pair<std::string, TypePtr>> m_ElementTypes;
+        unsigned m_Index;
     };
 
     class TupleType final : public Type
@@ -241,7 +248,7 @@ namespace NJS
         static std::string GenString(const std::vector<TypePtr> &element_types);
 
         [[nodiscard]] bool IsTuple() const override;
-        [[nodiscard]] TypePtr GetElement(unsigned index) const override;
+        [[nodiscard]] TypePtr GetElement(const SourceLocation &where, unsigned index) const override;
         void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
 
     private:
@@ -251,6 +258,7 @@ namespace NJS
         [[nodiscard]] unsigned GenSize() const override;
 
         std::vector<TypePtr> m_ElementTypes;
+        unsigned m_Index;
     };
 
     class FunctionType final : public Type
@@ -265,7 +273,7 @@ namespace NJS
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsFunction() const override;
-        [[nodiscard]] TypePtr GetResultType() const override;
+        [[nodiscard]] TypePtr GetResultType() const;
         [[nodiscard]] TypePtr GetParameterType(unsigned index) const;
         [[nodiscard]] unsigned GetParameterCount() const;
         [[nodiscard]] bool IsVarArg() const;

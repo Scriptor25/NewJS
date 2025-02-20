@@ -55,21 +55,29 @@ void NJS::StructType::TypeInfo(const SourceLocation &where, Builder &builder, st
     }
 }
 
+static unsigned struct_count = 0;
+
 NJS::StructType::StructType(
     TypeContext &type_context,
     std::string string,
     std::vector<std::pair<std::string, TypePtr>> element_types)
     : Type(type_context, std::move(string)),
-      m_ElementTypes(std::move(element_types))
+      m_ElementTypes(std::move(element_types)),
+      m_Index(struct_count++)
 {
 }
 
 llvm::Type *NJS::StructType::GenLLVM(const SourceLocation &where, const Builder &builder) const
 {
+    const auto struct_name = "struct." + std::to_string(m_Index);
+    if (const auto struct_type = llvm::StructType::getTypeByName(builder.GetContext(), struct_name))
+        return struct_type;
+
     std::vector<llvm::Type *> types;
     for (const auto &type: m_ElementTypes | std::ranges::views::values)
         types.emplace_back(type->GetLLVM(where, builder));
-    return llvm::StructType::get(builder.GetContext(), types, true);
+
+    return llvm::StructType::create(builder.GetContext(), types, struct_name, true);
 }
 
 unsigned NJS::StructType::GenSize() const

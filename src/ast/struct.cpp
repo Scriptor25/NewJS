@@ -28,7 +28,7 @@ NJS::ValuePtr NJS::StructExpression::GenLLVM(Builder &builder, const TypePtr &ex
 
     for (const auto &[name_, element_]: Elements)
     {
-        auto type = result_type ? result_type->GetMember(Where, name_).Type : nullptr;
+        auto type = result_type ? result_type->GetMember(element_->Where, name_).Type : nullptr;
         auto value = element_->GenLLVM(builder, type);
         elements.emplace_back(name_, value);
         element_types.emplace_back(name_, value->GetType());
@@ -37,17 +37,19 @@ NJS::ValuePtr NJS::StructExpression::GenLLVM(Builder &builder, const TypePtr &ex
     if (!result_type)
         result_type = builder.GetTypeContext().GetStructType(element_types);
 
-    llvm::Value *object = llvm::ConstantStruct::getNullValue(result_type->GetLLVM<llvm::StructType>(Where, builder));
+    llvm::Value *struct_value = llvm::ConstantStruct::getNullValue(
+        result_type->GetLLVM<llvm::StructType>(Where, builder));
 
     for (unsigned i = 0; i < elements.size(); ++i)
     {
+        auto &element = Elements[i].second;
         auto [name_, value_] = elements[i];
-        auto [index_, type_] = result_type->GetMember(Where, name_);
-        value_ = builder.CreateCast(Where, value_, type_);
-        object = builder.GetBuilder().CreateInsertValue(object, value_->Load(Where), index_);
+        auto [index_, type_] = result_type->GetMember(element->Where, name_);
+        value_ = builder.CreateCast(element->Where, value_, type_);
+        struct_value = builder.GetBuilder().CreateInsertValue(struct_value, value_->Load(element->Where), index_);
     }
 
-    return RValue::Create(builder, result_type, object);
+    return RValue::Create(builder, result_type, struct_value);
 }
 
 std::ostream &NJS::StructExpression::Print(std::ostream &stream)

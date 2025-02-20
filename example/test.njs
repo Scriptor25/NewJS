@@ -139,7 +139,7 @@ vec_free<i8>(v)
 
 type<T> promise = {
     result: T,
-    done: i1,
+    done: u1,
 }
 
 function<T> await(p: promise<T>): T {

@@ -3,8 +3,8 @@
 #include <NJS/Parameter.hpp>
 #include <NJS/Type.hpp>
 
-NJS::DestructureObject::DestructureObject(std::map<std::string, ParameterPtr> elements)
-    : Parameter({}),
+NJS::DestructureObject::DestructureObject(SourceLocation where, std::map<std::string, ParameterPtr> elements)
+    : Parameter(std::move(where), {}),
       Elements(std::move(elements))
 {
 }
@@ -16,14 +16,13 @@ bool NJS::DestructureObject::RequireValue()
 
 void NJS::DestructureObject::CreateVars(
     Builder &builder,
-    const SourceLocation &where,
     const ValuePtr value,
     const unsigned flags)
 {
     for (const auto &[name_, element_]: Elements)
     {
-        const auto member = builder.CreateMember(where, value, name_);
-        element_->CreateVars(builder, where, member, flags);
+        const auto member = builder.CreateMember(Where, value, name_);
+        element_->CreateVars(builder, member, flags);
     }
 }
 

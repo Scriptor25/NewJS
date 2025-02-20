@@ -89,7 +89,7 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
         return;
 
     if (!function->empty())
-        Error(Where, "redefining function {} ({})", Name, function_name);
+        Error(Where, "redefining function '{}' ({})", Name, function_name);
 
     const auto end_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
@@ -108,18 +108,24 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
         if (parameter_type->IsReference())
             argument_value = LValue::Create(
                 builder,
-                parameter_type->GetElement(),
+                parameter_type->GetElement(parameter->Where),
                 argument);
         else
             argument_value = RValue::Create(builder, parameter_type, argument);
-        parameter->CreateVars(builder, Where, argument_value, ParameterFlags_None);
+        parameter->CreateVars(builder, argument_value, ParameterFlags_None);
     }
 
     Body->GenVoidLLVM(builder);
     builder.StackPop();
 
+    std::vector<llvm::BasicBlock *> deletable;
     for (auto &block: *function)
     {
+        if (!block.hasNPredecessorsOrMore(1) && block.empty())
+        {
+            deletable.emplace_back(&block);
+            continue;
+        }
         if (block.getTerminator())
             continue;
         if (function->getReturnType()->isVoidTy())
@@ -128,13 +134,17 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
             builder.GetBuilder().CreateRetVoid();
             continue;
         }
-        Error(Where, "not all code paths return a value: in function {} ({})", Name, function_name);
+        function->print(llvm::errs());
+        Error(Where, "not all code paths return a value: in function '{}' ({})", Name, function_name);
     }
+
+    for (const auto block: deletable)
+        block->eraseFromParent();
 
     if (verifyFunction(*function, &llvm::errs()))
     {
         function->print(llvm::errs());
-        Error(Where, "failed to verify function {} ({})", Name, function_name);
+        Error(Where, "failed to verify function '{}' ({})", Name, function_name);
     }
 
     builder.Optimize(function);
@@ -217,18 +227,24 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
         if (parameter_type->IsReference())
             argument_value = LValue::Create(
                 builder,
-                parameter_type->GetElement(),
+                parameter_type->GetElement(parameter->Where),
                 argument);
         else
             argument_value = RValue::Create(builder, parameter_type, argument);
-        parameter->CreateVars(builder, Where, argument_value, ParameterFlags_None);
+        parameter->CreateVars(builder, argument_value, ParameterFlags_None);
     }
 
     Body->GenVoidLLVM(builder);
     builder.StackPop();
 
+    std::vector<llvm::BasicBlock *> deletable;
     for (auto &block: *function)
     {
+        if (!block.hasNPredecessorsOrMore(1) && block.empty())
+        {
+            deletable.emplace_back(&block);
+            continue;
+        }
         if (block.getTerminator())
             continue;
         if (function->getReturnType()->isVoidTy())
@@ -237,8 +253,12 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
             builder.GetBuilder().CreateRetVoid();
             continue;
         }
+        function->print(llvm::errs());
         Error(Where, "not all code paths return a value: in function lambda ({})", function_name);
     }
+
+    for (const auto block: deletable)
+        block->eraseFromParent();
 
     if (verifyFunction(*function, &llvm::errs()))
     {

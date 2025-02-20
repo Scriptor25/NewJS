@@ -1,4 +1,5 @@
 #include <istream>
+#include <NJS/Error.hpp>
 #include <NJS/Parser.hpp>
 
 NJS::Token &NJS::Parser::Next()
@@ -310,8 +311,26 @@ NJS::Token &NJS::Parser::Next()
                     c = Get();
                     break;
                 }
+                if (c == 'e' || c == 'E')
+                {
+                    if (is_float)
+                        Error(where, "token is marked as floating point multiple times");
+
+                    is_float = true;
+                    value += static_cast<char>(c);
+                    c = Get();
+                    if (c == '+' || c == '-')
+                    {
+                        value += static_cast<char>(c);
+                        c = Get();
+                    }
+                    break;
+                }
                 if (c == '.')
                 {
+                    if (is_float)
+                        Error(where, "token is marked as floating point multiple times");
+
                     is_float = true;
                     value += static_cast<char>(c);
                     c = Get();

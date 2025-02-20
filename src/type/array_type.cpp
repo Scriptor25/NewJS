@@ -13,15 +13,15 @@ bool NJS::ArrayType::IsArray() const
     return true;
 }
 
-NJS::TypePtr NJS::ArrayType::GetElement() const
+NJS::TypePtr NJS::ArrayType::GetElement(const SourceLocation &where) const
 {
     return m_ElementType;
 }
 
-NJS::TypePtr NJS::ArrayType::GetElement(const unsigned i) const
+NJS::TypePtr NJS::ArrayType::GetElement(const SourceLocation &where, const unsigned index) const
 {
-    if (i >= m_Count)
-        Error("array index out of bounds: {} !E [0,{})", i, m_Count);
+    if (index >= m_Count)
+        Error(where, "array index out of bounds: {} !E [0,{})", index, m_Count);
     return m_ElementType;
 }
 

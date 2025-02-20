@@ -18,7 +18,7 @@ bool NJS::FloatingPointType::IsFloatingPoint() const
     return true;
 }
 
-unsigned NJS::FloatingPointType::GetBits() const
+unsigned NJS::FloatingPointType::GetBits(const SourceLocation &where) const
 {
     return m_Bits;
 }
@@ -35,7 +35,7 @@ NJS::FloatingPointType::FloatingPointType(TypeContext &type_context, std::string
 {
 }
 
-llvm::Type *NJS::FloatingPointType::GenLLVM(const SourceLocation &, const Builder &builder) const
+llvm::Type *NJS::FloatingPointType::GenLLVM(const SourceLocation &where, const Builder &builder) const
 {
     switch (m_Bits)
     {
@@ -46,7 +46,7 @@ llvm::Type *NJS::FloatingPointType::GenLLVM(const SourceLocation &, const Builde
         case 64:
             return builder.GetBuilder().getDoubleTy();
         default:
-            Error("no llvm representation for floating point type {}", m_String);
+            Error(where, "no llvm representation for floating point type {}", m_String);
     }
 }
 

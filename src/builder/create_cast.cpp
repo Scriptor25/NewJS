@@ -32,9 +32,9 @@ llvm::Value *NJS::Builder::CreateCast(
     if (src_type->IsInteger())
     {
         if (dst_type->IsInteger())
-            return GetBuilder().CreateIntCast(val_, ty, dst_type->IsSigned());
+            return GetBuilder().CreateIntCast(val_, ty, dst_type->IsSigned(where));
         if (dst_type->IsFloatingPoint())
-            return src_type->IsSigned()
+            return src_type->IsSigned(where)
                        ? GetBuilder().CreateSIToFP(val_, ty)
                        : GetBuilder().CreateUIToFP(val_, ty);
         if (dst_type->IsPointer())
@@ -44,7 +44,7 @@ llvm::Value *NJS::Builder::CreateCast(
     if (src_type->IsFloatingPoint())
     {
         if (dst_type->IsInteger())
-            return dst_type->IsSigned()
+            return dst_type->IsSigned(where)
                        ? GetBuilder().CreateFPToSI(val_, ty)
                        : GetBuilder().CreateFPToUI(val_, ty);
         if (dst_type->IsFloatingPoint())
@@ -61,7 +61,7 @@ llvm::Value *NJS::Builder::CreateCast(
 
     if (ptr_ && src_type->IsArray())
     {
-        if (dst_type->IsPointer() && src_type->GetElement() == dst_type->GetElement())
+        if (dst_type->IsPointer() && src_type->GetElement(where) == dst_type->GetElement(where))
             return GetBuilder().CreateConstGEP2_64(src_type->GetLLVM(where, *this), ptr_, 0, 0);
     }
 

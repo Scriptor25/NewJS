@@ -21,6 +21,8 @@ extern FILE *std_in;
 extern FILE *std_out;
 extern FILE *std_err;
 
+extern int rand_max;
+
 void format(char *buffer, unsigned buffer_size, ...);
 void println(const char *message);
 int64_t parse_int(const char *str);

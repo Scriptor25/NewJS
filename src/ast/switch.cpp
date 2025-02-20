@@ -23,7 +23,7 @@ void NJS::SwitchStatement::GenVoidLLVM(Builder &builder) const
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
     const auto condition = Condition->GenLLVM(builder, {});
-    const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(Where), default_dest);
+    const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(Condition->Where), default_dest);
 
     builder.GetBuilder().SetInsertPoint(default_dest);
     DefaultCase->GenVoidLLVM(builder);
@@ -35,7 +35,7 @@ void NJS::SwitchStatement::GenVoidLLVM(Builder &builder) const
         for (const auto &entry: entries_)
         {
             const auto on_val = entry->GenLLVM(builder, condition->GetType());
-            const auto on_val_int = llvm::dyn_cast<llvm::ConstantInt>(on_val->Load(Where));
+            const auto on_val_int = llvm::dyn_cast<llvm::ConstantInt>(on_val->Load(entry->Where));
             switch_inst->addCase(on_val_int, dest);
         }
         builder.GetBuilder().SetInsertPoint(dest);
@@ -93,7 +93,7 @@ NJS::ValuePtr NJS::SwitchExpression::GenLLVM(Builder &builder, const TypePtr &ex
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
     const auto condition = Condition->GenLLVM(builder, {});
-    const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(Where), default_dest);
+    const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(Condition->Where), default_dest);
 
     std::vector<std::pair<llvm::BasicBlock *, ValuePtr>> dest_blocks;
     TypePtr result_type;
@@ -101,9 +101,9 @@ NJS::ValuePtr NJS::SwitchExpression::GenLLVM(Builder &builder, const TypePtr &ex
         builder.GetBuilder().SetInsertPoint(default_dest);
         auto default_value = DefaultCase->GenLLVM(builder, expected_type);
         if (default_value->IsLValue())
-            default_value = RValue::Create(builder, default_value->GetType(), default_value->Load(Where));
+            default_value = RValue::Create(builder, default_value->GetType(), default_value->Load(DefaultCase->Where));
         result_type = expected_type ? expected_type : default_value->GetType();
-        default_value = builder.CreateCast(Where, default_value, result_type);
+        default_value = builder.CreateCast(DefaultCase->Where, default_value, result_type);
         default_dest = builder.GetBuilder().GetInsertBlock();
         dest_blocks.emplace_back(default_dest, default_value);
         builder.GetBuilder().CreateBr(end_block);
@@ -114,14 +114,14 @@ NJS::ValuePtr NJS::SwitchExpression::GenLLVM(Builder &builder, const TypePtr &ex
         for (const auto &entry: entries_)
         {
             const auto on_val = entry->GenLLVM(builder, condition->GetType());
-            const auto on_val_int = llvm::dyn_cast<llvm::ConstantInt>(on_val->Load(Where));
+            const auto on_val_int = llvm::dyn_cast<llvm::ConstantInt>(on_val->Load(entry->Where));
             switch_inst->addCase(on_val_int, dest);
         }
         builder.GetBuilder().SetInsertPoint(dest);
         auto case_value = case_->GenLLVM(builder, result_type);
         if (case_value->IsLValue())
-            case_value = RValue::Create(builder, case_value->GetType(), case_value->Load(Where));
-        case_value = builder.CreateCast(Where, case_value, result_type);
+            case_value = RValue::Create(builder, case_value->GetType(), case_value->Load(case_->Where));
+        case_value = builder.CreateCast(case_->Where, case_value, result_type);
         dest = builder.GetBuilder().GetInsertBlock();
         dest_blocks.emplace_back(dest, case_value);
         builder.GetBuilder().CreateBr(end_block);

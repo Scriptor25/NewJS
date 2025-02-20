@@ -18,7 +18,7 @@ NJS::VariableStatement::VariableStatement(
 void NJS::VariableStatement::GenVoidLLVM(Builder &builder) const
 {
     const auto value = Value ? Value->GenLLVM(builder, Name->Type) : nullptr;
-    Name->CreateVars(builder, Where, value, Flags);
+    Name->CreateVars(builder, value, Flags);
 }
 
 std::ostream &NJS::VariableStatement::Print(std::ostream &stream)

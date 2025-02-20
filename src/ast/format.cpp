@@ -47,17 +47,18 @@ NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) 
         }
         if (DynamicExpressions.contains(i))
         {
-            const auto value = DynamicExpressions.at(i)->GenLLVM(builder, {});
-            value->GetType()->TypeInfo(Where, builder, args);
+            auto &dynamic = DynamicExpressions.at(i);
+            const auto value = dynamic->GenLLVM(builder, {});
+            value->GetType()->TypeInfo(dynamic->Where, builder, args);
             if (value->GetType()->IsPrimitive())
-                args.push_back(value->Load(Where));
+                args.push_back(value->Load(dynamic->Where));
             else if (value->IsLValue())
-                args.push_back(value->GetPtr(Where));
+                args.push_back(value->GetPtr(dynamic->Where));
             else
             {
-                const auto value_pointer = builder.CreateAlloca(Where, value->GetType());
-                value_pointer->Store(Where, value);
-                args.push_back(value_pointer->GetPtr(Where));
+                const auto value_pointer = builder.CreateAlloca(dynamic->Where, value->GetType());
+                value_pointer->Store(dynamic->Where, value);
+                args.push_back(value_pointer->GetPtr(dynamic->Where));
             }
 
             continue;

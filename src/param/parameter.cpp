@@ -6,8 +6,9 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::Parameter::Parameter(std::string name)
-    : Name(std::move(name))
+NJS::Parameter::Parameter(SourceLocation where, std::string name)
+    : Where(std::move(where)),
+      Name(std::move(name))
 {
 }
 
@@ -18,24 +19,23 @@ bool NJS::Parameter::RequireValue()
 
 void NJS::Parameter::CreateVars(
     Builder &builder,
-    const SourceLocation &where,
     ValuePtr value,
     const unsigned flags)
 {
     const auto type = !Type
                           ? value->GetType()
                           : Type->IsReference()
-                                ? Type->GetElement()
+                                ? Type->GetElement(Where)
                                 : Type;
 
-    auto &variable = builder.DefineVariable(where, Name);
+    auto &variable = builder.DefineVariable(Where, Name);
 
     const bool is_extern = flags & ParameterFlags_Extern;
     const bool is_const = flags & ParameterFlags_Const;
 
     if (is_extern)
     {
-        variable = builder.CreateGlobal(where, Name, type, false);
+        variable = builder.CreateGlobal(Where, Name, type, false);
         return;
     }
 
@@ -43,29 +43,29 @@ void NJS::Parameter::CreateVars(
     {
         if (value->GetType() != type)
             Error(
-                where,
+                Where,
                 "type mismatch: cannot create reference with type {} from value of type {}",
                 type,
                 value->GetType());
-        variable = LValue::Create(builder, type, value->GetPtr(where));
+        variable = LValue::Create(builder, type, value->GetPtr(Where));
         return;
     }
 
     if (is_const)
     {
-        value = builder.CreateCast(where, value, type);
-        variable = RValue::Create(builder, type, value->Load(where));
+        value = builder.CreateCast(Where, value, type);
+        variable = RValue::Create(builder, type, value->Load(Where));
         return;
     }
 
-    variable = builder.CreateAlloca(where, type);
+    variable = builder.CreateAlloca(Where, type);
     if (value)
     {
-        variable->Store(where, value);
+        variable->Store(Where, value);
         return;
     }
 
-    variable->Store(where, llvm::Constant::getNullValue(type->GetLLVM(where, builder)));
+    variable->Store(Where, llvm::Constant::getNullValue(type->GetLLVM(Where, builder)));
 }
 
 std::ostream &NJS::Parameter::Print(std::ostream &stream)

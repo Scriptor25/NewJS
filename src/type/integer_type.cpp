@@ -18,12 +18,12 @@ bool NJS::IntegerType::IsInteger() const
     return true;
 }
 
-bool NJS::IntegerType::IsSigned() const
+bool NJS::IntegerType::IsSigned(const SourceLocation &where) const
 {
     return m_IsSigned;
 }
 
-unsigned NJS::IntegerType::GetBits() const
+unsigned NJS::IntegerType::GetBits(const SourceLocation &where) const
 {
     return m_Bits;
 }

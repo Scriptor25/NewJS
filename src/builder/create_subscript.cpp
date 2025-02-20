@@ -29,7 +29,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
                 right_type_->IsReference() ? index->GetPtr(where) : index->Load(where),
             });
         if (result_type_->IsReference())
-            return LValue::Create(*this, result_type_->GetElement(), result_value);
+            return LValue::Create(*this, result_type_->GetElement(where), result_value);
         return RValue::Create(*this, result_type_, result_value);
     }
 
@@ -38,7 +38,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
 
     if (array_type->IsPointer())
     {
-        const auto element_type = array_type->GetElement();
+        const auto element_type = array_type->GetElement(where);
         const auto ptr = GetBuilder().CreateGEP(
             element_type->GetLLVM(where, *this),
             array->Load(where),
@@ -68,13 +68,13 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
 
         TypePtr type;
         if (array_type->IsArray())
-            type = array_type->GetElement();
+            type = array_type->GetElement(where);
         else if (array_type->IsTuple())
         {
             if (!const_index)
                 Error(where, "subscript index for indexing into tuple must be a constant");
             const auto i = const_index->getValue().getLimitedValue();
-            type = array_type->GetElement(i);
+            type = array_type->GetElement(where, i);
         }
         return LValue::Create(*this, type, ptr);
     }
@@ -84,7 +84,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
 
     const auto i = const_index->getValue().getLimitedValue();
     const auto val = GetBuilder().CreateExtractValue(array->Load(where), i);
-    return RValue::Create(*this, array_type->GetElement(i), val);
+    return RValue::Create(*this, array_type->GetElement(where, i), val);
 }
 
 NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, const ValuePtr &array, const unsigned index)

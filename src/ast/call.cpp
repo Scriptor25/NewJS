@@ -39,7 +39,7 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expe
 
         const auto parameter_is_reference = has_parameter && parameter_type->IsReference();
         if (parameter_is_reference)
-            parameter_type = parameter_type->GetElement();
+            parameter_type = parameter_type->GetElement(argument->Where);
 
         if (has_parameter)
             argument_value = builder.CreateCast(argument->Where, argument_value, parameter_type);
@@ -50,13 +50,13 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expe
     }
 
     const auto result_value = builder.GetBuilder().CreateCall(
-        callee_type->GenFnLLVM(Where, builder),
-        callee->Load(Where),
+        callee_type->GenFnLLVM(Callee->Where, builder),
+        callee->Load(Callee->Where),
         argument_values);
 
     const auto result_type = callee_type->GetResultType();
     if (result_type->IsReference())
-        return LValue::Create(builder, result_type->GetElement(), result_value);
+        return LValue::Create(builder, result_type->GetElement(Where), result_value);
 
     return RValue::Create(builder, result_type, result_value);
 }

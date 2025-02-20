@@ -26,10 +26,10 @@ NJS::ValuePtr NJS::TupleExpression::GenLLVM(Builder &builder, const TypePtr &exp
 
     for (unsigned i = 0; i < Elements.size(); ++i)
     {
-        const auto type = result_type ? result_type->GetElement(i) : nullptr;
-        const auto value = Elements[i]->GenLLVM(builder, type);
-        elements.push_back(value);
-        element_types.push_back(value->GetType());
+        const auto type = result_type ? result_type->GetElement(Elements[i]->Where, i) : nullptr;
+        auto value = Elements[i]->GenLLVM(builder, type);
+        elements.emplace_back(value);
+        element_types.emplace_back(value->GetType());
 
         is_array = is_array && element_types.front() == element_types.back();
     }
@@ -42,15 +42,18 @@ NJS::ValuePtr NJS::TupleExpression::GenLLVM(Builder &builder, const TypePtr &exp
             result_type = builder.GetTypeContext().GetTupleType(element_types);
     }
 
-    llvm::Value *value = llvm::Constant::getNullValue(result_type->GetLLVM(Where, builder));
+    llvm::Value *tuple_value = llvm::Constant::getNullValue(result_type->GetLLVM(Where, builder));
 
     for (unsigned i = 0; i < elements.size(); ++i)
     {
-        const auto el = builder.CreateCast(Where, elements[i], result_type->GetElement(i));
-        value = builder.GetBuilder().CreateInsertValue(value, el->Load(Where), i);
+        auto &element = Elements[i];
+        auto &value = elements[i];
+        auto type = result_type->GetElement(element->Where, i);
+        value = builder.CreateCast(element->Where, value, type);
+        tuple_value = builder.GetBuilder().CreateInsertValue(tuple_value, value->Load(element->Where), i);
     }
 
-    return RValue::Create(builder, result_type, value);
+    return RValue::Create(builder, result_type, tuple_value);
 }
 
 std::ostream &NJS::TupleExpression::Print(std::ostream &stream)

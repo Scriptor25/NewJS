@@ -18,10 +18,10 @@ NJS::Builder::Builder(
     const std::string &module_id,
     const std::string &source_filename,
     const bool is_main)
-    : m_TypeContext(ctx),
-      m_LLVMContext(context),
-      m_ModuleID(module_id),
-      m_IsMain(is_main)
+    : m_ModuleID(module_id),
+      m_IsMain(is_main),
+      m_TypeContext(ctx),
+      m_LLVMContext(context)
 {
     m_LLVMBuilder = std::make_unique<llvm::IRBuilder<>>(m_LLVMContext);
     m_LLVMModule = std::make_unique<llvm::Module>(module_id, m_LLVMContext);
@@ -96,10 +96,13 @@ NJS::Builder::Builder(
 
 void NJS::Builder::Close()
 {
-    if (m_IsMain)
-        GetBuilder().CreateRet(GetBuilder().getInt32(0));
-    else
-        GetBuilder().CreateRetVoid();
+    if (!GetBuilder().GetInsertBlock()->getTerminator())
+    {
+        if (m_IsMain)
+            GetBuilder().CreateRet(GetBuilder().getInt32(0));
+        else
+            GetBuilder().CreateRetVoid();
+    }
     StackPop();
 }
 

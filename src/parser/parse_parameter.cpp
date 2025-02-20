@@ -3,23 +3,25 @@
 
 NJS::ParameterPtr NJS::Parser::ParseParameter()
 {
+    auto where = m_Token.Where;
+
     ParameterPtr parameter;
     if (NextAt("{"))
     {
         std::map<std::string, ParameterPtr> parameters;
         ParseParameterMap(parameters, "}");
-        parameter = std::make_shared<DestructureObject>(parameters);
+        parameter = std::make_shared<DestructureObject>(where, parameters);
     }
     else if (NextAt("["))
     {
         std::vector<ParameterPtr> parameters;
         ParseParameterList(parameters, "]");
-        parameter = std::make_shared<DestructureTuple>(parameters);
+        parameter = std::make_shared<DestructureTuple>(where, parameters);
     }
     else
     {
         auto name = Expect(TokenType_Symbol).StringValue;
-        parameter = std::make_shared<Parameter>(name);
+        parameter = std::make_shared<Parameter>(where, name);
     }
 
     if (NextAt(":"))
@@ -52,11 +54,17 @@ void NJS::Parser::ParseParameterMap(std::map<std::string, ParameterPtr> &paramet
 {
     while (!At(delimiter) && !AtEof())
     {
-        auto name = Expect(TokenType_Symbol).StringValue;
+        auto [
+            where_,
+            type_,
+            name_,
+            int_,
+            fp_
+        ] = Expect(TokenType_Symbol);
         if (NextAt(":"))
-            parameters[name] = ParseParameter();
+            parameters[name_] = ParseParameter();
         else
-            parameters[name] = std::make_shared<Parameter>(name);
+            parameters[name_] = std::make_shared<Parameter>(where_, name_);
 
         if (!At(delimiter))
             Expect(",");

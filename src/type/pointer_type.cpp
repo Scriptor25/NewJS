@@ -18,7 +18,12 @@ bool NJS::PointerType::IsPointer() const
     return true;
 }
 
-NJS::TypePtr NJS::PointerType::GetElement() const
+NJS::TypePtr NJS::PointerType::GetElement(const SourceLocation &where) const
+{
+    return m_ElementType;
+}
+
+NJS::TypePtr NJS::PointerType::GetElement(const SourceLocation &, unsigned) const
 {
     return m_ElementType;
 }

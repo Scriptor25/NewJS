@@ -22,7 +22,7 @@ NJS::ValuePtr NJS::IntegerExpression::GenLLVM(Builder &builder, const TypePtr &e
     const auto result_value = llvm::ConstantInt::get(
         result_type->GetLLVM(Where, builder),
         Value,
-        result_type->IsSigned());
+        result_type->IsSigned(Where));
     return RValue::Create(builder, result_type, result_value);
 }
 

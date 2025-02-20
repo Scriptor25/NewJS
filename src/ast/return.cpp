@@ -25,15 +25,15 @@ void NJS::ReturnStatement::GenVoidLLVM(Builder &builder) const
 
     const auto ref = type->IsReference();
     if (ref)
-        type = type->GetElement();
+        type = type->GetElement(Where);
 
     auto value = Value->GenLLVM(builder, type);
-    value = builder.CreateCast(Where, value, type);
+    value = builder.CreateCast(Value->Where, value, type);
 
     if (ref)
-        builder.GetBuilder().CreateRet(value->GetPtr(Where));
+        builder.GetBuilder().CreateRet(value->GetPtr(Value->Where));
     else
-        builder.GetBuilder().CreateRet(value->Load(Where));
+        builder.GetBuilder().CreateRet(value->Load(Value->Where));
 }
 
 std::ostream &NJS::ReturnStatement::Print(std::ostream &stream)
