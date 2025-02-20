@@ -10,7 +10,7 @@ clean:
 	-rm $(OBJ) $(TARGET)
 
 launch: $(TARGET)
-	$(TARGET)
+	./$(TARGET)
 
 %.o: %.njs
 	newjs -o $@ -t obj $<
