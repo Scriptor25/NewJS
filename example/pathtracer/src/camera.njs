@@ -1,6 +1,7 @@
 import color    from "./color.njs"
 import common   from "./common.njs"
 import hittable from "./hittable.njs"
+import material from "./material.njs"
 import math     from "./math.njs"
 import ppm      from "./ppm.njs"
 import ray      from "./ray.njs"
@@ -21,6 +22,8 @@ type camera = {
 
     samples_per_pixel: u32,
     pixel_sample_scale: f64,
+
+    max_depth: u32,
 
     center: point3,
     pixel00_loc: point3,
@@ -50,11 +53,18 @@ function initialize(self: camera&) {
     self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v)
 }
 
-function ray_color(self: camera&, r: ray, world: hittable[]): color {
+function ray_color(self: camera&, r: ray, depth: u32, world: hittable[]): color {
+    if (!depth)
+        return [ 0.0, 0.0, 0.0 ]
+
     let rec: record
 
     if (hittable.hit(world, r, { min: 0.001, max: infinity }, rec)) {
-        return 0.5 * [ rec.normal[0] + 1, rec.normal[1] + 1, rec.normal[2] + 1 ]:color
+        let attenuation: color
+        let scattered: ray
+        if (material.scatter(rec.mat, r, rec, attenuation, scattered))
+            return attenuation * ray_color(self, scattered, depth - 1, world)
+        return [ 0.0, 0.0, 0.0 ]
     }
 
     const unit_direction = math.unit_vector(r.direction)
@@ -89,7 +99,7 @@ function render(self: camera&, world: hittable[]) {
         for (let i: u32; i < self.image_width; ++i) {
             let pixel_color: color
             for (let sample = 0; sample < self.samples_per_pixel; ++sample) {
-                pixel_color += ray_color(self, get_ray(self, i, j), world)
+                pixel_color += ray_color(self, get_ray(self, i, j), self.max_depth, world)
             }
             color.write_color(image, self.pixel_sample_scale * pixel_color)
         }

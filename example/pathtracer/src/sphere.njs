@@ -1,4 +1,3 @@
-import hittable from "./hittable.njs"
 import interval from "./interval.njs"
 import math     from "./math.njs"
 import ray      from "./ray.njs"
@@ -7,9 +6,10 @@ import record   from "./record.njs"
 extern function sqrt(x: f64): f64
 
 type sphere = {
-    hit: (hittable[], ray, interval, record&) => u1,
+    hit: (sphere&, ray, interval, record&) => u1,
     center: point3,
     radius: f64,
+    mat: material[],
 }
 
 function hit(self: sphere&, r: ray, ray_t: interval, rec: record&): u1 {
@@ -33,6 +33,7 @@ function hit(self: sphere&, r: ray, ray_t: interval, rec: record&): u1 {
 
     rec.t = root
     rec.p = ray.at(r, rec.t)
+    rec.mat = self.mat
 
     const outward_normal = (rec.p - self.center) / self.radius
     record.set_face_normal(rec, r, outward_normal)
@@ -40,10 +41,11 @@ function hit(self: sphere&, r: ray, ray_t: interval, rec: record&): u1 {
     return true
 }
 
-function create(center: point3, radius: f64): sphere {
+function create(center: point3, radius: f64, mat: material[]): sphere {
     return {
         hit,
         center,
         radius,
+        mat,
     }
 }

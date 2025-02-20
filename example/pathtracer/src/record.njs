@@ -1,9 +1,12 @@
-import math from "./math.njs"
-import ray  from "./ray.njs"
+import math     from "./math.njs"
+import ray      from "./ray.njs"
+
+type material
 
 type record = {
     p: point3,
     normal: vec3,
+    mat: material[],
     t: f64,
     front_face: u1,
 }

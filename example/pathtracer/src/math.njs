@@ -1,6 +1,7 @@
 import common from "./common.njs"
 
 extern function sqrt(x: f64): f64
+extern function fabs(x: f64): f64
 
 type vec3 = f64[3]
 type point3 = vec3
@@ -10,6 +11,14 @@ function operator-(self: vec3&): vec3 {
         -self[0],
         -self[1],
         -self[2],
+    ]
+}
+
+function operator-(v: vec3): vec3 {
+    return [
+        -v[0],
+        -v[1],
+        -v[2],
     ]
 }
 
@@ -37,6 +46,13 @@ function length_squared(v: vec3): f64 {
 
 function length(v: vec3): f64 {
     return sqrt(length_squared(v))
+}
+
+function near_zero(v: vec3): u1 {
+    const s = 1e-8
+    return (fabs(v[0]) < s)
+        && (fabs(v[1]) < s)
+        && (fabs(v[2]) < s)
 }
 
 function operator+(a: vec3, b: vec3): vec3 {
@@ -120,4 +136,15 @@ function random_unit_vector(): vec3 {
         if (1e-160 < len_sq && len_sq <= 1)
             return p / sqrt(len_sq)
     }
+}
+
+function random_on_hemisphere(normal: vec3): vec3 {
+    const on_unit_sphere = random_unit_vector()
+    if (dot(on_unit_sphere, normal) > 0.0)
+        return on_unit_sphere
+    return -on_unit_sphere
+}
+
+function reflect(v: vec3, n: vec3): vec3 {
+    return v - 2.0 * dot(v, n) * n
 }

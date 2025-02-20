@@ -7,7 +7,7 @@ extern function realloc(block: void[], count: u32): void[]
 extern function free(block: void[])
 
 type hittable_list = {
-    hit: (hittable[], ray, interval, record&) => u1,
+    hit: (hittable_list&, ray, interval, record&) => u1,
     objects: hittable[][],
     size: u64,
 }
