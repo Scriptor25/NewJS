@@ -7,9 +7,9 @@
 
 llvm::Constant *NJS::StringExpression::GetString(const Builder &builder, const std::string &value)
 {
-    static std::map<std::string, llvm::Constant *> string_table;
+    static std::map<void *, std::map<std::string, llvm::Constant *>> string_table;
 
-    auto &ptr = string_table[value];
+    auto &ptr = string_table[&builder.GetModule()][value];
     if (!ptr)
         ptr = builder.GetBuilder().CreateGlobalStringPtr(value);
     return ptr;

@@ -1,4 +1,5 @@
 #include <llvm/IR/LegacyPassManager.h>
+#include <llvm/IR/Verifier.h>
 #include <llvm/Linker/Linker.h>
 #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/TargetSelect.h>
@@ -12,8 +13,9 @@ NJS::Linker::Linker(const std::string &module_id, const std::string &source_file
     : m_AppendNames(module_id.empty())
 {
     m_LLVMContext = std::make_unique<llvm::LLVMContext>();
-    m_LLVMModule = std::make_unique<llvm::Module>(module_id, *m_LLVMContext);
-    m_LLVMModule->setSourceFileName(source_filename);
+    m_LLVMModule = std::make_unique<llvm::Module>(module_id, LLVMContext());
+
+    LLVMModule().setSourceFileName(source_filename);
 }
 
 llvm::LLVMContext &NJS::Linker::LLVMContext() const
@@ -31,24 +33,30 @@ void NJS::Linker::Link(std::unique_ptr<llvm::Module> &&module) const
     const auto module_id = module->getModuleIdentifier();
     const auto source_name = module->getSourceFileName();
 
+    if (verifyModule(*module, &llvm::errs()))
+        Error("failed to verify module '{}' (from '{}')", module_id, source_name);
+
     if (llvm::Linker::linkModules(LLVMModule(), std::move(module)))
         Error("failed to link module '{}' (from '{}')", module_id, source_name);
 
     if (m_AppendNames)
     {
-        const auto my_module_id = m_LLVMModule->getModuleIdentifier();
-        const auto my_source_name = m_LLVMModule->getSourceFileName();
+        const auto my_module_id = LLVMModule().getModuleIdentifier();
+        const auto my_source_name = LLVMModule().getSourceFileName();
 
-        m_LLVMModule->setModuleIdentifier((my_module_id.empty() ? std::string() : my_module_id + '+') + module_id);
-        m_LLVMModule->setSourceFileName((my_source_name.empty() ? std::string() : my_source_name + '+') + source_name);
+        LLVMModule().setModuleIdentifier((my_module_id.empty() ? std::string() : my_module_id + ',') + module_id);
+        LLVMModule().setSourceFileName((my_source_name.empty() ? std::string() : my_source_name + ',') + source_name);
     }
 }
 
 void NJS::Linker::Emit(llvm::raw_pwrite_stream &output_stream, const llvm::CodeGenFileType output_type) const
 {
+    if (verifyModule(LLVMModule(), &llvm::errs()))
+        Error("failed to verify module");
+
     if (output_type == llvm::CodeGenFileType::Null)
     {
-        m_LLVMModule->print(output_stream, {});
+        LLVMModule().print(output_stream, {});
         return;
     }
 
@@ -73,11 +81,12 @@ void NJS::Linker::Emit(llvm::raw_pwrite_stream &output_stream, const llvm::CodeG
 
     const auto target_machine = target->createTargetMachine(target_triple, CPU, FEATURES, opt, llvm::Reloc::PIC_);
 
-    m_LLVMModule->setDataLayout(target_machine->createDataLayout());
-    m_LLVMModule->setTargetTriple(target_triple);
+    LLVMModule().setDataLayout(target_machine->createDataLayout());
+    LLVMModule().setTargetTriple(target_triple);
 
     llvm::legacy::PassManager pass_manager;
-    target_machine->addPassesToEmitFile(pass_manager, output_stream, nullptr, output_type);
-    pass_manager.run(*m_LLVMModule);
+    if (target_machine->addPassesToEmitFile(pass_manager, output_stream, nullptr, output_type))
+        Error("target machine cannot emit the output file");
+    pass_manager.run(LLVMModule());
     output_stream.flush();
 }
