@@ -81,7 +81,7 @@ function get_ray(self: camera&, i: u32, j: u32): ray {
 function render(self: camera&, world: hittable[]) {
     initialize(self)
 
-    let image = ppm.begin("./bin/out.ppm", self.image_width, self.image_height)
+    let image = ppm.begin("./out.ppm", self.image_width, self.image_height)
     for (let j: u32; j < self.image_height; ++j) {
         fprintf(std_err, "\r[%4d / %4d]", j + 1:u32, self.image_height)
         fflush(std_err)
