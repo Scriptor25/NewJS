@@ -8,12 +8,12 @@
 std::string NJS::StructType::GenString(const std::vector<std::pair<std::string, TypePtr>> &element_types)
 {
     std::map<std::string, TypePtr> element_map;
-    for (const auto &[name_, type_]: element_types)
+    for (auto &[name_, type_]: element_types)
         element_map[name_] = type_;
 
     std::string dst = "{ ";
     auto first = true;
-    for (const auto &[name_, type_]: element_map)
+    for (auto &[name_, type_]: element_map)
     {
         if (first)
             first = false;

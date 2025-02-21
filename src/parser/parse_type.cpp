@@ -86,13 +86,6 @@ NJS::TypePtr NJS::Parser::ParseType()
             Expect("]");
             continue;
         }
-
-        if (NextAt("&"))
-        {
-            type = m_TypeContext.GetReferenceType(type);
-            continue;
-        }
-
         break;
     }
 
@@ -102,30 +95,39 @@ NJS::TypePtr NJS::Parser::ParseType()
 NJS::TypePtr NJS::Parser::ParseTupleType()
 {
     Expect("[");
-    std::vector<TypePtr> types;
-    ParseTypeList(types, "]");
-    return m_TypeContext.GetTupleType(types);
+    std::vector<TypePtr> element_types;
+    ParseTypeList(element_types, "]");
+    return m_TypeContext.GetTupleType(element_types);
 }
 
 NJS::TypePtr NJS::Parser::ParseStructType()
 {
     Expect("{");
-    std::vector<std::pair<std::string, TypePtr>> types;
-    ParseTypeMap(types, "}");
-    return m_TypeContext.GetStructType(types);
+    std::vector<std::pair<std::string, TypePtr>> element_types;
+    ParseTypeMap(element_types, "}");
+    return m_TypeContext.GetStructType(element_types);
 }
 
 NJS::TypePtr NJS::Parser::ParseFunctionType()
 {
     Expect("(");
-    std::vector<TypePtr> args;
-    const auto vararg = ParseTypeList(args, ")");
-    TypePtr result;
+    std::vector<ReferenceInfo> parameters;
+    const auto is_var_arg = ParseReferenceInfoList(parameters, ")");
+    ReferenceInfo result;
     if (NextAt("=>"))
-        result = ParseType();
+        result = ParseReferenceInfo();
     else
-        result = m_TypeContext.GetVoidType();
-    return m_TypeContext.GetFunctionType(result, args, vararg);
+        result.Type = m_TypeContext.GetVoidType();
+    return m_TypeContext.GetFunctionType(result, parameters, is_var_arg);
+}
+
+NJS::ReferenceInfo NJS::Parser::ParseReferenceInfo()
+{
+    ReferenceInfo info;
+    info.IsConst = NextAt("const");
+    info.Type = ParseType();
+    info.IsReference = NextAt("&");
+    return info;
 }
 
 bool NJS::Parser::ParseTypeList(std::vector<TypePtr> &types, const std::string &delim)
@@ -139,7 +141,7 @@ bool NJS::Parser::ParseTypeList(std::vector<TypePtr> &types, const std::string &
             Expect(delim);
             return true;
         }
-        types.push_back(ParseType());
+        types.emplace_back(ParseType());
         if (!At(delim))
             Expect(",");
     }
@@ -159,4 +161,23 @@ void NJS::Parser::ParseTypeMap(std::vector<std::pair<std::string, TypePtr>> &typ
             Expect(",");
     }
     Expect(delim);
+}
+
+bool NJS::Parser::ParseReferenceInfoList(std::vector<ReferenceInfo> &infos, const std::string &delim)
+{
+    while (!At(delim) && !AtEof())
+    {
+        if (NextAt("."))
+        {
+            Expect(".");
+            Expect(".");
+            Expect(delim);
+            return true;
+        }
+        infos.emplace_back(ParseReferenceInfo());
+        if (!At(delim))
+            Expect(",");
+    }
+    Expect(delim);
+    return false;
 }

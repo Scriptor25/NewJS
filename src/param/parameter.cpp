@@ -6,7 +6,10 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::Parameter::Parameter(SourceLocation where, std::string name, TypePtr type)
+NJS::Parameter::Parameter(
+    SourceLocation where,
+    std::string name,
+    TypePtr type)
     : Where(std::move(where)),
       Name(std::move(name)),
       Type(std::move(type))
@@ -21,26 +24,23 @@ bool NJS::Parameter::RequireValue()
 void NJS::Parameter::CreateVars(
     Builder &builder,
     ValuePtr value,
-    const unsigned flags)
+    const bool is_extern,
+    const bool is_const,
+    const bool is_reference)
 {
-    const auto type = !Type
-                          ? value->GetType()
-                          : Type->IsReference()
-                                ? Type->GetElement(Where)
-                                : Type;
-
+    const auto type = Type ? Type : value->GetType();
     auto &variable = builder.DefineVariable(Where, Name);
-
-    const bool is_extern = flags & ParameterFlags_Extern;
-    const bool is_const = flags & ParameterFlags_Const;
 
     if (is_extern)
     {
-        variable = builder.CreateGlobal(Where, Name, type, false);
+        const auto const_value = llvm::dyn_cast<llvm::Constant>(value->Load(Where));
+        variable = builder.CreateGlobal(Where, Name, type, is_const, value != nullptr, const_value);
+        if (value && !const_value)
+            variable->Store(Where, value);
         return;
     }
 
-    if (Type && Type->IsReference())
+    if (is_reference)
     {
         if (value->GetType() != type)
             Error(
@@ -48,7 +48,9 @@ void NJS::Parameter::CreateVars(
                 "type mismatch: cannot create reference with type {} from value of type {}",
                 type,
                 value->GetType());
-        variable = LValue::Create(builder, type, value->GetPtr(Where));
+        if (value->IsConst() && !is_const)
+            Error(Where, "cannot reference constant value as mutable");
+        variable = LValue::Create(builder, type, value->GetPtr(Where), is_const);
         return;
     }
 
@@ -59,7 +61,7 @@ void NJS::Parameter::CreateVars(
         return;
     }
 
-    variable = builder.CreateAlloca(Where, type);
+    variable = builder.CreateAlloca(Where, type, false);
     if (value)
     {
         variable->Store(Where, value);

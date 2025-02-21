@@ -7,30 +7,30 @@
 NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePtr array, const ValuePtr &index)
 {
     if (auto [
-            result_type_,
-            left_type_,
-            right_type_,
+            result_,
+            left_,
+            right_,
             callee_
         ] = FindOperator("[", array, index);
         callee_)
     {
         const auto function_type = llvm::FunctionType::get(
-            result_type_->GetLLVM(where, *this),
+            result_.GetLLVM(where, *this),
             {
-                left_type_->GetLLVM(where, *this),
-                right_type_->GetLLVM(where, *this),
+                left_.GetLLVM(where, *this),
+                right_.GetLLVM(where, *this),
             },
             false);
         const auto result_value = GetBuilder().CreateCall(
             function_type,
             callee_,
             {
-                left_type_->IsReference() ? array->GetPtr(where) : array->Load(where),
-                right_type_->IsReference() ? index->GetPtr(where) : index->Load(where),
+                left_.IsReference ? array->GetPtr(where) : array->Load(where),
+                right_.IsReference ? index->GetPtr(where) : index->Load(where),
             });
-        if (result_type_->IsReference())
-            return LValue::Create(*this, result_type_->GetElement(where), result_value);
-        return RValue::Create(*this, result_type_, result_value);
+        if (result_.IsReference)
+            return LValue::Create(*this, result_.Type, result_value, result_.IsConst);
+        return RValue::Create(*this, result_.Type, result_value);
     }
 
     const auto array_type = array->GetType();
@@ -43,7 +43,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
             element_type->GetLLVM(where, *this),
             array->Load(where),
             {index_value});
-        return LValue::Create(*this, element_type, ptr);
+        return LValue::Create(*this, element_type, ptr, array->IsConst());
     }
 
     if (!array_type->IsArray() && !array_type->IsTuple())
@@ -52,7 +52,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
     const auto const_index = llvm::dyn_cast<llvm::ConstantInt>(index_value);
     if (!const_index && !array->IsLValue())
     {
-        const auto value = CreateAlloca(where, array_type);
+        const auto value = CreateAlloca(where, array_type, array->IsConst());
         value->Store(where, array);
         array = value;
     }
@@ -76,7 +76,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
             const auto i = const_index->getValue().getLimitedValue();
             type = array_type->GetElement(where, i);
         }
-        return LValue::Create(*this, type, ptr);
+        return LValue::Create(*this, type, ptr, array->IsConst());
     }
 
     if (!const_index)

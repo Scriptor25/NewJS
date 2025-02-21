@@ -556,13 +556,13 @@ void Tuple_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsigne
     offset += snprintf(buffer + offset, buffer_size - offset, " ]");
 }
 
-void Function_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, va_list &arg_ptr)
+void Function_AppendV(Type *, char *buffer, const unsigned buffer_size, unsigned &offset, va_list &arg_ptr)
 {
     const auto ptr = va_arg(arg_ptr, char*);
     offset += snprintf(buffer + offset, buffer_size - offset, "fn[%p]", ptr);
 }
 
-void Function_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, char *&ptr)
+void Function_AppendP(Type *, char *buffer, const unsigned buffer_size, unsigned &offset, char *&ptr)
 {
     offset += snprintf(buffer + offset, buffer_size - offset, "fn[%p]", *reinterpret_cast<char **>(ptr));
     ptr += sizeof(char *);

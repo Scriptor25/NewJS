@@ -45,7 +45,6 @@ namespace NJS
         [[nodiscard]] virtual bool IsInteger() const;
         [[nodiscard]] virtual bool IsFloatingPoint() const;
         [[nodiscard]] virtual bool IsPointer() const;
-        [[nodiscard]] virtual bool IsReference() const;
         [[nodiscard]] virtual bool IsArray() const;
         [[nodiscard]] virtual bool IsStruct() const;
         [[nodiscard]] virtual bool IsTuple() const;
@@ -61,8 +60,8 @@ namespace NJS
         [[nodiscard]] virtual MemberInfo GetMember(const SourceLocation &where, const std::string &name) const;
         [[nodiscard]] virtual MemberInfo GetMember(const SourceLocation &where, unsigned index) const;
 
-        [[nodiscard]] virtual TypePtr GetResultType(const SourceLocation &where) const;
-        [[nodiscard]] virtual TypePtr GetParameterType(const SourceLocation &where, unsigned index) const;
+        [[nodiscard]] virtual ReferenceInfo GetResult(const SourceLocation &where) const;
+        [[nodiscard]] virtual ReferenceInfo GetParameter(const SourceLocation &where, unsigned index) const;
         [[nodiscard]] virtual unsigned GetParameterCount(const SourceLocation &where) const;
         [[nodiscard]] virtual bool IsVarArg(const SourceLocation &where) const;
 
@@ -192,30 +191,6 @@ namespace NJS
         TypePtr m_ElementType;
     };
 
-    class ReferenceType final : public Type
-    {
-        friend TypeContext;
-
-    public:
-        static std::string GenString(const TypePtr &element_type);
-
-        [[nodiscard]] bool IsPrimitive() const override;
-        [[nodiscard]] bool IsReference() const override;
-        [[nodiscard]] TypePtr GetElement(const SourceLocation &where) const override;
-        [[nodiscard]] TypePtr GetElement(const SourceLocation &where, unsigned index) const override;
-        [[nodiscard]] unsigned GetElementCount(const SourceLocation &where) const override;
-
-        void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
-
-    private:
-        ReferenceType(TypeContext &type_context, std::string string, TypePtr element_type);
-
-        [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
-        [[nodiscard]] unsigned GenSize() const override;
-
-        TypePtr m_ElementType;
-    };
-
     class ArrayType final : public Type
     {
         friend TypeContext;
@@ -296,15 +271,15 @@ namespace NJS
 
     public:
         static std::string GenString(
-            const TypePtr &result_type,
-            const std::vector<TypePtr> &parameter_types,
-            bool var_arg);
+            const ReferenceInfo &result,
+            const std::vector<ReferenceInfo> &parameters,
+            bool is_var_arg);
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsFunction() const override;
 
-        [[nodiscard]] TypePtr GetResultType(const SourceLocation &where) const override;
-        [[nodiscard]] TypePtr GetParameterType(const SourceLocation &where, unsigned index) const override;
+        [[nodiscard]] ReferenceInfo GetResult(const SourceLocation &where) const override;
+        [[nodiscard]] ReferenceInfo GetParameter(const SourceLocation &where, unsigned index) const override;
         [[nodiscard]] unsigned GetParameterCount(const SourceLocation &where) const override;
         [[nodiscard]] bool IsVarArg(const SourceLocation &where) const override;
 
@@ -316,15 +291,15 @@ namespace NJS
         FunctionType(
             TypeContext &type_context,
             std::string string,
-            TypePtr result_type,
-            std::vector<TypePtr> parameter_types,
-            bool var_arg);
+            ReferenceInfo result,
+            std::vector<ReferenceInfo> parameters,
+            bool is_var_arg);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
         [[nodiscard]] unsigned GenSize() const override;
 
-        TypePtr m_ResultType;
-        std::vector<TypePtr> m_ParameterTypes;
-        bool m_VarArg;
+        ReferenceInfo m_Result;
+        std::vector<ReferenceInfo> m_Parameters;
+        bool m_IsVarArg;
     };
 }

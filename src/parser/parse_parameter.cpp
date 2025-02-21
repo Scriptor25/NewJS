@@ -45,21 +45,39 @@ bool NJS::Parser::ParseParameterList(std::vector<ParameterPtr> &parameters, cons
     return false;
 }
 
+bool NJS::Parser::ParseReferenceParameterList(
+    std::vector<std::pair<ParameterPtr, ReferenceInfo>> &parameters,
+    const std::string &delimiter)
+{
+    while (!At(delimiter) && !AtEof())
+    {
+        if (NextAt("..."))
+        {
+            Expect(delimiter);
+            return true;
+        }
+
+        const auto is_const = NextAt("const");
+        const auto is_reference = NextAt("&");
+        auto parameter = ParseParameter();
+        parameters.emplace_back(parameter, ReferenceInfo(parameter->Type, is_const, is_reference));
+
+        if (!At(delimiter))
+            Expect(",");
+    }
+    Expect(delimiter);
+    return false;
+}
+
 void NJS::Parser::ParseParameterMap(std::map<std::string, ParameterPtr> &parameters, const std::string &delimiter)
 {
     while (!At(delimiter) && !AtEof())
     {
-        const auto [
-            where_,
-            type_,
-            name_,
-            int_,
-            fp_
-        ] = Expect(TokenType_Symbol);
-
-        parameters[name_] = NextAt(":")
-                                ? ParseParameter()
-                                : std::make_shared<Parameter>(where_, name_, nullptr);
+        auto where = m_Token.Where;
+        auto name = Expect(TokenType_Symbol).StringValue;
+        parameters[name] = NextAt(":")
+                               ? ParseParameter()
+                               : std::make_shared<Parameter>(where, name, nullptr);
 
         if (!At(delimiter))
             Expect(",");

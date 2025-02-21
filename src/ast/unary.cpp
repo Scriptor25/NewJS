@@ -43,23 +43,23 @@ NJS::ValuePtr NJS::UnaryExpression::GenLLVM(Builder &builder, const TypePtr &exp
     auto operand = Operand->GenLLVM(builder, expected_type);
 
     if (auto [
-            result_type_,
-            operand_type_,
+            result_,
+            value_,
             callee_
         ] = builder.FindOperator(Operator, Prefix, operand);
         callee_)
     {
         const auto function_type = llvm::FunctionType::get(
-            result_type_->GetLLVM(Where, builder),
-            {operand_type_->GetLLVM(Operand->Where, builder),},
+            result_.GetLLVM(Where, builder),
+            {value_.GetLLVM(Operand->Where, builder)},
             false);
         const auto result_value = builder.GetBuilder().CreateCall(
             function_type,
             callee_,
-            {operand_type_->IsReference() ? operand->GetPtr(Operand->Where) : operand->Load(Operand->Where)});
-        if (result_type_->IsReference())
-            return LValue::Create(builder, result_type_->GetElement(Where), result_value);
-        return RValue::Create(builder, result_type_, result_value);
+            {value_.IsReference ? operand->GetPtr(Operand->Where) : operand->Load(Operand->Where)});
+        if (result_.IsReference)
+            return LValue::Create(builder, result_.Type, result_value, result_.IsConst);
+        return RValue::Create(builder, result_.Type, result_value);
     }
 
     const auto assign = assignment_operators.contains(Operator);

@@ -21,7 +21,6 @@ namespace NJS
     class IntegerType;
     class FloatingPointType;
     class PointerType;
-    class ReferenceType;
     class ArrayType;
     class StructType;
     class TupleType;
@@ -33,7 +32,6 @@ namespace NJS
     using IntegerTypePtr = std::shared_ptr<IntegerType>;
     using FloatingPointTypePtr = std::shared_ptr<FloatingPointType>;
     using PointerTypePtr = std::shared_ptr<PointerType>;
-    using ReferenceTypePtr = std::shared_ptr<ReferenceType>;
     using ArrayTypePtr = std::shared_ptr<ArrayType>;
     using StructTypePtr = std::shared_ptr<StructType>;
     using TupleTypePtr = std::shared_ptr<TupleType>;
@@ -99,6 +97,13 @@ namespace NJS
         FunctionFlags_Template = 1 << 3,
         FunctionFlags_Absolute = 1 << 4,
     };
+
+    struct ValueInfo;
+    struct ReferenceInfo;
+    struct MemberInfo;
+
+    template<unsigned N>
+    struct OperatorInfo;
 
     void Indent();
     void Exdent();

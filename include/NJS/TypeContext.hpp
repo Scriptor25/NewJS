@@ -17,14 +17,13 @@ namespace NJS
         IntegerTypePtr GetIntegerType(unsigned bits, bool is_signed);
         FloatingPointTypePtr GetFloatingPointType(unsigned bits);
         PointerTypePtr GetPointerType(const TypePtr &element_type);
-        ReferenceTypePtr GetReferenceType(const TypePtr &element_type);
         ArrayTypePtr GetArrayType(const TypePtr &element_type, unsigned count);
         StructTypePtr GetStructType(const std::vector<std::pair<std::string, TypePtr>> &element_types);
         TupleTypePtr GetTupleType(const std::vector<TypePtr> &element_types);
         FunctionTypePtr GetFunctionType(
-            const TypePtr &result_type,
-            const std::vector<TypePtr> &argument_types,
-            bool var_arg);
+            const ReferenceInfo &result,
+            const std::vector<ReferenceInfo> &parameters,
+            bool is_var_arg);
 
         IntegerTypePtr GetBooleanType();
         IntegerTypePtr GetCharType();

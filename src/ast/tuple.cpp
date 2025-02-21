@@ -20,7 +20,7 @@ NJS::ValuePtr NJS::TupleExpression::GenLLVM(Builder &builder, const TypePtr &exp
     else if (expected_type)
         result_type = expected_type;
 
-    std::vector<ValuePtr> elements;
+    std::vector<ValuePtr> element_values;
     std::vector<TypePtr> element_types;
     auto is_array = true;
 
@@ -28,7 +28,7 @@ NJS::ValuePtr NJS::TupleExpression::GenLLVM(Builder &builder, const TypePtr &exp
     {
         const auto type = result_type ? result_type->GetElement(Elements[i]->Where, i) : nullptr;
         auto value = Elements[i]->GenLLVM(builder, type);
-        elements.emplace_back(value);
+        element_values.emplace_back(value);
         element_types.emplace_back(value->GetType());
 
         is_array = is_array && element_types.front() == element_types.back();
@@ -44,10 +44,10 @@ NJS::ValuePtr NJS::TupleExpression::GenLLVM(Builder &builder, const TypePtr &exp
 
     llvm::Value *tuple_value = llvm::Constant::getNullValue(result_type->GetLLVM(Where, builder));
 
-    for (unsigned i = 0; i < elements.size(); ++i)
+    for (unsigned i = 0; i < element_values.size(); ++i)
     {
         auto &element = Elements[i];
-        auto &value = elements[i];
+        auto &value = element_values[i];
         auto type = result_type->GetElement(element->Where, i);
         value = builder.CreateCast(element->Where, value, type);
         tuple_value = builder.GetBuilder().CreateInsertValue(tuple_value, value->Load(element->Where), i);

@@ -1,3 +1,4 @@
+#include <ranges>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Import.hpp>
@@ -45,23 +46,23 @@ void NJS::ImportMapping::MapFunctions(
         {
             if (function->Parameters.size() == 1)
                 name += (function->IsVarArg ? std::string() : function->Name)
-                        + function->Parameters[0]->Type->GetString()
+                        + function->Parameters[0].first->Type->GetString()
                         + (function->IsVarArg ? function->Name : std::string());
             else if (function->Parameters.size() == 2)
-                name += function->Parameters[0]->Type->GetString()
+                name += function->Parameters[0].first->Type->GetString()
                         + function->Name
-                        + function->Parameters[1]->Type->GetString();
+                        + function->Parameters[1].first->Type->GetString();
         }
         else
             name += function->Name;
 
-        std::vector<TypePtr> parameter_types;
-        for (const auto &parameter: function->Parameters)
-            parameter_types.push_back(parameter->Type);
+        std::vector<ReferenceInfo> parameters;
+        for (const auto &info: function->Parameters | std::views::values)
+            parameters.emplace_back(info);
 
         const auto type = builder.GetTypeContext().GetFunctionType(
-            function->ResultType,
-            parameter_types,
+            function->Result,
+            parameters,
             function->IsVarArg);
 
         auto function_callee = builder.GetModule().getFunction(name);
@@ -79,15 +80,15 @@ void NJS::ImportMapping::MapFunctions(
                 builder.DefineOperator(
                     function->Name,
                     !function->IsVarArg,
-                    function->Parameters[0]->Type,
-                    function->ResultType,
+                    function->Parameters[0].second,
+                    function->Result,
                     function_callee);
             else if (function->Parameters.size() == 2)
                 builder.DefineOperator(
                     function->Name,
-                    function->Parameters[0]->Type,
-                    function->Parameters[1]->Type,
-                    function->ResultType,
+                    function->Parameters[0].second,
+                    function->Parameters[1].second,
+                    function->Result,
                     function_callee);
         }
         else if (All)

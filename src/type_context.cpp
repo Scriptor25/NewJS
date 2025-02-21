@@ -33,11 +33,6 @@ NJS::PointerTypePtr NJS::TypeContext::GetPointerType(const TypePtr &element_type
     return GetType<PointerType>(element_type);
 }
 
-NJS::ReferenceTypePtr NJS::TypeContext::GetReferenceType(const TypePtr &element_type)
-{
-    return GetType<ReferenceType>(element_type);
-}
-
 NJS::ArrayTypePtr NJS::TypeContext::GetArrayType(const TypePtr &element_type, unsigned count)
 {
     return GetType<ArrayType>(element_type, count);
@@ -54,11 +49,11 @@ NJS::TupleTypePtr NJS::TypeContext::GetTupleType(const std::vector<TypePtr> &ele
 }
 
 NJS::FunctionTypePtr NJS::TypeContext::GetFunctionType(
-    const TypePtr &result_type,
-    const std::vector<TypePtr> &argument_types,
-    bool var_arg)
+    const ReferenceInfo &result,
+    const std::vector<ReferenceInfo> &parameters,
+    bool is_var_arg)
 {
-    return GetType<FunctionType>(result_type, argument_types, var_arg);
+    return GetType<FunctionType>(result, parameters, is_var_arg);
 }
 
 NJS::IntegerTypePtr NJS::TypeContext::GetBooleanType()

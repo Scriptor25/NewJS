@@ -10,24 +10,26 @@ namespace NJS
         llvm::Value *Ptr{};
     };
 
-    template<unsigned N>
-    struct OperatorInfo;
+    bool operator==(const ReferenceInfo &a, const ReferenceInfo &b);
+    bool operator!=(const ReferenceInfo &a, const ReferenceInfo &b);
+    bool operator<(const ReferenceInfo &a, const ReferenceInfo &b);
 
-    template<>
-    struct OperatorInfo<1>
+    struct ReferenceInfo
     {
-        TypePtr ResultType;
-        TypePtr ValueType;
-        llvm::Value *Callee{};
-    };
+        ReferenceInfo() = default;
+        ReferenceInfo(const TypePtr &type, bool is_const, bool is_reference);
 
-    template<>
-    struct OperatorInfo<2>
-    {
-        TypePtr ResultType;
-        TypePtr LeftType;
-        TypePtr RightType;
-        llvm::Value *Callee{};
+        explicit ReferenceInfo(const TypePtr &type);
+
+        std::string GetString() const;
+        llvm::Type *GetLLVM(const SourceLocation &where, const Builder &builder) const;
+        unsigned GetSize() const;
+
+        std::ostream &Print(std::ostream &stream) const;
+
+        TypePtr Type;
+        bool IsConst = false;
+        bool IsReference = false;
     };
 
     struct MemberInfo
@@ -35,5 +37,22 @@ namespace NJS
         unsigned Index;
         std::string Name;
         TypePtr Type;
+    };
+
+    template<>
+    struct OperatorInfo<1>
+    {
+        ReferenceInfo Result;
+        ReferenceInfo Value;
+        llvm::Value *Callee{};
+    };
+
+    template<>
+    struct OperatorInfo<2>
+    {
+        ReferenceInfo Result;
+        ReferenceInfo Left;
+        ReferenceInfo Right;
+        llvm::Value *Callee{};
     };
 }

@@ -1,6 +1,7 @@
 #include <utility>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
+#include <NJS/Error.hpp>
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
@@ -23,14 +24,14 @@ NJS::ValuePtr NJS::StructExpression::GenLLVM(Builder &builder, const TypePtr &ex
     else if (expected_type)
         result_type = expected_type;
 
-    std::vector<std::pair<std::string, ValuePtr>> elements;
+    std::vector<std::pair<std::string, ValuePtr>> element_values;
     std::vector<std::pair<std::string, TypePtr>> element_types;
 
     for (const auto &[name_, element_]: Elements)
     {
         auto type = result_type ? result_type->GetMember(element_->Where, name_).Type : nullptr;
         auto value = element_->GenLLVM(builder, type);
-        elements.emplace_back(name_, value);
+        element_values.emplace_back(name_, value);
         element_types.emplace_back(name_, value->GetType());
     }
 
@@ -40,10 +41,10 @@ NJS::ValuePtr NJS::StructExpression::GenLLVM(Builder &builder, const TypePtr &ex
     llvm::Value *struct_value = llvm::ConstantStruct::getNullValue(
         result_type->GetLLVM<llvm::StructType>(Where, builder));
 
-    for (unsigned i = 0; i < elements.size(); ++i)
+    for (unsigned i = 0; i < element_values.size(); ++i)
     {
         auto &element = Elements[i].second;
-        auto [element_name_, element_value_] = elements[i];
+        auto [element_name_, element_value_] = element_values[i];
         auto [index_, name_, type_] = result_type->GetMember(element->Where, element_name_);
         element_value_ = builder.CreateCast(element->Where, element_value_, type_);
         struct_value = builder.GetBuilder().CreateInsertValue(

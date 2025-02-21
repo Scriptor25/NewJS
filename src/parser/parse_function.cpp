@@ -46,13 +46,15 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
     else
         name = Expect(TokenType_Symbol).StringValue;
 
-    std::vector<ParameterPtr> parameters;
+    std::vector<std::pair<ParameterPtr, ReferenceInfo>> parameters;
     Expect("(");
-    const auto is_var_arg = ParseParameterList(parameters, ")");
+    const auto is_var_arg = ParseReferenceParameterList(parameters, ")");
 
-    auto result_type = NextAt(":")
-                           ? ParseType()
-                           : m_TypeContext.GetVoidType();
+    ReferenceInfo result;
+    if (NextAt(":"))
+        result = ParseReferenceInfo();
+    else
+        result.Type = m_TypeContext.GetVoidType();
 
     StatementPtr body;
     if (!is_extern && At("{"))
@@ -68,25 +70,25 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
         return {};
     }
 
-    return std::make_shared<FunctionStatement>(where, flags, name, parameters, is_var_arg, result_type, body);
+    return std::make_shared<FunctionStatement>(where, flags, name, parameters, is_var_arg, result, body);
 }
 
 NJS::ExpressionPtr NJS::Parser::ParseFunctionExpression()
 {
     const auto where = Expect("?").Where;
 
-    std::vector<ParameterPtr> parameters;
+    std::vector<std::pair<ParameterPtr, ReferenceInfo>> parameters;
     auto is_var_arg = false;
     if (NextAt("("))
-        is_var_arg = ParseParameterList(parameters, ")");
+        is_var_arg = ParseReferenceParameterList(parameters, ")");
 
-    TypePtr result_type;
+    ReferenceInfo result;
     if (NextAt(":"))
-        result_type = ParseType();
+        result = ParseReferenceInfo();
     else
-        result_type = m_TypeContext.GetVoidType();
+        result.Type = m_TypeContext.GetVoidType();
 
     const auto body = ParseScopeStatement();
 
-    return std::make_shared<FunctionExpression>(where, parameters, is_var_arg, result_type, body);
+    return std::make_shared<FunctionExpression>(where, parameters, is_var_arg, result, body);
 }

@@ -56,9 +56,9 @@ NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) 
                 args.push_back(value->GetPtr(dynamic->Where));
             else
             {
-                const auto value_pointer = builder.CreateAlloca(dynamic->Where, value->GetType());
-                value_pointer->Store(dynamic->Where, value);
-                args.push_back(value_pointer->GetPtr(dynamic->Where));
+                const auto const_ref = builder.CreateAlloca(dynamic->Where, value->GetType(), true);
+                const_ref->StoreForce(dynamic->Where, value);
+                args.push_back(const_ref->GetPtr(dynamic->Where));
             }
 
             continue;

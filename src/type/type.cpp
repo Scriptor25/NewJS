@@ -60,8 +60,6 @@ bool NJS::operator==(const TypePtr &a, const TypePtr &b)
         return false;
     if (a->IsPointer() != b->IsPointer())
         return false;
-    if (a->IsReference() != b->IsReference())
-        return false;
     if (a->IsArray() != b->IsArray())
         return false;
     if (a->IsStruct() != b->IsStruct())
@@ -78,9 +76,6 @@ bool NJS::operator==(const TypePtr &a, const TypePtr &b)
     if (a->IsFloatingPoint())
         return a->GetBits(SourceLocation()) == b->GetBits(SourceLocation());
 
-    if (a->IsPointer() || a->IsReference())
-        return a->GetElement(SourceLocation()) == b->GetElement(SourceLocation());
-
     if (a->IsArray())
         return a->GetElement(SourceLocation()) == b->GetElement(SourceLocation())
                && a->GetElementCount(SourceLocation()) == b->GetElementCount(SourceLocation());
@@ -92,11 +87,11 @@ bool NJS::operator==(const TypePtr &a, const TypePtr &b)
             return false;
         for (unsigned i = 0; i < count; ++i)
         {
-            const auto [a_index_, a_name_, a_type_] = a->GetMember(SourceLocation(), i);
-            const auto [b_index_, b_name_, b_type_] = b->GetMember(SourceLocation(), i);
+            const auto [a_index_, a_name_, a_info_] = a->GetMember(SourceLocation(), i);
+            const auto [b_index_, b_name_, b_info_] = b->GetMember(SourceLocation(), i);
             if (a_name_ != b_name_)
                 return false;
-            if (a_type_ != b_type_)
+            if (a_info_ != b_info_)
                 return false;
         }
         return true;
@@ -115,7 +110,7 @@ bool NJS::operator==(const TypePtr &a, const TypePtr &b)
 
     if (a->IsFunction())
     {
-        if (a->GetResultType(SourceLocation()) != b->GetResultType(SourceLocation()))
+        if (a->GetResult(SourceLocation()) != b->GetResult(SourceLocation()))
             return false;
         if (a->IsVarArg(SourceLocation()) != b->IsVarArg(SourceLocation()))
             return false;
@@ -123,7 +118,7 @@ bool NJS::operator==(const TypePtr &a, const TypePtr &b)
         if (count != b->GetParameterCount(SourceLocation()))
             return false;
         for (unsigned i = 0; i < count; ++i)
-            if (a->GetParameterType(SourceLocation(), i) != b->GetParameterType(SourceLocation(), i))
+            if (a->GetParameter(SourceLocation(), i) != b->GetParameter(SourceLocation(), i))
                 return false;
         return true;
     }
@@ -183,11 +178,6 @@ bool NJS::Type::IsPointer() const
     return false;
 }
 
-bool NJS::Type::IsReference() const
-{
-    return false;
-}
-
 bool NJS::Type::IsArray() const
 {
     return false;
@@ -243,14 +233,14 @@ NJS::MemberInfo NJS::Type::GetMember(const SourceLocation &where, unsigned) cons
     Error(where, "type {} does not support 'GetMember'", m_String);
 }
 
-NJS::TypePtr NJS::Type::GetResultType(const SourceLocation &where) const
+NJS::ReferenceInfo NJS::Type::GetResult(const SourceLocation &where) const
 {
-    Error(where, "type {} does not support 'GetResultType'", m_String);
+    Error(where, "type {} does not support 'GetResult'", m_String);
 }
 
-NJS::TypePtr NJS::Type::GetParameterType(const SourceLocation &where, unsigned) const
+NJS::ReferenceInfo NJS::Type::GetParameter(const SourceLocation &where, unsigned) const
 {
-    Error(where, "type {} does not support 'GetParameterType'", m_String);
+    Error(where, "type {} does not support 'GetParameter'", m_String);
 }
 
 unsigned NJS::Type::GetParameterCount(const SourceLocation &where) const
