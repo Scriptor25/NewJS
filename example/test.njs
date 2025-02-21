@@ -41,6 +41,8 @@ let n: u32 = 10
 let r = recurse(n)
 println($"recurse({n}) = {r}")
 
+println($"fib({n}) = {fib(n)}")
+
 let a1: u32[3] = [1, 2, 3]
 let t1 = ["Felix", user1, a1]
 
