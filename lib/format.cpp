@@ -1,3 +1,4 @@
+#include <cinttypes>
 #include <cmath>
 #include <cstdarg>
 #include <NJS/Std.hpp>
@@ -269,48 +270,48 @@ void Integer_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsig
             if (self->IsSigned)
             {
                 const auto val = va_arg(arg_ptr, int);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hhi", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId8, val);
             }
             else
             {
                 const auto val = va_arg(arg_ptr, unsigned);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hhu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu8, val);
             }
             break;
         case 16:
             if (self->IsSigned)
             {
                 const auto val = va_arg(arg_ptr, int);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hi", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId16, val);
             }
             else
             {
                 const auto val = va_arg(arg_ptr, unsigned);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu16, val);
             }
             break;
         case 32:
             if (self->IsSigned)
             {
                 const auto val = va_arg(arg_ptr, int32_t);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%li", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId32, val);
             }
             else
             {
                 const auto val = va_arg(arg_ptr, uint32_t);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%lu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu32, val);
             }
             break;
         case 64:
             if (self->IsSigned)
             {
                 const auto val = va_arg(arg_ptr, int64_t);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%lli", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId64, val);
             }
             else
             {
                 const auto val = va_arg(arg_ptr, uint64_t);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%llu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu64, val);
             }
             break;
         default:
@@ -339,48 +340,48 @@ void Integer_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsig
             if (self->IsSigned)
             {
                 const auto val = *reinterpret_cast<int8_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hhi", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId8, val);
             }
             else
             {
                 const auto val = *reinterpret_cast<uint8_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hhu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu8, val);
             }
             break;
         case 16:
             if (self->IsSigned)
             {
                 const auto val = *reinterpret_cast<int16_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hi", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId16, val);
             }
             else
             {
                 const auto val = *reinterpret_cast<uint16_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu16, val);
             }
             break;
         case 32:
             if (self->IsSigned)
             {
                 const auto val = *reinterpret_cast<int32_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%li", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId32, val);
             }
             else
             {
                 const auto val = *reinterpret_cast<uint32_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%lu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu32, val);
             }
             break;
         case 64:
             if (self->IsSigned)
             {
                 const auto val = *reinterpret_cast<int64_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%lli", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId64, val);
             }
             else
             {
                 const auto val = *reinterpret_cast<uint64_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%llu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu64, val);
             }
             break;
         default:
