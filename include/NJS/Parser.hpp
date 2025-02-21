@@ -75,7 +75,7 @@ namespace NJS
 
         StatementPtr ParseStatement();
         StatementPtr ParseForStatement();
-        StatementPtr ParseFunctionStatement(bool is_extern);
+        StatementPtr ParseFunctionStatement(bool is_export, bool is_extern);
         StatementPtr ParseIfStatement();
         StatementPtr ParseReturnStatement();
         StatementPtr ParseScopeStatement();

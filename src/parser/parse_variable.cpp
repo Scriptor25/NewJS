@@ -19,7 +19,7 @@ NJS::StatementPtr NJS::Parser::ParseVariableStatement(const bool is_extern)
     const auto parameter = ParseParameter();
 
     ExpressionPtr value;
-    if (((is_const || parameter->RequireValue()) && (Expect("="), true)) || NextAt("="))
+    if ((!is_extern && (is_const || parameter->RequireValue()) && (Expect("="), true)) || NextAt("="))
         value = ParseExpression();
 
     return std::make_shared<VariableStatement>(where, parameter, flags, value);

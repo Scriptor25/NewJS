@@ -5,17 +5,20 @@
 #include <NJS/TemplateContext.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_extern)
+NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, const bool is_extern)
 {
     const auto where = Expect("function").Where;
 
     unsigned flags = FunctionFlags_None;
+    if (is_export)
+        flags |= FunctionFlags_Export;
     if (is_extern)
         flags |= FunctionFlags_Extern;
 
     std::vector<std::string> template_arguments;
     const auto parent_is_template = m_IsTemplate;
-    if (NextAt("<"))
+    const auto is_template = NextAt("<");
+    if (is_template)
     {
         flags |= FunctionFlags_Template;
 
@@ -35,7 +38,7 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_extern)
     }
 
     std::string name;
-    if (NextAt("operator"))
+    if (!is_extern && !is_template && NextAt("operator"))
     {
         flags |= FunctionFlags_Operator;
         name = Expect(TokenType_Operator).StringValue;
@@ -47,17 +50,15 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_extern)
     Expect("(");
     const auto is_var_arg = ParseParameterList(parameters, ")");
 
-    TypePtr result_type;
-    if (NextAt(":"))
-        result_type = ParseType();
-    else
-        result_type = m_TypeContext.GetVoidType();
+    auto result_type = NextAt(":")
+                           ? ParseType()
+                           : m_TypeContext.GetVoidType();
 
     StatementPtr body;
-    if (~flags & FunctionFlags_Extern && At("{"))
+    if (!is_extern && At("{"))
         body = ParseScopeStatement();
 
-    if (flags & FunctionFlags_Template)
+    if (is_template)
     {
         if (!parent_is_template)
         {

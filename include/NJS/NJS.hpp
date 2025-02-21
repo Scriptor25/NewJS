@@ -93,10 +93,11 @@ namespace NJS
     enum FunctionFlags
     {
         FunctionFlags_None = 0,
-        FunctionFlags_Extern = 1,
-        FunctionFlags_Operator = 2,
-        FunctionFlags_Template = 4,
-        FunctionFlags_Absolute = 8,
+        FunctionFlags_Extern = 1 << 0,
+        FunctionFlags_Export = 1 << 1,
+        FunctionFlags_Operator = 1 << 2,
+        FunctionFlags_Template = 1 << 3,
+        FunctionFlags_Absolute = 1 << 4,
     };
 
     void Indent();

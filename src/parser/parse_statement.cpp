@@ -21,28 +21,22 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
         return {};
     }
 
-    if (At("extern"))
-    {
-        const auto where = Skip().Where;
-        if (At("function"))
-            return ParseFunctionStatement(true);
-        if (At("let") || At("const"))
-            return ParseVariableStatement(true);
-        Error(where, "the extern keyword requires either a function or variable declaration to follow");
-    }
+    const auto where = m_Token.Where;
+    const auto is_export = NextAt("export");
+    const auto is_extern = NextAt("extern");
 
     if (At("{"))
         return ParseScopeStatement();
     if (At("for"))
         return ParseForStatement();
     if (At("function"))
-        return ParseFunctionStatement(false);
+        return ParseFunctionStatement(is_export, is_extern);
     if (At("if"))
         return ParseIfStatement();
     if (At("import"))
         return ParseImportStatement();
     if (At("let") || At("const"))
-        return ParseVariableStatement(false);
+        return ParseVariableStatement(is_extern);
     if (At("return"))
         return ParseReturnStatement();
     if (At("switch"))
