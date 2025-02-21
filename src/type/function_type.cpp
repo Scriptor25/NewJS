@@ -34,22 +34,22 @@ bool NJS::FunctionType::IsFunction() const
     return true;
 }
 
-NJS::TypePtr NJS::FunctionType::GetResultType() const
+NJS::TypePtr NJS::FunctionType::GetResultType(const SourceLocation &) const
 {
     return m_ResultType;
 }
 
-NJS::TypePtr NJS::FunctionType::GetParameterType(const unsigned index) const
+NJS::TypePtr NJS::FunctionType::GetParameterType(const SourceLocation &, const unsigned index) const
 {
     return m_ParameterTypes[index];
 }
 
-unsigned NJS::FunctionType::GetParameterCount() const
+unsigned NJS::FunctionType::GetParameterCount(const SourceLocation &) const
 {
     return m_ParameterTypes.size();
 }
 
-bool NJS::FunctionType::IsVarArg() const
+bool NJS::FunctionType::IsVarArg(const SourceLocation &) const
 {
     return m_VarArg;
 }

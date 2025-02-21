@@ -135,12 +135,12 @@ namespace NJS
 
     struct VariableStatement final : Statement
     {
-        VariableStatement(SourceLocation where, ParameterPtr name, unsigned flags, ExpressionPtr value);
+        VariableStatement(SourceLocation where, ParameterPtr parameter, unsigned flags, ExpressionPtr value);
 
         void GenVoidLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
-        ParameterPtr Name;
+        ParameterPtr Parameter;
         unsigned Flags;
         ExpressionPtr Value;
     };

@@ -7,6 +7,11 @@ std::string NJS::NoType::GenString(const std::string &name)
     return name;
 }
 
+bool NJS::NoType::IsIncomplete() const
+{
+    return true;
+}
+
 void NJS::NoType::TypeInfo(const SourceLocation &where, Builder &, std::vector<llvm::Value *> &) const
 {
     Error(where, "the incomplete type '{}' does not provide type information", m_Name);

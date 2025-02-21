@@ -27,6 +27,11 @@ NJS::TypePtr NJS::TupleType::GetElement(const SourceLocation &where, const unsig
     return m_ElementTypes[index];
 }
 
+unsigned NJS::TupleType::GetElementCount(const SourceLocation &) const
+{
+    return m_ElementTypes.size();
+}
+
 void NJS::TupleType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_TUPLE));

@@ -4,18 +4,21 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::DestructureTuple::DestructureTuple(SourceLocation where, std::vector<ParameterPtr> elements, TypePtr type)
+NJS::DestructureStruct::DestructureStruct(
+    SourceLocation where,
+    std::map<std::string, ParameterPtr> elements,
+    TypePtr type)
     : Parameter(std::move(where), {}, std::move(type)),
       Elements(std::move(elements))
 {
 }
 
-bool NJS::DestructureTuple::RequireValue()
+bool NJS::DestructureStruct::RequireValue()
 {
     return true;
 }
 
-void NJS::DestructureTuple::CreateVars(
+void NJS::DestructureStruct::CreateVars(
     Builder &builder,
     ValuePtr value,
     const unsigned flags)
@@ -35,23 +38,26 @@ void NJS::DestructureTuple::CreateVars(
             value = builder.CreateCast(Where, value, Type);
     }
 
-    for (unsigned i = 0; i < Elements.size(); ++i)
+    for (const auto &[name_, element_]: Elements)
     {
-        const auto element = builder.CreateSubscript(Where, value, i);
-        Elements[i]->CreateVars(builder, element, flags);
+        const auto member = builder.CreateMember(Where, value, name_);
+        element_->CreateVars(builder, member, flags);
     }
 }
 
-std::ostream &NJS::DestructureTuple::Print(std::ostream &stream)
+std::ostream &NJS::DestructureStruct::Print(std::ostream &stream)
 {
-    stream << "[ ";
-    for (unsigned i = 0; i < Elements.size(); ++i)
+    stream << "{ ";
+    auto first = true;
+    for (const auto &[name, element]: Elements)
     {
-        if (i > 0)
+        if (first)
+            first = false;
+        else
             stream << ", ";
-        Elements[i]->Print(stream);
+        element->Print(stream << name << ": ");
     }
-    stream << " ]";
+    stream << " }";
     if (Type)
         Type->Print(stream << ": ");
     return stream;

@@ -26,6 +26,11 @@ NJS::TypePtr NJS::ReferenceType::GetElement(const SourceLocation &, unsigned) co
     return m_ElementType;
 }
 
+unsigned NJS::ReferenceType::GetElementCount(const SourceLocation &) const
+{
+    return 1;
+}
+
 void NJS::ReferenceType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
 {
     m_ElementType->TypeInfo(where, builder, args);

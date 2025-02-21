@@ -28,6 +28,11 @@ NJS::TypePtr NJS::PointerType::GetElement(const SourceLocation &, unsigned) cons
     return m_ElementType;
 }
 
+unsigned NJS::PointerType::GetElementCount(const SourceLocation &) const
+{
+    return 1;
+}
+
 void NJS::PointerType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_POINTER));

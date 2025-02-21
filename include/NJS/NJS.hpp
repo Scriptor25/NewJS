@@ -41,7 +41,7 @@ namespace NJS
 
     struct Parameter;
     struct DestructureTuple;
-    struct DestructureObject;
+    struct DestructureStruct;
 
     using ParameterPtr = std::shared_ptr<Parameter>;
 

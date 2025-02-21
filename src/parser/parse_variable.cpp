@@ -16,11 +16,11 @@ NJS::StatementPtr NJS::Parser::ParseVariableStatement(const bool is_extern)
     else
         Expect("let");
 
-    const auto name = ParseParameter();
+    const auto parameter = ParseParameter();
 
     ExpressionPtr value;
-    if (((is_const || name->RequireValue()) && (Expect("="), true)) || NextAt("="))
+    if (((is_const || parameter->RequireValue()) && (Expect("="), true)) || NextAt("="))
         value = ParseExpression();
 
-    return std::make_shared<VariableStatement>(where, name, flags, value);
+    return std::make_shared<VariableStatement>(where, parameter, flags, value);
 }

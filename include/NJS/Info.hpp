@@ -33,6 +33,7 @@ namespace NJS
     struct MemberInfo
     {
         unsigned Index;
+        std::string Name;
         TypePtr Type;
     };
 }
