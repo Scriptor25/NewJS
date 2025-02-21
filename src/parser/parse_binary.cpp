@@ -12,6 +12,7 @@ NJS::ExpressionPtr NJS::Parser::ParseBinaryExpression(ExpressionPtr lhs, const u
         {"*=", 0},
         {"/=", 0},
         {"%=", 0},
+        {"**=", 0},
         {"&=", 0},
         {"|=", 0},
         {"^=", 0},

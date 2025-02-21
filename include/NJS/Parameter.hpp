@@ -18,7 +18,7 @@ namespace NJS
 
     struct Parameter
     {
-        Parameter(SourceLocation where, std::string name);
+        Parameter(SourceLocation where, std::string name, TypePtr type);
         virtual ~Parameter() = default;
 
         virtual bool RequireValue();
@@ -34,9 +34,9 @@ namespace NJS
         TypePtr Type;
     };
 
-    struct DestructureObject final : Parameter
+    struct DestructureStruct final : Parameter
     {
-        DestructureObject(SourceLocation where, std::map<std::string, ParameterPtr> elements);
+        DestructureStruct(SourceLocation where, std::map<std::string, ParameterPtr> elements, TypePtr type);
 
         bool RequireValue() override;
         void CreateVars(
@@ -51,7 +51,7 @@ namespace NJS
 
     struct DestructureTuple final : Parameter
     {
-        DestructureTuple(SourceLocation where, std::vector<ParameterPtr> elements);
+        DestructureTuple(SourceLocation where, std::vector<ParameterPtr> elements, TypePtr type);
 
         bool RequireValue() override;
         void CreateVars(

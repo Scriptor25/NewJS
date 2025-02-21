@@ -59,6 +59,7 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
 
     static const std::set assignment_operators
     {
+        "="sv,
         "||="sv,
         "^^="sv,
         "&&="sv,
@@ -76,9 +77,20 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
     };
 
     const auto is_comparator = comparator_operators.contains(Operator);
+    const auto is_assignment = assignment_operators.contains(Operator);
 
-    auto left_operand = LeftOperand->GenLLVM(builder, !is_comparator ? expected_type : nullptr);
-    auto right_operand = RightOperand->GenLLVM(builder, !is_comparator ? expected_type : nullptr);
+    auto left_operand = LeftOperand->GenLLVM(
+        builder,
+        is_comparator
+            ? nullptr
+            : expected_type);
+    auto right_operand = RightOperand->GenLLVM(
+        builder,
+        is_comparator
+            ? nullptr
+            : is_assignment
+                  ? left_operand->GetType()
+                  : expected_type);
 
     if (auto [
             result_type_,
@@ -132,8 +144,7 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
     right_operand = builder.CreateCast(RightOperand->Where, right_operand, operand_type);
 
     auto operator_ = Operator;
-    const auto assign = assignment_operators.contains(operator_);
-    if (assign)
+    if (is_assignment)
         operator_.pop_back();
 
     if (operators.contains(operator_))
@@ -144,7 +155,7 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
             left_operand->Load(LeftOperand->Where),
             right_operand->Load(RightOperand->Where)))
         {
-            if (!assign)
+            if (!is_assignment)
                 return result_value;
 
             destination->Store(Where, result_value);

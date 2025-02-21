@@ -20,10 +20,10 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expe
     if (!callee_type)
         Error(Where, "invalid callee: callee is not a function");
 
-    const auto parameter_count = callee_type->GetParameterCount();
+    const auto parameter_count = callee_type->GetParameterCount(Callee->Where);
     if (Arguments.size() < parameter_count)
         Error(Where, "not enough arguments");
-    if (Arguments.size() > parameter_count && !callee_type->IsVarArg())
+    if (Arguments.size() > parameter_count && !callee_type->IsVarArg(Callee->Where))
         Error(Where, "too many arguments");
 
     std::vector<llvm::Value *> argument_values(Arguments.size());
@@ -31,7 +31,7 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expe
     {
         const auto has_parameter = i < parameter_count;
         auto parameter_type = has_parameter
-                                  ? callee_type->GetParameterType(i)
+                                  ? callee_type->GetParameterType(Callee->Where, i)
                                   : nullptr;
 
         auto &argument = Arguments[i];
@@ -54,7 +54,7 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expe
         callee->Load(Callee->Where),
         argument_values);
 
-    const auto result_type = callee_type->GetResultType();
+    const auto result_type = callee_type->GetResultType(Callee->Where);
     if (result_type->IsReference())
         return LValue::Create(builder, result_type->GetElement(Where), result_value);
 

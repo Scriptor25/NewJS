@@ -29,19 +29,22 @@ bool NJS::StructType::IsStruct() const
     return true;
 }
 
+unsigned NJS::StructType::GetElementCount(const SourceLocation &) const
+{
+    return m_ElementTypes.size();
+}
+
 NJS::MemberInfo NJS::StructType::GetMember(const SourceLocation &where, const std::string &name) const
 {
     for (unsigned i = 0; i < m_ElementTypes.size(); ++i)
         if (m_ElementTypes[i].first == name)
-            return {i, m_ElementTypes[i].second};
+            return {i, m_ElementTypes[i].first, m_ElementTypes[i].second};
     Error(where, "no member '{}' in type {}", name, m_String);
 }
 
-NJS::MemberInfo NJS::StructType::GetMember(const SourceLocation &where, const unsigned index) const
+NJS::MemberInfo NJS::StructType::GetMember(const SourceLocation &, const unsigned index) const
 {
-    if (index < m_ElementTypes.size())
-        return {index, m_ElementTypes[index].second};
-    Error(where, "no member at index {} in type {}", index, m_String);
+    return {index, m_ElementTypes[index].first, m_ElementTypes[index].second};
 }
 
 void NJS::StructType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const

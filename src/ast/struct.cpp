@@ -43,10 +43,13 @@ NJS::ValuePtr NJS::StructExpression::GenLLVM(Builder &builder, const TypePtr &ex
     for (unsigned i = 0; i < elements.size(); ++i)
     {
         auto &element = Elements[i].second;
-        auto [name_, value_] = elements[i];
-        auto [index_, type_] = result_type->GetMember(element->Where, name_);
-        value_ = builder.CreateCast(element->Where, value_, type_);
-        struct_value = builder.GetBuilder().CreateInsertValue(struct_value, value_->Load(element->Where), index_);
+        auto [element_name_, element_value_] = elements[i];
+        auto [index_, name_, type_] = result_type->GetMember(element->Where, element_name_);
+        element_value_ = builder.CreateCast(element->Where, element_value_, type_);
+        struct_value = builder.GetBuilder().CreateInsertValue(
+            struct_value,
+            element_value_->Load(element->Where),
+            index_);
     }
 
     return RValue::Create(builder, result_type, struct_value);

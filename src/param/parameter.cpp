@@ -6,9 +6,10 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::Parameter::Parameter(SourceLocation where, std::string name)
+NJS::Parameter::Parameter(SourceLocation where, std::string name, TypePtr type)
     : Where(std::move(where)),
-      Name(std::move(name))
+      Name(std::move(name)),
+      Type(std::move(type))
 {
 }
 

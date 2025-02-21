@@ -251,15 +251,71 @@ Type *ParseType(va_list &arg_ptr)
 void Integer_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, va_list &arg_ptr)
 {
     const auto self = reinterpret_cast<IntegerType *>(type);
-    const auto val = va_arg(arg_ptr, int);
-
-    if (self->Bits == 1)
+    switch (self->Bits)
     {
-        offset += snprintf(buffer + offset, buffer_size - offset, val ? "true" : "false");
-        return;
+        case 1:
+            if (self->IsSigned)
+            {
+                const auto val = va_arg(arg_ptr, int8_t);
+                offset += snprintf(buffer + offset, buffer_size - offset, val ? "true" : "false");
+            }
+            else
+            {
+                const auto val = va_arg(arg_ptr, uint8_t);
+                offset += snprintf(buffer + offset, buffer_size - offset, val ? "true" : "false");
+            }
+            break;
+        case 8:
+            if (self->IsSigned)
+            {
+                const auto val = va_arg(arg_ptr, int8_t);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%hhi", val);
+            }
+            else
+            {
+                const auto val = va_arg(arg_ptr, uint8_t);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%hhu", val);
+            }
+            break;
+        case 16:
+            if (self->IsSigned)
+            {
+                const auto val = va_arg(arg_ptr, int16_t);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%hi", val);
+            }
+            else
+            {
+                const auto val = va_arg(arg_ptr, uint16_t);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%hu", val);
+            }
+            break;
+        case 32:
+            if (self->IsSigned)
+            {
+                const auto val = va_arg(arg_ptr, int32_t);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%li", val);
+            }
+            else
+            {
+                const auto val = va_arg(arg_ptr, uint32_t);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%lu", val);
+            }
+            break;
+        case 64:
+            if (self->IsSigned)
+            {
+                const auto val = va_arg(arg_ptr, int64_t);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%lli", val);
+            }
+            else
+            {
+                const auto val = va_arg(arg_ptr, uint64_t);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%llu", val);
+            }
+            break;
+        default:
+            break;
     }
-
-    offset += snprintf(buffer + offset, buffer_size - offset, self->IsSigned ? "%i" : "%u", val);
 }
 
 void Integer_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, char *&ptr)

@@ -25,6 +25,11 @@ NJS::TypePtr NJS::ArrayType::GetElement(const SourceLocation &where, const unsig
     return m_ElementType;
 }
 
+unsigned NJS::ArrayType::GetElementCount(const SourceLocation &) const
+{
+    return m_Count;
+}
+
 void NJS::ArrayType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
 {
     args.push_back(builder.GetBuilder().getInt32(ID_ARRAY));

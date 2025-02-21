@@ -5,29 +5,25 @@ NJS::ParameterPtr NJS::Parser::ParseParameter()
 {
     auto where = m_Token.Where;
 
-    ParameterPtr parameter;
     if (NextAt("{"))
     {
         std::map<std::string, ParameterPtr> parameters;
         ParseParameterMap(parameters, "}");
-        parameter = std::make_shared<DestructureObject>(where, parameters);
+        auto type = NextAt(":") ? ParseType() : nullptr;
+        return std::make_shared<DestructureStruct>(where, parameters, type);
     }
-    else if (NextAt("["))
+
+    if (NextAt("["))
     {
         std::vector<ParameterPtr> parameters;
         ParseParameterList(parameters, "]");
-        parameter = std::make_shared<DestructureTuple>(where, parameters);
-    }
-    else
-    {
-        auto name = Expect(TokenType_Symbol).StringValue;
-        parameter = std::make_shared<Parameter>(where, name);
+        auto type = NextAt(":") ? ParseType() : nullptr;
+        return std::make_shared<DestructureTuple>(where, parameters, type);
     }
 
-    if (NextAt(":"))
-        parameter->Type = ParseType();
-
-    return parameter;
+    auto name = Expect(TokenType_Symbol).StringValue;
+    auto type = NextAt(":") ? ParseType() : nullptr;
+    return std::make_shared<Parameter>(where, name, type);
 }
 
 bool NJS::Parser::ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string &delimiter)
@@ -41,10 +37,9 @@ bool NJS::Parser::ParseParameterList(std::vector<ParameterPtr> &parameters, cons
         }
 
         parameters.push_back(ParseParameter());
+
         if (!At(delimiter))
             Expect(",");
-        else
-            NextAt(",");
     }
     Expect(delimiter);
     return false;
@@ -54,22 +49,20 @@ void NJS::Parser::ParseParameterMap(std::map<std::string, ParameterPtr> &paramet
 {
     while (!At(delimiter) && !AtEof())
     {
-        auto [
+        const auto [
             where_,
             type_,
             name_,
             int_,
             fp_
         ] = Expect(TokenType_Symbol);
-        if (NextAt(":"))
-            parameters[name_] = ParseParameter();
-        else
-            parameters[name_] = std::make_shared<Parameter>(where_, name_);
+
+        parameters[name_] = NextAt(":")
+                                ? ParseParameter()
+                                : std::make_shared<Parameter>(where_, name_, nullptr);
 
         if (!At(delimiter))
             Expect(",");
-        else
-            NextAt(",");
     }
     Expect(delimiter);
 }

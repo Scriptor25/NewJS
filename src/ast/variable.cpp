@@ -5,11 +5,11 @@
 
 NJS::VariableStatement::VariableStatement(
     SourceLocation where,
-    ParameterPtr name,
+    ParameterPtr parameter,
     const unsigned flags,
     ExpressionPtr value)
     : Statement(std::move(where)),
-      Name(std::move(name)),
+      Parameter(std::move(parameter)),
       Flags(flags),
       Value(std::move(value))
 {
@@ -17,8 +17,8 @@ NJS::VariableStatement::VariableStatement(
 
 void NJS::VariableStatement::GenVoidLLVM(Builder &builder) const
 {
-    const auto value = Value ? Value->GenLLVM(builder, Name->Type) : nullptr;
-    Name->CreateVars(builder, value, Flags);
+    const auto value = Value ? Value->GenLLVM(builder, Parameter->Type) : nullptr;
+    Parameter->CreateVars(builder, value, Flags);
 }
 
 std::ostream &NJS::VariableStatement::Print(std::ostream &stream)
@@ -30,7 +30,7 @@ std::ostream &NJS::VariableStatement::Print(std::ostream &stream)
     else
         stream << "let ";
 
-    Name->Print(stream);
+    Parameter->Print(stream);
     if (Value)
         Value->Print(stream << " = ");
     return stream;

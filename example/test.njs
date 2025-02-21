@@ -11,25 +11,25 @@ type User = {
     name: i8[],
     surname: i8[],
     age: u32,
-    type: i8[],
+    job: i8[],
 }
 
-let u1: User = {
+let user1: User = {
     name: "Felix",
     surname: "Schreiber",
     age: 18,
-    type: "App Development"
+    job: "App Development"
 }
 
-PRINT(u1)
+PRINT(user1)
 PRINT(println)
 
-function printUser({ name: n, surname: s, age: a, type: t }: User&) {
+function printUser({ name: n, surname: s, age: a, job: t }: User&) {
     println($" - {n} {s} ({a}), {t}")
 }
 
 println("IT WORKS!")
-printUser(u1)
+printUser(user1)
 
 function recurse(n: u32): u32 {
     return (n <= 1)
@@ -42,7 +42,7 @@ let r = recurse(n)
 println($"recurse({n}) = {r}")
 
 let a1: u32[3] = [1, 2, 3]
-let t1 = ["Felix", u1, a1]
+let t1 = ["Felix", user1, a1]
 
 function printArray(array: u32[3]) {
     println($"{array}")
@@ -63,9 +63,9 @@ function foo(): () => u32 {
 println($"foo() = {typeof(foo())}")
 println($"foo()() = {foo()()}")
 
-let [name1, {name, surname, age, type}] = ["Felix", u1]
+let [name1, {name, surname, age, job}] = ["Felix", user1]
 
-println($"{name1} {name} {surname} {age} {type} {[4:u32, 5:u32, 6:u32]}")
+println($"{name1} {name} {surname} {age} {job} {[4:u32, 5:u32, 6:u32]}")
 println($"t1 = {t1}")
 
 type<T> vec = {
@@ -151,3 +151,7 @@ function add(a: i32, b: i32): promise<i32> { return { result: a + b, done: true 
 
 const result = await<i32>(add(123, 456))
 println($"result = {result}")
+
+for (let i = 0:u64; i < 64:u64; ++i)
+    println($"i = {2:u64 ** i}")
+println("Hello")
