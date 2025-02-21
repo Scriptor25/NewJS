@@ -21,7 +21,6 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
         return {};
     }
 
-    const auto where = m_Token.Where;
     const auto is_export = NextAt("export");
     const auto is_extern = NextAt("extern");
 
