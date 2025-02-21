@@ -76,6 +76,9 @@ bool NJS::operator==(const TypePtr &a, const TypePtr &b)
     if (a->IsFloatingPoint())
         return a->GetBits(SourceLocation()) == b->GetBits(SourceLocation());
 
+    if (a->IsPointer())
+        return a->GetElement(SourceLocation()) == b->GetElement(SourceLocation());
+
     if (a->IsArray())
         return a->GetElement(SourceLocation()) == b->GetElement(SourceLocation())
                && a->GetElementCount(SourceLocation()) == b->GetElementCount(SourceLocation());
