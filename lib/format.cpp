@@ -256,36 +256,36 @@ void Integer_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsig
         case 1:
             if (self->IsSigned)
             {
-                const auto val = va_arg(arg_ptr, int8_t);
+                const auto val = va_arg(arg_ptr, int);
                 offset += snprintf(buffer + offset, buffer_size - offset, val ? "true" : "false");
             }
             else
             {
-                const auto val = va_arg(arg_ptr, uint8_t);
+                const auto val = va_arg(arg_ptr, unsigned);
                 offset += snprintf(buffer + offset, buffer_size - offset, val ? "true" : "false");
             }
             break;
         case 8:
             if (self->IsSigned)
             {
-                const auto val = va_arg(arg_ptr, int8_t);
+                const auto val = va_arg(arg_ptr, int);
                 offset += snprintf(buffer + offset, buffer_size - offset, "%hhi", val);
             }
             else
             {
-                const auto val = va_arg(arg_ptr, uint8_t);
+                const auto val = va_arg(arg_ptr, unsigned);
                 offset += snprintf(buffer + offset, buffer_size - offset, "%hhu", val);
             }
             break;
         case 16:
             if (self->IsSigned)
             {
-                const auto val = va_arg(arg_ptr, int16_t);
+                const auto val = va_arg(arg_ptr, int);
                 offset += snprintf(buffer + offset, buffer_size - offset, "%hi", val);
             }
             else
             {
-                const auto val = va_arg(arg_ptr, uint16_t);
+                const auto val = va_arg(arg_ptr, unsigned);
                 offset += snprintf(buffer + offset, buffer_size - offset, "%hu", val);
             }
             break;
@@ -293,24 +293,24 @@ void Integer_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsig
             if (self->IsSigned)
             {
                 const auto val = va_arg(arg_ptr, int32_t);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%li", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%i", val);
             }
             else
             {
                 const auto val = va_arg(arg_ptr, uint32_t);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%lu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%u", val);
             }
             break;
         case 64:
             if (self->IsSigned)
             {
                 const auto val = va_arg(arg_ptr, int64_t);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%lli", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%li", val);
             }
             else
             {
                 const auto val = va_arg(arg_ptr, uint64_t);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%llu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%lu", val);
             }
             break;
         default:
@@ -363,24 +363,24 @@ void Integer_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsig
             if (self->IsSigned)
             {
                 const auto val = *reinterpret_cast<int32_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%li", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%i", val);
             }
             else
             {
                 const auto val = *reinterpret_cast<uint32_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%lu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%u", val);
             }
             break;
         case 64:
             if (self->IsSigned)
             {
                 const auto val = *reinterpret_cast<int64_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%lli", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%li", val);
             }
             else
             {
                 const auto val = *reinterpret_cast<uint64_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%llu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%lu", val);
             }
             break;
         default:
