@@ -46,7 +46,7 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
     else
         name = Expect(TokenType_Symbol).StringValue;
 
-    std::vector<std::pair<ParameterPtr, ReferenceInfo>> parameters;
+    std::vector<ParameterPtr> parameters;
     Expect("(");
     const auto is_var_arg = ParseReferenceParameterList(parameters, ")");
 
@@ -77,7 +77,7 @@ NJS::ExpressionPtr NJS::Parser::ParseFunctionExpression()
 {
     const auto where = Expect("?").Where;
 
-    std::vector<std::pair<ParameterPtr, ReferenceInfo>> parameters;
+    std::vector<ParameterPtr> parameters;
     auto is_var_arg = false;
     if (NextAt("("))
         is_var_arg = ParseReferenceParameterList(parameters, ")");

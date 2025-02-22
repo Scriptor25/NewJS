@@ -12,9 +12,9 @@ bool NJS::RValue::IsLValue() const
     return false;
 }
 
-bool NJS::RValue::IsConst() const
+bool NJS::RValue::IsConstLValue() const
 {
-    return true;
+    return false;
 }
 
 llvm::Value *NJS::RValue::GetPtr(const SourceLocation &where) const

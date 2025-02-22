@@ -28,6 +28,6 @@ function part_2(input: i8[]): u64 {
     return 0
 }
 
-function day(part: u64): (i8[]) => u64 {
+export function day(part: u64): (i8[]) => u64 {
     return part == 1 ? part_1 : part == 2 ? part_2 : part_err
 }

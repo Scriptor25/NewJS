@@ -12,7 +12,7 @@ NJS::StatementPtr NJS::Parser::ParseVariableStatement(const bool is_extern)
 
     auto is_reference = NextAt("&");
 
-    const auto parameter = ParseParameter();
+    const auto parameter = ParseParameter(is_const, is_reference);
 
     ExpressionPtr value;
     if ((!is_extern && (is_const || is_reference || parameter->RequireValue()) && (Expect("="), true)) || NextAt("="))

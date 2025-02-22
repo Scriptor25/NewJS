@@ -19,7 +19,7 @@ function reflectance(cosine: f64, refraction_index: f64): f64 {
     return r0s + (1 - r0s) * ((1 - cosine) ** 5)
 }
 
-function scatter(self: dielectric&, r_in: ray, rec: record, attenuation: color&, scattered: ray&): u1 {
+function scatter(&self: dielectric, r_in: ray, rec: record, &attenuation: color, &scattered: ray): u1 {
     const ri = rec.front_face ? 1.0 / self.refraction_index : self.refraction_index
 
     const unit_direction = math.unit_vector(r_in.direction)
@@ -39,7 +39,7 @@ function scatter(self: dielectric&, r_in: ray, rec: record, attenuation: color&,
     return true
 }
 
-function create(albedo: color, refraction_index: f64): dielectric {
+export function create(albedo: color, refraction_index: f64): dielectric {
     return {
         scatter,
         albedo,

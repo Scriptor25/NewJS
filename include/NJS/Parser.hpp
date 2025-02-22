@@ -64,10 +64,10 @@ namespace NJS
         void ParseTypeMap(std::vector<std::pair<std::string, TypePtr>> &types, const std::string &delim);
         bool ParseReferenceInfoList(std::vector<ReferenceInfo> &infos, const std::string &delim);
 
-        ParameterPtr ParseParameter();
+        ParameterPtr ParseParameter(bool is_const, bool is_reference);
         bool ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string &delimiter);
         bool ParseReferenceParameterList(
-            std::vector<std::pair<ParameterPtr, ReferenceInfo>> &parameters,
+            std::vector<ParameterPtr> &parameters,
             const std::string &delimiter);
         void ParseParameterMap(std::map<std::string, ParameterPtr> &parameters, const std::string &delimiter);
 

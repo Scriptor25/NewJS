@@ -7,8 +7,9 @@
 NJS::DestructureStruct::DestructureStruct(
     SourceLocation where,
     std::map<std::string, ParameterPtr> elements,
-    TypePtr type)
-    : Parameter(std::move(where), {}, std::move(type)),
+    TypePtr type,
+    ReferenceInfo info)
+    : Parameter(std::move(where), {}, std::move(type), std::move(info)),
       Elements(std::move(elements))
 {
 }
@@ -35,7 +36,7 @@ void NJS::DestructureStruct::CreateVars(
                     "type mismatch: cannot create reference with type {} from value of type {}",
                     Type,
                     value->GetType());
-            if (value->IsConst() && !is_const)
+            if (value->IsConstLValue() && !is_const)
                 Error(Where, "cannot reference constant value as mutable");
         }
         else
@@ -51,6 +52,12 @@ void NJS::DestructureStruct::CreateVars(
 
 std::ostream &NJS::DestructureStruct::Print(std::ostream &stream)
 {
+    if (Info.IsReference)
+    {
+        if (Info.IsConst)
+            stream << "const ";
+        stream << "&";
+    }
     stream << "{ ";
     auto first = true;
     for (const auto &[name, element]: Elements)

@@ -26,7 +26,7 @@ if (process.argc != 3) {
 const day = parse_int(process.argv[1])
 const part = parse_int(process.argv[2])
 
-function part_err(input: i8[]): u64 {
+export function part_err(input: i8[]): u64 {
     println("invalid part")
     return 1
 }

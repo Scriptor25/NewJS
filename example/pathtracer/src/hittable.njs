@@ -6,6 +6,6 @@ type hittable = {
     hit: (hittable[], ray, interval, record&) => u1
 }
 
-function hit(self: hittable[], r: ray, ray_t: interval, rec: record&): u1 {
+export function hit(self: hittable[], r: ray, ray_t: interval, &rec: record): u1 {
     return (*self).hit(self, r, ray_t, rec)
 }

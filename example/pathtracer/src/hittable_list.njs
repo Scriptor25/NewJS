@@ -12,7 +12,7 @@ type hittable_list = {
     size: u64,
 }
 
-function hit(self: hittable_list&, r: ray, ray_t: interval, rec: record&): u1 {
+function hit(&self: hittable_list, r: ray, ray_t: interval, &rec: record): u1 {
     let temp_rec: record
     let hit_anything = false
     let closest_so_far = ray_t.max
@@ -29,7 +29,7 @@ function hit(self: hittable_list&, r: ray, ray_t: interval, rec: record&): u1 {
     return hit_anything
 }
 
-function create(): hittable_list {
+export function create(): hittable_list {
     return {
         hit,
         objects: 0,
@@ -37,12 +37,12 @@ function create(): hittable_list {
     }
 }
 
-function add(self: hittable_list&, object: hittable[]) {
+export function add(&self: hittable_list, object: hittable[]) {
     self.objects = realloc(self.objects, (self.size + 1) * sizeof<hittable[]>)
     self.objects[self.size++] = object
 }
 
-function destroy(self: hittable_list&) {
+function destroy(&self: hittable_list) {
     free(self.objects)
     self.objects = 0
     self.size = 0

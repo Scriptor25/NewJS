@@ -14,7 +14,7 @@ namespace NJS
         [[nodiscard]] TypePtr GetType() const;
 
         [[nodiscard]] virtual bool IsLValue() const = 0;
-        [[nodiscard]] virtual bool IsConst() const = 0;
+        [[nodiscard]] virtual bool IsConstLValue() const = 0;
         [[nodiscard]] virtual llvm::Value *GetPtr(const SourceLocation &where) const = 0;
 
         [[nodiscard]] virtual llvm::Value *Load(const SourceLocation &where) const = 0;
@@ -36,7 +36,7 @@ namespace NJS
         static ValuePtr Create(Builder &builder, const TypePtr &type, llvm::Value *value);
 
         [[nodiscard]] bool IsLValue() const override;
-        [[nodiscard]] bool IsConst() const override;
+        [[nodiscard]] bool IsConstLValue() const override;
         [[nodiscard]] llvm::Value *GetPtr(const SourceLocation &where) const override;
 
         [[nodiscard]] llvm::Value *Load(const SourceLocation &where) const override;
@@ -56,7 +56,7 @@ namespace NJS
         static ValuePtr Create(Builder &builder, const TypePtr &type, llvm::Value *ptr, bool is_const);
 
         [[nodiscard]] bool IsLValue() const override;
-        [[nodiscard]] bool IsConst() const override;
+        [[nodiscard]] bool IsConstLValue() const override;
         [[nodiscard]] llvm::Value *GetPtr(const SourceLocation &where) const override;
 
         [[nodiscard]] llvm::Value *Load(const SourceLocation &where) const override;

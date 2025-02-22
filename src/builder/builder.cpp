@@ -242,7 +242,7 @@ NJS::OperatorInfo<1> NJS::Builder::FindOperator(
     const ValuePtr &value) const
 {
     const auto v_ty = value->GetType();
-    const auto v_cnst = value->IsConst();
+    const auto v_cnst = value->IsConstLValue();
     const auto v_ref = value->IsLValue();
 
     if (auto o = GetOperator(name, prefix, {v_ty, v_cnst, v_ref}); o.Callee)
@@ -262,8 +262,8 @@ NJS::OperatorInfo<2> NJS::Builder::FindOperator(
 {
     const auto l_ty = left->GetType();
     const auto r_ty = right->GetType();
-    const auto l_cnst = left->IsConst();
-    const auto r_cnst = right->IsConst();
+    const auto l_cnst = left->IsConstLValue();
+    const auto r_cnst = right->IsConstLValue();
     const auto l_ref = left->IsLValue();
     const auto r_ref = right->IsLValue();
 

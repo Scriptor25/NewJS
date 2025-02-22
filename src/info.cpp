@@ -1,3 +1,4 @@
+#include <utility>
 #include <NJS/Builder.hpp>
 #include <NJS/Info.hpp>
 #include <NJS/Parameter.hpp>
@@ -15,28 +16,21 @@ bool NJS::operator!=(const ReferenceInfo &a, const ReferenceInfo &b)
     return !(a == b);
 }
 
-bool NJS::operator<(const ReferenceInfo &a, const ReferenceInfo &b)
-{
-    return (a.Type < b.Type)
-           && (a.IsReference < b.IsReference)
-           && (a.IsConst < b.IsConst);
-}
-
-NJS::ReferenceInfo::ReferenceInfo(const TypePtr &type, const bool is_const, const bool is_reference)
-    : Type(type),
+NJS::ReferenceInfo::ReferenceInfo(TypePtr type, const bool is_const, const bool is_reference)
+    : Type(std::move(type)),
       IsConst(is_const),
       IsReference(is_reference)
 {
 }
 
-NJS::ReferenceInfo::ReferenceInfo(const TypePtr &type)
-    : Type(type)
+NJS::ReferenceInfo::ReferenceInfo(TypePtr type)
+    : Type(std::move(type))
 {
 }
 
 std::string NJS::ReferenceInfo::GetString() const
 {
-    return (IsReference && IsConst ? "const " : "") + Type->GetString() + (IsReference ? "&" : "");
+    return (IsReference ? IsConst ? "const &" : "&" : "") + Type->GetString();
 }
 
 llvm::Type *NJS::ReferenceInfo::GetLLVM(const SourceLocation &where, const Builder &builder) const
@@ -46,19 +40,13 @@ llvm::Type *NJS::ReferenceInfo::GetLLVM(const SourceLocation &where, const Build
     return Type->GetLLVM(where, builder);
 }
 
-unsigned NJS::ReferenceInfo::GetSize() const
-{
-    if (IsReference)
-        return 8;
-    return Type->GetSize();
-}
-
 std::ostream &NJS::ReferenceInfo::Print(std::ostream &stream) const
 {
-    if (IsReference && IsConst)
-        stream << "const ";
-    Type->Print(stream);
     if (IsReference)
+    {
+        if (IsConst)
+            stream << "const ";
         stream << "&";
-    return stream;
+    }
+    return Type->Print(stream);
 }

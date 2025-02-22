@@ -39,13 +39,13 @@ function parse_input(input: i8[]): [u64[3][], u64] {
     return [sizes, sizes_len - 1:u64]
 }
 
-function swap(size: u64[3]&, a: u64, b: u64) {
+function swap(&size: u64[3], a: u64, b: u64) {
     let t = size[a]
     size[a] = size[b]
     size[b] = t
 }
 
-function order(size: u64[3]&) {
+function order(&size: u64[3]) {
     for (let i: u64; i < 2; ++i)
     for (let j: u64; j < 2; ++j)
     if (size[j] > size[j + 1]) {
@@ -84,6 +84,6 @@ function part_2(input: i8[]): u64 {
     return sum
 }
 
-function day(part: u64): (i8[]) => u64 {
+export function day(part: u64): (i8[]) => u64 {
     return part == 1 ? part_1 : part == 2 ? part_2 : part_err
 }

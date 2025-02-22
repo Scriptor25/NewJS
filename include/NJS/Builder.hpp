@@ -140,8 +140,8 @@ namespace NJS
 
         Passes m_Passes;
 
-        std::map<std::string, std::map<bool, std::map<ReferenceInfo, OperatorInfo<1>>>> m_UnaryOperatorMap;
-        std::map<std::string, std::map<ReferenceInfo, std::map<ReferenceInfo, OperatorInfo<2>>>> m_BinaryOperatorMap;
+        std::map<std::string, std::map<bool, ReferenceInfoMap<OperatorInfo<1>>>> m_UnaryOperatorMap;
+        std::map<std::string, ReferenceInfoMap<ReferenceInfoMap<OperatorInfo<2>>>> m_BinaryOperatorMap;
 
         std::vector<StackFrame> m_Stack;
     };

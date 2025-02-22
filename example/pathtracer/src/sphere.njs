@@ -12,7 +12,7 @@ type sphere = {
     mat: material[],
 }
 
-function hit(self: sphere&, r: ray, ray_t: interval, rec: record&): u1 {
+function hit(&self: sphere, r: ray, ray_t: interval, &rec: record): u1 {
     const oc = self.center - r.origin
     const a = math.length_squared(r.direction)
     const b = math.dot(r.direction, oc)
@@ -41,7 +41,7 @@ function hit(self: sphere&, r: ray, ray_t: interval, rec: record&): u1 {
     return true
 }
 
-function create(center: point3, radius: f64, mat: material[]): sphere {
+export function create(center: point3, radius: f64, mat: material[]): sphere {
     return {
         hit,
         center,

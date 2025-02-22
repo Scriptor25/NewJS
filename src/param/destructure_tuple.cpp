@@ -7,8 +7,9 @@
 NJS::DestructureTuple::DestructureTuple(
     SourceLocation where,
     std::vector<ParameterPtr> elements,
-    TypePtr type)
-    : Parameter(std::move(where), {}, std::move(type)),
+    TypePtr type,
+    ReferenceInfo info)
+    : Parameter(std::move(where), {}, std::move(type), std::move(info)),
       Elements(std::move(elements))
 {
 }
@@ -35,7 +36,7 @@ void NJS::DestructureTuple::CreateVars(
                     "type mismatch: cannot create reference with type {} from value of type {}",
                     Type,
                     value->GetType());
-            if (value->IsConst() && !is_const)
+            if (value->IsConstLValue() && !is_const)
                 Error(Where, "cannot reference constant value as mutable");
         }
         else
@@ -51,6 +52,12 @@ void NJS::DestructureTuple::CreateVars(
 
 std::ostream &NJS::DestructureTuple::Print(std::ostream &stream)
 {
+    if (Info.IsReference)
+    {
+        if (Info.IsConst)
+            stream << "const ";
+        stream << "&";
+    }
     stream << "[ ";
     for (unsigned i = 0; i < Elements.size(); ++i)
     {

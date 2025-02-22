@@ -613,5 +613,5 @@ NJS::ValuePtr NJS::OperatorDeref(Builder &builder, const SourceLocation &where, 
         builder,
         type->GetElement(where),
         val,
-        value->IsConst());
+        value->IsConstLValue());
 }

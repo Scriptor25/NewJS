@@ -1,5 +1,6 @@
 #include <filesystem>
 #include <iostream>
+#include <string>
 #include <NJS/Error.hpp>
 #include <NJS/SourceLocation.hpp>
 

@@ -1,4 +1,3 @@
-#include <ranges>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Import.hpp>
@@ -46,19 +45,19 @@ void NJS::ImportMapping::MapFunctions(
         {
             if (function->Parameters.size() == 1)
                 name += (function->IsVarArg ? std::string() : function->Name)
-                        + function->Parameters[0].first->Type->GetString()
+                        + function->Parameters[0]->Info.GetString()
                         + (function->IsVarArg ? function->Name : std::string());
             else if (function->Parameters.size() == 2)
-                name += function->Parameters[0].first->Type->GetString()
+                name += function->Parameters[0]->Info.GetString()
                         + function->Name
-                        + function->Parameters[1].first->Type->GetString();
+                        + function->Parameters[1]->Info.GetString();
         }
         else
             name += function->Name;
 
         std::vector<ReferenceInfo> parameters;
-        for (const auto &info: function->Parameters | std::views::values)
-            parameters.emplace_back(info);
+        for (const auto &parameter: function->Parameters)
+            parameters.emplace_back(parameter->Info);
 
         const auto type = builder.GetTypeContext().GetFunctionType(
             function->Result,
@@ -80,14 +79,14 @@ void NJS::ImportMapping::MapFunctions(
                 builder.DefineOperator(
                     function->Name,
                     !function->IsVarArg,
-                    function->Parameters[0].second,
+                    function->Parameters[0]->Info,
                     function->Result,
                     function_callee);
             else if (function->Parameters.size() == 2)
                 builder.DefineOperator(
                     function->Name,
-                    function->Parameters[0].second,
-                    function->Parameters[1].second,
+                    function->Parameters[0]->Info,
+                    function->Parameters[1]->Info,
                     function->Result,
                     function_callee);
         }

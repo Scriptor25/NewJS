@@ -22,21 +22,21 @@ function<T> make(value: T): shared_ptr<T> {
     }
 }
 
-function<T> use(shared: shared_ptr<T>&) {
+function<T> use(&shared: shared_ptr<T>) {
     (*shared.uses)++
 }
 
-function<T> drop(shared: shared_ptr<T>&) {
+function<T> drop(&shared: shared_ptr<T>) {
     if (--(*shared.uses))
         return void
     free(shared.base)
     free(shared.uses)
 }
 
-function<T> get(shared: shared_ptr<T>&): T& {
+function<T> get(&shared: shared_ptr<T>): T& {
     return *shared.base
 }
 
-function<T> get_uses(shared: shared_ptr<T>&): u64 {
+function<T> get_uses(const &shared: shared_ptr<T>): const u64& {
     return *shared.uses
 }

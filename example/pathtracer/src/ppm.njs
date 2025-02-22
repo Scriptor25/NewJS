@@ -8,7 +8,7 @@ type image = {
     height: u32,
 }
 
-function begin(filename: i8[], width: u32, height: u32): image {
+export function begin(filename: i8[], width: u32, height: u32): image {
     const stream = fopen(filename, "wb")
     fprintf(stream, "P6 %d %d 255 ", width, height)
     return {
@@ -18,11 +18,11 @@ function begin(filename: i8[], width: u32, height: u32): image {
     }
 }
 
-function end(image: image&) {
-    fclose(image.stream)
-    image.stream = 0
+export function end(&self: image) {
+    fclose(self.stream)
+    self.stream = 0
 }
 
-function write(image: image&, r: i32, g: i32, b: i32) {
-    fprintf(image.stream, "%c%c%c", r, g, b)
+export function write(&self: image, r: i32, g: i32, b: i32) {
+    fprintf(self.stream, "%c%c%c", r, g, b)
 }

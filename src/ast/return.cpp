@@ -34,7 +34,7 @@ void NJS::ReturnStatement::GenVoidLLVM(Builder &builder) const
                 "type mismatch: cannot return reference with type {} from value of type {}",
                 type_,
                 value->GetType());
-        if (value->IsConst() && !is_const_)
+        if (value->IsConstLValue() && !is_const_)
             Error(Where, "cannot reference constant value as mutable");
         builder.GetBuilder().CreateRet(value->GetPtr(Value->Where));
         return;

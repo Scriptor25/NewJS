@@ -9,10 +9,12 @@
 NJS::Parameter::Parameter(
     SourceLocation where,
     std::string name,
-    TypePtr type)
+    TypePtr type,
+    ReferenceInfo info)
     : Where(std::move(where)),
       Name(std::move(name)),
-      Type(std::move(type))
+      Type(std::move(type)),
+      Info(std::move(info))
 {
 }
 
@@ -33,7 +35,7 @@ void NJS::Parameter::CreateVars(
 
     if (is_extern)
     {
-        const auto const_value = llvm::dyn_cast<llvm::Constant>(value->Load(Where));
+        const auto const_value = value ? llvm::dyn_cast<llvm::Constant>(value->Load(Where)) : nullptr;
         variable = builder.CreateGlobal(Where, Name, type, is_const, value != nullptr, const_value);
         if (value && !const_value)
             variable->Store(Where, value);
@@ -48,7 +50,7 @@ void NJS::Parameter::CreateVars(
                 "type mismatch: cannot create reference with type {} from value of type {}",
                 type,
                 value->GetType());
-        if (value->IsConst() && !is_const)
+        if (value->IsConstLValue() && !is_const)
             Error(Where, "cannot reference constant value as mutable");
         variable = LValue::Create(builder, type, value->GetPtr(Where), is_const);
         return;
@@ -73,6 +75,12 @@ void NJS::Parameter::CreateVars(
 
 std::ostream &NJS::Parameter::Print(std::ostream &stream)
 {
+    if (Info.IsReference)
+    {
+        if (Info.IsConst)
+            stream << "const ";
+        stream << "&";
+    }
     stream << Name;
     if (Type)
         Type->Print(stream << ": ");

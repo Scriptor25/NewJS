@@ -13,7 +13,7 @@ NJS::FunctionStatement::FunctionStatement(
     SourceLocation where,
     const unsigned flags,
     std::string name,
-    std::vector<std::pair<ParameterPtr, ReferenceInfo>> parameters,
+    std::vector<ParameterPtr> parameters,
     const bool is_var_arg,
     ReferenceInfo result,
     StatementPtr body)
@@ -38,19 +38,19 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
             function_name = builder.GetName(
                 Flags & FunctionFlags_Absolute,
                 (IsVarArg ? std::string() : Name)
-                + Parameters[0].first->Type->GetString()
+                + Parameters[0]->Info.GetString()
                 + (IsVarArg ? Name : std::string()));
         else if (Parameters.size() == 2)
             function_name = builder.GetName(
                 Flags & FunctionFlags_Absolute,
-                Parameters[0].first->Type->GetString() + Name + Parameters[1].first->Type->GetString());
+                Parameters[0]->Info.GetString() + Name + Parameters[1]->Info.GetString());
     }
     else
         function_name = builder.GetName(Flags & FunctionFlags_Absolute, Name);
 
     std::vector<ReferenceInfo> parameters;
-    for (const auto &info_: Parameters | std::views::values)
-        parameters.emplace_back(info_);
+    for (const auto &parameter: Parameters)
+        parameters.emplace_back(parameter->Info);
     const auto type = builder.GetTypeContext().GetFunctionType(Result, parameters, IsVarArg);
 
     auto function = builder.GetModule().getFunction(function_name);
@@ -71,14 +71,14 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
             builder.DefineOperator(
                 Name,
                 !IsVarArg,
-                Parameters[0].second,
+                Parameters[0]->Info,
                 Result,
                 function);
         else if (Parameters.size() == 2)
             builder.DefineOperator(
                 Name,
-                Parameters[0].second,
-                Parameters[1].second,
+                Parameters[0]->Info,
+                Parameters[1]->Info,
                 Result,
                 function);
     }
@@ -109,25 +109,25 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
     builder.StackPush(Name, Result);
     for (unsigned i = 0; i < Parameters.size(); ++i)
     {
-        const auto &[parameter_, info_] = Parameters[i];
+        const auto &parameter = Parameters[i];
         const auto argument = function->getArg(i);
-        argument->setName(parameter_->Name);
+        argument->setName(parameter->Name);
 
         ValuePtr argument_value;
-        if (info_.IsReference)
+        if (parameter->Info.IsReference)
             argument_value = LValue::Create(
                 builder,
-                parameter_->Type,
+                parameter->Type,
                 argument,
-                info_.IsConst);
+                parameter->Info.IsConst);
         else
-            argument_value = RValue::Create(builder, parameter_->Type, argument);
-        parameter_->CreateVars(
+            argument_value = RValue::Create(builder, parameter->Type, argument);
+        parameter->CreateVars(
             builder,
             argument_value,
             false,
-            info_.IsConst,
-            info_.IsReference);
+            parameter->Info.IsConst,
+            parameter->Info.IsReference);
     }
 
     Body->GenVoidLLVM(builder);
@@ -182,13 +182,7 @@ std::ostream &NJS::FunctionStatement::Print(std::ostream &stream)
     {
         if (i > 0)
             stream << ", ";
-        if (Parameters[i].second.IsReference)
-        {
-            if (Parameters[i].second.IsConst)
-                stream << "const ";
-            stream << "&";
-        }
-        Parameters[i].first->Print(stream);
+        Parameters[i]->Print(stream);
     }
     if (IsVarArg)
     {
@@ -204,7 +198,7 @@ std::ostream &NJS::FunctionStatement::Print(std::ostream &stream)
 
 NJS::FunctionExpression::FunctionExpression(
     SourceLocation where,
-    std::vector<std::pair<ParameterPtr, ReferenceInfo>> parameters,
+    std::vector<ParameterPtr> parameters,
     const bool is_var_arg,
     ReferenceInfo result,
     StatementPtr body)
@@ -222,8 +216,8 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
     const auto function_name = std::to_string(id++);
 
     std::vector<ReferenceInfo> parameters;
-    for (const auto &info_: Parameters | std::views::values)
-        parameters.emplace_back(info_);
+    for (const auto &parameter: Parameters)
+        parameters.emplace_back(parameter->Info);
     const auto type = builder.GetTypeContext().GetFunctionType(Result, parameters, IsVarArg);
     const auto function = llvm::Function::Create(
         type->GenFnLLVM(Where, builder),
@@ -238,25 +232,25 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
     builder.StackPush(function_name, Result);
     for (unsigned i = 0; i < Parameters.size(); ++i)
     {
-        const auto &[parameter_, info_] = Parameters[i];
+        const auto parameter = Parameters[i];
         const auto argument = function->getArg(i);
-        argument->setName(parameter_->Name);
+        argument->setName(parameter->Name);
 
         ValuePtr argument_value;
-        if (info_.IsReference)
+        if (parameter->Info.IsReference)
             argument_value = LValue::Create(
                 builder,
-                parameter_->Type,
+                parameter->Type,
                 argument,
-                info_.IsConst);
+                parameter->Info.IsConst);
         else
-            argument_value = RValue::Create(builder, parameter_->Type, argument);
-        parameter_->CreateVars(
+            argument_value = RValue::Create(builder, parameter->Type, argument);
+        parameter->CreateVars(
             builder,
             argument_value,
             false,
-            info_.IsConst,
-            info_.IsReference);
+            parameter->Info.IsConst,
+            parameter->Info.IsReference);
     }
 
     Body->GenVoidLLVM(builder);
@@ -307,13 +301,7 @@ std::ostream &NJS::FunctionExpression::Print(std::ostream &stream)
         {
             if (i > 0)
                 stream << ", ";
-            if (Parameters[i].second.IsReference)
-            {
-                if (Parameters[i].second.IsConst)
-                    stream << "const ";
-                stream << "&";
-            }
-            Parameters[i].first->Print(stream);
+            Parameters[i]->Print(stream);
         }
         if (IsVarArg)
         {

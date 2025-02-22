@@ -49,7 +49,7 @@ type camera = {
     defocus_disk_v: vec3,
 }
 
-function initialize(self: camera&) {
+function initialize(&self: camera) {
     self.image_height = self.image_width / self.aspect_ratio
 
     self.pixel_sample_scale = 1.0 / self.samples_per_pixel
@@ -79,7 +79,7 @@ function initialize(self: camera&) {
     self.defocus_disk_v = self.v * defocus_radius
 }
 
-function ray_color(self: camera&, r: ray, depth: u32, world: hittable[]): color {
+function ray_color(&self: camera, r: ray, depth: u32, world: hittable[]): color {
     if (!depth)
         return [ 0.0, 0.0, 0.0 ]
 
@@ -98,16 +98,16 @@ function ray_color(self: camera&, r: ray, depth: u32, world: hittable[]): color 
     return (1.0 - a) * [ 1.0, 1.0, 1.0 ]:vec3 + a * [ 0.5, 0.7, 1.0 ]:vec3
 }
 
-function sample_square(self: camera&): vec3 {
+function sample_square(&self: camera): vec3 {
     return [ common.random() - 0.5, common.random() - 0.5, 0.0 ]
 }
 
-function defocus_disk_sample(self: camera&): point3 {
+function defocus_disk_sample(&self: camera): point3 {
     const p = math.random_in_unit_disk()
     return self.center + (p[0] * self.defocus_disk_u) + (p[1] * self.defocus_disk_v)
 }
 
-function get_ray(self: camera&, i: u32, j: u32): ray {
+function get_ray(&self: camera, i: u32, j: u32): ray {
     const offset = sample_square(self)
     const pixel_sample = self.pixel00_loc
                        + ((i + offset[0]) * self.pixel_delta_u)
@@ -121,7 +121,7 @@ function get_ray(self: camera&, i: u32, j: u32): ray {
     return { origin, direction }
 }
 
-function render(self: camera&, world: hittable[]) {
+export function render(&self: camera, world: hittable[]) {
     initialize(self)
 
     let image = ppm.begin("./out.ppm", self.image_width, self.image_height)

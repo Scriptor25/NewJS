@@ -48,7 +48,7 @@ namespace NJS
             SourceLocation where,
             unsigned flags,
             std::string name,
-            std::vector<std::pair<ParameterPtr, ReferenceInfo>> parameters,
+            std::vector<ParameterPtr> parameters,
             bool is_var_arg,
             ReferenceInfo result,
             StatementPtr body);
@@ -58,7 +58,7 @@ namespace NJS
 
         unsigned Flags;
         std::string Name;
-        std::vector<std::pair<ParameterPtr, ReferenceInfo>> Parameters;
+        std::vector<ParameterPtr> Parameters;
         bool IsVarArg;
         ReferenceInfo Result;
         StatementPtr Body;
@@ -262,7 +262,7 @@ namespace NJS
     {
         FunctionExpression(
             SourceLocation where,
-            std::vector<std::pair<ParameterPtr, ReferenceInfo>> parameters,
+            std::vector<ParameterPtr> parameters,
             bool is_var_arg,
             ReferenceInfo result,
             StatementPtr body);
@@ -270,7 +270,7 @@ namespace NJS
         ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
-        std::vector<std::pair<ParameterPtr, ReferenceInfo>> Parameters;
+        std::vector<ParameterPtr> Parameters;
         bool IsVarArg;
         ReferenceInfo Result;
         StatementPtr Body;
