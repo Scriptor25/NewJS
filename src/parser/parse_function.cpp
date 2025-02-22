@@ -1,5 +1,4 @@
 #include <NJS/AST.hpp>
-#include <NJS/Error.hpp>
 #include <NJS/Parameter.hpp>
 #include <NJS/Parser.hpp>
 #include <NJS/TemplateContext.hpp>
@@ -26,7 +25,7 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
 
         while (!At(">"))
         {
-            template_arguments.push_back(Expect(TokenType_Symbol).StringValue);
+            template_arguments.emplace_back(Expect(TokenType_Symbol).StringValue);
 
             if (!At(">"))
                 Expect(",");

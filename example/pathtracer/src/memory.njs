@@ -9,7 +9,7 @@ function<T> make(value: T): shared_ptr<T> {
     const base: T[] = malloc(sizeof<T>);
     const uses: u64[] = malloc(sizeof<u64>);
 
-    println("B");
+    println($"B {base} {uses}");
 
     (*base) = value;
     (*uses) = 0;

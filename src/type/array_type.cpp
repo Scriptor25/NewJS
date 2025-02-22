@@ -30,11 +30,14 @@ unsigned NJS::ArrayType::GetElementCount(const SourceLocation &) const
     return m_Count;
 }
 
-void NJS::ArrayType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
+bool NJS::ArrayType::TypeInfo(
+    const SourceLocation &where,
+    Builder &builder,
+    std::vector<llvm::Value *> &arguments) const
 {
-    args.push_back(builder.GetBuilder().getInt32(ID_ARRAY));
-    args.push_back(builder.GetBuilder().getInt32(m_Count));
-    m_ElementType->TypeInfo(where, builder, args);
+    arguments.emplace_back(builder.GetBuilder().getInt32(ID_ARRAY));
+    arguments.emplace_back(builder.GetBuilder().getInt32(m_Count));
+    return m_ElementType->TypeInfo(where, builder, arguments);
 }
 
 NJS::ArrayType::ArrayType(

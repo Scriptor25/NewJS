@@ -12,7 +12,7 @@ namespace NJS
     public:
         TypePtr &GetType(const std::string &string);
 
-        NoTypePtr GetNoType(const std::string &name = {});
+        IncompleteTypePtr GetIncompleteType(const std::string &name = {});
         VoidTypePtr GetVoidType();
         IntegerTypePtr GetIntegerType(unsigned bits, bool is_signed);
         FloatingPointTypePtr GetFloatingPointType(unsigned bits);

@@ -65,10 +65,10 @@ namespace NJS
         [[nodiscard]] virtual unsigned GetParameterCount(const SourceLocation &where) const;
         [[nodiscard]] virtual bool IsVarArg(const SourceLocation &where) const;
 
-        virtual void TypeInfo(
+        virtual bool TypeInfo(
             const SourceLocation &where,
             Builder &builder,
-            std::vector<llvm::Value *> &args) const = 0;
+            std::vector<llvm::Value *> &arguments) const = 0;
 
     protected:
         Type(TypeContext &type_context, std::string string);
@@ -82,7 +82,7 @@ namespace NJS
         unsigned m_Size;
     };
 
-    class NoType final : public Type
+    class IncompleteType final : public Type
     {
         friend TypeContext;
 
@@ -91,10 +91,13 @@ namespace NJS
 
         bool IsIncomplete() const override;
 
-        void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
+        bool TypeInfo(
+            const SourceLocation &where,
+            Builder &builder,
+            std::vector<llvm::Value *> &arguments) const override;
 
     private:
-        NoType(TypeContext &type_context, std::string string, std::string name);
+        IncompleteType(TypeContext &type_context, std::string string, std::string name);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
         [[nodiscard]] unsigned GenSize() const override;
@@ -112,7 +115,10 @@ namespace NJS
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsVoid() const override;
 
-        void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
+        bool TypeInfo(
+            const SourceLocation &where,
+            Builder &builder,
+            std::vector<llvm::Value *> &arguments) const override;
 
     private:
         VoidType(TypeContext &type_context, std::string string);
@@ -133,7 +139,10 @@ namespace NJS
         [[nodiscard]] bool IsSigned(const SourceLocation &where) const override;
         [[nodiscard]] unsigned GetBits(const SourceLocation &where) const override;
 
-        void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
+        bool TypeInfo(
+            const SourceLocation &where,
+            Builder &builder,
+            std::vector<llvm::Value *> &arguments) const override;
 
     private:
         IntegerType(TypeContext &type_context, std::string string, unsigned bits, bool is_signed);
@@ -156,7 +165,10 @@ namespace NJS
         [[nodiscard]] bool IsFloatingPoint() const override;
         [[nodiscard]] unsigned GetBits(const SourceLocation &where) const override;
 
-        void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
+        bool TypeInfo(
+            const SourceLocation &where,
+            Builder &builder,
+            std::vector<llvm::Value *> &arguments) const override;
 
     private:
         FloatingPointType(TypeContext &type_context, std::string string, unsigned bits);
@@ -180,7 +192,10 @@ namespace NJS
         [[nodiscard]] TypePtr GetElement(const SourceLocation &where, unsigned index) const override;
         [[nodiscard]] unsigned GetElementCount(const SourceLocation &where) const override;
 
-        void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
+        bool TypeInfo(
+            const SourceLocation &where,
+            Builder &builder,
+            std::vector<llvm::Value *> &arguments) const override;
 
     private:
         PointerType(TypeContext &type_context, std::string string, TypePtr element_type);
@@ -203,7 +218,10 @@ namespace NJS
         [[nodiscard]] TypePtr GetElement(const SourceLocation &where, unsigned index) const override;
         [[nodiscard]] unsigned GetElementCount(const SourceLocation &where) const override;
 
-        void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
+        bool TypeInfo(
+            const SourceLocation &where,
+            Builder &builder,
+            std::vector<llvm::Value *> &arguments) const override;
 
     private:
         ArrayType(TypeContext &type_context, std::string string, TypePtr element_type, unsigned count);
@@ -227,7 +245,10 @@ namespace NJS
         [[nodiscard]] MemberInfo GetMember(const SourceLocation &where, const std::string &name) const override;
         [[nodiscard]] MemberInfo GetMember(const SourceLocation &where, unsigned index) const override;
 
-        void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
+        bool TypeInfo(
+            const SourceLocation &where,
+            Builder &builder,
+            std::vector<llvm::Value *> &arguments) const override;
 
     private:
         StructType(
@@ -253,7 +274,10 @@ namespace NJS
         [[nodiscard]] TypePtr GetElement(const SourceLocation &where, unsigned index) const override;
         [[nodiscard]] unsigned GetElementCount(const SourceLocation &where) const override;
 
-        void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
+        bool TypeInfo(
+            const SourceLocation &where,
+            Builder &builder,
+            std::vector<llvm::Value *> &arguments) const override;
 
     private:
         TupleType(TypeContext &type_context, std::string string, std::vector<TypePtr> element_types);
@@ -283,7 +307,10 @@ namespace NJS
         [[nodiscard]] unsigned GetParameterCount(const SourceLocation &where) const override;
         [[nodiscard]] bool IsVarArg(const SourceLocation &where) const override;
 
-        void TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const override;
+        bool TypeInfo(
+            const SourceLocation &where,
+            Builder &builder,
+            std::vector<llvm::Value *> &arguments) const override;
 
         [[nodiscard]] llvm::FunctionType *GenFnLLVM(const SourceLocation &where, const Builder &builder) const;
 

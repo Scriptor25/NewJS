@@ -1,7 +1,6 @@
 #pragma once
 
 #include <format>
-#include <iostream>
 #include <memory>
 
 namespace NJS
@@ -17,7 +16,7 @@ namespace NJS
     struct Token;
 
     class Type;
-    class NoType;
+    class IncompleteType;
     class VoidType;
     class IntegerType;
     class FloatingPointType;
@@ -28,7 +27,7 @@ namespace NJS
     class FunctionType;
 
     using TypePtr = std::shared_ptr<Type>;
-    using NoTypePtr = std::shared_ptr<NoType>;
+    using IncompleteTypePtr = std::shared_ptr<IncompleteType>;
     using VoidTypePtr = std::shared_ptr<VoidType>;
     using IntegerTypePtr = std::shared_ptr<IntegerType>;
     using FloatingPointTypePtr = std::shared_ptr<FloatingPointType>;

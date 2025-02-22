@@ -62,7 +62,7 @@ static void parse(
 
 int main(const int argc, const char **argv)
 {
-    NJS::ArgParser args(
+    NJS::ArgParser arg_parser(
         {
             {ARG_ID_HELP, "Display this help text.", {"--help", "-h"}, true},
             {ARG_ID_VERSION, "Display the program version.", {"--version", "-v"}, true},
@@ -75,34 +75,34 @@ int main(const int argc, const char **argv)
             },
             {ARG_ID_MAIN, "Specify which module name is the main module.", {"--main", "-m"}, false},
         });
-    args.Parse(argc, argv);
+    arg_parser.Parse(argc, argv);
 
-    if (args.Flag(ARG_ID_VERSION))
+    if (arg_parser.Flag(ARG_ID_VERSION))
     {
         std::cerr << "NewJS [v1.0.0]" << std::endl;
         if (argc == 2)
             return 0;
     }
 
-    if (args.IsEmpty() || args.Flag(ARG_ID_HELP))
+    if (arg_parser.IsEmpty() || arg_parser.Flag(ARG_ID_HELP))
     {
-        args.Print();
+        arg_parser.Print();
         return 0;
     }
 
     std::vector<std::string> input_filenames;
-    args.Values(input_filenames);
+    arg_parser.Values(input_filenames);
 
     std::string output_filename;
-    args.Option(ARG_ID_OUTPUT, output_filename);
+    arg_parser.Option(ARG_ID_OUTPUT, output_filename);
 
     std::string module_main;
-    args.Option(ARG_ID_MAIN, module_main, "main");
+    arg_parser.Option(ARG_ID_MAIN, module_main, "main");
 
     llvm::CodeGenFileType output_type;
     {
         std::string type_str;
-        args.Option(ARG_ID_TYPE, type_str, "llvm");
+        arg_parser.Option(ARG_ID_TYPE, type_str, "llvm");
         output_type = to_type(type_str);
     }
 

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <NJS/Error.hpp>
 #include <NJS/SourceLocation.hpp>
 #include <NJS/Type.hpp>

@@ -30,7 +30,7 @@ NJS::StatementPtr NJS::Parser::ParseSwitchStatement()
 
         std::vector<ExpressionPtr> case_entries;
         do
-            case_entries.push_back(ParseExpression());
+            case_entries.emplace_back(ParseExpression());
         while (NextAt(","));
 
         StatementPtr value;
@@ -75,7 +75,7 @@ NJS::ExpressionPtr NJS::Parser::ParseSwitchExpression()
 
         std::vector<ExpressionPtr> case_entries;
         do
-            case_entries.push_back(ParseExpression());
+            case_entries.emplace_back(ParseExpression());
         while (NextAt(","));
 
         ExpressionPtr value;

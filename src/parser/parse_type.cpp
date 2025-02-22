@@ -1,4 +1,3 @@
-#include <NJS/Error.hpp>
 #include <NJS/Parser.hpp>
 #include <NJS/TemplateContext.hpp>
 #include <NJS/TypeContext.hpp>
@@ -16,21 +15,21 @@ NJS::TypePtr NJS::Parser::ParseType()
         type = ParseFunctionType();
     else if (const auto sym = Expect(TokenType_Symbol).StringValue; m_TemplateContext.HasType(sym))
     {
-        std::vector<TypePtr> args;
+        std::vector<TypePtr> arguments;
 
         Expect("<");
         while (!At(">") && !AtEof())
         {
-            args.push_back(ParseType());
+            arguments.emplace_back(ParseType());
             if (!At(">"))
                 Expect(",");
         }
         Expect(">");
 
         if (!m_IsTemplate)
-            type = m_TemplateContext.InflateType(*this, sym, args);
+            type = m_TemplateContext.InflateType(*this, sym, arguments);
         else
-            type = m_TypeContext.GetNoType(sym);
+            type = m_TypeContext.GetIncompleteType(sym);
     }
     else if (!((type = m_TypeContext.GetType(sym))))
     {
@@ -69,7 +68,7 @@ NJS::TypePtr NJS::Parser::ParseType()
         else if (sym == "f64")
             type = m_TypeContext.GetFloatingPointType(64);
         else
-            type = m_TypeContext.GetNoType(sym);
+            type = m_TypeContext.GetIncompleteType(sym);
     }
 
     while (true)

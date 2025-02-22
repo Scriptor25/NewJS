@@ -1,5 +1,4 @@
 #include <NJS/Builder.hpp>
-#include <NJS/Error.hpp>
 #include <NJS/Std.hpp>
 #include <NJS/Type.hpp>
 
@@ -54,16 +53,17 @@ bool NJS::FunctionType::IsVarArg(const SourceLocation &) const
     return m_IsVarArg;
 }
 
-void NJS::FunctionType::TypeInfo(const SourceLocation &, Builder &builder, std::vector<llvm::Value *> &args) const
+bool NJS::FunctionType::TypeInfo(const SourceLocation &, Builder &builder, std::vector<llvm::Value *> &arguments) const
 {
-    args.push_back(builder.GetBuilder().getInt32(ID_FUNCTION));
+    arguments.emplace_back(builder.GetBuilder().getInt32(ID_FUNCTION));
+    return false;
 }
 
 llvm::FunctionType *NJS::FunctionType::GenFnLLVM(const SourceLocation &where, const Builder &builder) const
 {
     std::vector<llvm::Type *> types;
-    for (const auto &arg: m_Parameters)
-        types.push_back(arg.GetLLVM(where, builder));
+    for (const auto &parameter: m_Parameters)
+        types.emplace_back(parameter.GetLLVM(where, builder));
     return llvm::FunctionType::get(m_Result.GetLLVM(where, builder), types, m_IsVarArg);
 }
 

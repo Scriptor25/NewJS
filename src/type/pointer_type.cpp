@@ -1,5 +1,4 @@
 #include <NJS/Builder.hpp>
-#include <NJS/Error.hpp>
 #include <NJS/Std.hpp>
 #include <NJS/Type.hpp>
 
@@ -33,10 +32,14 @@ unsigned NJS::PointerType::GetElementCount(const SourceLocation &) const
     return 1;
 }
 
-void NJS::PointerType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
+bool NJS::PointerType::TypeInfo(
+    const SourceLocation &where,
+    Builder &builder,
+    std::vector<llvm::Value *> &arguments) const
 {
-    args.push_back(builder.GetBuilder().getInt32(ID_POINTER));
-    m_ElementType->TypeInfo(where, builder, args);
+    arguments.emplace_back(builder.GetBuilder().getInt32(ID_POINTER));
+    m_ElementType->TypeInfo(where, builder, arguments);
+    return false;
 }
 
 NJS::PointerType::PointerType(TypeContext &type_context, std::string string, TypePtr element_type)

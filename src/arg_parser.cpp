@@ -2,11 +2,11 @@
 #include <ranges>
 #include <NJS/ArgParser.hpp>
 
-NJS::ArgParser::ArgParser(const std::vector<Arg> &args)
+NJS::ArgParser::ArgParser(const std::vector<Arg> &patterns)
 {
-    for (auto &[id_, description_, patterns_, is_flag_]: args)
+    for (auto &[id_, description_, patterns_, is_flag_]: patterns)
         for (const auto &pattern: patterns_)
-            m_Args[pattern] = {id_, description_, is_flag_};
+            m_Patterns[pattern] = {id_, description_, is_flag_};
 }
 
 void NJS::ArgParser::Parse(const int argc, const char **argv)
@@ -17,13 +17,13 @@ void NJS::ArgParser::Parse(const int argc, const char **argv)
     {
         const std::string pat(argv[i]);
 
-        if (!m_Args.contains(pat))
+        if (!m_Patterns.contains(pat))
         {
-            m_Values.push_back(pat);
+            m_Values.emplace_back(pat);
             continue;
         }
 
-        auto &[id_, description_, is_flag_] = m_Args[pat];
+        auto &[id_, description_, is_flag_] = m_Patterns[pat];
 
         if (is_flag_)
         {
@@ -79,16 +79,16 @@ void NJS::ArgParser::Print() const
     std::map<ID, std::pair<std::vector<std::string>, std::string>> options;
     std::map<ID, std::pair<std::vector<std::string>, std::string>> flags;
 
-    for (auto &[pat_, arg_]: m_Args)
+    for (auto &[pat_, arg_]: m_Patterns)
     {
         if (arg_.IsFlag)
         {
-            flags[arg_.Id].first.push_back(pat_);
+            flags[arg_.Id].first.emplace_back(pat_);
             flags[arg_.Id].second = arg_.Description;
         }
         else
         {
-            options[arg_.Id].first.push_back(pat_);
+            options[arg_.Id].first.emplace_back(pat_);
             options[arg_.Id].second = arg_.Description;
         }
     }

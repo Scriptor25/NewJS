@@ -47,15 +47,20 @@ NJS::MemberInfo NJS::StructType::GetMember(const SourceLocation &, const unsigne
     return {index, m_ElementTypes[index].first, m_ElementTypes[index].second};
 }
 
-void NJS::StructType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
+bool NJS::StructType::TypeInfo(
+    const SourceLocation &where,
+    Builder &builder,
+    std::vector<llvm::Value *> &arguments) const
 {
-    args.push_back(builder.GetBuilder().getInt32(ID_STRUCT));
-    args.push_back(builder.GetBuilder().getInt32(m_ElementTypes.size()));
+    arguments.emplace_back(builder.GetBuilder().getInt32(ID_STRUCT));
+    arguments.emplace_back(builder.GetBuilder().getInt32(m_ElementTypes.size()));
+    auto any_incomplete = false;
     for (const auto &[name_, type_]: m_ElementTypes)
     {
-        args.emplace_back(StringExpression::GetString(builder, name_));
-        type_->TypeInfo(where, builder, args);
+        arguments.emplace_back(StringExpression::GetString(builder, name_));
+        any_incomplete |= type_->TypeInfo(where, builder, arguments);
     }
+    return any_incomplete;
 }
 
 static unsigned struct_count = 0;

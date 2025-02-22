@@ -48,7 +48,7 @@ bool NJS::Parser::ParseParameterList(std::vector<ParameterPtr> &parameters, cons
             return true;
         }
 
-        parameters.push_back(ParseParameter(false, false));
+        parameters.emplace_back(ParseParameter(false, false));
 
         if (!At(delimiter))
             Expect(",");

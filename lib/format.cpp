@@ -21,7 +21,8 @@ void operator delete(void *ptr, size_t) noexcept
 template<typename T>
 static T *New(const size_t count)
 {
-    auto ptr = malloc(count * sizeof(T));
+    constexpr auto size = sizeof(T);
+    auto ptr = malloc(count * size);
     return static_cast<T *>(ptr);
 }
 
@@ -41,6 +42,8 @@ struct StructType;
 struct TupleType;
 struct FunctionType;
 
+static void Incomplete_AppendV(Type *type, char *buffer, unsigned buffer_size, unsigned &offset, va_list &arg_ptr);
+static void Incomplete_AppendP(Type *type, char *buffer, unsigned buffer_size, unsigned &offset, char *&ptr);
 static void Integer_AppendV(Type *type, char *buffer, unsigned buffer_size, unsigned &offset, va_list &arg_ptr);
 static void Integer_AppendP(Type *type, char *buffer, unsigned buffer_size, unsigned &offset, char *&ptr);
 static void FloatingPoint_AppendV(Type *type, char *buffer, unsigned buffer_size, unsigned &offset, va_list &arg_ptr);
@@ -79,6 +82,17 @@ struct Type
 
     AppendVProc AppendV;
     AppendPProc AppendP;
+};
+
+struct IncompleteType final : Type
+{
+    explicit IncompleteType(const char *name)
+        : Type(Incomplete_AppendV, Incomplete_AppendP),
+          Name(name)
+    {
+    }
+
+    const char *Name;
 };
 
 struct IntegerType final : Type
@@ -180,10 +194,6 @@ struct FunctionType final : Type
         : Type(Function_AppendV, Function_AppendP)
     {
     }
-
-    ~FunctionType()
-    {
-    }
 };
 
 Type *ParseType(va_list &arg_ptr)
@@ -192,6 +202,12 @@ Type *ParseType(va_list &arg_ptr)
     {
         case ID_VOID:
             return nullptr;
+
+        case ID_INCOMPLETE:
+        {
+            const auto name = va_arg(arg_ptr, const char *);
+            return new IncompleteType(name);
+        }
 
         case ID_INTEGER:
         {
@@ -247,6 +263,18 @@ Type *ParseType(va_list &arg_ptr)
         default:
             return nullptr;
     }
+}
+
+void Incomplete_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, va_list &arg_ptr)
+{
+    const auto self = reinterpret_cast<IncompleteType *>(type);
+    offset += snprintf(buffer + offset, buffer_size - offset, "[%s]", self->Name);
+}
+
+void Incomplete_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, char *&ptr)
+{
+    const auto self = reinterpret_cast<IncompleteType *>(type);
+    offset += snprintf(buffer + offset, buffer_size - offset, "[%s]", self->Name);
 }
 
 void Integer_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, va_list &arg_ptr)
