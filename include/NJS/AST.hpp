@@ -86,8 +86,6 @@ namespace NJS
             std::string module_id,
             std::set<std::string> sub_module_ids);
 
-        static void CreateModuleCall(const Builder &builder, const std::string &module_id);
-
         void GenVoidLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 

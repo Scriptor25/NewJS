@@ -84,6 +84,8 @@ namespace NJS
             const TypePtr &src_type,
             const TypePtr &dst_type) const;
 
+        void CreateModuleCall(const std::string &module_id);
+
         void GetFormat(llvm::FunctionCallee &callee) const;
 
         void StackPush(const std::string &name = {}, const ReferenceInfo &result = {});
@@ -131,6 +133,8 @@ namespace NJS
     private:
         std::string m_ModuleID;
         bool m_IsMain;
+
+        std::set<std::string> m_ModuleCalls;
 
         TypeContext &m_TypeContext;
         llvm::LLVMContext &m_LLVMContext;
