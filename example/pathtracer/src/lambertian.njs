@@ -3,6 +3,8 @@ import math   from "./math.njs"
 import ray    from "./ray.njs"
 import record from "./record.njs"
 
+type lambertian
+
 type lambertian = {
     scatter: (lambertian&, ray, record, color&, ray&) => u1,
     albedo: color,

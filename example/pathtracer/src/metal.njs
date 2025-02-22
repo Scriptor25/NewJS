@@ -3,6 +3,8 @@ import math   from "./math.njs"
 import ray    from "./ray.njs"
 import record from "./record.njs"
 
+type metal
+
 type metal = {
     scatter: (metal&, ray, record, color&, ray&) => u1,
     albedo: color,

@@ -7,6 +7,8 @@ import record from "./record.njs"
 extern function sqrt(x: f64): f64
 extern function fmin(a: f64, b: f64): f64
 
+type dielectric
+
 type dielectric = {
     scatter: (dielectric&, ray, record, color&, ray&) => u1,
     albedo: color,

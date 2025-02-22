@@ -1,3 +1,4 @@
+import color  from "./color.njs"
 import ray    from "./ray.njs"
 import record from "./record.njs"
 

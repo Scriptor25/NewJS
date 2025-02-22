@@ -17,9 +17,6 @@ namespace NJS
         const TypePtr &type_a,
         const TypePtr &type_b);
 
-    bool operator==(const TypePtr &a, const TypePtr &b);
-    bool operator!=(const TypePtr &a, const TypePtr &b);
-
     class Type
     {
     public:
@@ -37,7 +34,7 @@ namespace NJS
             return llvm::dyn_cast<T>(m_LLVM = GenLLVM(where, builder));
         }
 
-        unsigned GetSize();
+        unsigned GetSize(const SourceLocation &where, const Builder &builder);
 
         [[nodiscard]] virtual bool IsPrimitive() const;
         [[nodiscard]] virtual bool IsIncomplete() const;
@@ -74,7 +71,6 @@ namespace NJS
         Type(TypeContext &type_context, std::string string);
 
         [[nodiscard]] virtual llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const = 0;
-        [[nodiscard]] virtual unsigned GenSize() const = 0;
 
         TypeContext &m_TypeContext;
         std::string m_String;
@@ -100,7 +96,6 @@ namespace NJS
         IncompleteType(TypeContext &type_context, std::string string, std::string name);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
-        [[nodiscard]] unsigned GenSize() const override;
 
         std::string m_Name;
     };
@@ -124,7 +119,6 @@ namespace NJS
         VoidType(TypeContext &type_context, std::string string);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
-        [[nodiscard]] unsigned GenSize() const override;
     };
 
     class IntegerType final : public Type
@@ -148,7 +142,6 @@ namespace NJS
         IntegerType(TypeContext &type_context, std::string string, unsigned bits, bool is_signed);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
-        [[nodiscard]] unsigned GenSize() const override;
 
         unsigned m_Bits;
         bool m_IsSigned;
@@ -174,7 +167,6 @@ namespace NJS
         FloatingPointType(TypeContext &type_context, std::string string, unsigned bits);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
-        [[nodiscard]] unsigned GenSize() const override;
 
         unsigned m_Bits;
     };
@@ -201,7 +193,6 @@ namespace NJS
         PointerType(TypeContext &type_context, std::string string, TypePtr element_type);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
-        [[nodiscard]] unsigned GenSize() const override;
 
         TypePtr m_ElementType;
     };
@@ -227,7 +218,6 @@ namespace NJS
         ArrayType(TypeContext &type_context, std::string string, TypePtr element_type, unsigned count);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
-        [[nodiscard]] unsigned GenSize() const override;
 
         TypePtr m_ElementType;
         unsigned m_Count;
@@ -257,7 +247,6 @@ namespace NJS
             std::vector<std::pair<std::string, TypePtr>> element_types);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
-        [[nodiscard]] unsigned GenSize() const override;
 
         std::vector<std::pair<std::string, TypePtr>> m_ElementTypes;
         unsigned m_Index;
@@ -283,7 +272,6 @@ namespace NJS
         TupleType(TypeContext &type_context, std::string string, std::vector<TypePtr> element_types);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
-        [[nodiscard]] unsigned GenSize() const override;
 
         std::vector<TypePtr> m_ElementTypes;
         unsigned m_Index;
@@ -323,7 +311,6 @@ namespace NJS
             bool is_var_arg);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
-        [[nodiscard]] unsigned GenSize() const override;
 
         ReferenceInfo m_Result;
         std::vector<ReferenceInfo> m_Parameters;

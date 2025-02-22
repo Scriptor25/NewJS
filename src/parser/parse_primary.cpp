@@ -79,15 +79,25 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
         Expect("<");
         const auto type = ParseType();
         Expect(">");
-        return std::make_shared<IntegerExpression>(where, m_TypeContext.GetIntegerType(64, false), type->GetSize());
+        return std::make_shared<IntegerExpression>(
+            where,
+            m_TypeContext.GetIntegerType(64, false),
+            type->GetSize(where, m_TemplateContext.GetBuilder()));
     }
 
     if (NextAt("typeof"))
     {
-        Expect("(");
-        const auto expr = ParseExpression();
-        Expect(")");
-        return std::make_shared<TypeOfExpression>(where, expr);
+        if (NextAt("("))
+        {
+            const auto expr = ParseExpression();
+            Expect(")");
+            return std::make_shared<TypeOfExpression>(where, expr);
+        }
+
+        Expect("<");
+        const auto type = ParseType();
+        Expect(">");
+        return std::make_shared<StringExpression>(where, type->GetString());
     }
 
     if (At(TokenType_Symbol))

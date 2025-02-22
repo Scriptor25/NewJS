@@ -1,4 +1,5 @@
 #include <iostream>
+#include <NJS/Builder.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/SourceLocation.hpp>
 #include <NJS/Type.hpp>
@@ -40,101 +41,6 @@ NJS::TypePtr NJS::GetHigherOrderOf(
     return {};
 }
 
-bool NJS::operator==(const TypePtr &a, const TypePtr &b)
-{
-    if (a.get() == b.get())
-        return true;
-    if (a->IsIncomplete() || b->IsIncomplete())
-        return true;
-    if (a->GetString() == b->GetString())
-        return true;
-    if (a->IsVoid() && b->IsVoid())
-        return true;
-
-    if (a->IsPrimitive() != b->IsPrimitive())
-        return false;
-    if (a->IsVoid() != b->IsVoid())
-        return false;
-    if (a->IsInteger() != b->IsInteger())
-        return false;
-    if (a->IsFloatingPoint() != b->IsFloatingPoint())
-        return false;
-    if (a->IsPointer() != b->IsPointer())
-        return false;
-    if (a->IsArray() != b->IsArray())
-        return false;
-    if (a->IsStruct() != b->IsStruct())
-        return false;
-    if (a->IsTuple() != b->IsTuple())
-        return false;
-    if (a->IsFunction() != b->IsFunction())
-        return false;
-
-    if (a->IsInteger())
-        return a->IsSigned(SourceLocation()) == b->IsSigned(SourceLocation())
-               && a->GetBits(SourceLocation()) == b->GetBits(SourceLocation());
-
-    if (a->IsFloatingPoint())
-        return a->GetBits(SourceLocation()) == b->GetBits(SourceLocation());
-
-    if (a->IsPointer())
-        return a->GetElement(SourceLocation()) == b->GetElement(SourceLocation());
-
-    if (a->IsArray())
-        return a->GetElement(SourceLocation()) == b->GetElement(SourceLocation())
-               && a->GetElementCount(SourceLocation()) == b->GetElementCount(SourceLocation());
-
-    if (a->IsStruct())
-    {
-        const auto count = a->GetElementCount(SourceLocation());
-        if (count != b->GetElementCount(SourceLocation()))
-            return false;
-        for (unsigned i = 0; i < count; ++i)
-        {
-            const auto [a_index_, a_name_, a_info_] = a->GetMember(SourceLocation(), i);
-            const auto [b_index_, b_name_, b_info_] = b->GetMember(SourceLocation(), i);
-            if (a_name_ != b_name_)
-                return false;
-            if (a_info_ != b_info_)
-                return false;
-        }
-        return true;
-    }
-
-    if (a->IsTuple())
-    {
-        const auto count = a->GetElementCount(SourceLocation());
-        if (count != b->GetElementCount(SourceLocation()))
-            return false;
-        for (unsigned i = 0; i < count; ++i)
-            if (a->GetElement(SourceLocation(), i) != b->GetElement(SourceLocation(), i))
-                return false;
-        return true;
-    }
-
-    if (a->IsFunction())
-    {
-        if (a->GetResult(SourceLocation()) != b->GetResult(SourceLocation()))
-            return false;
-        if (a->IsVarArg(SourceLocation()) != b->IsVarArg(SourceLocation()))
-            return false;
-        const auto count = a->GetParameterCount(SourceLocation());
-        if (count != b->GetParameterCount(SourceLocation()))
-            return false;
-        for (unsigned i = 0; i < count; ++i)
-            if (a->GetParameter(SourceLocation(), i) != b->GetParameter(SourceLocation(), i))
-                return false;
-        return true;
-    }
-
-    Error("'i dont even know who you are' (types {} and {})", a, b);
-}
-
-bool NJS::operator!=(const TypePtr &a, const TypePtr &b)
-{
-    return !(a == b);
-}
-
 std::ostream &NJS::Type::Print(std::ostream &stream) const
 {
     return stream << m_String;
@@ -145,11 +51,14 @@ std::string NJS::Type::GetString() const
     return m_String;
 }
 
-unsigned NJS::Type::GetSize()
+unsigned NJS::Type::GetSize(const SourceLocation &where, const Builder &builder)
 {
     if (m_Size != ~0u)
         return m_Size;
-    return m_Size = GenSize();
+    if (IsIncomplete())
+        return m_Size = 0;
+    const auto type = GetLLVM(where, builder);
+    return m_Size = builder.GetModule().getDataLayout().getTypeAllocSize(type);
 }
 
 bool NJS::Type::IsPrimitive() const

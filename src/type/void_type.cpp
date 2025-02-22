@@ -32,8 +32,3 @@ llvm::Type *NJS::VoidType::GenLLVM(const SourceLocation &, const Builder &builde
 {
     return builder.GetBuilder().getVoidTy();
 }
-
-unsigned NJS::VoidType::GenSize() const
-{
-    return 0;
-}

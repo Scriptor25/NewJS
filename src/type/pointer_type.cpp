@@ -52,8 +52,3 @@ llvm::Type *NJS::PointerType::GenLLVM(const SourceLocation &, const Builder &bui
 {
     return llvm::PointerType::get(builder.GetContext(), 0u);
 }
-
-unsigned NJS::PointerType::GenSize() const
-{
-    return 8;
-}

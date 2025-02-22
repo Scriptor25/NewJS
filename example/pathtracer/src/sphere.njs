@@ -5,6 +5,8 @@ import record   from "./record.njs"
 
 extern function sqrt(x: f64): f64
 
+type sphere
+
 type sphere = {
     hit: (sphere&, ray, interval, record&) => u1,
     center: point3,

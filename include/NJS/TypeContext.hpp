@@ -4,13 +4,15 @@
 #include <memory>
 #include <vector>
 #include <NJS/NJS.hpp>
+#include <NJS/Type.hpp>
 
 namespace NJS
 {
     class TypeContext
     {
     public:
-        TypePtr &GetType(const std::string &string);
+        const TypePtr &GetType(const SourceLocation &where, const std::string &string) const;
+        TypePtr &DefType(const std::string &string);
 
         IncompleteTypePtr GetIncompleteType(const std::string &name = {});
         VoidTypePtr GetVoidType();
@@ -37,7 +39,7 @@ namespace NJS
         std::shared_ptr<T> GetType(Args &&... args)
         {
             auto string = T::GenString(args...);
-            auto &ref = GetType(string);
+            auto &ref = DefType(string);
             if (!ref)
             {
                 const auto ptr = new T(*this, string, std::forward<Args>(args)...);

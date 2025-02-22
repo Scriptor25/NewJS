@@ -84,8 +84,3 @@ llvm::Type *NJS::FunctionType::GenLLVM(const SourceLocation &, const Builder &bu
 {
     return builder.GetBuilder().getPtrTy();
 }
-
-unsigned NJS::FunctionType::GenSize() const
-{
-    return 0;
-}

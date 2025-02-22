@@ -31,7 +31,7 @@ NJS::TypePtr NJS::Parser::ParseType()
         else
             type = m_TypeContext.GetIncompleteType(sym);
     }
-    else if (!((type = m_TypeContext.GetType(sym))))
+    else
     {
         if (sym == "void")
             type = m_TypeContext.GetVoidType();
@@ -68,7 +68,7 @@ NJS::TypePtr NJS::Parser::ParseType()
         else if (sym == "f64")
             type = m_TypeContext.GetFloatingPointType(64);
         else
-            type = m_TypeContext.GetIncompleteType(sym);
+            type = m_TypeContext.GetType(where, sym);
     }
 
     while (true)

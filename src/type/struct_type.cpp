@@ -87,11 +87,3 @@ llvm::Type *NJS::StructType::GenLLVM(const SourceLocation &where, const Builder 
 
     return llvm::StructType::create(builder.GetContext(), types, struct_name, true);
 }
-
-unsigned NJS::StructType::GenSize() const
-{
-    unsigned size = 0;
-    for (const auto &type: m_ElementTypes | std::ranges::views::values)
-        size += type->GetSize();
-    return size;
-}

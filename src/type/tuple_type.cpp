@@ -69,11 +69,3 @@ llvm::Type *NJS::TupleType::GenLLVM(const SourceLocation &where, const Builder &
 
     return llvm::StructType::create(builder.GetContext(), types, tuple_name, true);
 }
-
-unsigned NJS::TupleType::GenSize() const
-{
-    unsigned size = 0;
-    for (const auto &element: m_ElementTypes)
-        size += element->GetSize();
-    return size;
-}

@@ -2,6 +2,8 @@ import interval from "./interval.njs"
 import ray      from "./ray.njs"
 import record   from "./record.njs"
 
+type hittable
+
 type hittable = {
     hit: (hittable[], ray, interval, record&) => u1
 }

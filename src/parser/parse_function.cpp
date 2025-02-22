@@ -23,9 +23,12 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
 
         m_IsTemplate = true;
 
+        std::vector<TypePtr> types;
         while (!At(">"))
         {
-            template_arguments.emplace_back(Expect(TokenType_Symbol).StringValue);
+            auto name = Expect(TokenType_Symbol).StringValue;
+            template_arguments.emplace_back(name);
+            types.emplace_back(m_TypeContext.GetIncompleteType(name));
 
             if (!At(">"))
                 Expect(",");
@@ -34,6 +37,8 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
 
         if (!parent_is_template)
             ResetBuffer();
+
+        m_TypeContext.PushTemplate(template_arguments, types);
     }
 
     std::string name;
@@ -61,6 +66,7 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
 
     if (is_template)
     {
+        m_TypeContext.PopTemplate();
         if (!parent_is_template)
         {
             m_IsTemplate = false;

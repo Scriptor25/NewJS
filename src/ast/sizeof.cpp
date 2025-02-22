@@ -21,7 +21,7 @@ NJS::ValuePtr NJS::SizeOfExpression::GenLLVM(Builder &builder, const TypePtr &ex
                           : builder.GetTypeContext().GetIntegerType(64, false);
     const auto value = llvm::ConstantInt::get(
         type->GetLLVM(Where, builder),
-        operand->GetType()->GetSize(),
+        operand->GetType()->GetSize(Where, builder),
         type->IsSigned(Where));
     return RValue::Create(builder, type, value);
 }

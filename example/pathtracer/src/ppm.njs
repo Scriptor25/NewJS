@@ -1,3 +1,5 @@
+type FILE
+
 extern function fopen(filename: i8[], mode: i8[]): FILE[]
 extern function fclose(stream: FILE[])
 extern function fprintf(stream: FILE[], format: i8[], ...)

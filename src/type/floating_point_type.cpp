@@ -53,8 +53,3 @@ llvm::Type *NJS::FloatingPointType::GenLLVM(const SourceLocation &where, const B
             Error(where, "no llvm representation for floating point type {}", m_String);
     }
 }
-
-unsigned NJS::FloatingPointType::GenSize() const
-{
-    return m_Bits / 8;
-}

@@ -7,6 +7,11 @@ NJS::TemplateContext::TemplateContext(Builder &builder)
 {
 }
 
+NJS::Builder &NJS::TemplateContext::GetBuilder() const
+{
+    return m_Builder;
+}
+
 void NJS::TemplateContext::InsertType(
     const SourceLocation &where,
     const std::string &name,

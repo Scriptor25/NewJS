@@ -50,11 +50,3 @@ llvm::Type *NJS::IntegerType::GenLLVM(const SourceLocation &, const Builder &bui
 {
     return builder.GetBuilder().getIntNTy(m_Bits);
 }
-
-unsigned NJS::IntegerType::GenSize() const
-{
-    auto bits = m_Bits;
-    if (const auto rem = bits % 8)
-        bits += bits - rem;
-    return bits / 8;
-}

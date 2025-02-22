@@ -5,7 +5,6 @@
 #include <vector>
 #include <NJS/NJS.hpp>
 #include <NJS/Template.hpp>
-#include <NJS/Type.hpp>
 
 namespace NJS
 {
@@ -13,6 +12,8 @@ namespace NJS
     {
     public:
         explicit TemplateContext(Builder &builder);
+
+        Builder &GetBuilder() const;
 
         void InsertType(
             const SourceLocation &where,

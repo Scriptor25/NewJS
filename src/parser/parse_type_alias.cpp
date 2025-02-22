@@ -40,5 +40,6 @@ void NJS::Parser::ParseTypeAlias()
         return;
     }
 
-    m_TypeContext.GetType(name) = type;
+    if (auto &ref = m_TypeContext.DefType(name); !ref || ref->IsIncomplete())
+        ref = type;
 }

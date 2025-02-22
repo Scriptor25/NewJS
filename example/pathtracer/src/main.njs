@@ -49,8 +49,10 @@ camera.render(cam, &world)
 */
 
 function<T> make(value: T): T[] {
-    const ptr: T[] = malloc(sizeof<T>);
-    *ptr = value;
+    const count = sizeof<T>
+    println($"sizeof<{typeof<T>}> = {count}")
+    const ptr: T[] = malloc(count);
+    (*ptr) = value;
     return ptr
 }
 

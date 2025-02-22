@@ -6,6 +6,8 @@ import record    from "./record.njs"
 extern function realloc(block: void[], count: u32): void[]
 extern function free(block: void[])
 
+type hittable_list
+
 type hittable_list = {
     hit: (hittable_list&, ray, interval, record&) => u1,
     objects: hittable[][],

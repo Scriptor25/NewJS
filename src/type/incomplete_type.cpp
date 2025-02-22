@@ -34,8 +34,3 @@ llvm::Type *NJS::IncompleteType::GenLLVM(const SourceLocation &where, const Buil
 {
     Error(where, "the incomplete type '{}' does not have a llvm representation", m_Name);
 }
-
-unsigned NJS::IncompleteType::GenSize() const
-{
-    return 0;
-}
