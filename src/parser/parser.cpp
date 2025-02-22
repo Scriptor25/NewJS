@@ -75,7 +75,7 @@ int NJS::Parser::Get()
 {
     m_Where.Col++;
     const auto c = m_Stream.get();
-    m_TemplateBuffer.push_back(c);
+    m_TemplateBuffer.push_back(static_cast<char>(c));
     return c;
 }
 

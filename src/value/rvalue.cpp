@@ -12,6 +12,11 @@ bool NJS::RValue::IsLValue() const
     return false;
 }
 
+bool NJS::RValue::IsConstLValue() const
+{
+    return false;
+}
+
 llvm::Value *NJS::RValue::GetPtr(const SourceLocation &where) const
 {
     Error(where, "cannot get pointer to rvalue");
@@ -28,6 +33,11 @@ void NJS::RValue::Store(const SourceLocation &where, llvm::Value *) const
 }
 
 void NJS::RValue::Store(const SourceLocation &where, ValuePtr) const
+{
+    Error(where, "cannot assign to rvalue");
+}
+
+void NJS::RValue::StoreForce(const SourceLocation &where, ValuePtr value) const
 {
     Error(where, "cannot assign to rvalue");
 }

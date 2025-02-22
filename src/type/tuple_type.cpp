@@ -32,12 +32,17 @@ unsigned NJS::TupleType::GetElementCount(const SourceLocation &) const
     return m_ElementTypes.size();
 }
 
-void NJS::TupleType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
+bool NJS::TupleType::TypeInfo(
+    const SourceLocation &where,
+    Builder &builder,
+    std::vector<llvm::Value *> &arguments) const
 {
-    args.push_back(builder.GetBuilder().getInt32(ID_TUPLE));
-    args.push_back(builder.GetBuilder().getInt32(m_ElementTypes.size()));
+    arguments.emplace_back(builder.GetBuilder().getInt32(ID_TUPLE));
+    arguments.emplace_back(builder.GetBuilder().getInt32(m_ElementTypes.size()));
+    auto any_incomplete = false;
     for (const auto &element: m_ElementTypes)
-        element->TypeInfo(where, builder, args);
+        any_incomplete |= element->TypeInfo(where, builder, arguments);
+    return any_incomplete;
 }
 
 static unsigned tuple_count = 0;
@@ -60,15 +65,7 @@ llvm::Type *NJS::TupleType::GenLLVM(const SourceLocation &where, const Builder &
 
     std::vector<llvm::Type *> types;
     for (const auto &element: m_ElementTypes)
-        types.push_back(element->GetLLVM(where, builder));
+        types.emplace_back(element->GetLLVM(where, builder));
 
     return llvm::StructType::create(builder.GetContext(), types, tuple_name, true);
-}
-
-unsigned NJS::TupleType::GenSize() const
-{
-    unsigned size = 0;
-    for (const auto &element: m_ElementTypes)
-        size += element->GetSize();
-    return size;
 }

@@ -1,16 +1,29 @@
 #include <NJS/Type.hpp>
 #include <NJS/TypeContext.hpp>
 
-NJS::TypePtr &NJS::TypeContext::GetType(const std::string &string)
+const NJS::TypePtr &NJS::TypeContext::GetType(const SourceLocation &where, const std::string &string) const
+{
+    if (!m_TemplateStack.empty())
+    {
+        if (m_TemplateStack.back().contains(string))
+            return m_TemplateStack.back().at(string);
+        Error(where, "no type {}", string);
+    }
+    if (m_Types.contains(string))
+        return m_Types.at(string);
+    Error(where, "no type {}", string);
+}
+
+NJS::TypePtr &NJS::TypeContext::DefType(const std::string &string)
 {
     if (!m_TemplateStack.empty())
         return m_TemplateStack.back()[string];
     return m_Types[string];
 }
 
-NJS::NoTypePtr NJS::TypeContext::GetNoType(const std::string &name)
+NJS::IncompleteTypePtr NJS::TypeContext::GetIncompleteType(const std::string &name)
 {
-    return GetType<NoType>(name);
+    return GetType<IncompleteType>(name);
 }
 
 NJS::VoidTypePtr NJS::TypeContext::GetVoidType()
@@ -28,14 +41,9 @@ NJS::FloatingPointTypePtr NJS::TypeContext::GetFloatingPointType(unsigned bits)
     return GetType<FloatingPointType>(bits);
 }
 
-NJS::PointerTypePtr NJS::TypeContext::GetPointerType(const TypePtr &element_type)
+NJS::PointerTypePtr NJS::TypeContext::GetPointerType(const TypePtr &element_type, bool is_const)
 {
-    return GetType<PointerType>(element_type);
-}
-
-NJS::ReferenceTypePtr NJS::TypeContext::GetReferenceType(const TypePtr &element_type)
-{
-    return GetType<ReferenceType>(element_type);
+    return GetType<PointerType>(element_type, is_const);
 }
 
 NJS::ArrayTypePtr NJS::TypeContext::GetArrayType(const TypePtr &element_type, unsigned count)
@@ -54,11 +62,11 @@ NJS::TupleTypePtr NJS::TypeContext::GetTupleType(const std::vector<TypePtr> &ele
 }
 
 NJS::FunctionTypePtr NJS::TypeContext::GetFunctionType(
-    const TypePtr &result_type,
-    const std::vector<TypePtr> &argument_types,
-    bool var_arg)
+    const ReferenceInfo &result,
+    const std::vector<ReferenceInfo> &parameters,
+    bool is_var_arg)
 {
-    return GetType<FunctionType>(result_type, argument_types, var_arg);
+    return GetType<FunctionType>(result, parameters, is_var_arg);
 }
 
 NJS::IntegerTypePtr NJS::TypeContext::GetBooleanType()
@@ -73,7 +81,7 @@ NJS::IntegerTypePtr NJS::TypeContext::GetCharType()
 
 NJS::PointerTypePtr NJS::TypeContext::GetStringType()
 {
-    return GetPointerType(GetIntegerType(8, true));
+    return GetPointerType(GetIntegerType(8, true), true);
 }
 
 void NJS::TypeContext::PushTemplate(const std::vector<std::string> &names, const std::vector<TypePtr> &types)

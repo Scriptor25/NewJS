@@ -1,8 +1,7 @@
 #include <NJS/Error.hpp>
 #include <NJS/Parser.hpp>
+#include <NJS/TemplateContext.hpp>
 #include <NJS/TypeContext.hpp>
-
-#include "NJS/TemplateContext.hpp"
 
 void NJS::Parser::ParseTypeAlias()
 {
@@ -11,17 +10,22 @@ void NJS::Parser::ParseTypeAlias()
     if (m_IsTemplate)
         Error(m_Where, "cannot create type alias in template");
 
-    std::vector<std::string> templ_args;
+    std::vector<std::string> template_arguments;
     if ((m_IsTemplate = NextAt("<")))
     {
+        std::vector<TypePtr> types;
         while (!At(">") && !AtEof())
         {
-            templ_args.push_back(Expect(TokenType_Symbol).StringValue);
+            auto name = Expect(TokenType_Symbol).StringValue;
+            template_arguments.emplace_back(name);
+            types.emplace_back(m_TypeContext.GetIncompleteType(name));
 
             if (!At(">"))
                 Expect(",");
         }
         Expect(">");
+
+        m_TypeContext.PushTemplate(template_arguments, types);
     }
 
     const auto name = Expect(TokenType_Symbol).StringValue;
@@ -32,14 +36,16 @@ void NJS::Parser::ParseTypeAlias()
     if ((m_IsTemplate && (Expect("="), true)) || NextAt("="))
         type = ParseType();
     else
-        type = m_TypeContext.GetNoType(name);
+        type = m_TypeContext.GetIncompleteType(name);
 
     if (m_IsTemplate)
     {
+        m_TypeContext.PopTemplate();
         m_IsTemplate = false;
-        m_TemplateContext.InsertType(m_TemplateWhere, name, templ_args, m_TemplateBuffer);
+        m_TemplateContext.InsertType(m_TemplateWhere, name, template_arguments, m_TemplateBuffer);
         return;
     }
 
-    m_TypeContext.GetType(name) = type;
+    if (auto &ref = m_TypeContext.DefType(name); !ref || ref->IsIncomplete())
+        ref = type;
 }

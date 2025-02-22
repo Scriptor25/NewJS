@@ -12,7 +12,7 @@ function linear_to_gamma(component: f64): f64 {
     return 0.0
 }
 
-function write_color(image: image&, pixel_color: color) {
+export function write_color(&image: image, pixel_color: color) {
     const fr = linear_to_gamma(pixel_color[0])
     const fg = linear_to_gamma(pixel_color[1])
     const fb = linear_to_gamma(pixel_color[2])

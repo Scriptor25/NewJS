@@ -20,17 +20,17 @@ extern function glfwSetWindowShouldClose(window: GLFWwindow[], closed: i32)
 extern function glfwGetError(description: i8[][]): i32
 extern function glfwSetErrorCallback(callback: (i32, i32)): (i32, i32)
 
-function init(): i32 { return glfwInit() }
-function terminate() { glfwTerminate() }
-function createWindow(width: i32, height: i32, title: i8[], monitor: GLFWmonitor[], share: GLFWwindow[]): GLFWwindow[] { return glfwCreateWindow(width, height, title, monitor, share) }
-function destroyWindow(window: GLFWwindow[]) { glfwDestroyWindow(window) }
-function makeContextCurrent(window: GLFWwindow[]) { glfwMakeContextCurrent(window) }
-function swapInterval(interval: i32) { glfwSwapInterval(interval) }
-function windowShouldClose(window: GLFWwindow[]): i32 { return glfwWindowShouldClose(window) }
-function pollEvents() { glfwPollEvents() }
-function swapBuffers(window: GLFWwindow[]) { glfwSwapBuffers(window) }
-function getFramebufferSize(window: GLFWwindow[], width: i32[], height: i32[]) { glfwGetFramebufferSize(window, width, height) }
-function setKeyCallback(window: GLFWwindow[], callback: (GLFWwindow[], i32, i32, i32, i32)) { glfwSetKeyCallback(window, callback) }
-function setWindowShouldClose(window: GLFWwindow[], closed: i32) { glfwSetWindowShouldClose(window, closed) }
-function getError(description: i8[][]): i32 { return glfwGetError(description) }
-function setErrorCallback(callback: (i32, i32)): (i32, i32) { return glfwSetErrorCallback(callback) }
+export function init(): i32 { return glfwInit() }
+export function terminate() { glfwTerminate() }
+export function createWindow(width: i32, height: i32, title: i8[], monitor: GLFWmonitor[], share: GLFWwindow[]): GLFWwindow[] { return glfwCreateWindow(width, height, title, monitor, share) }
+export function destroyWindow(window: GLFWwindow[]) { glfwDestroyWindow(window) }
+export function makeContextCurrent(window: GLFWwindow[]) { glfwMakeContextCurrent(window) }
+export function swapInterval(interval: i32) { glfwSwapInterval(interval) }
+export function windowShouldClose(window: GLFWwindow[]): i32 { return glfwWindowShouldClose(window) }
+export function pollEvents() { glfwPollEvents() }
+export function swapBuffers(window: GLFWwindow[]) { glfwSwapBuffers(window) }
+export function getFramebufferSize(window: GLFWwindow[], width: i32[], height: i32[]) { glfwGetFramebufferSize(window, width, height) }
+export function setKeyCallback(window: GLFWwindow[], callback: (GLFWwindow[], i32, i32, i32, i32)) { glfwSetKeyCallback(window, callback) }
+export function setWindowShouldClose(window: GLFWwindow[], closed: i32) { glfwSetWindowShouldClose(window, closed) }
+export function getError(description: i8[][]): i32 { return glfwGetError(description) }
+export function setErrorCallback(callback: (i32, i32)): (i32, i32) { return glfwSetErrorCallback(callback) }

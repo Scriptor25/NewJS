@@ -6,10 +6,15 @@
 #include <NJS/Type.hpp>
 #include <NJS/Value.hpp>
 
-NJS::Parameter::Parameter(SourceLocation where, std::string name, TypePtr type)
+NJS::Parameter::Parameter(
+    SourceLocation where,
+    std::string name,
+    TypePtr type,
+    ReferenceInfo info)
     : Where(std::move(where)),
       Name(std::move(name)),
-      Type(std::move(type))
+      Type(std::move(type)),
+      Info(std::move(info))
 {
 }
 
@@ -21,26 +26,23 @@ bool NJS::Parameter::RequireValue()
 void NJS::Parameter::CreateVars(
     Builder &builder,
     ValuePtr value,
-    const unsigned flags)
+    const bool is_extern,
+    const bool is_const,
+    const bool is_reference)
 {
-    const auto type = !Type
-                          ? value->GetType()
-                          : Type->IsReference()
-                                ? Type->GetElement(Where)
-                                : Type;
-
+    const auto type = Type ? Type : value->GetType();
     auto &variable = builder.DefineVariable(Where, Name);
-
-    const bool is_extern = flags & ParameterFlags_Extern;
-    const bool is_const = flags & ParameterFlags_Const;
 
     if (is_extern)
     {
-        variable = builder.CreateGlobal(Where, Name, type, false);
+        const auto const_value = value ? llvm::dyn_cast<llvm::Constant>(value->Load(Where)) : nullptr;
+        variable = builder.CreateGlobal(Where, Name, type, is_const, value != nullptr, const_value);
+        if (value && !const_value)
+            variable->Store(Where, value);
         return;
     }
 
-    if (Type && Type->IsReference())
+    if (is_reference)
     {
         if (value->GetType() != type)
             Error(
@@ -48,7 +50,9 @@ void NJS::Parameter::CreateVars(
                 "type mismatch: cannot create reference with type {} from value of type {}",
                 type,
                 value->GetType());
-        variable = LValue::Create(builder, type, value->GetPtr(Where));
+        if (value->IsConstLValue() && !is_const)
+            Error(Where, "cannot reference constant value as mutable");
+        variable = LValue::Create(builder, type, value->GetPtr(Where), is_const);
         return;
     }
 
@@ -59,7 +63,7 @@ void NJS::Parameter::CreateVars(
         return;
     }
 
-    variable = builder.CreateAlloca(Where, type);
+    variable = builder.CreateAlloca(Where, type, false);
     if (value)
     {
         variable->Store(Where, value);
@@ -71,6 +75,12 @@ void NJS::Parameter::CreateVars(
 
 std::ostream &NJS::Parameter::Print(std::ostream &stream)
 {
+    if (Info.IsReference)
+    {
+        if (Info.IsConst)
+            stream << "const ";
+        stream << "&";
+    }
     stream << Name;
     if (Type)
         Type->Print(stream << ": ");

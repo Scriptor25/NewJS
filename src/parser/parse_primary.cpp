@@ -79,15 +79,25 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
         Expect("<");
         const auto type = ParseType();
         Expect(">");
-        return std::make_shared<IntegerExpression>(where, m_TypeContext.GetIntegerType(64, false), type->GetSize());
+        return std::make_shared<IntegerExpression>(
+            where,
+            m_TypeContext.GetIntegerType(64, false),
+            type->GetSize(where, m_TemplateContext.GetBuilder()));
     }
 
     if (NextAt("typeof"))
     {
-        Expect("(");
-        const auto expr = ParseExpression();
-        Expect(")");
-        return std::make_shared<TypeOfExpression>(where, expr);
+        if (NextAt("("))
+        {
+            const auto expr = ParseExpression();
+            Expect(")");
+            return std::make_shared<TypeOfExpression>(where, expr);
+        }
+
+        Expect("<");
+        const auto type = ParseType();
+        Expect(">");
+        return std::make_shared<StringExpression>(where, type->GetString());
     }
 
     if (At(TokenType_Symbol))
@@ -99,12 +109,12 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
 
         if (m_TemplateContext.HasFunction(name))
         {
-            std::vector<TypePtr> args;
+            std::vector<TypePtr> arguments;
 
             Expect("<");
             while (!At(">") && !AtEof())
             {
-                args.push_back(ParseType());
+                arguments.emplace_back(ParseType());
 
                 if (!At(">"))
                     Expect(",");
@@ -113,7 +123,7 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
 
             std::string inflated_name;
             if (!m_IsTemplate)
-                inflated_name = m_TemplateContext.InflateFunction(*this, name, args);
+                inflated_name = m_TemplateContext.InflateFunction(*this, name, arguments);
             else
                 inflated_name = name;
             return std::make_shared<SymbolExpression>(where, inflated_name);

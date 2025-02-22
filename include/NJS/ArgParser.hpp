@@ -26,7 +26,7 @@ namespace NJS
         };
 
     public:
-        explicit ArgParser(const std::vector<Arg> &args);
+        explicit ArgParser(const std::vector<Arg> &patterns);
 
         void Parse(int argc, const char **argv);
 
@@ -39,7 +39,7 @@ namespace NJS
         [[nodiscard]] bool IsEmpty() const;
 
     private:
-        std::map<std::string, ArgPattern> m_Args;
+        std::map<std::string, ArgPattern> m_Patterns;
 
         std::string m_Executable;
         std::vector<std::string> m_Values;

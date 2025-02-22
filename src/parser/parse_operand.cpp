@@ -1,6 +1,5 @@
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
-#include <NJS/Type.hpp>
 
 NJS::ExpressionPtr NJS::Parser::ParseOperandExpression()
 {
@@ -18,14 +17,14 @@ NJS::ExpressionPtr NJS::Parser::ParseOperandExpression()
 
         if (NextAt("("))
         {
-            std::vector<ExpressionPtr> args;
+            std::vector<ExpressionPtr> arguments;
             while (!NextAt(")"))
             {
-                args.push_back(ParseExpression());
+                arguments.emplace_back(ParseExpression());
                 if (!At(")"))
                     Expect(",");
             }
-            ptr = std::make_shared<CallExpression>(where, ptr, args);
+            ptr = std::make_shared<CallExpression>(where, ptr, arguments);
             continue;
         }
 

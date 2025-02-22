@@ -9,7 +9,7 @@ void NJS::Parser::ParseMacro()
     {
         while (!At(")") && !AtEof())
         {
-            parameters.push_back(Expect(TokenType_Symbol).StringValue);
+            parameters.emplace_back(Expect(TokenType_Symbol).StringValue);
             if (!At(")"))
                 Expect(",");
         }

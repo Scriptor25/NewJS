@@ -6,6 +6,7 @@
 enum TypeID
 {
     ID_VOID,
+    ID_INCOMPLETE,
     ID_INTEGER,
     ID_FLOATING_POINT,
     ID_POINTER,

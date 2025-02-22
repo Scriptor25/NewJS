@@ -1,5 +1,4 @@
 #include <NJS/Builder.hpp>
-#include <NJS/Error.hpp>
 #include <NJS/Std.hpp>
 #include <NJS/Type.hpp>
 
@@ -28,11 +27,12 @@ unsigned NJS::IntegerType::GetBits(const SourceLocation &where) const
     return m_Bits;
 }
 
-void NJS::IntegerType::TypeInfo(const SourceLocation &, Builder &builder, std::vector<llvm::Value *> &args) const
+bool NJS::IntegerType::TypeInfo(const SourceLocation &, Builder &builder, std::vector<llvm::Value *> &arguments) const
 {
-    args.push_back(builder.GetBuilder().getInt32(ID_INTEGER));
-    args.push_back(builder.GetBuilder().getInt32(m_Bits));
-    args.push_back(builder.GetBuilder().getInt32(m_IsSigned ? 1 : 0));
+    arguments.emplace_back(builder.GetBuilder().getInt32(ID_INTEGER));
+    arguments.emplace_back(builder.GetBuilder().getInt32(m_Bits));
+    arguments.emplace_back(builder.GetBuilder().getInt32(m_IsSigned ? 1 : 0));
+    return false;
 }
 
 NJS::IntegerType::IntegerType(
@@ -49,12 +49,4 @@ NJS::IntegerType::IntegerType(
 llvm::Type *NJS::IntegerType::GenLLVM(const SourceLocation &, const Builder &builder) const
 {
     return builder.GetBuilder().getIntNTy(m_Bits);
-}
-
-unsigned NJS::IntegerType::GenSize() const
-{
-    auto bits = m_Bits;
-    if (const auto rem = bits % 8)
-        bits += bits - rem;
-    return bits / 8;
 }

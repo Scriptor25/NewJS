@@ -4,27 +4,28 @@
 #include <memory>
 #include <vector>
 #include <NJS/NJS.hpp>
+#include <NJS/Type.hpp>
 
 namespace NJS
 {
     class TypeContext
     {
     public:
-        TypePtr &GetType(const std::string &string);
+        const TypePtr &GetType(const SourceLocation &where, const std::string &string) const;
+        TypePtr &DefType(const std::string &string);
 
-        NoTypePtr GetNoType(const std::string &name = {});
+        IncompleteTypePtr GetIncompleteType(const std::string &name = {});
         VoidTypePtr GetVoidType();
         IntegerTypePtr GetIntegerType(unsigned bits, bool is_signed);
         FloatingPointTypePtr GetFloatingPointType(unsigned bits);
-        PointerTypePtr GetPointerType(const TypePtr &element_type);
-        ReferenceTypePtr GetReferenceType(const TypePtr &element_type);
+        PointerTypePtr GetPointerType(const TypePtr &element_type, bool is_const);
         ArrayTypePtr GetArrayType(const TypePtr &element_type, unsigned count);
         StructTypePtr GetStructType(const std::vector<std::pair<std::string, TypePtr>> &element_types);
         TupleTypePtr GetTupleType(const std::vector<TypePtr> &element_types);
         FunctionTypePtr GetFunctionType(
-            const TypePtr &result_type,
-            const std::vector<TypePtr> &argument_types,
-            bool var_arg);
+            const ReferenceInfo &result,
+            const std::vector<ReferenceInfo> &parameters,
+            bool is_var_arg);
 
         IntegerTypePtr GetBooleanType();
         IntegerTypePtr GetCharType();
@@ -38,7 +39,7 @@ namespace NJS
         std::shared_ptr<T> GetType(Args &&... args)
         {
             auto string = T::GenString(args...);
-            auto &ref = GetType(string);
+            auto &ref = DefType(string);
             if (!ref)
             {
                 const auto ptr = new T(*this, string, std::forward<Args>(args)...);

@@ -1,11 +1,10 @@
 #include <NJS/Builder.hpp>
-#include <NJS/Error.hpp>
 #include <NJS/Std.hpp>
 #include <NJS/Type.hpp>
 
-std::string NJS::PointerType::GenString(const TypePtr &element_type)
+std::string NJS::PointerType::GenString(const TypePtr &element_type, const bool is_const)
 {
-    return element_type->GetString() + "[]";
+    return element_type->GetString() + '[' + (is_const ? "const" : "") + ']';
 }
 
 bool NJS::PointerType::IsPrimitive() const
@@ -18,7 +17,12 @@ bool NJS::PointerType::IsPointer() const
     return true;
 }
 
-NJS::TypePtr NJS::PointerType::GetElement(const SourceLocation &where) const
+bool NJS::PointerType::IsConst(const SourceLocation &) const
+{
+    return m_IsConst;
+}
+
+NJS::TypePtr NJS::PointerType::GetElement(const SourceLocation &) const
 {
     return m_ElementType;
 }
@@ -33,24 +37,24 @@ unsigned NJS::PointerType::GetElementCount(const SourceLocation &) const
     return 1;
 }
 
-void NJS::PointerType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
+bool NJS::PointerType::TypeInfo(
+    const SourceLocation &where,
+    Builder &builder,
+    std::vector<llvm::Value *> &arguments) const
 {
-    args.push_back(builder.GetBuilder().getInt32(ID_POINTER));
-    m_ElementType->TypeInfo(where, builder, args);
+    arguments.emplace_back(builder.GetBuilder().getInt32(ID_POINTER));
+    m_ElementType->TypeInfo(where, builder, arguments);
+    return false;
 }
 
-NJS::PointerType::PointerType(TypeContext &type_context, std::string string, TypePtr element_type)
+NJS::PointerType::PointerType(TypeContext &type_context, std::string string, TypePtr element_type, const bool is_const)
     : Type(type_context, std::move(string)),
-      m_ElementType(std::move(element_type))
+      m_ElementType(std::move(element_type)),
+      m_IsConst(is_const)
 {
 }
 
 llvm::Type *NJS::PointerType::GenLLVM(const SourceLocation &, const Builder &builder) const
 {
     return llvm::PointerType::get(builder.GetContext(), 0u);
-}
-
-unsigned NJS::PointerType::GenSize() const
-{
-    return 8;
 }

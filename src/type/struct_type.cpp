@@ -8,12 +8,12 @@
 std::string NJS::StructType::GenString(const std::vector<std::pair<std::string, TypePtr>> &element_types)
 {
     std::map<std::string, TypePtr> element_map;
-    for (const auto &[name_, type_]: element_types)
+    for (auto &[name_, type_]: element_types)
         element_map[name_] = type_;
 
     std::string dst = "{ ";
     auto first = true;
-    for (const auto &[name_, type_]: element_map)
+    for (auto &[name_, type_]: element_map)
     {
         if (first)
             first = false;
@@ -47,15 +47,20 @@ NJS::MemberInfo NJS::StructType::GetMember(const SourceLocation &, const unsigne
     return {index, m_ElementTypes[index].first, m_ElementTypes[index].second};
 }
 
-void NJS::StructType::TypeInfo(const SourceLocation &where, Builder &builder, std::vector<llvm::Value *> &args) const
+bool NJS::StructType::TypeInfo(
+    const SourceLocation &where,
+    Builder &builder,
+    std::vector<llvm::Value *> &arguments) const
 {
-    args.push_back(builder.GetBuilder().getInt32(ID_STRUCT));
-    args.push_back(builder.GetBuilder().getInt32(m_ElementTypes.size()));
+    arguments.emplace_back(builder.GetBuilder().getInt32(ID_STRUCT));
+    arguments.emplace_back(builder.GetBuilder().getInt32(m_ElementTypes.size()));
+    auto any_incomplete = false;
     for (const auto &[name_, type_]: m_ElementTypes)
     {
-        args.emplace_back(StringExpression::GetString(builder, name_));
-        type_->TypeInfo(where, builder, args);
+        arguments.emplace_back(StringExpression::GetString(builder, name_));
+        any_incomplete |= type_->TypeInfo(where, builder, arguments);
     }
+    return any_incomplete;
 }
 
 static unsigned struct_count = 0;
@@ -81,12 +86,4 @@ llvm::Type *NJS::StructType::GenLLVM(const SourceLocation &where, const Builder 
         types.emplace_back(type->GetLLVM(where, builder));
 
     return llvm::StructType::create(builder.GetContext(), types, struct_name, true);
-}
-
-unsigned NJS::StructType::GenSize() const
-{
-    unsigned size = 0;
-    for (const auto &type: m_ElementTypes | std::ranges::views::values)
-        size += type->GetSize();
-    return size;
 }

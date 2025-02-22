@@ -5,6 +5,6 @@ type ray = {
     direction: vec3,
 }
 
-function at(self: ray&, t: f64): point3 {
+export function at(const &self: ray, t: f64): point3 {
     return self.origin + t * self.direction
 }

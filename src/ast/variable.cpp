@@ -5,12 +5,16 @@
 
 NJS::VariableStatement::VariableStatement(
     SourceLocation where,
+    const bool is_extern,
+    const bool is_const,
+    const bool is_reference,
     ParameterPtr parameter,
-    const unsigned flags,
     ExpressionPtr value)
     : Statement(std::move(where)),
+      IsExtern(is_extern),
+      IsConst(is_const),
+      IsReference(is_reference),
       Parameter(std::move(parameter)),
-      Flags(flags),
       Value(std::move(value))
 {
 }
@@ -18,18 +22,16 @@ NJS::VariableStatement::VariableStatement(
 void NJS::VariableStatement::GenVoidLLVM(Builder &builder) const
 {
     const auto value = Value ? Value->GenLLVM(builder, Parameter->Type) : nullptr;
-    Parameter->CreateVars(builder, value, Flags);
+    Parameter->CreateVars(builder, value, IsExtern, IsConst, IsReference);
 }
 
 std::ostream &NJS::VariableStatement::Print(std::ostream &stream)
 {
-    if (Flags & ParameterFlags_Extern)
+    if (IsExtern)
         stream << "extern ";
-    if (Flags & ParameterFlags_Const)
-        stream << "const ";
-    else
-        stream << "let ";
-
+    stream << (IsConst ? "const " : "let ");
+    if (IsReference)
+        stream << "&";
     Parameter->Print(stream);
     if (Value)
         Value->Print(stream << " = ");

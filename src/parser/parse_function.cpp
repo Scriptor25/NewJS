@@ -1,5 +1,4 @@
 #include <NJS/AST.hpp>
-#include <NJS/Error.hpp>
 #include <NJS/Parameter.hpp>
 #include <NJS/Parser.hpp>
 #include <NJS/TemplateContext.hpp>
@@ -24,9 +23,12 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
 
         m_IsTemplate = true;
 
+        std::vector<TypePtr> types;
         while (!At(">"))
         {
-            template_arguments.push_back(Expect(TokenType_Symbol).StringValue);
+            auto name = Expect(TokenType_Symbol).StringValue;
+            template_arguments.emplace_back(name);
+            types.emplace_back(m_TypeContext.GetIncompleteType(name));
 
             if (!At(">"))
                 Expect(",");
@@ -35,6 +37,8 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
 
         if (!parent_is_template)
             ResetBuffer();
+
+        m_TypeContext.PushTemplate(template_arguments, types);
     }
 
     std::string name;
@@ -48,11 +52,13 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
 
     std::vector<ParameterPtr> parameters;
     Expect("(");
-    const auto is_var_arg = ParseParameterList(parameters, ")");
+    const auto is_var_arg = ParseReferenceParameterList(parameters, ")");
 
-    auto result_type = NextAt(":")
-                           ? ParseType()
-                           : m_TypeContext.GetVoidType();
+    ReferenceInfo result;
+    if (NextAt(":"))
+        result = ParseReferenceInfo();
+    else
+        result.Type = m_TypeContext.GetVoidType();
 
     StatementPtr body;
     if (!is_extern && At("{"))
@@ -60,6 +66,7 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
 
     if (is_template)
     {
+        m_TypeContext.PopTemplate();
         if (!parent_is_template)
         {
             m_IsTemplate = false;
@@ -68,7 +75,7 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
         return {};
     }
 
-    return std::make_shared<FunctionStatement>(where, flags, name, parameters, is_var_arg, result_type, body);
+    return std::make_shared<FunctionStatement>(where, flags, name, parameters, is_var_arg, result, body);
 }
 
 NJS::ExpressionPtr NJS::Parser::ParseFunctionExpression()
@@ -78,15 +85,15 @@ NJS::ExpressionPtr NJS::Parser::ParseFunctionExpression()
     std::vector<ParameterPtr> parameters;
     auto is_var_arg = false;
     if (NextAt("("))
-        is_var_arg = ParseParameterList(parameters, ")");
+        is_var_arg = ParseReferenceParameterList(parameters, ")");
 
-    TypePtr result_type;
+    ReferenceInfo result;
     if (NextAt(":"))
-        result_type = ParseType();
+        result = ParseReferenceInfo();
     else
-        result_type = m_TypeContext.GetVoidType();
+        result.Type = m_TypeContext.GetVoidType();
 
     const auto body = ParseScopeStatement();
 
-    return std::make_shared<FunctionExpression>(where, parameters, is_var_arg, result_type, body);
+    return std::make_shared<FunctionExpression>(where, parameters, is_var_arg, result, body);
 }

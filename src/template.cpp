@@ -37,7 +37,7 @@ NJS::FunctionStatement NJS::Template::InflateFunction(Parser &parent, const std:
         GetName(arguments),
         std::move(inflated->Parameters),
         inflated->IsVarArg,
-        inflated->ResultType,
+        inflated->Result,
         inflated->Body,
     };
 }

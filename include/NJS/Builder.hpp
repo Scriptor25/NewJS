@@ -11,7 +11,6 @@
 #include <llvm/Passes/StandardInstrumentations.h>
 #include <NJS/Info.hpp>
 #include <NJS/NJS.hpp>
-#include <NJS/SourceLocation.hpp>
 
 namespace NJS
 {
@@ -24,7 +23,7 @@ namespace NJS
         [[nodiscard]] std::string GetChildName(const std::string &) const;
 
         std::string Name;
-        TypePtr ResultType;
+        ReferenceInfo Result;
         std::map<std::string, ValuePtr> Values;
     };
 
@@ -51,7 +50,7 @@ namespace NJS
 
         void Close();
 
-        const std::string &GetModuleID() const;
+        [[nodiscard]] const std::string &GetModuleID() const;
 
         [[nodiscard]] TypeContext &GetTypeContext() const;
 
@@ -63,13 +62,15 @@ namespace NJS
 
         void Optimize(llvm::Function *function) const;
 
-        [[nodiscard]] llvm::Value *CreateAlloca(llvm::Type *type, unsigned size = 0) const;
-        ValuePtr CreateAlloca(const SourceLocation &where, const TypePtr &type, unsigned size = 0);
+        [[nodiscard]] llvm::Value *CreateAlloca(llvm::Type *type, unsigned count = 0) const;
+        ValuePtr CreateAlloca(const SourceLocation &where, const TypePtr &type, bool is_const, unsigned count = 0);
         ValuePtr CreateGlobal(
             const SourceLocation &where,
             const std::string &name,
             const TypePtr &type,
-            bool initialize);
+            bool is_const,
+            bool initialize,
+            llvm::Constant *initializer = {});
 
         ValuePtr CreateMember(const SourceLocation &where, const ValuePtr &object, const std::string &name);
 
@@ -83,9 +84,11 @@ namespace NJS
             const TypePtr &src_type,
             const TypePtr &dst_type) const;
 
+        void CreateModuleCall(const std::string &module_id);
+
         void GetFormat(llvm::FunctionCallee &callee) const;
 
-        void StackPush(const std::string &name = {}, const TypePtr &result_type = {});
+        void StackPush(const std::string &name = {}, const ReferenceInfo &result = {});
         void StackPop();
 
         [[nodiscard]] std::string GetName(bool absolute, const std::string &name) const;
@@ -93,24 +96,24 @@ namespace NJS
         void DefineOperator(
             const std::string &name,
             bool prefix,
-            const TypePtr &value_type,
-            const TypePtr &result_type,
+            const ReferenceInfo &value,
+            const ReferenceInfo &result,
             llvm::Value *callee);
         void DefineOperator(
             const std::string &name,
-            const TypePtr &left_type,
-            const TypePtr &right_type,
-            const TypePtr &result_type,
+            const ReferenceInfo &left,
+            const ReferenceInfo &right,
+            const ReferenceInfo &result,
             llvm::Value *callee);
 
         [[nodiscard]] OperatorInfo<1> GetOperator(
             const std::string &name,
             bool prefix,
-            const TypePtr &value_type) const;
+            const ReferenceInfo &value) const;
         [[nodiscard]] OperatorInfo<2> GetOperator(
             const std::string &name,
-            const TypePtr &left_type,
-            const TypePtr &right_type) const;
+            const ReferenceInfo &left,
+            const ReferenceInfo &right) const;
 
         [[nodiscard]] OperatorInfo<1> FindOperator(
             const std::string &name,
@@ -118,18 +121,20 @@ namespace NJS
             const ValuePtr &value) const;
         [[nodiscard]] OperatorInfo<2> FindOperator(
             const std::string &name,
-            const ValuePtr &left_operand,
-            const ValuePtr &right_operand) const;
+            const ValuePtr &left,
+            const ValuePtr &right) const;
 
         ValuePtr &DefineVariable(const SourceLocation &where, const std::string &name);
         ValuePtr &GetVariable(const SourceLocation &where, const std::string &name);
         ValuePtr &GetOrDefineVariable(const std::string &name);
 
-        TypePtr &CurrentFunctionResultType();
+        ReferenceInfo &CurrentFunctionResult();
 
     private:
         std::string m_ModuleID;
         bool m_IsMain;
+
+        std::set<std::string> m_ModuleCalls;
 
         TypeContext &m_TypeContext;
         llvm::LLVMContext &m_LLVMContext;
@@ -139,8 +144,8 @@ namespace NJS
 
         Passes m_Passes;
 
-        std::map<std::string, std::map<bool, std::map<TypePtr, OperatorInfo<1>>>> m_UnaryOperatorMap;
-        std::map<std::string, std::map<TypePtr, std::map<TypePtr, OperatorInfo<2>>>> m_BinaryOperatorMap;
+        std::map<std::string, std::map<bool, ReferenceInfoMap<OperatorInfo<1>>>> m_UnaryOperatorMap;
+        std::map<std::string, ReferenceInfoMap<ReferenceInfoMap<OperatorInfo<2>>>> m_BinaryOperatorMap;
 
         std::vector<StackFrame> m_Stack;
     };

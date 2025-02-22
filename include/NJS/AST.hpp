@@ -7,6 +7,7 @@
 #include <vector>
 #include <llvm/IR/Constant.h>
 #include <NJS/Import.hpp>
+#include <NJS/Info.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/SourceLocation.hpp>
 
@@ -49,7 +50,7 @@ namespace NJS
             std::string name,
             std::vector<ParameterPtr> parameters,
             bool is_var_arg,
-            TypePtr result_type,
+            ReferenceInfo result,
             StatementPtr body);
 
         void GenVoidLLVM(Builder &builder) const override;
@@ -59,7 +60,7 @@ namespace NJS
         std::string Name;
         std::vector<ParameterPtr> Parameters;
         bool IsVarArg;
-        TypePtr ResultType;
+        ReferenceInfo Result;
         StatementPtr Body;
     };
 
@@ -84,8 +85,6 @@ namespace NJS
             std::vector<FunctionStatementPtr> functions,
             std::string module_id,
             std::set<std::string> sub_module_ids);
-
-        static void CreateModuleCall(const Builder &builder, const std::string &module_id);
 
         void GenVoidLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
@@ -135,13 +134,21 @@ namespace NJS
 
     struct VariableStatement final : Statement
     {
-        VariableStatement(SourceLocation where, ParameterPtr parameter, unsigned flags, ExpressionPtr value);
+        VariableStatement(
+            SourceLocation where,
+            bool is_extern,
+            bool is_const,
+            bool is_reference,
+            ParameterPtr parameter,
+            ExpressionPtr value);
 
         void GenVoidLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
+        bool IsExtern;
+        bool IsConst;
+        bool IsReference;
         ParameterPtr Parameter;
-        unsigned Flags;
         ExpressionPtr Value;
     };
 
@@ -255,7 +262,7 @@ namespace NJS
             SourceLocation where,
             std::vector<ParameterPtr> parameters,
             bool is_var_arg,
-            TypePtr result_type,
+            ReferenceInfo result,
             StatementPtr body);
 
         ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
@@ -263,7 +270,7 @@ namespace NJS
 
         std::vector<ParameterPtr> Parameters;
         bool IsVarArg;
-        TypePtr ResultType;
+        ReferenceInfo Result;
         StatementPtr Body;
     };
 

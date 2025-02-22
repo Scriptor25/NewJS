@@ -1,7 +1,6 @@
 #include <NJS/AST.hpp>
 #include <NJS/Error.hpp>
 #include <NJS/Parser.hpp>
-#include <NJS/TypeContext.hpp>
 
 NJS::StatementPtr NJS::Parser::ParseScopeStatement()
 {
@@ -9,7 +8,7 @@ NJS::StatementPtr NJS::Parser::ParseScopeStatement()
 
     const auto where = Expect("{").Where;
     while (!At("}") && !AtEof())
-        children.push_back(ParseStatement());
+        children.emplace_back(ParseStatement());
     Expect("}");
 
     return std::make_shared<ScopeStatement>(where, children);
@@ -21,7 +20,7 @@ NJS::ExpressionPtr NJS::Parser::ParseScopeExpression()
 
     const auto where = Expect("{").Where;
     while (!At("}") && !AtEof())
-        children.push_back(ParseStatement());
+        children.emplace_back(ParseStatement());
     Expect("}");
 
     if (children.empty())

@@ -73,3 +73,22 @@ llvm::Value *NJS::Builder::CreateCast(
 
     Error(where, "no cast from value of type {} to {}", src_type, dst_type);
 }
+
+void NJS::Builder::CreateModuleCall(const std::string &module_id)
+{
+    if (module_id == "main" || m_ModuleCalls.contains(module_id))
+        return;
+
+    m_ModuleCalls.insert(module_id);
+
+    const auto module_main_name = module_id + ".main";
+    const auto function_type = llvm::FunctionType::get(GetBuilder().getVoidTy(), false);
+    auto function_callee = GetModule().getFunction(module_main_name);
+    if (!function_callee)
+        function_callee = llvm::Function::Create(
+            function_type,
+            llvm::Function::ExternalLinkage,
+            module_main_name,
+            GetModule());
+    GetBuilder().CreateCall(function_callee);
+}

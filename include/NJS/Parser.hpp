@@ -4,7 +4,6 @@
 #include <functional>
 #include <memory>
 #include <set>
-#include <sstream>
 #include <string>
 #include <NJS/Import.hpp>
 #include <NJS/Macro.hpp>
@@ -60,11 +59,16 @@ namespace NJS
         TypePtr ParseTupleType();
         TypePtr ParseStructType();
         TypePtr ParseFunctionType();
+        ReferenceInfo ParseReferenceInfo();
         bool ParseTypeList(std::vector<TypePtr> &types, const std::string &delim);
         void ParseTypeMap(std::vector<std::pair<std::string, TypePtr>> &types, const std::string &delim);
+        bool ParseReferenceInfoList(std::vector<ReferenceInfo> &infos, const std::string &delim);
 
-        ParameterPtr ParseParameter();
+        ParameterPtr ParseParameter(bool is_const, bool is_reference);
         bool ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string &delimiter);
+        bool ParseReferenceParameterList(
+            std::vector<ParameterPtr> &parameters,
+            const std::string &delimiter);
         void ParseParameterMap(std::map<std::string, ParameterPtr> &parameters, const std::string &delimiter);
 
         void ParseMacro();

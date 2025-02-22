@@ -1,5 +1,8 @@
 #pragma once
 
+#include <llvm/IR/Type.h>
+#include <llvm/IR/Value.h>
+#include <NJS/Error.hpp>
 #include <NJS/NJS.hpp>
 
 namespace NJS
@@ -10,24 +13,75 @@ namespace NJS
         llvm::Value *Ptr{};
     };
 
-    template<unsigned N>
-    struct OperatorInfo;
+    bool operator==(const ReferenceInfo &a, const ReferenceInfo &b);
+    bool operator!=(const ReferenceInfo &a, const ReferenceInfo &b);
 
-    template<>
-    struct OperatorInfo<1>
+    struct ReferenceInfo
     {
-        TypePtr ResultType;
-        TypePtr ValueType;
-        llvm::Value *Callee{};
+        ReferenceInfo() = default;
+        ReferenceInfo(TypePtr type, bool is_const, bool is_reference);
+
+        explicit ReferenceInfo(TypePtr type);
+
+        [[nodiscard]] std::string GetString() const;
+        [[nodiscard]] llvm::Type *GetLLVM(const SourceLocation &where, const Builder &builder) const;
+
+        std::ostream &Print(std::ostream &stream) const;
+
+        TypePtr Type;
+        bool IsConst = false;
+        bool IsReference = false;
     };
 
-    template<>
-    struct OperatorInfo<2>
+    template<typename V>
+    class ReferenceInfoMap
     {
-        TypePtr ResultType;
-        TypePtr LeftType;
-        TypePtr RightType;
-        llvm::Value *Callee{};
+    public:
+        ReferenceInfoMap() = default;
+        ~ReferenceInfoMap() = default;
+
+        V &operator[](const ReferenceInfo &key)
+        {
+            for (auto &[key_, value_]: m_Data)
+                if (key_ == key)
+                    return value_;
+            return m_Data.emplace_back(key, V{}).second;
+        }
+
+        V &at(const ReferenceInfo &key)
+        {
+            for (auto &[key_, value_]: m_Data)
+                if (key_ == key)
+                    return value_;
+            return m_Data.emplace_back(key, V{}).second;
+        }
+
+        const V &operator[](const ReferenceInfo &key) const
+        {
+            for (auto &[key_, value_]: m_Data)
+                if (key_ == key)
+                    return value_;
+            Error("key missing in map");
+        }
+
+        const V &at(const ReferenceInfo &key) const
+        {
+            for (auto &[key_, value_]: m_Data)
+                if (key_ == key)
+                    return value_;
+            Error("key missing in map");
+        }
+
+        [[nodiscard]] bool contains(const ReferenceInfo &key) const
+        {
+            for (auto &[key_, value_]: m_Data)
+                if (key_ == key)
+                    return true;
+            return false;
+        }
+
+    private:
+        std::vector<std::pair<ReferenceInfo, V>> m_Data;
     };
 
     struct MemberInfo
@@ -35,5 +89,22 @@ namespace NJS
         unsigned Index;
         std::string Name;
         TypePtr Type;
+    };
+
+    template<>
+    struct OperatorInfo<1>
+    {
+        ReferenceInfo Result;
+        ReferenceInfo Value;
+        llvm::Value *Callee{};
+    };
+
+    template<>
+    struct OperatorInfo<2>
+    {
+        ReferenceInfo Result;
+        ReferenceInfo Left;
+        ReferenceInfo Right;
+        llvm::Value *Callee{};
     };
 }

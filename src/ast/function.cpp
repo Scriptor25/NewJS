@@ -1,3 +1,4 @@
+#include <ranges>
 #include <utility>
 #include <llvm/IR/Verifier.h>
 #include <NJS/AST.hpp>
@@ -14,14 +15,14 @@ NJS::FunctionStatement::FunctionStatement(
     std::string name,
     std::vector<ParameterPtr> parameters,
     const bool is_var_arg,
-    TypePtr result_type,
+    ReferenceInfo result,
     StatementPtr body)
     : Statement(std::move(where)),
       Flags(flags),
       Name(std::move(name)),
       Parameters(std::move(parameters)),
       IsVarArg(is_var_arg),
-      ResultType(std::move(result_type)),
+      Result(std::move(result)),
       Body(std::move(body))
 {
 }
@@ -37,20 +38,20 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
             function_name = builder.GetName(
                 Flags & FunctionFlags_Absolute,
                 (IsVarArg ? std::string() : Name)
-                + Parameters[0]->Type->GetString()
+                + Parameters[0]->Info.GetString()
                 + (IsVarArg ? Name : std::string()));
         else if (Parameters.size() == 2)
             function_name = builder.GetName(
                 Flags & FunctionFlags_Absolute,
-                Parameters[0]->Type->GetString() + Name + Parameters[1]->Type->GetString());
+                Parameters[0]->Info.GetString() + Name + Parameters[1]->Info.GetString());
     }
     else
         function_name = builder.GetName(Flags & FunctionFlags_Absolute, Name);
 
-    std::vector<TypePtr> parameter_types;
+    std::vector<ReferenceInfo> parameters;
     for (const auto &parameter: Parameters)
-        parameter_types.push_back(parameter->Type);
-    const auto type = builder.GetTypeContext().GetFunctionType(ResultType, parameter_types, IsVarArg);
+        parameters.emplace_back(parameter->Info);
+    const auto type = builder.GetTypeContext().GetFunctionType(Result, parameters, IsVarArg);
 
     auto function = builder.GetModule().getFunction(function_name);
     const auto new_define = !function;
@@ -67,9 +68,19 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
     if (Flags & FunctionFlags_Operator)
     {
         if (Parameters.size() == 1)
-            builder.DefineOperator(Name, !IsVarArg, Parameters[0]->Type, ResultType, function);
+            builder.DefineOperator(
+                Name,
+                !IsVarArg,
+                Parameters[0]->Info,
+                Result,
+                function);
         else if (Parameters.size() == 2)
-            builder.DefineOperator(Name, Parameters[0]->Type, Parameters[1]->Type, ResultType, function);
+            builder.DefineOperator(
+                Name,
+                Parameters[0]->Info,
+                Parameters[1]->Info,
+                Result,
+                function);
     }
     else
     {
@@ -95,24 +106,28 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
     builder.GetBuilder().SetInsertPoint(entry_block);
 
-    builder.StackPush(Name, ResultType);
+    builder.StackPush(Name, Result);
     for (unsigned i = 0; i < Parameters.size(); ++i)
     {
         const auto &parameter = Parameters[i];
         const auto argument = function->getArg(i);
         argument->setName(parameter->Name);
 
-        const auto parameter_type = parameter->Type;
-
         ValuePtr argument_value;
-        if (parameter_type->IsReference())
+        if (parameter->Info.IsReference)
             argument_value = LValue::Create(
                 builder,
-                parameter_type->GetElement(parameter->Where),
-                argument);
+                parameter->Type,
+                argument,
+                parameter->Info.IsConst);
         else
-            argument_value = RValue::Create(builder, parameter_type, argument);
-        parameter->CreateVars(builder, argument_value, ParameterFlags_None);
+            argument_value = RValue::Create(builder, parameter->Type, argument);
+        parameter->CreateVars(
+            builder,
+            argument_value,
+            false,
+            parameter->Info.IsConst,
+            parameter->Info.IsReference);
     }
 
     Body->GenVoidLLVM(builder);
@@ -175,7 +190,7 @@ std::ostream &NJS::FunctionStatement::Print(std::ostream &stream)
             stream << ", ";
         stream << "...";
     }
-    ResultType->Print(stream << "): ");
+    Result.Print(stream << "): ");
     if (Body)
         Body->Print(stream << ' ');
     return stream;
@@ -185,12 +200,12 @@ NJS::FunctionExpression::FunctionExpression(
     SourceLocation where,
     std::vector<ParameterPtr> parameters,
     const bool is_var_arg,
-    TypePtr result_type,
+    ReferenceInfo result,
     StatementPtr body)
     : Expression(std::move(where)),
       Parameters(std::move(parameters)),
       IsVarArg(is_var_arg),
-      ResultType(std::move(result_type)),
+      Result(std::move(result)),
       Body(std::move(body))
 {
 }
@@ -200,10 +215,10 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
     static unsigned id = 0;
     const auto function_name = std::to_string(id++);
 
-    std::vector<TypePtr> parameter_types;
+    std::vector<ReferenceInfo> parameters;
     for (const auto &parameter: Parameters)
-        parameter_types.push_back(parameter->Type);
-    const auto type = builder.GetTypeContext().GetFunctionType(ResultType, parameter_types, IsVarArg);
+        parameters.emplace_back(parameter->Info);
+    const auto type = builder.GetTypeContext().GetFunctionType(Result, parameters, IsVarArg);
     const auto function = llvm::Function::Create(
         type->GenFnLLVM(Where, builder),
         llvm::GlobalValue::InternalLinkage,
@@ -214,24 +229,28 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
     builder.GetBuilder().SetInsertPoint(entry_block);
 
-    builder.StackPush(function_name, ResultType);
+    builder.StackPush(function_name, Result);
     for (unsigned i = 0; i < Parameters.size(); ++i)
     {
-        auto &parameter = Parameters[i];
+        const auto parameter = Parameters[i];
         const auto argument = function->getArg(i);
         argument->setName(parameter->Name);
 
-        const auto parameter_type = parameter->Type;
-
         ValuePtr argument_value;
-        if (parameter_type->IsReference())
+        if (parameter->Info.IsReference)
             argument_value = LValue::Create(
                 builder,
-                parameter_type->GetElement(parameter->Where),
-                argument);
+                parameter->Type,
+                argument,
+                parameter->Info.IsConst);
         else
-            argument_value = RValue::Create(builder, parameter_type, argument);
-        parameter->CreateVars(builder, argument_value, ParameterFlags_None);
+            argument_value = RValue::Create(builder, parameter->Type, argument);
+        parameter->CreateVars(
+            builder,
+            argument_value,
+            false,
+            parameter->Info.IsConst,
+            parameter->Info.IsReference);
     }
 
     Body->GenVoidLLVM(builder);
@@ -290,7 +309,7 @@ std::ostream &NJS::FunctionExpression::Print(std::ostream &stream)
                 stream << ", ";
             stream << "...";
         }
-        ResultType->Print(stream << "): ") << ' ';
+        Result.Print(stream << "): ") << ' ';
     }
     return Body->Print(stream);
 }

@@ -1,6 +1,5 @@
 #include <NJS/AST.hpp>
 #include <NJS/Parser.hpp>
-#include <NJS/TypeContext.hpp>
 
 NJS::ExpressionPtr NJS::Parser::ParseTupleExpression()
 {
@@ -9,8 +8,7 @@ NJS::ExpressionPtr NJS::Parser::ParseTupleExpression()
     std::vector<ExpressionPtr> elements;
     while (!At("]") && !AtEof())
     {
-        const auto value = ParseExpression();
-        elements.push_back(value);
+        elements.emplace_back(ParseExpression());
 
         if (!At("]"))
             Expect(",");

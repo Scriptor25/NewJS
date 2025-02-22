@@ -45,23 +45,23 @@ void NJS::ImportMapping::MapFunctions(
         {
             if (function->Parameters.size() == 1)
                 name += (function->IsVarArg ? std::string() : function->Name)
-                        + function->Parameters[0]->Type->GetString()
+                        + function->Parameters[0]->Info.GetString()
                         + (function->IsVarArg ? function->Name : std::string());
             else if (function->Parameters.size() == 2)
-                name += function->Parameters[0]->Type->GetString()
+                name += function->Parameters[0]->Info.GetString()
                         + function->Name
-                        + function->Parameters[1]->Type->GetString();
+                        + function->Parameters[1]->Info.GetString();
         }
         else
             name += function->Name;
 
-        std::vector<TypePtr> parameter_types;
+        std::vector<ReferenceInfo> parameters;
         for (const auto &parameter: function->Parameters)
-            parameter_types.push_back(parameter->Type);
+            parameters.emplace_back(parameter->Info);
 
         const auto type = builder.GetTypeContext().GetFunctionType(
-            function->ResultType,
-            parameter_types,
+            function->Result,
+            parameters,
             function->IsVarArg);
 
         auto function_callee = builder.GetModule().getFunction(name);
@@ -79,15 +79,15 @@ void NJS::ImportMapping::MapFunctions(
                 builder.DefineOperator(
                     function->Name,
                     !function->IsVarArg,
-                    function->Parameters[0]->Type,
-                    function->ResultType,
+                    function->Parameters[0]->Info,
+                    function->Result,
                     function_callee);
             else if (function->Parameters.size() == 2)
                 builder.DefineOperator(
                     function->Name,
-                    function->Parameters[0]->Type,
-                    function->Parameters[1]->Type,
-                    function->ResultType,
+                    function->Parameters[0]->Info,
+                    function->Parameters[1]->Info,
+                    function->Result,
                     function_callee);
         }
         else if (All)

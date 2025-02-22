@@ -4,45 +4,52 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <NJS/Info.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/SourceLocation.hpp>
 
 namespace NJS
 {
-    enum ParameterFlags
-    {
-        ParameterFlags_None = 0,
-        ParameterFlags_Const = 1,
-        ParameterFlags_Extern = 2,
-    };
-
     struct Parameter
     {
-        Parameter(SourceLocation where, std::string name, TypePtr type);
+        Parameter(
+            SourceLocation where,
+            std::string name,
+            TypePtr type,
+            ReferenceInfo info);
         virtual ~Parameter() = default;
 
         virtual bool RequireValue();
         virtual void CreateVars(
             Builder &builder,
             ValuePtr value,
-            unsigned flags);
+            bool is_extern,
+            bool is_const,
+            bool is_reference);
 
         virtual std::ostream &Print(std::ostream &stream);
 
         SourceLocation Where;
         std::string Name;
         TypePtr Type;
+        ReferenceInfo Info;
     };
 
     struct DestructureStruct final : Parameter
     {
-        DestructureStruct(SourceLocation where, std::map<std::string, ParameterPtr> elements, TypePtr type);
+        DestructureStruct(
+            SourceLocation where,
+            std::map<std::string, ParameterPtr> elements,
+            TypePtr type,
+            ReferenceInfo info);
 
         bool RequireValue() override;
         void CreateVars(
             Builder &builder,
             ValuePtr value,
-            unsigned flags) override;
+            bool is_extern,
+            bool is_const,
+            bool is_reference) override;
 
         std::ostream &Print(std::ostream &stream) override;
 
@@ -51,13 +58,19 @@ namespace NJS
 
     struct DestructureTuple final : Parameter
     {
-        DestructureTuple(SourceLocation where, std::vector<ParameterPtr> elements, TypePtr type);
+        DestructureTuple(
+            SourceLocation where,
+            std::vector<ParameterPtr> elements,
+            TypePtr type,
+            ReferenceInfo info);
 
         bool RequireValue() override;
         void CreateVars(
             Builder &builder,
             ValuePtr value,
-            unsigned flags) override;
+            bool is_extern,
+            bool is_const,
+            bool is_reference) override;
 
         std::ostream &Print(std::ostream &stream) override;
 

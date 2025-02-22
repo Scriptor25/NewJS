@@ -13,32 +13,39 @@ NJS::ReturnStatement::ReturnStatement(SourceLocation where, ExpressionPtr value)
 
 void NJS::ReturnStatement::GenVoidLLVM(Builder &builder) const
 {
-    auto type = builder.CurrentFunctionResultType();
+    auto &[type_, is_const_, is_reference_] = builder.CurrentFunctionResult();
 
     if (!Value)
     {
-        if (!type->IsVoid())
-            Error(Where, "cannot return void from a function with non-void return type '{}'", type);
+        if (!type_->IsVoid())
+            Error(Where, "cannot return void from a function with non-void return type '{}'", type_);
         builder.GetBuilder().CreateRetVoid();
         return;
     }
 
-    const auto ref = type->IsReference();
-    if (ref)
-        type = type->GetElement(Where);
+    auto value = Value->GenLLVM(builder, type_);
+    value = builder.CreateCast(Value->Where, value, type_);
 
-    auto value = Value->GenLLVM(builder, type);
-    value = builder.CreateCast(Value->Where, value, type);
-
-    if (ref)
+    if (is_reference_)
+    {
+        if (value->GetType() != type_)
+            Error(
+                Where,
+                "type mismatch: cannot return reference with type {} from value of type {}",
+                type_,
+                value->GetType());
+        if (value->IsConstLValue() && !is_const_)
+            Error(Where, "cannot reference constant value as mutable");
         builder.GetBuilder().CreateRet(value->GetPtr(Value->Where));
-    else
-        builder.GetBuilder().CreateRet(value->Load(Value->Where));
+        return;
+    }
+
+    builder.GetBuilder().CreateRet(value->Load(Value->Where));
 }
 
 std::ostream &NJS::ReturnStatement::Print(std::ostream &stream)
 {
     if (Value)
         return Value->Print(stream << "return ");
-    return stream << "return";
+    return stream << "return void";
 }

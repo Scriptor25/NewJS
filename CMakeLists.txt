@@ -34,12 +34,14 @@ target_include_directories(stdnewjs PUBLIC include)
 install(TARGETS newjs)
 install(TARGETS stdnewjs)
 
-if (CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
-    add_custom_command(TARGET newjs POST_BUILD
-            COMMAND ${CMAKE_OBJCOPY} --only-keep-debug $<TARGET_FILE:newjs> $<TARGET_FILE:newjs>.dbg
-            COMMAND ${CMAKE_OBJCOPY} --strip-debug $<TARGET_FILE:newjs>
-            COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink=$<TARGET_FILE:newjs>.dbg $<TARGET_FILE:newjs>
-            COMMENT "Separating debug information from executable"
-    )
-    install(FILES $<TARGET_FILE:newjs>.dbg DESTINATION bin)
+if (NOT MSVC)
+    if (CMAKE_BUILD_TYPE STREQUAL Debug OR CMAKE_BUILD_TYPE STREQUAL RelWithDebInfo)
+        add_custom_command(TARGET newjs POST_BUILD
+                COMMAND ${CMAKE_OBJCOPY} --only-keep-debug $<TARGET_FILE:newjs> $<TARGET_FILE:newjs>.dbg
+                COMMAND ${CMAKE_OBJCOPY} --strip-debug $<TARGET_FILE:newjs>
+                COMMAND ${CMAKE_OBJCOPY} --add-gnu-debuglink=$<TARGET_FILE:newjs>.dbg $<TARGET_FILE:newjs>
+                COMMENT "Separating debug information from executable"
+        )
+        install(FILES $<TARGET_FILE:newjs>.dbg DESTINATION bin)
+    endif ()
 endif ()

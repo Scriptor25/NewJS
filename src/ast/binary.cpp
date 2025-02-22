@@ -93,9 +93,9 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
                   : expected_type);
 
     if (auto [
-            result_type_,
-            left_type_,
-            right_type_,
+            result_,
+            left_,
+            right_,
             callee_
         ] = builder.FindOperator(
             Operator,
@@ -104,26 +104,26 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
         callee_)
     {
         const auto function_type = llvm::FunctionType::get(
-            result_type_->GetLLVM(Where, builder),
+            result_.GetLLVM(Where, builder),
             {
-                left_type_->GetLLVM(LeftOperand->Where, builder),
-                right_type_->GetLLVM(RightOperand->Where, builder),
+                left_.GetLLVM(LeftOperand->Where, builder),
+                right_.GetLLVM(RightOperand->Where, builder),
             },
             false);
         const auto result_value = builder.GetBuilder().CreateCall(
             function_type,
             callee_,
             {
-                left_type_->IsReference()
+                left_.IsReference
                     ? left_operand->GetPtr(LeftOperand->Where)
                     : left_operand->Load(LeftOperand->Where),
-                right_type_->IsReference()
+                right_.IsReference
                     ? right_operand->GetPtr(RightOperand->Where)
                     : right_operand->Load(RightOperand->Where)
             });
-        if (result_type_->IsReference())
-            return LValue::Create(builder, result_type_->GetElement(Where), result_value);
-        return RValue::Create(builder, result_type_, result_value);
+        if (result_.IsReference)
+            return LValue::Create(builder, result_.Type, result_value, result_.IsConst);
+        return RValue::Create(builder, result_.Type, result_value);
     }
 
     auto destination = left_operand;

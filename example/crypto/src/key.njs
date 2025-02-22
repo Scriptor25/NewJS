@@ -1,13 +1,13 @@
 extern function rand(): u32
 
-function random_key(dst: i8[], words: u64): i8[] {
+export function random_key(dst: i8[], words: u64): i8[] {
     for (let i: u64; i < words; ++i) {
         (dst as u32[])[i] = rand()
     }
     return dst
 }
 
-function mix_keys(dst: i8[], src1: i8[], src2: i8[], words: u64): i8[] {
+export function mix_keys(dst: i8[], src1: i8[], src2: i8[], words: u64): i8[] {
     let dst_32: u32[] = dst
     let src1_32: u32[] = src1
     let src2_32: u32[] = src2
@@ -18,7 +18,7 @@ function mix_keys(dst: i8[], src1: i8[], src2: i8[], words: u64): i8[] {
     return dst
 }
 
-function base64(dst: i8[], src: i8[], words: u64): i8[] {
+export function base64(dst: i8[], src: i8[], words: u64): i8[] {
     let LUT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
     let src_len = words * 4
 

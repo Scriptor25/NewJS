@@ -11,6 +11,6 @@ type PFNGLCLEARCOLORPROC = (f32, f32, f32, f32)
 type PFNGLVIEWPORTPROC = (i32, i32, i32, i32)
 type PFNGLCLEARPROC = (i32)
 
-function clearColor(r: f32, g: f32, b: f32, a: f32) { getProc(glClearColor)(r, g, b, a) }
-function viewport(x: i32, y: i32, width: i32, height: i32) { getProc(glViewport)(x, y, width, height) }
-function clear(bits: i32) { getProc(glClear)(bits) }
+export function clearColor(r: f32, g: f32, b: f32, a: f32) { getProc(glClearColor)(r, g, b, a) }
+export function viewport(x: i32, y: i32, width: i32, height: i32) { getProc(glViewport)(x, y, width, height) }
+export function clear(bits: i32) { getProc(glClear)(bits) }

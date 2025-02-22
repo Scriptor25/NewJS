@@ -51,9 +51,9 @@ NJS::Builder::Builder(
     pass_builder.crossRegisterProxies(*m_Passes.LAM, *m_Passes.FAM, *m_Passes.CGAM, *m_Passes.MAM);
 
     if (is_main)
-        StackPush(m_ModuleID, m_TypeContext.GetIntegerType(32, true));
+        StackPush(m_ModuleID, ReferenceInfo(m_TypeContext.GetIntegerType(32, true)));
     else
-        StackPush(m_ModuleID, m_TypeContext.GetVoidType());
+        StackPush(m_ModuleID, ReferenceInfo(m_TypeContext.GetVoidType()));
 
     auto &process = DefineVariable({}, "process");
     process = CreateGlobal(
@@ -62,8 +62,9 @@ NJS::Builder::Builder(
         m_TypeContext.GetStructType(
             {
                 {"argc", m_TypeContext.GetIntegerType(32, true)},
-                {"argv", m_TypeContext.GetPointerType(m_TypeContext.GetStringType())}
+                {"argv", m_TypeContext.GetPointerType(m_TypeContext.GetStringType(), false)},
             }),
+        false,
         is_main);
 
     if (is_main)
@@ -158,17 +159,17 @@ void NJS::Builder::GetFormat(llvm::FunctionCallee &callee) const
     callee = llvm::FunctionCallee(type, function);
 }
 
-void NJS::Builder::StackPush(const std::string &name, const TypePtr &result_type)
+void NJS::Builder::StackPush(const std::string &name, const ReferenceInfo &result)
 {
     const auto frame_name = m_Stack.empty()
                                 ? name
                                 : m_Stack.back().GetChildName(name);
-    const auto frame_result_type = result_type
-                                       ? result_type
-                                       : m_Stack.empty()
-                                             ? nullptr
-                                             : m_Stack.back().ResultType;
-    m_Stack.emplace_back(frame_name, frame_result_type);
+    const auto frame_result = result.Type
+                                  ? result
+                                  : m_Stack.empty()
+                                        ? ReferenceInfo()
+                                        : m_Stack.back().Result;
+    m_Stack.emplace_back(frame_name, frame_result);
 }
 
 void NJS::Builder::StackPop()
@@ -186,27 +187,27 @@ std::string NJS::Builder::GetName(const bool absolute, const std::string &name) 
 void NJS::Builder::DefineOperator(
     const std::string &name,
     const bool prefix,
-    const TypePtr &value_type,
-    const TypePtr &result_type,
+    const ReferenceInfo &value,
+    const ReferenceInfo &result,
     llvm::Value *callee)
 {
-    m_UnaryOperatorMap[name][prefix][value_type] = {result_type, value_type, callee};
+    m_UnaryOperatorMap[name][prefix][value] = {result, value, callee};
 }
 
 void NJS::Builder::DefineOperator(
     const std::string &name,
-    const TypePtr &left_type,
-    const TypePtr &right_type,
-    const TypePtr &result_type,
+    const ReferenceInfo &left,
+    const ReferenceInfo &right,
+    const ReferenceInfo &result,
     llvm::Value *callee)
 {
-    m_BinaryOperatorMap[name][left_type][right_type] = {result_type, left_type, right_type, callee};
+    m_BinaryOperatorMap[name][left][right] = {result, left, right, callee};
 }
 
 NJS::OperatorInfo<1> NJS::Builder::GetOperator(
     const std::string &name,
     const bool prefix,
-    const TypePtr &value_type) const
+    const ReferenceInfo &value) const
 {
     if (!m_UnaryOperatorMap.contains(name))
         return {};
@@ -214,25 +215,25 @@ NJS::OperatorInfo<1> NJS::Builder::GetOperator(
     if (!for_name.contains(prefix))
         return {};
     auto &for_prefix = for_name.at(prefix);
-    if (!for_prefix.contains(value_type))
+    if (!for_prefix.contains(value))
         return {};
-    return for_prefix.at(value_type);
+    return for_prefix.at(value);
 }
 
 NJS::OperatorInfo<2> NJS::Builder::GetOperator(
     const std::string &name,
-    const TypePtr &left_type,
-    const TypePtr &right_type) const
+    const ReferenceInfo &left,
+    const ReferenceInfo &right) const
 {
     if (!m_BinaryOperatorMap.contains(name))
         return {};
     auto &for_name = m_BinaryOperatorMap.at(name);
-    if (!for_name.contains(left_type))
+    if (!for_name.contains(left))
         return {};
-    auto &for_left = for_name.at(left_type);
-    if (!for_left.contains(right_type))
+    auto &for_left = for_name.at(left);
+    if (!for_left.contains(right))
         return {};
-    return for_left.at(right_type);
+    return for_left.at(right);
 }
 
 NJS::OperatorInfo<1> NJS::Builder::FindOperator(
@@ -240,38 +241,51 @@ NJS::OperatorInfo<1> NJS::Builder::FindOperator(
     const bool prefix,
     const ValuePtr &value) const
 {
-    const auto value_type = value->GetType();
-    const auto value_type_ref = value->IsLValue()
-                                    ? GetTypeContext().GetReferenceType(value_type)
-                                    : value_type;
-    if (auto o = GetOperator(name, prefix, value_type_ref); o.Callee)
+    const auto v_ty = value->GetType();
+    const auto v_cnst = value->IsConstLValue();
+    const auto v_ref = value->IsLValue();
+
+    if (auto o = GetOperator(name, prefix, {v_ty, v_cnst, v_ref}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, prefix, value_type); o.Callee)
+    if (auto o = GetOperator(name, prefix, {v_ty, true, v_ref}); o.Callee)
         return o;
+    if (auto o = GetOperator(name, prefix, ReferenceInfo(v_ty)); o.Callee)
+        return o;
+
     return {};
 }
 
 NJS::OperatorInfo<2> NJS::Builder::FindOperator(
     const std::string &name,
-    const ValuePtr &left_operand,
-    const ValuePtr &right_operand) const
+    const ValuePtr &left,
+    const ValuePtr &right) const
 {
-    const auto left_type = left_operand->GetType();
-    const auto right_type = right_operand->GetType();
-    const auto left_type_ref = left_operand->IsLValue()
-                                   ? GetTypeContext().GetReferenceType(left_type)
-                                   : left_type;
-    const auto right_type_ref = right_operand->IsLValue()
-                                    ? GetTypeContext().GetReferenceType(right_type)
-                                    : right_type;
-    if (auto o = GetOperator(name, left_type_ref, right_type_ref); o.Callee)
+    const auto l_ty = left->GetType();
+    const auto r_ty = right->GetType();
+    const auto l_cnst = left->IsConstLValue();
+    const auto r_cnst = right->IsConstLValue();
+    const auto l_ref = left->IsLValue();
+    const auto r_ref = right->IsLValue();
+
+    if (auto o = GetOperator(name, {l_ty, l_cnst, l_ref}, {r_ty, r_cnst, r_ref}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, left_type, right_type_ref); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, l_cnst, l_ref}, {r_ty, true, r_ref}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, left_type_ref, right_type); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, l_cnst, l_ref}, ReferenceInfo(r_ty)); o.Callee)
         return o;
-    if (auto o = GetOperator(name, left_type, right_type); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, true, l_ref}, {r_ty, r_cnst, r_ref}); o.Callee)
         return o;
+    if (auto o = GetOperator(name, {l_ty, true, l_ref}, {r_ty, true, r_ref}); o.Callee)
+        return o;
+    if (auto o = GetOperator(name, {l_ty, true, l_ref}, ReferenceInfo(r_ty)); o.Callee)
+        return o;
+    if (auto o = GetOperator(name, ReferenceInfo(l_ty), {r_ty, r_cnst, r_ref}); o.Callee)
+        return o;
+    if (auto o = GetOperator(name, ReferenceInfo(l_ty), {r_ty, true, r_ref}); o.Callee)
+        return o;
+    if (auto o = GetOperator(name, ReferenceInfo(l_ty), ReferenceInfo(r_ty)); o.Callee)
+        return o;
+
     return {};
 }
 
@@ -300,7 +314,7 @@ NJS::ValuePtr &NJS::Builder::GetOrDefineVariable(const std::string &name)
     return stack[name];
 }
 
-NJS::TypePtr &NJS::Builder::CurrentFunctionResultType()
+NJS::ReferenceInfo &NJS::Builder::CurrentFunctionResult()
 {
-    return m_Stack.back().ResultType;
+    return m_Stack.back().Result;
 }

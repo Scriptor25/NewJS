@@ -1,3 +1,4 @@
+#include <cinttypes>
 #include <cmath>
 #include <cstdarg>
 #include <NJS/Std.hpp>
@@ -20,7 +21,8 @@ void operator delete(void *ptr, size_t) noexcept
 template<typename T>
 static T *New(const size_t count)
 {
-    auto ptr = malloc(count * sizeof(T));
+    constexpr auto size = sizeof(T);
+    auto ptr = malloc(count * size);
     return static_cast<T *>(ptr);
 }
 
@@ -40,6 +42,8 @@ struct StructType;
 struct TupleType;
 struct FunctionType;
 
+static void Incomplete_AppendV(Type *type, char *buffer, unsigned buffer_size, unsigned &offset, va_list &arg_ptr);
+static void Incomplete_AppendP(Type *type, char *buffer, unsigned buffer_size, unsigned &offset, char *&ptr);
 static void Integer_AppendV(Type *type, char *buffer, unsigned buffer_size, unsigned &offset, va_list &arg_ptr);
 static void Integer_AppendP(Type *type, char *buffer, unsigned buffer_size, unsigned &offset, char *&ptr);
 static void FloatingPoint_AppendV(Type *type, char *buffer, unsigned buffer_size, unsigned &offset, va_list &arg_ptr);
@@ -60,8 +64,9 @@ struct Type
     using AppendVProc = void(*)(Type *type, char *buffer, unsigned buffer_size, unsigned &offset, va_list &arg_ptr);
     using AppendPProc = void(*)(Type *type, char *buffer, unsigned buffer_size, unsigned &offset, char *&ptr);
 
-    Type(const AppendVProc append_v, const AppendPProc append_p)
-        : AppendV(append_v),
+    Type(const unsigned id, const AppendVProc append_v, const AppendPProc append_p)
+        : ID(id),
+          AppendV(append_v),
           AppendP(append_p)
     {
     }
@@ -76,14 +81,26 @@ struct Type
         AppendP(this, buffer, buffer_size, offset, ptr);
     }
 
+    unsigned ID;
     AppendVProc AppendV;
     AppendPProc AppendP;
+};
+
+struct IncompleteType final : Type
+{
+    explicit IncompleteType(const char *name)
+        : Type(ID_INCOMPLETE, Incomplete_AppendV, Incomplete_AppendP),
+          Name(name)
+    {
+    }
+
+    const char *Name;
 };
 
 struct IntegerType final : Type
 {
     IntegerType(const unsigned bits, const bool is_signed)
-        : Type(Integer_AppendV, Integer_AppendP),
+        : Type(ID_INTEGER, Integer_AppendV, Integer_AppendP),
           Bits(bits),
           IsSigned(is_signed)
     {
@@ -96,7 +113,7 @@ struct IntegerType final : Type
 struct FloatingPointType final : Type
 {
     explicit FloatingPointType(const unsigned bits)
-        : Type(FloatingPoint_AppendV, FloatingPoint_AppendP),
+        : Type(ID_FLOATING_POINT, FloatingPoint_AppendV, FloatingPoint_AppendP),
           Bits(bits)
     {
     }
@@ -107,7 +124,7 @@ struct FloatingPointType final : Type
 struct PointerType final : Type
 {
     explicit PointerType(Type *element_type)
-        : Type(Pointer_AppendV, Pointer_AppendP),
+        : Type(ID_POINTER, Pointer_AppendV, Pointer_AppendP),
           ElementType(element_type)
     {
     }
@@ -118,7 +135,7 @@ struct PointerType final : Type
 struct ArrayType final : Type
 {
     ArrayType(Type *element_type, const unsigned element_count)
-        : Type(Array_AppendV, Array_AppendP),
+        : Type(ID_ARRAY, Array_AppendV, Array_AppendP),
           ElementType(element_type),
           ElementCount(element_count)
     {
@@ -136,7 +153,7 @@ struct ArrayType final : Type
 struct StructType final : Type
 {
     StructType(Pair<const char *, Type *> *element_types, const unsigned element_count)
-        : Type(Struct_AppendV, Struct_AppendP),
+        : Type(ID_STRUCT, Struct_AppendV, Struct_AppendP),
           ElementTypes(element_types),
           ElementCount(element_count)
     {
@@ -156,7 +173,7 @@ struct StructType final : Type
 struct TupleType final : Type
 {
     TupleType(Type **element_types, const unsigned element_count)
-        : Type(Tuple_AppendV, Tuple_AppendP),
+        : Type(ID_TUPLE, Tuple_AppendV, Tuple_AppendP),
           ElementTypes(element_types),
           ElementCount(element_count)
     {
@@ -176,11 +193,7 @@ struct TupleType final : Type
 struct FunctionType final : Type
 {
     FunctionType()
-        : Type(Function_AppendV, Function_AppendP)
-    {
-    }
-
-    ~FunctionType()
+        : Type(ID_FUNCTION, Function_AppendV, Function_AppendP)
     {
     }
 };
@@ -191,6 +204,12 @@ Type *ParseType(va_list &arg_ptr)
     {
         case ID_VOID:
             return nullptr;
+
+        case ID_INCOMPLETE:
+        {
+            const auto name = va_arg(arg_ptr, const char *);
+            return new IncompleteType(name);
+        }
 
         case ID_INTEGER:
         {
@@ -248,6 +267,18 @@ Type *ParseType(va_list &arg_ptr)
     }
 }
 
+void Incomplete_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, va_list &arg_ptr)
+{
+    const auto self = reinterpret_cast<IncompleteType *>(type);
+    offset += snprintf(buffer + offset, buffer_size - offset, "[%s]", self->Name);
+}
+
+void Incomplete_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, char *&ptr)
+{
+    const auto self = reinterpret_cast<IncompleteType *>(type);
+    offset += snprintf(buffer + offset, buffer_size - offset, "[%s]", self->Name);
+}
+
 void Integer_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, va_list &arg_ptr)
 {
     const auto self = reinterpret_cast<IntegerType *>(type);
@@ -269,48 +300,48 @@ void Integer_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsig
             if (self->IsSigned)
             {
                 const auto val = va_arg(arg_ptr, int);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hhi", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId8, val);
             }
             else
             {
                 const auto val = va_arg(arg_ptr, unsigned);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hhu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu8, val);
             }
             break;
         case 16:
             if (self->IsSigned)
             {
                 const auto val = va_arg(arg_ptr, int);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hi", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId16, val);
             }
             else
             {
                 const auto val = va_arg(arg_ptr, unsigned);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu16, val);
             }
             break;
         case 32:
             if (self->IsSigned)
             {
                 const auto val = va_arg(arg_ptr, int32_t);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%i", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId32, val);
             }
             else
             {
                 const auto val = va_arg(arg_ptr, uint32_t);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%u", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu32, val);
             }
             break;
         case 64:
             if (self->IsSigned)
             {
                 const auto val = va_arg(arg_ptr, int64_t);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%li", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId64, val);
             }
             else
             {
                 const auto val = va_arg(arg_ptr, uint64_t);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%lu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu64, val);
             }
             break;
         default:
@@ -339,48 +370,48 @@ void Integer_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsig
             if (self->IsSigned)
             {
                 const auto val = *reinterpret_cast<int8_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hhi", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId8, val);
             }
             else
             {
                 const auto val = *reinterpret_cast<uint8_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hhu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu8, val);
             }
             break;
         case 16:
             if (self->IsSigned)
             {
                 const auto val = *reinterpret_cast<int16_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hi", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId16, val);
             }
             else
             {
                 const auto val = *reinterpret_cast<uint16_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%hu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu16, val);
             }
             break;
         case 32:
             if (self->IsSigned)
             {
                 const auto val = *reinterpret_cast<int32_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%i", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId32, val);
             }
             else
             {
                 const auto val = *reinterpret_cast<uint32_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%u", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu32, val);
             }
             break;
         case 64:
             if (self->IsSigned)
             {
                 const auto val = *reinterpret_cast<int64_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%li", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRId64, val);
             }
             else
             {
                 const auto val = *reinterpret_cast<uint64_t *>(ptr);
-                offset += snprintf(buffer + offset, buffer_size - offset, "%lu", val);
+                offset += snprintf(buffer + offset, buffer_size - offset, "%" PRIu64, val);
             }
             break;
         default:
@@ -430,7 +461,8 @@ void Pointer_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsig
     const auto self = reinterpret_cast<PointerType *>(type);
     const auto ptr = va_arg(arg_ptr, char*);
 
-    if (const auto el = reinterpret_cast<IntegerType *>(self->ElementType); el && el->Bits == 8 && el->IsSigned)
+    if (const auto el = reinterpret_cast<IntegerType *>(self->ElementType);
+        self->ElementType->ID == ID_INTEGER && el->Bits == 8 && el->IsSigned)
     {
         offset += snprintf(buffer + offset, buffer_size - offset, "%s", ptr);
         return;
@@ -443,7 +475,8 @@ void Pointer_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsig
 {
     const auto self = reinterpret_cast<PointerType *>(type);
 
-    if (const auto el = reinterpret_cast<IntegerType *>(self->ElementType); el && el->Bits == 8 && el->IsSigned)
+    if (const auto el = reinterpret_cast<IntegerType *>(self->ElementType);
+        self->ElementType->ID == ID_INTEGER && el->Bits == 8 && el->IsSigned)
     {
         offset += snprintf(buffer + offset, buffer_size - offset, "%s", *reinterpret_cast<char **>(ptr));
         ptr += sizeof(char *);
@@ -459,7 +492,8 @@ void Array_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsigne
     const auto self = reinterpret_cast<ArrayType *>(type);
     auto ptr = va_arg(arg_ptr, char*);
 
-    if (const auto el = reinterpret_cast<IntegerType *>(self->ElementType); el->Bits == 8 && el->IsSigned)
+    if (const auto el = reinterpret_cast<IntegerType *>(self->ElementType);
+        self->ElementType->ID == ID_INTEGER && el->Bits == 8 && el->IsSigned)
     {
         offset += snprintf(buffer + offset, buffer_size - offset, "%.*s", self->ElementCount, ptr);
         return;
@@ -479,7 +513,8 @@ void Array_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsigne
 {
     const auto self = reinterpret_cast<ArrayType *>(type);
 
-    if (const auto el = reinterpret_cast<IntegerType *>(self->ElementType); el->Bits == 8 && el->IsSigned)
+    if (const auto el = reinterpret_cast<IntegerType *>(self->ElementType);
+        self->ElementType->ID == ID_INTEGER && el->Bits == 8 && el->IsSigned)
     {
         offset += snprintf(buffer + offset, buffer_size - offset, "%.*s", self->ElementCount, ptr);
         ptr += self->ElementCount;
@@ -556,13 +591,13 @@ void Tuple_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsigne
     offset += snprintf(buffer + offset, buffer_size - offset, " ]");
 }
 
-void Function_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, va_list &arg_ptr)
+void Function_AppendV(Type *, char *buffer, const unsigned buffer_size, unsigned &offset, va_list &arg_ptr)
 {
     const auto ptr = va_arg(arg_ptr, char*);
     offset += snprintf(buffer + offset, buffer_size - offset, "fn[%p]", ptr);
 }
 
-void Function_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, char *&ptr)
+void Function_AppendP(Type *, char *buffer, const unsigned buffer_size, unsigned &offset, char *&ptr)
 {
     offset += snprintf(buffer + offset, buffer_size - offset, "fn[%p]", *reinterpret_cast<char **>(ptr));
     ptr += sizeof(char *);

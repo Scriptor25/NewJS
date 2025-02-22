@@ -23,10 +23,14 @@ unsigned NJS::FloatingPointType::GetBits(const SourceLocation &where) const
     return m_Bits;
 }
 
-void NJS::FloatingPointType::TypeInfo(const SourceLocation &, Builder &builder, std::vector<llvm::Value *> &args) const
+bool NJS::FloatingPointType::TypeInfo(
+    const SourceLocation &,
+    Builder &builder,
+    std::vector<llvm::Value *> &arguments) const
 {
-    args.push_back(builder.GetBuilder().getInt32(ID_FLOATING_POINT));
-    args.push_back(builder.GetBuilder().getInt32(m_Bits));
+    arguments.emplace_back(builder.GetBuilder().getInt32(ID_FLOATING_POINT));
+    arguments.emplace_back(builder.GetBuilder().getInt32(m_Bits));
+    return false;
 }
 
 NJS::FloatingPointType::FloatingPointType(TypeContext &type_context, std::string string, const unsigned bits)
@@ -48,9 +52,4 @@ llvm::Type *NJS::FloatingPointType::GenLLVM(const SourceLocation &where, const B
         default:
             Error(where, "no llvm representation for floating point type {}", m_String);
     }
-}
-
-unsigned NJS::FloatingPointType::GenSize() const
-{
-    return m_Bits / 8;
 }

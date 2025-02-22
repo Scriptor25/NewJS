@@ -24,7 +24,7 @@ let user1: User = {
 PRINT(user1)
 PRINT(println)
 
-function printUser({ name: n, surname: s, age: a, job: t }: User&) {
+function printUser(const &{ name: n, surname: s, age: a, job: t }: User) {
     println($" - {n} {s} ({a}), {t}")
 }
 
@@ -83,28 +83,28 @@ function<T> vec_new(n: u64): vec<T> {
     }
 }
 
-function<T> vec_free(self: vec<T>&) {
+function<T> vec_free(&self: vec<T>) {
     free(self.beg)
     self.beg = self.end = 0
 }
 
-function<T> vec_size(self: vec<T>&): u64 {
+function<T> vec_size(const &self: vec<T>): u64 {
     return self.end - self.beg
 }
 
-function<T> vec_front(self: vec<T>&): T& {
+function<T> vec_front(&self: vec<T>): T& {
     return *self.beg
 }
 
-function<T> vec_back(self: vec<T>&): T& {
+function<T> vec_back(&self: vec<T>): T& {
     return self.end[-1]
 }
 
-function<T> vec_at(self: vec<T>&, pos: u64): T& {
+function<T> vec_at(&self: vec<T>, pos: u64): T& {
     return self.beg[pos]
 }
 
-function<T> vec_push(self: vec<T>&, element: T) {
+function<T> vec_push(&self: vec<T>, element: T) {
     const size = vec_size<T>(self) + 1
     const ptr: T[] = realloc(self.beg, size * sizeof<T>)
     self.beg = ptr
@@ -112,7 +112,7 @@ function<T> vec_push(self: vec<T>&, element: T) {
     vec_back<T>(self) = element
 }
 
-function<T> vec_pop(self: vec<T>&): T {
+function<T> vec_pop(&self: vec<T>): T {
     const element: T = vec_back<T>(self)
     const size = vec_size<T>(self) - 1
     const ptr: T[] = realloc(self.beg, size * sizeof<T>)

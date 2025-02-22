@@ -6,7 +6,7 @@ type user_t = {
     key: i8[16],
 }
 
-function create_user(): user_t {
+export function create_user(): user_t {
     let user: user_t
     random_key(user.pvt, 4)
     return user
