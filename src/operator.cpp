@@ -600,7 +600,7 @@ NJS::ValuePtr NJS::OperatorRef(Builder &builder, const SourceLocation &where, co
 
     return RValue::Create(
         builder,
-        builder.GetTypeContext().GetPointerType(type),
+        builder.GetTypeContext().GetPointerType(type, value->IsConstLValue()),
         ptr);
 }
 
@@ -613,5 +613,5 @@ NJS::ValuePtr NJS::OperatorDeref(Builder &builder, const SourceLocation &where, 
         builder,
         type->GetElement(where),
         val,
-        value->IsConstLValue());
+        type->IsConst(where));
 }

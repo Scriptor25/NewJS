@@ -81,7 +81,10 @@ NJS::TypePtr NJS::Parser::ParseType()
                 type = m_TypeContext.GetArrayType(type, count);
             }
             else
-                type = m_TypeContext.GetPointerType(type);
+            {
+                const auto is_const = NextAt("const");
+                type = m_TypeContext.GetPointerType(type, is_const);
+            }
             Expect("]");
             continue;
         }

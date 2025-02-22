@@ -121,6 +121,11 @@ unsigned NJS::Type::GetBits(const SourceLocation &where) const
     Error(where, "type {} does not support 'GetBits'", m_String);
 }
 
+bool NJS::Type::IsConst(const SourceLocation &where) const
+{
+    Error(where, "type {} does not support 'IsConst'", m_String);
+}
+
 NJS::TypePtr NJS::Type::GetElement(const SourceLocation &where) const
 {
     Error(where, "type {} does not support 'GetElement'", m_String);

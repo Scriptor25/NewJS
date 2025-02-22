@@ -18,7 +18,7 @@ namespace NJS
         VoidTypePtr GetVoidType();
         IntegerTypePtr GetIntegerType(unsigned bits, bool is_signed);
         FloatingPointTypePtr GetFloatingPointType(unsigned bits);
-        PointerTypePtr GetPointerType(const TypePtr &element_type);
+        PointerTypePtr GetPointerType(const TypePtr &element_type, bool is_const);
         ArrayTypePtr GetArrayType(const TypePtr &element_type, unsigned count);
         StructTypePtr GetStructType(const std::vector<std::pair<std::string, TypePtr>> &element_types);
         TupleTypePtr GetTupleType(const std::vector<TypePtr> &element_types);

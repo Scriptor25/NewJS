@@ -5,11 +5,13 @@ import { day: day_2 } from "./day_2.njs"
 #SEEK_CUR "1:u32"
 #SEEK_END "2:u32"
 
-extern function println(message: i8[])
-extern function parse_int(str: i8[]): i64
-extern function parse_float(str: i8[]): u64
+extern function println(message: i8[const])
+extern function parse_int(str: i8[const]): i64
+extern function parse_float(str: i8[const]): u64
 
-extern function fopen(filename: i8[], mode: i8[]): FILE[]
+type FILE
+
+extern function fopen(filename: i8[const], mode: i8[const]): FILE[]
 extern function fclose(stream: FILE[])
 extern function fseek(stream: FILE[], offset: i32, origin: i32): i32
 extern function ftell(stream: FILE[]): i32
@@ -26,12 +28,12 @@ if (process.argc != 3) {
 const day = parse_int(process.argv[1])
 const part = parse_int(process.argv[2])
 
-export function part_err(input: i8[]): u64 {
+export function part_err(input: i8[const]): u64 {
     println("invalid part")
     return 1
 }
 
-function day_err(input: i8[]): u64 {
+function day_err(input: i8[const]): u64 {
     println("invalid day")
     return 1
 }
@@ -57,5 +59,3 @@ const result = fn(input)
 println($"result: {result}")
 
 free(input)
-
-return result

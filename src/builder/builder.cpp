@@ -62,7 +62,7 @@ NJS::Builder::Builder(
         m_TypeContext.GetStructType(
             {
                 {"argc", m_TypeContext.GetIntegerType(32, true)},
-                {"argv", m_TypeContext.GetPointerType(m_TypeContext.GetStringType())},
+                {"argv", m_TypeContext.GetPointerType(m_TypeContext.GetStringType(), false)},
             }),
         false,
         is_main);

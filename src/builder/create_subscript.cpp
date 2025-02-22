@@ -43,7 +43,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
             element_type->GetLLVM(where, *this),
             array->Load(where),
             {index_value});
-        return LValue::Create(*this, element_type, ptr, array->IsConstLValue());
+        return LValue::Create(*this, element_type, ptr, array_type->IsConst(where));
     }
 
     if (!array_type->IsArray() && !array_type->IsTuple())

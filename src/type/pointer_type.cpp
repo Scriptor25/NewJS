@@ -2,9 +2,9 @@
 #include <NJS/Std.hpp>
 #include <NJS/Type.hpp>
 
-std::string NJS::PointerType::GenString(const TypePtr &element_type)
+std::string NJS::PointerType::GenString(const TypePtr &element_type, const bool is_const)
 {
-    return element_type->GetString() + "[]";
+    return element_type->GetString() + '[' + (is_const ? "const" : "") + ']';
 }
 
 bool NJS::PointerType::IsPrimitive() const
@@ -17,7 +17,12 @@ bool NJS::PointerType::IsPointer() const
     return true;
 }
 
-NJS::TypePtr NJS::PointerType::GetElement(const SourceLocation &where) const
+bool NJS::PointerType::IsConst(const SourceLocation &) const
+{
+    return m_IsConst;
+}
+
+NJS::TypePtr NJS::PointerType::GetElement(const SourceLocation &) const
 {
     return m_ElementType;
 }
@@ -42,9 +47,10 @@ bool NJS::PointerType::TypeInfo(
     return false;
 }
 
-NJS::PointerType::PointerType(TypeContext &type_context, std::string string, TypePtr element_type)
+NJS::PointerType::PointerType(TypeContext &type_context, std::string string, TypePtr element_type, const bool is_const)
     : Type(type_context, std::move(string)),
-      m_ElementType(std::move(element_type))
+      m_ElementType(std::move(element_type)),
+      m_IsConst(is_const)
 {
 }
 

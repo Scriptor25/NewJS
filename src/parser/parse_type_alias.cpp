@@ -13,14 +13,19 @@ void NJS::Parser::ParseTypeAlias()
     std::vector<std::string> template_arguments;
     if ((m_IsTemplate = NextAt("<")))
     {
+        std::vector<TypePtr> types;
         while (!At(">") && !AtEof())
         {
-            template_arguments.emplace_back(Expect(TokenType_Symbol).StringValue);
+            auto name = Expect(TokenType_Symbol).StringValue;
+            template_arguments.emplace_back(name);
+            types.emplace_back(m_TypeContext.GetIncompleteType(name));
 
             if (!At(">"))
                 Expect(",");
         }
         Expect(">");
+
+        m_TypeContext.PushTemplate(template_arguments, types);
     }
 
     const auto name = Expect(TokenType_Symbol).StringValue;
@@ -35,6 +40,7 @@ void NJS::Parser::ParseTypeAlias()
 
     if (m_IsTemplate)
     {
+        m_TypeContext.PopTemplate();
         m_IsTemplate = false;
         m_TemplateContext.InsertType(m_TemplateWhere, name, template_arguments, m_TemplateBuffer);
         return;

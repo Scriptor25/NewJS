@@ -41,9 +41,9 @@ NJS::FloatingPointTypePtr NJS::TypeContext::GetFloatingPointType(unsigned bits)
     return GetType<FloatingPointType>(bits);
 }
 
-NJS::PointerTypePtr NJS::TypeContext::GetPointerType(const TypePtr &element_type)
+NJS::PointerTypePtr NJS::TypeContext::GetPointerType(const TypePtr &element_type, bool is_const)
 {
-    return GetType<PointerType>(element_type);
+    return GetType<PointerType>(element_type, is_const);
 }
 
 NJS::ArrayTypePtr NJS::TypeContext::GetArrayType(const TypePtr &element_type, unsigned count)
@@ -81,7 +81,7 @@ NJS::IntegerTypePtr NJS::TypeContext::GetCharType()
 
 NJS::PointerTypePtr NJS::TypeContext::GetStringType()
 {
-    return GetPointerType(GetIntegerType(8, true));
+    return GetPointerType(GetIntegerType(8, true), true);
 }
 
 void NJS::TypeContext::PushTemplate(const std::vector<std::string> &names, const std::vector<TypePtr> &types)

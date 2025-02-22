@@ -1,24 +1,24 @@
 import { part_err } from "./main.njs"
 
-extern function parse_int(str: i8[]): i64
-extern function println(str: i8[])
+extern function parse_int(str: i8[const]): i64
+extern function println(str: i8[const])
 extern function malloc(bytes: u64): void[]
 extern function realloc(block: void[], bytes: u64): void[]
-extern function strlen(str: i8[]): u64
+extern function strlen(str: i8[const]): u64
 extern function free(block: void[])
 
 function min(a: u64, b: u64): u64 {
     return a < b ? a : b
 }
 
-function parse_input(input: i8[]): [u64[3][], u64] {
+function parse_input(input: i8[const]): [u64[3][], u64] {
     let sizes: u64[3][] = malloc(24)
     let sizes_len: u64 = 1
 
     let num: i8[512]
     let num_len: u64
 
-    let input_len = strlen(input)
+    const input_len = strlen(input)
     let i: u64
     for (let k: u64; k < input_len; ++k) {
         let c = input[k]
@@ -36,7 +36,7 @@ function parse_input(input: i8[]): [u64[3][], u64] {
         }
     }
 
-    return [sizes, sizes_len - 1:u64]
+    return [ sizes, sizes_len - 1 ]
 }
 
 function swap(&size: u64[3], a: u64, b: u64) {
@@ -47,22 +47,21 @@ function swap(&size: u64[3], a: u64, b: u64) {
 
 function order(&size: u64[3]) {
     for (let i: u64; i < 2; ++i)
-    for (let j: u64; j < 2; ++j)
-    if (size[j] > size[j + 1]) {
-        swap(size, j, j + 1)
-    }
+        for (let j: u64; j < 2; ++j)
+            if (size[j] > size[j + 1])
+                swap(size, j, j + 1)
 }
 
-function part_1(input: i8[]): u64 {
-    let [sizes, sizes_len] = parse_input(input)
+function part_1(input: i8[const]): u64 {
+    let [ sizes, sizes_len ] = parse_input(input)
 
     let sum: u64
     for (let i: u64; i < sizes_len; ++i) {
-        let size = sizes[i]
-        let area1 = size[0] * size[1]
-        let area2 = size[1] * size[2]
-        let area3 = size[2] * size[0]
-        let min = min(area1, min(area2, area3))
+        const &size = sizes[i]
+        const area1 = size[0] * size[1]
+        const area2 = size[1] * size[2]
+        const area3 = size[2] * size[0]
+        const min = min(area1, min(area2, area3))
         sum += area1 * 2 + area2 * 2 + area3 * 2 + min
     }
 
@@ -70,12 +69,12 @@ function part_1(input: i8[]): u64 {
     return sum
 }
 
-function part_2(input: i8[]): u64 {
-    let [sizes, sizes_len] = parse_input(input)
+function part_2(input: i8[const]): u64 {
+    let [ sizes, sizes_len ] = parse_input(input)
 
     let sum: u64
     for (let i: u64; i < sizes_len; ++i) {
-        let size = sizes[i]
+        const &size = sizes[i]
         order(size)
         sum += size[0] * 2 + size[1] * 2 + size[0] * size[1] * size[2]
     }
@@ -84,6 +83,6 @@ function part_2(input: i8[]): u64 {
     return sum
 }
 
-export function day(part: u64): (i8[]) => u64 {
+export function day(part: u64): (i8[const]) => u64 {
     return part == 1 ? part_1 : part == 2 ? part_2 : part_err
 }

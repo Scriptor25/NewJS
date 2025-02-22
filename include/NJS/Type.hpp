@@ -50,6 +50,8 @@ namespace NJS
         [[nodiscard]] virtual bool IsSigned(const SourceLocation &where) const;
         [[nodiscard]] virtual unsigned GetBits(const SourceLocation &where) const;
 
+        [[nodiscard]] virtual bool IsConst(const SourceLocation &where) const;
+
         [[nodiscard]] virtual TypePtr GetElement(const SourceLocation &where) const;
         [[nodiscard]] virtual TypePtr GetElement(const SourceLocation &where, unsigned index) const;
         [[nodiscard]] virtual unsigned GetElementCount(const SourceLocation &where) const;
@@ -176,10 +178,11 @@ namespace NJS
         friend TypeContext;
 
     public:
-        static std::string GenString(const TypePtr &element_type);
+        static std::string GenString(const TypePtr &element_type, bool is_const);
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsPointer() const override;
+        [[nodiscard]] bool IsConst(const SourceLocation &where) const override;
         [[nodiscard]] TypePtr GetElement(const SourceLocation &where) const override;
         [[nodiscard]] TypePtr GetElement(const SourceLocation &where, unsigned index) const override;
         [[nodiscard]] unsigned GetElementCount(const SourceLocation &where) const override;
@@ -190,11 +193,12 @@ namespace NJS
             std::vector<llvm::Value *> &arguments) const override;
 
     private:
-        PointerType(TypeContext &type_context, std::string string, TypePtr element_type);
+        PointerType(TypeContext &type_context, std::string string, TypePtr element_type, bool is_const);
 
         [[nodiscard]] llvm::Type *GenLLVM(const SourceLocation &where, const Builder &builder) const override;
 
         TypePtr m_ElementType;
+        bool m_IsConst;
     };
 
     class ArrayType final : public Type
