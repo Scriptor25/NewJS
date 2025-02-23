@@ -1,3 +1,4 @@
+#include <ranges>
 #include <NJS/AST.hpp>
 #include <NJS/Builder.hpp>
 #include <NJS/Import.hpp>
@@ -29,6 +30,25 @@ std::ostream &NJS::ImportMapping::Print(std::ostream &stream) const
     return stream << " }";
 }
 
+template<>
+struct std::formatter<std::set<std::string>> final : formatter<string>
+{
+    template<typename FormatContext>
+    auto format(const std::set<std::string> &values, FormatContext &ctx) const
+    {
+        std::string value_string;
+        unsigned i = 0;
+        for (auto &value: values)
+        {
+            if (i++ > 0)
+                value_string += ", ";
+            value_string += value;
+        }
+        return formatter<string>::format(value_string, ctx);
+    }
+};
+
+
 void NJS::ImportMapping::MapFunctions(
     Builder &builder,
     const SourceLocation &where,
@@ -37,6 +57,10 @@ void NJS::ImportMapping::MapFunctions(
 {
     std::vector<std::pair<std::string, TypePtr>> element_types;
     std::vector<std::pair<std::string, ValuePtr>> element_values;
+
+    std::set<std::string> name_set;
+    for (auto &name: NameMap | std::views::keys)
+        name_set.insert(name);
 
     for (const auto &function: functions)
     {
@@ -93,13 +117,19 @@ void NJS::ImportMapping::MapFunctions(
         else if (All)
             builder.DefineVariable(where, function->Name) = value;
         else if (NameMap.contains(function->Name))
+        {
             builder.DefineVariable(where, NameMap.at(function->Name)) = value;
+            name_set.erase(function->Name);
+        }
         else
         {
             element_values.emplace_back(function->Name, value);
             element_types.emplace_back(function->Name, type);
         }
     }
+
+    if (!name_set.empty())
+        Error(where, "following symbols are missing in import: {}", name_set);
 
     if (!Name.empty())
     {
