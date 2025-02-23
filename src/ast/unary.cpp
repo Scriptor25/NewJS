@@ -53,10 +53,20 @@ NJS::ValuePtr NJS::UnaryExpression::GenLLVM(Builder &builder, const TypePtr &exp
             result_.GetLLVM(Where, builder),
             {value_.GetLLVM(Operand->Where, builder)},
             false);
+        if (value_.IsReference && !operand->IsLValue())
+        {
+            const auto value = builder.CreateAlloca(Operand->Where, operand->GetType(), true);
+            value->StoreForce(Operand->Where, operand);
+            operand = value;
+        }
         const auto result_value = builder.GetBuilder().CreateCall(
             function_type,
             callee_,
-            {value_.IsReference ? operand->GetPtr(Operand->Where) : operand->Load(Operand->Where)});
+            {
+                value_.IsReference
+                    ? operand->GetPtr(Operand->Where)
+                    : operand->Load(Operand->Where)
+            });
         if (result_.IsReference)
             return LValue::Create(builder, result_.Type, result_value, result_.IsConst);
         return RValue::Create(builder, result_.Type, result_value);

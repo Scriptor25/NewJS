@@ -74,7 +74,7 @@ function part_2(input: i8[const]): u64 {
 
     let sum: u64
     for (let i: u64; i < sizes_len; ++i) {
-        const &size = sizes[i]
+        let &size = sizes[i]
         order(size)
         sum += size[0] * 2 + size[1] * 2 + size[0] * size[1] * size[2]
     }

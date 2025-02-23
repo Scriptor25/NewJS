@@ -74,7 +74,7 @@ namespace NJS
 
         ValuePtr CreateMember(const SourceLocation &where, const ValuePtr &object, const std::string &name);
 
-        ValuePtr CreateSubscript(const SourceLocation &where, ValuePtr array, const ValuePtr &index);
+        ValuePtr CreateSubscript(const SourceLocation &where, ValuePtr array, ValuePtr index);
         ValuePtr CreateSubscript(const SourceLocation &where, const ValuePtr &array, unsigned index);
 
         ValuePtr CreateCast(const SourceLocation &where, const ValuePtr &value, const TypePtr &type);

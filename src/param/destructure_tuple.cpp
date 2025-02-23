@@ -36,7 +36,7 @@ void NJS::DestructureTuple::CreateVars(
                     "type mismatch: cannot create reference with type {} from value of type {}",
                     Type,
                     value->GetType());
-            if (value->IsConstLValue() && !is_const)
+            if (value->IsConst() && !is_const)
                 Error(Where, "cannot reference constant value as mutable");
         }
         else

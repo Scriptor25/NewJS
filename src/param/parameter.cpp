@@ -50,7 +50,7 @@ void NJS::Parameter::CreateVars(
                 "type mismatch: cannot create reference with type {} from value of type {}",
                 type,
                 value->GetType());
-        if (value->IsConstLValue() && !is_const)
+        if (value->IsConst() && !is_const)
             Error(Where, "cannot reference constant value as mutable");
         variable = LValue::Create(builder, type, value->GetPtr(Where), is_const);
         return;

@@ -242,14 +242,16 @@ NJS::OperatorInfo<1> NJS::Builder::FindOperator(
     const ValuePtr &value) const
 {
     const auto v_ty = value->GetType();
-    const auto v_cnst = value->IsConstLValue();
+    const auto v_cnst = value->IsConst();
     const auto v_ref = value->IsLValue();
 
     if (auto o = GetOperator(name, prefix, {v_ty, v_cnst, v_ref}); o.Callee)
         return o;
     if (auto o = GetOperator(name, prefix, {v_ty, true, v_ref}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, prefix, ReferenceInfo(v_ty)); o.Callee)
+    if (auto o = GetOperator(name, prefix, {v_ty, true, true}); o.Callee)
+        return o;
+    if (auto o = GetOperator(name, prefix, {v_ty, false, false}); o.Callee)
         return o;
 
     return {};
@@ -262,8 +264,8 @@ NJS::OperatorInfo<2> NJS::Builder::FindOperator(
 {
     const auto l_ty = left->GetType();
     const auto r_ty = right->GetType();
-    const auto l_cnst = left->IsConstLValue();
-    const auto r_cnst = right->IsConstLValue();
+    const auto l_cnst = left->IsConst();
+    const auto r_cnst = right->IsConst();
     const auto l_ref = left->IsLValue();
     const auto r_ref = right->IsLValue();
 
@@ -271,19 +273,33 @@ NJS::OperatorInfo<2> NJS::Builder::FindOperator(
         return o;
     if (auto o = GetOperator(name, {l_ty, l_cnst, l_ref}, {r_ty, true, r_ref}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, {l_ty, l_cnst, l_ref}, ReferenceInfo(r_ty)); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, l_cnst, l_ref}, {r_ty, true, true}); o.Callee)
+        return o;
+    if (auto o = GetOperator(name, {l_ty, l_cnst, l_ref}, {r_ty, false, false}); o.Callee)
         return o;
     if (auto o = GetOperator(name, {l_ty, true, l_ref}, {r_ty, r_cnst, r_ref}); o.Callee)
         return o;
     if (auto o = GetOperator(name, {l_ty, true, l_ref}, {r_ty, true, r_ref}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, {l_ty, true, l_ref}, ReferenceInfo(r_ty)); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, true, l_ref}, {r_ty, true, true}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, ReferenceInfo(l_ty), {r_ty, r_cnst, r_ref}); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, true, l_ref}, {r_ty, false, false}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, ReferenceInfo(l_ty), {r_ty, true, r_ref}); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, true, true}, {r_ty, r_cnst, r_ref}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, ReferenceInfo(l_ty), ReferenceInfo(r_ty)); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, true, true}, {r_ty, true, r_ref}); o.Callee)
+        return o;
+    if (auto o = GetOperator(name, {l_ty, true, true}, {r_ty, true, true}); o.Callee)
+        return o;
+    if (auto o = GetOperator(name, {l_ty, true, true}, {r_ty, false, false}); o.Callee)
+        return o;
+    if (auto o = GetOperator(name, {l_ty, false, false}, {r_ty, r_cnst, r_ref}); o.Callee)
+        return o;
+    if (auto o = GetOperator(name, {l_ty, false, false}, {r_ty, true, r_ref}); o.Callee)
+        return o;
+    if (auto o = GetOperator(name, {l_ty, false, false}, {r_ty, true, true}); o.Callee)
+        return o;
+    if (auto o = GetOperator(name, {l_ty, false, false}, {r_ty, false, false}); o.Callee)
         return o;
 
     return {};

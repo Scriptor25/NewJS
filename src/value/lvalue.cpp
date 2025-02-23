@@ -13,7 +13,7 @@ bool NJS::LValue::IsLValue() const
     return true;
 }
 
-bool NJS::LValue::IsConstLValue() const
+bool NJS::LValue::IsConst() const
 {
     return m_IsConst;
 }

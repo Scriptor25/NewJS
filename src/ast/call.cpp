@@ -29,26 +29,44 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expe
     std::vector<llvm::Value *> arguments(Arguments.size());
     for (unsigned i = 0; i < Arguments.size(); ++i)
     {
-        const auto has_parameter = i < parameter_count;
         auto [
             type_,
             is_const_,
             is_reference_
-        ] = has_parameter
+        ] = (i < parameter_count)
                 ? callee_type->GetParameter(Callee->Where, i)
                 : ReferenceInfo();
 
         auto &argument = Arguments[i];
         auto argument_value = argument->GenLLVM(builder, type_);
 
-        // TODO: check if reference is valid (type and mutability matches)
+        if (!is_reference_)
+        {
+            if (type_)
+                argument_value = builder.CreateCast(argument->Where, argument_value, type_);
+            arguments[i] = argument_value->Load(argument->Where);
+            continue;
+        }
 
-        if (has_parameter)
-            argument_value = builder.CreateCast(argument->Where, argument_value, type_);
+        if (argument_value->GetType() != type_)
+            Error(
+                Where,
+                "type mismatch: cannot create reference with type {} from value of type {}",
+                type_,
+                argument_value->GetType());
+        if (argument_value->IsConst() && !is_const_)
+            Error(Where, "cannot reference constant value as mutable");
 
-        arguments[i] = is_reference_
-                           ? argument_value->GetPtr(argument->Where)
-                           : argument_value->Load(argument->Where);
+        if (!argument_value->IsLValue())
+        {
+            if (!is_const_)
+                Error(Where, "cannot create mutable reference to constant");
+            auto value = builder.CreateAlloca(Where, argument_value->GetType(), true);
+            value->StoreForce(Where, argument_value);
+            argument_value = value;
+        }
+
+        arguments[i] = argument_value->GetPtr(argument->Where);
     }
 
     const auto result_value = builder.GetBuilder().CreateCall(

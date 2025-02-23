@@ -110,6 +110,18 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
                 right_.GetLLVM(RightOperand->Where, builder),
             },
             false);
+        if (left_.IsReference && !left_operand->IsLValue())
+        {
+            const auto value = builder.CreateAlloca(LeftOperand->Where, left_operand->GetType(), true);
+            value->StoreForce(LeftOperand->Where, left_operand);
+            left_operand = value;
+        }
+        if (right_.IsReference && !right_operand->IsLValue())
+        {
+            const auto value = builder.CreateAlloca(RightOperand->Where, right_operand->GetType(), true);
+            value->StoreForce(RightOperand->Where, right_operand);
+            right_operand = value;
+        }
         const auto result_value = builder.GetBuilder().CreateCall(
             function_type,
             callee_,

@@ -4,7 +4,7 @@
 #include <NJS/TypeContext.hpp>
 #include <NJS/Value.hpp>
 
-NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePtr array, const ValuePtr &index)
+NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePtr array, ValuePtr index)
 {
     if (auto [
             result_,
@@ -21,12 +21,28 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
                 right_.GetLLVM(where, *this),
             },
             false);
+        if (left_.IsReference && !array->IsLValue())
+        {
+            const auto value = CreateAlloca(where, array->GetType(), true);
+            value->StoreForce(where, array);
+            array = value;
+        }
+        if (right_.IsReference && !index->IsLValue())
+        {
+            const auto value = CreateAlloca(where, index->GetType(), true);
+            value->StoreForce(where, index);
+            index = value;
+        }
         const auto result_value = GetBuilder().CreateCall(
             function_type,
             callee_,
             {
-                left_.IsReference ? array->GetPtr(where) : array->Load(where),
-                right_.IsReference ? index->GetPtr(where) : index->Load(where),
+                left_.IsReference
+                    ? array->GetPtr(where)
+                    : array->Load(where),
+                right_.IsReference
+                    ? index->GetPtr(where)
+                    : index->Load(where),
             });
         if (result_.IsReference)
             return LValue::Create(*this, result_.Type, result_value, result_.IsConst);
@@ -52,8 +68,8 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
     const auto const_index = llvm::dyn_cast<llvm::ConstantInt>(index_value);
     if (!const_index && !array->IsLValue())
     {
-        const auto value = CreateAlloca(where, array_type, array->IsConstLValue());
-        value->Store(where, array);
+        const auto value = CreateAlloca(where, array_type, array->IsConst());
+        value->StoreForce(where, array);
         array = value;
     }
 
@@ -76,7 +92,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
             const auto i = const_index->getValue().getLimitedValue();
             type = array_type->GetElement(where, i);
         }
-        return LValue::Create(*this, type, ptr, array->IsConstLValue());
+        return LValue::Create(*this, type, ptr, array->IsConst());
     }
 
     if (!const_index)

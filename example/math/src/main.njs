@@ -27,7 +27,7 @@ println($"-e = {-e}")
 println($"e++ = {e++}")
 println($"--e = {--e}")
 
-let model = mat4.new()
+let model = mat4.identity()
 model *= mat4.translation(vec3.new(1, 2, 3))
 model *= mat4.scale(vec3.new(0.4, 0.5, 0.6))
 

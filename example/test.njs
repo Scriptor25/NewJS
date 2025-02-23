@@ -14,7 +14,7 @@ type User = {
     job: i8[],
 }
 
-let user1: User = {
+const user1: User = {
     name: "Felix",
     surname: "Schreiber",
     age: 18,
@@ -37,14 +37,14 @@ function recurse(n: u32): u32 {
         : recurse(n - 1) + recurse(n - 2)
 }
 
-let n: u32 = 10
-let r = recurse(n)
+const n: u32 = 10
+const r = recurse(n)
 println($"recurse({n}) = {r}")
 
 println($"fib({n}) = {fib(n)}")
 
-let a1: u32[3] = [1, 2, 3]
-let t1 = ["Felix", user1, a1]
+const a1: u32[3] = [1, 2, 3]
+const t1 = ["Felix", user1, a1]
 
 function printArray(array: u32[3]) {
     println($"{array}")
@@ -52,7 +52,7 @@ function printArray(array: u32[3]) {
 
 printArray(a1)
 
-for (let i: u32; i < 3; ++i)
+for (let i = 0; i < 3; ++i)
     println($"a1[{i}] = {a1[i]}")
 
 function foo(): () => u32 {
@@ -65,7 +65,7 @@ function foo(): () => u32 {
 println($"foo() = {typeof(foo())}")
 println($"foo()() = {foo()()}")
 
-let [name1, {name, surname, age, job}] = ["Felix", user1]
+const [name1, {name, surname, age, job}] = ["Felix", user1]
 
 println($"{name1} {name} {surname} {age} {job} {[4:u32, 5:u32, 6:u32]}")
 println($"t1 = {t1}")
@@ -149,11 +149,16 @@ function<T> await(p: promise<T>): T {
     return p.result
 }
 
-function add(a: i32, b: i32): promise<i32> { return { result: a + b, done: true } }
+function add(a: i32, b: i32): promise<i32> {
+    return {
+        result: a + b,
+        done: true,
+    }
+}
 
 const result = await<i32>(add(123, 456))
 println($"result = {result}")
 
-for (let i = 0:u64; i < 64:u64; ++i)
+for (let i: u64; i < 64; ++i)
     println($"i = {2:u64 ** i}")
 println("Hello")
