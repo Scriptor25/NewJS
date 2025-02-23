@@ -12,53 +12,17 @@ extern function free(block: void[])
 
 extern function println(msg: i8[])
 
-/*
-let material_ground = lambertian.create([ 0.8, 0.8, 0.0 ])
-let material_center = lambertian.create([ 0.1, 0.2, 0.5 ])
-let material_left   = dielectric.create([ 1.0, 1.0, 1.0 ], 1.50 / 1.00)
-let material_bubble = dielectric.create([ 1.0, 1.0, 1.0 ], 1.00 / 1.50)
-let material_right  =      metal.create([ 0.8, 0.6, 0.2 ], 1.0)
-
-let sphere1 = sphere.create([  0.0, -100.5, -1.0 ], 100.0, &material_ground);
-let sphere2 = sphere.create([  0.0,    0.0, -1.2 ],   0.5, &material_center);
-let sphere3 = sphere.create([ -1.0,    0.0, -1.0 ],   0.5, &material_left);
-let sphere4 = sphere.create([ -1.0,    0.0, -1.0 ],   0.4, &material_bubble);
-let sphere5 = sphere.create([  1.0,    0.0, -1.0 ],   0.5, &material_right);
-
-let world = hittable_list.create()
-hittable_list.add(world, &sphere1)
-hittable_list.add(world, &sphere2)
-hittable_list.add(world, &sphere3)
-hittable_list.add(world, &sphere4)
-hittable_list.add(world, &sphere5)
-
-let cam: camera
-
-cam.aspect_ratio = 16.0 / 9.0
-cam.image_width = 400
-cam.samples_per_pixel = 100
-cam.max_depth = 50
-cam.vfov = 20
-cam.lookfrom = [ -2.0, 2.0, 1.0 ]
-cam.lookat = [ 0.0, 0.0, -1.0 ]
-cam.vup = [ 0.0, 1.0, 0.0 ]
-cam.defocus_angle = 10.0
-cam.focus_dist = 3.4
-
-camera.render(cam, &world)
-*/
-
 function<T> make(value: T): T[] {
     const ptr: T[] = malloc(sizeof<T>);
     (*ptr) = value;
     return ptr
 }
 
-let world = hittable_list.create()
+const world = make<hittable_list>(hittable_list.create())
 
-let ground_material = make<lambertian>(lambertian.create([ 0.5, 0.5, 0.5 ]))
-let ground_sphere = make<sphere>(sphere.create([ 0, -1000, 0 ], 1000, ground_material))
-hittable_list.add(world, ground_sphere)
+const ground_material = make<lambertian>(lambertian.create([ 0.5, 0.5, 0.5 ]))
+const ground_sphere = make<sphere>(sphere.create([ 0, -1000, 0 ], 1000, ground_material))
+hittable_list.add(*world, ground_sphere)
 
 for (let a = -11; a < 11; ++a) {
     for (let b = -11; b < 11; ++b) {
@@ -85,23 +49,23 @@ for (let a = -11; a < 11; ++a) {
                 sphere_material = make<dielectric>(dielectric.create([ 1.0, 1.0, 1.0 ], 1.5))
             }
 
-            let sphere = make<sphere>(sphere.create(center, 0.2, sphere_material))
-            hittable_list.add(world, sphere)
+            const sphere = make<sphere>(sphere.create(center, 0.2, sphere_material))
+            hittable_list.add(*world, sphere)
         }
     }
 }
 
-let material1 = make<dielectric>(dielectric.create([ 1.0, 1.0, 1.0 ], 1.5))
-let sphere1 = make<sphere>(sphere.create([ 0, 1, 0 ], 1.0, material1))
-hittable_list.add(world, sphere1)
+const material1 = make<dielectric>(dielectric.create([ 1.0, 1.0, 1.0 ], 1.5))
+const sphere1 = make<sphere>(sphere.create([ 0, 1, 0 ], 1.0, material1))
+hittable_list.add(*world, sphere1)
 
-let material2 = make<lambertian>(lambertian.create([ 0.4, 0.2, 0.1 ]))
-let sphere2 = make<sphere>(sphere.create([ -4, 1, 0 ], 1.0, material2))
-hittable_list.add(world, sphere2)
+const material2 = make<lambertian>(lambertian.create([ 0.4, 0.2, 0.1 ]))
+const sphere2 = make<sphere>(sphere.create([ -4, 1, 0 ], 1.0, material2))
+hittable_list.add(*world, sphere2)
 
-let material3 = make<metal>(metal.create([ 0.7, 0.6, 0.5 ], 0.0))
-let sphere3 = make<sphere>(sphere.create([ 4, 1, 0 ], 1.0, material3))
-hittable_list.add(world, sphere3)
+const material3 = make<metal>(metal.create([ 0.7, 0.6, 0.5 ], 0.0))
+const sphere3 = make<sphere>(sphere.create([ 4, 1, 0 ], 1.0, material3))
+hittable_list.add(*world, sphere3)
 
 let cam: camera
 
@@ -118,4 +82,4 @@ cam.vup      = [ 0, 1, 0 ]
 cam.defocus_angle = 0.6
 cam.focus_dist    = 10.0
 
-camera.render(cam, &world)
+camera.render(cam, world)
