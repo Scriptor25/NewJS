@@ -102,3 +102,5 @@ You can use these primitives directly or combine them in different ways:
 | [ X, Y, ... ]           | dependent on the elements | a tuple of a variable number of different typed elements                             |
 | { foo: X, bar: Y, ... } | dependent on the elements | a struct of a variable number of typed members, identifiable uniquely by their names |
 | (X) => Y                | system dependent          | a function type taking argument of type X and returning type Y                       |
+
+# TODO
