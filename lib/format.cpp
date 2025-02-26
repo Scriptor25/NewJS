@@ -8,12 +8,12 @@ void *operator new(const size_t size)
     return malloc(size);
 }
 
-void operator delete(void *block)
+void operator delete(void *block) noexcept
 {
     free(block);
 }
 
-void operator delete(void *ptr, size_t)
+void operator delete(void *ptr, size_t) noexcept
 {
     free(ptr);
 }

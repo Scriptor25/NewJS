@@ -1,3 +1,4 @@
+#include <sstream>
 #include <NJS/Macro.hpp>
 #include <NJS/NJS.hpp>
 #include <NJS/Parser.hpp>
