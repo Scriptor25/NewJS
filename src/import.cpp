@@ -88,14 +88,10 @@ void NJS::ImportMapping::MapFunctions(
             parameters,
             function->IsVarArg);
 
-        auto function_callee = builder.GetModule().getFunction(name);
-        if (!function_callee)
-            function_callee = llvm::Function::Create(
-                type->GenFnLLVM(where, builder),
-                llvm::Function::ExternalLinkage,
-                name,
-                builder.GetModule());
-        const auto value = RValue::Create(builder, type, function_callee);
+        auto callee = builder.GetOrCreateFunction(
+            type->GenFnLLVM(where, builder),
+            llvm::GlobalValue::ExternalLinkage,
+            name);
 
         if (function->Flags & FunctionFlags_Operator)
         {
@@ -105,41 +101,48 @@ void NJS::ImportMapping::MapFunctions(
                     !function->IsVarArg,
                     function->Parameters[0]->Info,
                     function->Result,
-                    function_callee);
+                    callee.getCallee());
             else if (function->Parameters.size() == 2)
                 builder.DefineOperator(
                     function->Name,
                     function->Parameters[0]->Info,
                     function->Parameters[1]->Info,
                     function->Result,
-                    function_callee);
+                    callee.getCallee());
+            continue;
         }
-        else if (All)
+
+        auto value = RValue::Create(builder, type, callee.getCallee());
+
+        if (All)
+        {
             builder.DefineVariable(where, function->Name) = value;
-        else if (NameMap.contains(function->Name))
+            continue;
+        }
+
+        if (NameMap.contains(function->Name))
         {
             builder.DefineVariable(where, NameMap.at(function->Name)) = value;
             name_set.erase(function->Name);
+            continue;
         }
-        else
-        {
-            element_values.emplace_back(function->Name, value);
-            element_types.emplace_back(function->Name, type);
-        }
+
+        element_values.emplace_back(function->Name, value);
+        element_types.emplace_back(function->Name, type);
     }
 
     if (!name_set.empty())
         Error(where, "following symbols are missing in import: {}", name_set);
 
-    if (!Name.empty())
-    {
-        const auto module_type = builder.GetTypeContext().GetStructType(element_types);
-        llvm::Value *module = llvm::Constant::getNullValue(module_type->GetLLVM(where, builder));
-        for (const auto &[name_, value_]: element_values)
-            module = builder.GetBuilder().CreateInsertValue(
-                module,
-                value_->Load(where),
-                module_type->GetMember(where, name_).Index);
-        builder.DefineVariable(where, Name) = RValue::Create(builder, module_type, module);
-    }
+    if (Name.empty())
+        return;
+
+    const auto module_type = builder.GetTypeContext().GetStructType(element_types);
+    llvm::Value *module_value = llvm::Constant::getNullValue(module_type->GetLLVM(where, builder));
+    for (const auto &[name_, value_]: element_values)
+        module_value = builder.GetBuilder().CreateInsertValue(
+            module_value,
+            value_->Load(where),
+            module_type->GetMember(where, name_).Index);
+    builder.DefineVariable(where, Name) = RValue::Create(builder, module_type, module_value);
 }

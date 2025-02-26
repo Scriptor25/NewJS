@@ -60,7 +60,9 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
     {
         function = llvm::Function::Create(
             type->GenFnLLVM(Where, builder),
-            llvm::GlobalValue::ExternalLinkage,
+            (Flags & (FunctionFlags_Export | FunctionFlags_Extern))
+                ? llvm::GlobalValue::ExternalLinkage
+                : llvm::GlobalValue::InternalLinkage,
             function_name,
             builder.GetModule());
     }

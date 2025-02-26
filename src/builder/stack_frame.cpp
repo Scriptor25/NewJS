@@ -5,7 +5,7 @@ bool NJS::StackFrame::Contains(const std::string &name) const
     return Values.contains(name);
 }
 
-NJS::ValuePtr NJS::StackFrame::operator[](const std::string &name) const
+const NJS::ValuePtr &NJS::StackFrame::operator[](const std::string &name) const
 {
     return Values.at(name);
 }

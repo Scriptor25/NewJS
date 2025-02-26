@@ -17,7 +17,7 @@ namespace NJS
     struct StackFrame
     {
         [[nodiscard]] bool Contains(const std::string &) const;
-        ValuePtr operator[](const std::string &) const;
+        const ValuePtr &operator[](const std::string &) const;
         ValuePtr &operator[](const std::string &);
 
         [[nodiscard]] std::string GetChildName(const std::string &) const;
@@ -86,6 +86,11 @@ namespace NJS
 
         void CreateModuleCall(const std::string &module_id);
 
+        llvm::FunctionCallee GetOrCreateFunction(
+            llvm::FunctionType *type,
+            llvm::GlobalValue::LinkageTypes linkage,
+            const std::string &name) const;
+
         void GetFormat(llvm::FunctionCallee &callee) const;
 
         void StackPush(const std::string &name = {}, const ReferenceInfo &result = {});
@@ -125,7 +130,7 @@ namespace NJS
             const ValuePtr &right) const;
 
         ValuePtr &DefineVariable(const SourceLocation &where, const std::string &name);
-        ValuePtr &GetVariable(const SourceLocation &where, const std::string &name);
+        const NJS::ValuePtr &GetVariable(const SourceLocation &where, const std::string &name) const;
         ValuePtr &GetOrDefineVariable(const std::string &name);
 
         ReferenceInfo &CurrentFunctionResult();

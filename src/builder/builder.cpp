@@ -313,7 +313,7 @@ NJS::ValuePtr &NJS::Builder::DefineVariable(const SourceLocation &where, const s
     return stack[name];
 }
 
-NJS::ValuePtr &NJS::Builder::GetVariable(const SourceLocation &where, const std::string &name)
+const NJS::ValuePtr &NJS::Builder::GetVariable(const SourceLocation &where, const std::string &name) const
 {
     for (auto &stack: std::ranges::reverse_view(m_Stack))
         if (stack.Contains(name))
