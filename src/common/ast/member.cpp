@@ -1,0 +1,22 @@
+#include <utility>
+#include <newjs/ast.hpp>
+#include <newjs/builder.hpp>
+#include <newjs/type.hpp>
+
+NJS::MemberExpression::MemberExpression(SourceLocation where, ExpressionPtr object, std::string member)
+    : Expression(std::move(where)),
+      Object(std::move(object)),
+      Member(std::move(member))
+{
+}
+
+NJS::ValuePtr NJS::MemberExpression::GenLLVM(Builder &builder, const TypePtr &) const
+{
+    const auto object_value = Object->GenLLVM(builder, {});
+    return builder.CreateMember(Where, object_value, Member);
+}
+
+std::ostream &NJS::MemberExpression::Print(std::ostream &stream)
+{
+    return Object->Print(stream) << '.' << Member;
+}
