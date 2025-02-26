@@ -3,17 +3,17 @@
 #include <cstdarg>
 #include <NJS/Std.hpp>
 
-void *operator new(const size_t size) noexcept
+void *operator new(const size_t size)
 {
     return malloc(size);
 }
 
-void operator delete(void *block) noexcept
+void operator delete(void *block)
 {
     free(block);
 }
 
-void operator delete(void *ptr, size_t) noexcept
+void operator delete(void *ptr, size_t)
 {
     free(ptr);
 }
