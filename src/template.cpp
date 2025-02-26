@@ -1,3 +1,4 @@
+#include <sstream>
 #include <NJS/Parser.hpp>
 #include <NJS/Template.hpp>
 #include <NJS/Type.hpp>
