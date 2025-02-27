@@ -27,7 +27,7 @@ NJS::FunctionStatement::FunctionStatement(
 {
 }
 
-NJS::ValuePtr NJS::FunctionStatement::GenLLVM(Builder &builder) const
+NJS::ValuePtr NJS::FunctionStatement::GenLLVM(Builder &builder, ErrorInfo &error) const
 {
     std::string function_name;
     if (Flags & FunctionFlags_Extern)
@@ -133,10 +133,11 @@ NJS::ValuePtr NJS::FunctionStatement::GenLLVM(Builder &builder) const
             argument_value,
             false,
             parameter->Info.IsConst,
-            parameter->Info.IsReference);
+            parameter->Info.IsReference,
+            TODO);
     }
 
-    Body->GenLLVM(builder);
+    Body->GenLLVM(builder, error);
     builder.StackPop();
 
     std::vector<llvm::BasicBlock *> deletable;
@@ -218,7 +219,7 @@ NJS::FunctionExpression::FunctionExpression(
 {
 }
 
-NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, ErrorInfo &error, const TypePtr &) const
 {
     static unsigned id = 0;
     const auto function_name = std::to_string(id++);
@@ -258,10 +259,11 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
             argument_value,
             false,
             parameter->Info.IsConst,
-            parameter->Info.IsReference);
+            parameter->Info.IsReference,
+            TODO);
     }
 
-    Body->GenLLVM(builder);
+    Body->GenLLVM(builder, error);
     builder.StackPop();
 
     std::vector<llvm::BasicBlock *> deletable;

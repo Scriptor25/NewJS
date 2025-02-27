@@ -14,6 +14,7 @@ NJS::IntegerExpression::IntegerExpression(SourceLocation where, TypePtr type, co
 
 NJS::ValuePtr NJS::IntegerExpression::GenLLVM(
     Builder &builder,
+    ErrorInfo &error,
     const TypePtr &expected_type) const
 {
     const auto result_type = Type

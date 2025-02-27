@@ -19,7 +19,7 @@ NJS::FormatExpression::FormatExpression(
 {
 }
 
-NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, ErrorInfo &error, const TypePtr &) const
 {
     constexpr auto BUFFER_SIZE = 1024;
 
@@ -48,7 +48,7 @@ NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) 
         if (DynamicExpressions.contains(i))
         {
             auto &dynamic = DynamicExpressions.at(i);
-            const auto value = dynamic->GenLLVM(builder, {});
+            const auto value = dynamic->GenLLVM(builder, error, {});
             const auto size = arguments.size();
 
             if (value->GetType()->TypeInfo(dynamic->Where, builder, arguments))

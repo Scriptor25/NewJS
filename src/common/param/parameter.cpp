@@ -28,7 +28,8 @@ void NJS::Parameter::CreateVars(
     ValuePtr value,
     const bool is_extern,
     const bool is_const,
-    const bool is_reference)
+    const bool is_reference,
+    ErrorInfo &error)
 {
     const auto type = Type ? Type : value->GetType();
     auto &variable = builder.DefineVariable(Where, Name);

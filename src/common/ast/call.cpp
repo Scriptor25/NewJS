@@ -15,9 +15,10 @@ NJS::CallExpression::CallExpression(SourceLocation where, ExpressionPtr callee, 
 
 NJS::ValuePtr NJS::CallExpression::GenLLVM(
     Builder &builder,
+    ErrorInfo &error,
     const TypePtr &expected_type) const
 {
-    const auto callee = Callee->GenLLVM(builder, {});
+    const auto callee = Callee->GenLLVM(builder, error, {});
     const auto callee_type = std::dynamic_pointer_cast<FunctionType>(callee->GetType());
 
     if (!callee_type)
@@ -43,7 +44,7 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(
                 : ReferenceInfo();
 
         auto &argument = Arguments[i];
-        auto argument_value = argument->GenLLVM(builder, type_);
+        auto argument_value = argument->GenLLVM(builder, error, type_);
 
         if (!is_reference_)
         {

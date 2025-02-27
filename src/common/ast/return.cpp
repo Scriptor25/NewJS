@@ -11,7 +11,7 @@ NJS::ReturnStatement::ReturnStatement(SourceLocation where, ExpressionPtr value)
 {
 }
 
-NJS::ValuePtr NJS::ReturnStatement::GenLLVM(Builder &builder) const
+NJS::ValuePtr NJS::ReturnStatement::GenLLVM(Builder &builder, ErrorInfo &error) const
 {
     auto &[type_, is_const_, is_reference_] = builder.CurrentFunctionResult();
 
@@ -23,7 +23,7 @@ NJS::ValuePtr NJS::ReturnStatement::GenLLVM(Builder &builder) const
         return {};
     }
 
-    auto value = Value->GenLLVM(builder, type_);
+    auto value = Value->GenLLVM(builder, error, type_);
     value = builder.CreateCast(Value->Where, value, type_);
 
     if (is_reference_)

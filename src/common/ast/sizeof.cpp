@@ -14,9 +14,10 @@ NJS::SizeOfExpression::SizeOfExpression(SourceLocation where, ExpressionPtr oper
 
 NJS::ValuePtr NJS::SizeOfExpression::GenLLVM(
     Builder &builder,
+    ErrorInfo &error,
     const TypePtr &expected_type) const
 {
-    const auto value = Operand->GenLLVM(builder, {});
+    const auto value = Operand->GenLLVM(builder, error, {});
     const auto type = expected_type && expected_type->IsInteger()
                           ? expected_type
                           : builder.GetTypeContext().GetIntegerType(64, false);

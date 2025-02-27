@@ -19,12 +19,12 @@ NJS::VariableStatement::VariableStatement(
 {
 }
 
-NJS::ValuePtr NJS::VariableStatement::GenLLVM(Builder &builder) const
+NJS::ValuePtr NJS::VariableStatement::GenLLVM(Builder &builder, ErrorInfo &error) const
 {
     const auto value = Value
-                           ? Value->GenLLVM(builder, Parameter->Type)
+                           ? Value->GenLLVM(builder, error, Parameter->Type)
                            : nullptr;
-    Parameter->CreateVars(builder, value, IsExtern, IsConst, IsReference);
+    Parameter->CreateVars(builder, value, IsExtern, IsConst, IsReference, TODO);
     return {};
 }
 

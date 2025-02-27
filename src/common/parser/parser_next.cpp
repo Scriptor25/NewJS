@@ -4,6 +4,29 @@
 
 NJS::Token &NJS::Parser::Next()
 {
+    static const std::map<std::string, std::set<char>> operator_append
+    {
+        {".", {'.'}},
+        {"..", {'.'}},
+        {"+", {'+', '='}},
+        {"-", {'-', '=', '>'}},
+        {"*", {'*', '='}},
+        {"**", {'='}},
+        {"/", {'='}},
+        {"%", {'='}},
+        {"|", {'|', '='}},
+        {"||", {'='}},
+        {"^", {'^', '='}},
+        {"&", {'&', '='}},
+        {"&&", {'='}},
+        {"<", {'<', '='}},
+        {"<<", {'='}},
+        {">", {'>', '='}},
+        {">>", {'='}},
+        {"=", {'=', '>'}},
+        {"!", {'='}},
+    };
+
     enum State
     {
         State_Bin,
@@ -167,115 +190,7 @@ NJS::Token &NJS::Parser::Next()
                     c = Get();
                     break;
                 }
-                if (value == "." && c == '.')
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == ".." && c == '.')
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "+" && (c == '+' || c == '='))
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "-" && (c == '-' || c == '=' || c == '>'))
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "*" && (c == '*' || c == '='))
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "**" && c == '=')
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "/" && c == '=')
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "%" && c == '=')
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "|" && (c == '|' || c == '='))
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "||" && c == '=')
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "^" && (c == '^' || c == '='))
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "&" && (c == '&' || c == '='))
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "&&" && c == '=')
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "<" && (c == '<' || c == '='))
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "<<" && c == '=')
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == ">" && (c == '>' || c == '='))
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == ">>" && c == '=')
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "=" && (c == '=' || c == '>'))
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (value == "!" && c == '=')
+                if (operator_append.contains(value) && operator_append.at(value).contains(c))
                 {
                     value += static_cast<char>(c);
                     c = Get();

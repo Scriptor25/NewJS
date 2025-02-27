@@ -23,6 +23,7 @@ NJS::UnaryExpression::UnaryExpression(
 
 NJS::ValuePtr NJS::UnaryExpression::GenLLVM(
     Builder &builder,
+    ErrorInfo &error,
     const TypePtr &expected_type) const
 {
     static const std::map<std::string_view, UnaryOperator> operators
@@ -42,7 +43,7 @@ NJS::ValuePtr NJS::UnaryExpression::GenLLVM(
         "--"sv,
     };
 
-    auto operand = Operand->GenLLVM(builder, expected_type);
+    auto operand = Operand->GenLLVM(builder, error, expected_type);
 
     if (auto [
             result_,

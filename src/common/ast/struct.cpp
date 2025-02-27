@@ -17,6 +17,7 @@ NJS::StructExpression::StructExpression(
 
 NJS::ValuePtr NJS::StructExpression::GenLLVM(
     Builder &builder,
+    ErrorInfo &error,
     const TypePtr &expected_type) const
 {
     TypePtr result_type;
@@ -31,7 +32,7 @@ NJS::ValuePtr NJS::StructExpression::GenLLVM(
     for (const auto &[name_, element_]: Elements)
     {
         auto type = result_type ? result_type->GetMember(element_->Where, name_).Type : nullptr;
-        auto value = element_->GenLLVM(builder, type);
+        auto value = element_->GenLLVM(builder, error, type);
         element_values.emplace_back(name_, value);
         element_types.emplace_back(name_, value->GetType());
     }

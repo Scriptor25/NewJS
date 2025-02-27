@@ -24,7 +24,8 @@ void NJS::DestructureStruct::CreateVars(
     ValuePtr value,
     const bool is_extern,
     const bool is_const,
-    const bool is_reference)
+    const bool is_reference,
+    ErrorInfo &error)
 {
     if (Type)
     {
@@ -46,7 +47,7 @@ void NJS::DestructureStruct::CreateVars(
     for (const auto &[name_, element_]: Elements)
     {
         const auto member = builder.CreateMember(Where, value, name_);
-        element_->CreateVars(builder, member, is_extern, is_const, is_reference);
+        element_->CreateVars(builder, member, is_extern, is_const, is_reference, error);
     }
 }
 

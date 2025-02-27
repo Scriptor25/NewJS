@@ -23,6 +23,7 @@ NJS::BinaryExpression::BinaryExpression(
 
 NJS::ValuePtr NJS::BinaryExpression::GenLLVM(
     Builder &builder,
+    ErrorInfo &error,
     const TypePtr &expected_type) const
 {
     static const std::map<std::string_view, BinaryOperator> operators
@@ -83,11 +84,13 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(
 
     auto left_operand = LeftOperand->GenLLVM(
         builder,
+        error,
         is_comparator
             ? nullptr
             : expected_type);
     auto right_operand = RightOperand->GenLLVM(
         builder,
+        error,
         is_comparator
             ? nullptr
             : is_assignment

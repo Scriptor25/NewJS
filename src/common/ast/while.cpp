@@ -11,7 +11,7 @@ NJS::WhileStatement::WhileStatement(SourceLocation where, ExpressionPtr conditio
 {
 }
 
-NJS::ValuePtr NJS::WhileStatement::GenLLVM(Builder &builder) const
+NJS::ValuePtr NJS::WhileStatement::GenLLVM(Builder &builder, ErrorInfo &error) const
 {
     builder.StackPush();
 
@@ -23,7 +23,7 @@ NJS::ValuePtr NJS::WhileStatement::GenLLVM(Builder &builder) const
     builder.GetBuilder().CreateBr(head_block);
 
     builder.GetBuilder().SetInsertPoint(head_block);
-    auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
+    auto condition = Condition->GenLLVM(builder, error, builder.GetTypeContext().GetBooleanType());
     condition = builder.CreateCast(Condition->Where, condition, builder.GetTypeContext().GetBooleanType());
 
     const auto condition_value = condition->Load(Condition->Where);
@@ -45,7 +45,7 @@ NJS::ValuePtr NJS::WhileStatement::GenLLVM(Builder &builder) const
     if (loop_block)
     {
         builder.GetBuilder().SetInsertPoint(loop_block);
-        Body->GenLLVM(builder);
+        Body->GenLLVM(builder, error);
         builder.GetBuilder().CreateBr(head_block);
     }
 

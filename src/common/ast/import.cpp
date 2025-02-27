@@ -18,7 +18,7 @@ NJS::ImportStatement::ImportStatement(
 {
 }
 
-NJS::ValuePtr NJS::ImportStatement::GenLLVM(Builder &builder) const
+NJS::ValuePtr NJS::ImportStatement::GenLLVM(Builder &builder, ErrorInfo &error) const
 {
     for (auto &sub_module_id: SubModuleIDs)
         builder.CreateModuleCall(sub_module_id);

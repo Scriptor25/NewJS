@@ -14,6 +14,7 @@ NJS::FloatingPointExpression::FloatingPointExpression(SourceLocation where, Type
 
 NJS::ValuePtr NJS::FloatingPointExpression::GenLLVM(
     Builder &builder,
+    ErrorInfo &error,
     const TypePtr &expected_type) const
 {
     const auto result_type = Type

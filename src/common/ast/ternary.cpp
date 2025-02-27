@@ -20,6 +20,7 @@ NJS::TernaryExpression::TernaryExpression(
 
 NJS::ValuePtr NJS::TernaryExpression::GenLLVM(
     Builder &builder,
+    ErrorInfo &error,
     const TypePtr &expected_type) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
@@ -27,18 +28,18 @@ NJS::ValuePtr NJS::TernaryExpression::GenLLVM(
     auto else_block = llvm::BasicBlock::Create(builder.GetContext(), "else", parent);
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
-    const auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
+    const auto condition = Condition->GenLLVM(builder, error, builder.GetTypeContext().GetBooleanType());
     builder.GetBuilder().CreateCondBr(condition->Load(Condition->Where), then_block, else_block);
 
     builder.GetBuilder().SetInsertPoint(then_block);
-    auto then_value = ThenBody->GenLLVM(builder, expected_type);
+    auto then_value = ThenBody->GenLLVM(builder, error, expected_type);
     if (then_value->IsLValue())
         then_value = RValue::Create(builder, then_value->GetType(), then_value->Load(ThenBody->Where));
     then_block = builder.GetBuilder().GetInsertBlock();
     const auto then_term = builder.GetBuilder().CreateBr(end_block);
 
     builder.GetBuilder().SetInsertPoint(else_block);
-    auto else_value = ElseBody->GenLLVM(builder, expected_type);
+    auto else_value = ElseBody->GenLLVM(builder, error, expected_type);
     if (else_value->IsLValue())
         else_value = RValue::Create(builder, else_value->GetType(), else_value->Load(ElseBody->Where));
     else_block = builder.GetBuilder().GetInsertBlock();
