@@ -134,7 +134,7 @@ NJS::ValuePtr NJS::FunctionStatement::GenLLVM(Builder &builder, ErrorInfo &error
             false,
             parameter->Info.IsConst,
             parameter->Info.IsReference,
-            TODO);
+            error);
     }
 
     Body->GenLLVM(builder, error);
@@ -260,7 +260,7 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, ErrorInfo &erro
             false,
             parameter->Info.IsConst,
             parameter->Info.IsReference,
-            TODO);
+            error);
     }
 
     Body->GenLLVM(builder, error);
