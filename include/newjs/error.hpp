@@ -2,6 +2,7 @@
 
 #include <format>
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <string_view>
 #include <newjs/location.hpp>
@@ -29,7 +30,7 @@ namespace NJS
     public:
         ErrorInfo() = default;
         ErrorInfo(SourceLocation where, std::string message);
-        ErrorInfo(const ErrorInfo &cause, SourceLocation where, std::string message);
+        ErrorInfo(ErrorInfo cause, SourceLocation where, std::string message);
 
         operator bool() const;
 
@@ -37,7 +38,7 @@ namespace NJS
 
     private:
         bool m_HasError = false;
-        std::optional<ErrorInfo> m_Cause;
+        std::unique_ptr<ErrorInfo> m_Cause;
         SourceLocation m_Where;
         std::string m_Message;
     };
