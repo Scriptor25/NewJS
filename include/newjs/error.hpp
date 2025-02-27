@@ -1,25 +1,25 @@
 #pragma once
 
 #include <format>
+#include <iostream>
 #include <string_view>
-#include <newjs/newjs.hpp>
+#include <newjs/location.hpp>
 
 namespace NJS
 {
-    [[noreturn]] void Error(const std::string_view &message) noexcept;
-    [[noreturn]] void Error(const SourceLocation &where, const std::string_view &message) noexcept;
-
-    template<typename... Args>
-    [[noreturn]] void Error(const SourceLocation &where, const std::string_view &format, Args &&... args) noexcept
-    {
-        const auto message = std::vformat(format, std::make_format_args(args...));
-        Error(where, message);
-    }
-
     template<typename... Args>
     [[noreturn]] void Error(const std::string_view &format, Args &&... args) noexcept
     {
-        const auto message = std::vformat(format, std::make_format_args(args...));
-        Error(message);
+        auto message = std::vformat(format, std::make_format_args(args...));
+        std::cerr << message << std::endl;
+        exit(1);
+    }
+
+    template<typename... Args>
+    [[noreturn]] void Error(const SourceLocation where, const std::string_view &format, Args &&... args) noexcept
+    {
+        auto message = std::vformat(format, std::make_format_args(args...));
+        std::cerr << "at " << where.Filename << ":" << where.Row << ":" << where.Col << ": " << message << std::endl;
+        exit(1);
     }
 }

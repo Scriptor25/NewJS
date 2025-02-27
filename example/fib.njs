@@ -11,6 +11,6 @@ export function fib(n: u32): u32 {
     return b
 }
 
-let n: u32 = 10
-let f = fib(n)
+const n: u32 = 10
+const f = fib(n)
 println($"fib({n}) = {f}")

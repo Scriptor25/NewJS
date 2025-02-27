@@ -15,7 +15,9 @@ NJS::StructExpression::StructExpression(
 {
 }
 
-NJS::ValuePtr NJS::StructExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::StructExpression::GenLLVM(
+    Builder &builder,
+    const TypePtr &expected_type) const
 {
     TypePtr result_type;
     if (Type)

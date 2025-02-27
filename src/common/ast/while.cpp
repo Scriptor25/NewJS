@@ -11,7 +11,7 @@ NJS::WhileStatement::WhileStatement(SourceLocation where, ExpressionPtr conditio
 {
 }
 
-void NJS::WhileStatement::GenVoidLLVM(Builder &builder) const
+NJS::ValuePtr NJS::WhileStatement::GenLLVM(Builder &builder) const
 {
     builder.StackPush();
 
@@ -45,13 +45,14 @@ void NJS::WhileStatement::GenVoidLLVM(Builder &builder) const
     if (loop_block)
     {
         builder.GetBuilder().SetInsertPoint(loop_block);
-        Body->GenVoidLLVM(builder);
+        Body->GenLLVM(builder);
         builder.GetBuilder().CreateBr(head_block);
     }
 
     builder.GetBuilder().SetInsertPoint(end_block);
 
     builder.StackPop();
+    return {};
 }
 
 std::ostream &NJS::WhileStatement::Print(std::ostream &stream)

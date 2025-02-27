@@ -11,7 +11,7 @@ NJS::CastExpression::CastExpression(SourceLocation where, TypePtr type, Expressi
 
 NJS::ValuePtr NJS::CastExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
-    const auto value = Operand->GenLLVM(builder, Type);
+    auto value = Operand->GenLLVM(builder, Type);
     return builder.CreateCast(Where, value, Type);
 }
 

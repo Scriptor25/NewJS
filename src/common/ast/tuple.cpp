@@ -12,7 +12,9 @@ NJS::TupleExpression::TupleExpression(SourceLocation where, TypePtr type, std::v
 {
 }
 
-NJS::ValuePtr NJS::TupleExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::TupleExpression::GenLLVM(
+    Builder &builder,
+    const TypePtr &expected_type) const
 {
     TypePtr result_type;
     if (Type)

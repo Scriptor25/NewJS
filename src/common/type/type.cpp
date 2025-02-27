@@ -38,7 +38,7 @@ NJS::TypePtr NJS::GetHigherOrderOf(
             return type_a;
     }
 
-    return {};
+    Error(where, "cannot determine higher order type of {} and {}", type_a, type_b);
 }
 
 std::ostream &NJS::Type::Print(std::ostream &stream) const

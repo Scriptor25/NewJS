@@ -72,7 +72,7 @@ namespace NJS
             bool initialize,
             llvm::Constant *initializer = {});
 
-        ValuePtr CreateMember(const SourceLocation &where, const ValuePtr &object, const std::string &name);
+        ValuePtr CreateMember(const SourceLocation &where, const ValuePtr &value, const std::string &name);
 
         ValuePtr CreateSubscript(const SourceLocation &where, ValuePtr array, ValuePtr index);
         ValuePtr CreateSubscript(const SourceLocation &where, const ValuePtr &array, unsigned index);

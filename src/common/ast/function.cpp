@@ -27,7 +27,7 @@ NJS::FunctionStatement::FunctionStatement(
 {
 }
 
-void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
+NJS::ValuePtr NJS::FunctionStatement::GenLLVM(Builder &builder) const
 {
     std::string function_name;
     if (Flags & FunctionFlags_Extern)
@@ -93,13 +93,17 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
         {
             auto &reference = builder.GetOrDefineVariable(Name);
             if (reference && reference->GetType() != value->GetType())
-                Error(Where, "function prototype mismatch: {} != {}", reference->GetType(), value->GetType());
+                Error(
+                    Where,
+                    "function prototype mismatch: {} != {}",
+                    reference->GetType(),
+                    value->GetType());
             reference = std::move(value);
         }
     }
 
     if (!Body)
-        return;
+        return {};
 
     if (!function->empty())
         Error(Where, "redefining function '{}' ({})", Name, function_name);
@@ -132,7 +136,7 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
             parameter->Info.IsReference);
     }
 
-    Body->GenVoidLLVM(builder);
+    Body->GenLLVM(builder);
     builder.StackPop();
 
     std::vector<llvm::BasicBlock *> deletable;
@@ -167,6 +171,8 @@ void NJS::FunctionStatement::GenVoidLLVM(Builder &builder) const
     builder.Optimize(function);
 
     builder.GetBuilder().SetInsertPoint(end_block);
+
+    return {};
 }
 
 std::ostream &NJS::FunctionStatement::Print(std::ostream &stream)
@@ -255,7 +261,7 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
             parameter->Info.IsReference);
     }
 
-    Body->GenVoidLLVM(builder);
+    Body->GenLLVM(builder);
     builder.StackPop();
 
     std::vector<llvm::BasicBlock *> deletable;

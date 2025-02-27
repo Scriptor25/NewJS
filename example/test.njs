@@ -25,7 +25,7 @@ PRINT(user1)
 PRINT(println)
 
 function printUser(const &{ name: n, surname: s, age: a, job: t }: User) {
-    println($" - {n} {s} ({a}), {t}")
+    println($" - {n} {s} ({abc}), {t}")
 }
 
 println("IT WORKS!")

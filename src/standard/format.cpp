@@ -8,22 +8,29 @@ void *operator new(const size_t size)
     return malloc(size);
 }
 
+void *operator new[](const size_t size)
+{
+    return malloc(size);
+}
+
 void operator delete(void *block) noexcept
 {
     free(block);
 }
 
-void operator delete(void *ptr, size_t) noexcept
+void operator delete(void *block, size_t) noexcept
 {
-    free(ptr);
+    free(block);
 }
 
-template<typename T>
-static T *New(const size_t count)
+void operator delete[](void *block) noexcept
 {
-    constexpr auto size = sizeof(T);
-    auto ptr = malloc(count * size);
-    return static_cast<T *>(ptr);
+    free(block);
+}
+
+void operator delete[](void *block, size_t) noexcept
+{
+    free(block);
 }
 
 template<typename A, typename B>
@@ -240,7 +247,7 @@ Type *ParseType(va_list &arg_ptr)
         case ID_STRUCT:
         {
             const auto element_count = va_arg(arg_ptr, unsigned);
-            const auto elements = New<Pair<const char *, Type *>>(element_count);
+            const auto elements = new Pair<const char *, Type *>[element_count];
             for (unsigned i = 0; i < element_count; ++i)
             {
                 const auto name = va_arg(arg_ptr, const char*);
@@ -253,7 +260,7 @@ Type *ParseType(va_list &arg_ptr)
         case ID_TUPLE:
         {
             const auto element_count = va_arg(arg_ptr, unsigned);
-            const auto elements = New<Type *>(element_count);
+            const auto elements = new Type *[element_count];
             for (unsigned i = 0; i < element_count; ++i)
                 elements[i] = ParseType(arg_ptr);
             return new TupleType(elements, element_count);

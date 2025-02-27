@@ -20,7 +20,7 @@ NJS::ForStatement::ForStatement(
 {
 }
 
-void NJS::ForStatement::GenVoidLLVM(Builder &builder) const
+NJS::ValuePtr NJS::ForStatement::GenLLVM(Builder &builder) const
 {
     builder.StackPush();
 
@@ -30,7 +30,7 @@ void NJS::ForStatement::GenVoidLLVM(Builder &builder) const
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent_function);
 
     if (Initializer)
-        Initializer->GenVoidLLVM(builder);
+        Initializer->GenLLVM(builder);
     builder.GetBuilder().CreateBr(head_block);
 
     builder.GetBuilder().SetInsertPoint(head_block);
@@ -60,15 +60,17 @@ void NJS::ForStatement::GenVoidLLVM(Builder &builder) const
     if (loop_block)
     {
         builder.GetBuilder().SetInsertPoint(loop_block);
-        Body->GenVoidLLVM(builder);
+        Body->GenLLVM(builder);
         if (Loop)
-            Loop->GenVoidLLVM(builder);
+            Loop->GenLLVM(builder);
         builder.GetBuilder().CreateBr(head_block);
     }
 
     builder.GetBuilder().SetInsertPoint(end_block);
 
     builder.StackPop();
+
+    return {};
 }
 
 std::ostream &NJS::ForStatement::Print(std::ostream &stream)

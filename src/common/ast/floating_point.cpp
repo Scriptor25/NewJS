@@ -12,7 +12,9 @@ NJS::FloatingPointExpression::FloatingPointExpression(SourceLocation where, Type
 {
 }
 
-NJS::ValuePtr NJS::FloatingPointExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::FloatingPointExpression::GenLLVM(
+    Builder &builder,
+    const TypePtr &expected_type) const
 {
     const auto result_type = Type
                                  ? Type

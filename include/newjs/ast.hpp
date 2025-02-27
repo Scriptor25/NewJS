@@ -18,7 +18,7 @@ namespace NJS
         explicit Statement(SourceLocation where);
 
         virtual ~Statement() = default;
-        virtual void GenVoidLLVM(Builder &builder) const = 0;
+        virtual ValuePtr GenLLVM(Builder &builder) const = 0;
         virtual std::ostream &Print(std::ostream &stream) = 0;
 
         SourceLocation Where;
@@ -33,7 +33,7 @@ namespace NJS
             StatementPtr loop,
             StatementPtr body);
 
-        void GenVoidLLVM(Builder &builder) const override;
+        ValuePtr GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         StatementPtr Initializer;
@@ -53,7 +53,7 @@ namespace NJS
             ReferenceInfo result,
             StatementPtr body);
 
-        void GenVoidLLVM(Builder &builder) const override;
+        ValuePtr GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         unsigned Flags;
@@ -68,7 +68,7 @@ namespace NJS
     {
         IfStatement(SourceLocation where, ExpressionPtr condition, StatementPtr then_body, StatementPtr else_body);
 
-        void GenVoidLLVM(Builder &builder) const override;
+        ValuePtr GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Condition;
@@ -86,7 +86,7 @@ namespace NJS
             std::string module_id,
             std::set<std::string> sub_module_ids);
 
-        void GenVoidLLVM(Builder &builder) const override;
+        ValuePtr GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ImportMapping Mapping;
@@ -100,7 +100,7 @@ namespace NJS
     {
         ReturnStatement(SourceLocation where, ExpressionPtr value);
 
-        void GenVoidLLVM(Builder &builder) const override;
+        ValuePtr GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Value;
@@ -110,7 +110,7 @@ namespace NJS
     {
         ScopeStatement(SourceLocation where, std::vector<StatementPtr> children);
 
-        void GenVoidLLVM(Builder &builder) const override;
+        ValuePtr GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         std::vector<StatementPtr> Children;
@@ -124,7 +124,7 @@ namespace NJS
             std::map<StatementPtr, std::vector<ExpressionPtr>> cases,
             StatementPtr default_case);
 
-        void GenVoidLLVM(Builder &builder) const override;
+        ValuePtr GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Condition;
@@ -142,7 +142,7 @@ namespace NJS
             ParameterPtr parameter,
             ExpressionPtr value);
 
-        void GenVoidLLVM(Builder &builder) const override;
+        ValuePtr GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         bool IsExtern;
@@ -156,7 +156,7 @@ namespace NJS
     {
         WhileStatement(SourceLocation where, ExpressionPtr condition, StatementPtr body);
 
-        void GenVoidLLVM(Builder &builder) const override;
+        ValuePtr GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Condition;
@@ -167,7 +167,7 @@ namespace NJS
     {
         explicit Expression(SourceLocation where);
 
-        void GenVoidLLVM(Builder &builder) const override;
+        ValuePtr GenLLVM(Builder &builder) const override;
         virtual ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const = 0;
     };
 

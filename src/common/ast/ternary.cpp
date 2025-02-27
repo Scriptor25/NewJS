@@ -2,7 +2,6 @@
 #include <llvm/IR/BasicBlock.h>
 #include <newjs/ast.hpp>
 #include <newjs/builder.hpp>
-#include <newjs/error.hpp>
 #include <newjs/type.hpp>
 #include <newjs/type_context.hpp>
 #include <newjs/value.hpp>
@@ -19,15 +18,17 @@ NJS::TernaryExpression::TernaryExpression(
 {
 }
 
-NJS::ValuePtr NJS::TernaryExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::TernaryExpression::GenLLVM(
+    Builder &builder,
+    const TypePtr &expected_type) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent);
     auto else_block = llvm::BasicBlock::Create(builder.GetContext(), "else", parent);
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
-    const auto cond = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
-    builder.GetBuilder().CreateCondBr(cond->Load(Condition->Where), then_block, else_block);
+    const auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
+    builder.GetBuilder().CreateCondBr(condition->Load(Condition->Where), then_block, else_block);
 
     builder.GetBuilder().SetInsertPoint(then_block);
     auto then_value = ThenBody->GenLLVM(builder, expected_type);
@@ -48,8 +49,6 @@ NJS::ValuePtr NJS::TernaryExpression::GenLLVM(Builder &builder, const TypePtr &e
         builder.GetTypeContext(),
         then_value->GetType(),
         else_value->GetType());
-    if (!result_type)
-        Error(Where, "cannot determine higher order type of {} and {}", then_value->GetType(), else_value->GetType());
 
     builder.GetBuilder().SetInsertPoint(then_term);
     then_value = builder.CreateCast(ThenBody->Where, then_value, result_type);

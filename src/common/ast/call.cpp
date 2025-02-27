@@ -13,16 +13,21 @@ NJS::CallExpression::CallExpression(SourceLocation where, ExpressionPtr callee, 
 {
 }
 
-NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::CallExpression::GenLLVM(
+    Builder &builder,
+    const TypePtr &expected_type) const
 {
     const auto callee = Callee->GenLLVM(builder, {});
     const auto callee_type = std::dynamic_pointer_cast<FunctionType>(callee->GetType());
+
     if (!callee_type)
         Error(Where, "invalid callee: callee is not a function");
 
     const auto parameter_count = callee_type->GetParameterCount(Callee->Where);
+
     if (Arguments.size() < parameter_count)
         Error(Where, "not enough arguments");
+
     if (Arguments.size() > parameter_count && !callee_type->IsVarArg(Callee->Where))
         Error(Where, "too many arguments");
 
@@ -54,6 +59,7 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expe
                 "type mismatch: cannot create reference with type {} from value of type {}",
                 type_,
                 argument_value->GetType());
+
         if (argument_value->IsConst() && !is_const_)
             Error(Where, "cannot reference constant value as mutable");
 
@@ -61,7 +67,7 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(Builder &builder, const TypePtr &expe
         {
             if (!is_const_)
                 Error(Where, "cannot create mutable reference to constant");
-            auto value = builder.CreateAlloca(Where, argument_value->GetType(), true);
+            const auto value = builder.CreateAlloca(Where, argument_value->GetType(), true);
             value->StoreForce(Where, argument_value);
             argument_value = value;
         }

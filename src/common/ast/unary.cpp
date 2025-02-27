@@ -21,7 +21,9 @@ NJS::UnaryExpression::UnaryExpression(
 {
 }
 
-NJS::ValuePtr NJS::UnaryExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::UnaryExpression::GenLLVM(
+    Builder &builder,
+    const TypePtr &expected_type) const
 {
     static const std::map<std::string_view, UnaryOperator> operators
     {

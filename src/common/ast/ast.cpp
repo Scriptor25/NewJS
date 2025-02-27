@@ -11,7 +11,7 @@ NJS::Expression::Expression(SourceLocation where)
 {
 }
 
-void NJS::Expression::GenVoidLLVM(Builder &builder) const
+NJS::ValuePtr NJS::Expression::GenLLVM(Builder &builder) const
 {
-    (void) GenLLVM(builder, {});
+    return GenLLVM(builder, {});
 }

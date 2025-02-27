@@ -17,7 +17,7 @@ NJS::IfStatement::IfStatement(
 {
 }
 
-void NJS::IfStatement::GenVoidLLVM(Builder &builder) const
+NJS::ValuePtr NJS::IfStatement::GenLLVM(Builder &builder) const
 {
     const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent_function);
@@ -51,7 +51,7 @@ void NJS::IfStatement::GenVoidLLVM(Builder &builder) const
     if (then_block)
     {
         builder.GetBuilder().SetInsertPoint(then_block);
-        ThenBody->GenVoidLLVM(builder);
+        ThenBody->GenLLVM(builder);
         then_block = builder.GetBuilder().GetInsertBlock();
         then_terminator = then_block->getTerminator();
         if (!then_terminator)
@@ -62,7 +62,7 @@ void NJS::IfStatement::GenVoidLLVM(Builder &builder) const
     if (ElseBody)
     {
         builder.GetBuilder().SetInsertPoint(else_block);
-        ElseBody->GenVoidLLVM(builder);
+        ElseBody->GenLLVM(builder);
         else_block = builder.GetBuilder().GetInsertBlock();
         else_terminator = else_block->getTerminator();
         if (!else_terminator)
@@ -72,10 +72,11 @@ void NJS::IfStatement::GenVoidLLVM(Builder &builder) const
     if (then_terminator && else_terminator)
     {
         end_block->eraseFromParent();
-        return;
+        return {};
     }
 
     builder.GetBuilder().SetInsertPoint(end_block);
+    return {};
 }
 
 std::ostream &NJS::IfStatement::Print(std::ostream &stream)

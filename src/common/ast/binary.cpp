@@ -21,7 +21,9 @@ NJS::BinaryExpression::BinaryExpression(
 {
 }
 
-NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::BinaryExpression::GenLLVM(
+    Builder &builder,
+    const TypePtr &expected_type) const
 {
     static const std::map<std::string_view, BinaryOperator> operators
     {
@@ -149,8 +151,6 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
     const auto left_type = left_operand->GetType();
     const auto right_type = right_operand->GetType();
     const auto operand_type = GetHigherOrderOf(Where, builder.GetTypeContext(), left_type, right_type);
-    if (!operand_type)
-        Error(Where, "cannot determine higher order type of {} and {}", left_type, right_type);
 
     left_operand = builder.CreateCast(LeftOperand->Where, left_operand, operand_type);
     right_operand = builder.CreateCast(RightOperand->Where, right_operand, operand_type);
