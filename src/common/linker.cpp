@@ -7,7 +7,7 @@
 #include <llvm/Target/TargetOptions.h>
 #include <llvm/TargetParser/Host.h>
 #include <newjs/error.hpp>
-#include <newjs/Linker.hpp>
+#include <newjs/linker.hpp>
 
 NJS::Linker::Linker(const std::string &module_id, const std::string &source_filename)
     : m_AppendNames(module_id.empty())
