@@ -2,7 +2,6 @@
 #include <llvm/IR/Value.h>
 #include <newjs/ast.hpp>
 #include <newjs/builder.hpp>
-#include <newjs/error.hpp>
 #include <newjs/operator.hpp>
 #include <newjs/type.hpp>
 #include <newjs/value.hpp>
@@ -23,7 +22,6 @@ NJS::UnaryExpression::UnaryExpression(
 
 NJS::ValuePtr NJS::UnaryExpression::GenLLVM(
     Builder &builder,
-    ErrorInfo &error,
     const TypePtr &expected_type) const
 {
     static const std::map<std::string_view, UnaryOperator> operators
@@ -43,7 +41,7 @@ NJS::ValuePtr NJS::UnaryExpression::GenLLVM(
         "--"sv,
     };
 
-    auto operand = Operand->GenLLVM(builder, error, expected_type);
+    auto operand = Operand->GenLLVM(builder, expected_type);
 
     if (auto [
             result_,
@@ -52,24 +50,23 @@ NJS::ValuePtr NJS::UnaryExpression::GenLLVM(
         ] = builder.FindOperator(Operator, Prefix, operand);
         callee_)
     {
-        const auto function_type = llvm::FunctionType::get(
-            result_.GetLLVM(Where, builder),
-            {value_.GetLLVM(Operand->Where, builder)},
-            false);
+        const auto result_type = result_.GetLLVM(builder);
+        const auto value_type = value_.GetLLVM(builder);
+
+        const auto function_type = llvm::FunctionType::get(result_type, {value_type}, false);
+
         if (value_.IsReference && !operand->IsLValue())
         {
-            const auto value = builder.CreateAlloca(Operand->Where, operand->GetType(), true);
-            value->StoreForce(Operand->Where, operand);
+            const auto value = builder.CreateAlloca(operand->GetType(), true);
+            value->StoreNoError(operand);
             operand = value;
         }
-        const auto result_value = builder.GetBuilder().CreateCall(
-            function_type,
-            callee_,
-            {
-                value_.IsReference
-                    ? operand->GetPtr(Operand->Where)
-                    : operand->Load(Operand->Where)
-            });
+
+        const auto value_arg = value_.IsReference
+                                   ? operand->GetPointer()
+                                   : operand->Load();
+
+        const auto result_value = builder.GetBuilder().CreateCall(function_type, callee_, {value_arg});
         if (result_.IsReference)
             return LValue::Create(builder, result_.Type, result_value, result_.IsConst);
         return RValue::Create(builder, result_.Type, result_value);
@@ -78,26 +75,23 @@ NJS::ValuePtr NJS::UnaryExpression::GenLLVM(
     const auto assign = assignment_operators.contains(Operator);
 
     if (operators.contains(Operator))
-        if (auto result_value = operators.at(Operator)(builder, Where, operand))
+        if (auto result_value = operators.at(Operator)(builder, operand))
         {
             if (!assign)
                 return result_value;
 
-            const auto bkp_value = Prefix ? nullptr : operand->Load(Operand->Where);
+            const auto bkp_value = Prefix
+                                       ? nullptr
+                                       : operand->Load();
 
-            operand->Store(Where, result_value);
+            operand->Store(result_value);
             if (Prefix)
                 return operand;
 
             return RValue::Create(builder, operand->GetType(), bkp_value);
         }
 
-    Error(
-        Where,
-        "undefined unary operator {}{}{}",
-        Prefix ? Operator : std::string(),
-        operand->GetType(),
-        Prefix ? std::string() : Operator);
+    return nullptr;
 }
 
 std::ostream &NJS::UnaryExpression::Print(std::ostream &stream)

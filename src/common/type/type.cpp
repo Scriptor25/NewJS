@@ -1,12 +1,9 @@
 #include <iostream>
 #include <newjs/builder.hpp>
-#include <newjs/error.hpp>
-#include <newjs/location.hpp>
 #include <newjs/type.hpp>
 #include <newjs/type_context.hpp>
 
 NJS::TypePtr NJS::GetHigherOrderOf(
-    const SourceLocation &where,
     TypeContext &type_context,
     const TypePtr &type_a,
     const TypePtr &type_b)
@@ -18,18 +15,31 @@ NJS::TypePtr NJS::GetHigherOrderOf(
     {
         if (type_b->IsInteger())
             return type_context.GetIntegerType(
-                std::max(type_a->GetBits(where), type_b->GetBits(where)),
-                type_a->IsSigned(where) || type_b->IsSigned(where));
+                std::max(
+                    Type::As<IntegerType>(type_a)->GetBits(),
+                    Type::As<IntegerType>(type_b)->GetBits()),
+                Type::As<IntegerType>(type_a)->IsSigned() || Type::As<IntegerType>(type_b)->IsSigned());
         if (type_b->IsFloatingPoint())
-            return type_context.GetFloatingPointType(std::max(type_a->GetBits(where), type_b->GetBits(where)));
+            return type_context.GetFloatingPointType(
+                std::max(
+                    Type::As<IntegerType>(type_a)->GetBits(),
+                    Type::As<FloatingPointType>(type_b)->GetBits()));
         if (type_b->IsPointer())
             return type_b;
     }
 
     if (type_a->IsFloatingPoint())
     {
-        if (type_b->IsInteger() || type_b->IsFloatingPoint())
-            return type_context.GetFloatingPointType(std::max(type_a->GetBits(where), type_b->GetBits(where)));
+        if (type_b->IsInteger())
+            return type_context.GetFloatingPointType(
+                std::max(
+                    Type::As<FloatingPointType>(type_a)->GetBits(),
+                    Type::As<IntegerType>(type_b)->GetBits()));
+        if (type_b->IsFloatingPoint())
+            return type_context.GetFloatingPointType(
+                std::max(
+                    Type::As<FloatingPointType>(type_a)->GetBits(),
+                    Type::As<FloatingPointType>(type_b)->GetBits()));
     }
 
     if (type_a->IsPointer())
@@ -38,7 +48,7 @@ NJS::TypePtr NJS::GetHigherOrderOf(
             return type_a;
     }
 
-    Error(where, "cannot determine higher order type of {} and {}", type_a, type_b);
+    return nullptr;
 }
 
 std::ostream &NJS::Type::Print(std::ostream &stream) const
@@ -51,13 +61,13 @@ std::string NJS::Type::GetString() const
     return m_String;
 }
 
-unsigned NJS::Type::GetSize(const SourceLocation &where, const Builder &builder)
+unsigned NJS::Type::GetSize(const Builder &builder)
 {
     if (m_Size != ~0u)
         return m_Size;
     if (IsIncomplete())
         return m_Size = 0;
-    const auto type = GetLLVM(where, builder);
+    const auto type = GetLLVM(builder);
     return m_Size = builder.GetModule().getDataLayout().getTypeAllocSize(type);
 }
 
@@ -109,66 +119,6 @@ bool NJS::Type::IsTuple() const
 bool NJS::Type::IsFunction() const
 {
     return false;
-}
-
-bool NJS::Type::IsSigned(const SourceLocation &where) const
-{
-    Error(where, "type {} does not support 'IsSigned'", m_String);
-}
-
-unsigned NJS::Type::GetBits(const SourceLocation &where) const
-{
-    Error(where, "type {} does not support 'GetBits'", m_String);
-}
-
-bool NJS::Type::IsConst(const SourceLocation &where) const
-{
-    Error(where, "type {} does not support 'IsConst'", m_String);
-}
-
-NJS::TypePtr NJS::Type::GetElement(const SourceLocation &where) const
-{
-    Error(where, "type {} does not support 'GetElement'", m_String);
-}
-
-NJS::TypePtr NJS::Type::GetElement(const SourceLocation &where, unsigned) const
-{
-    Error(where, "type {} does not support 'GetElement'", m_String);
-}
-
-unsigned NJS::Type::GetElementCount(const SourceLocation &where) const
-{
-    Error(where, "type {} does not support 'GetElementCount'", m_String);
-}
-
-NJS::MemberInfo NJS::Type::GetMember(const SourceLocation &where, const std::string &) const
-{
-    Error(where, "type {} does not support 'GetMember'", m_String);
-}
-
-NJS::MemberInfo NJS::Type::GetMember(const SourceLocation &where, unsigned) const
-{
-    Error(where, "type {} does not support 'GetMember'", m_String);
-}
-
-NJS::ReferenceInfo NJS::Type::GetResult(const SourceLocation &where) const
-{
-    Error(where, "type {} does not support 'GetResult'", m_String);
-}
-
-NJS::ReferenceInfo NJS::Type::GetParameter(const SourceLocation &where, unsigned) const
-{
-    Error(where, "type {} does not support 'GetParameter'", m_String);
-}
-
-unsigned NJS::Type::GetParameterCount(const SourceLocation &where) const
-{
-    Error(where, "type {} does not support 'GetParameterCount'", m_String);
-}
-
-bool NJS::Type::IsVarArg(const SourceLocation &where) const
-{
-    Error(where, "type {} does not support 'IsVarArg'", m_String);
 }
 
 NJS::Type::Type(TypeContext &type_context, std::string string)

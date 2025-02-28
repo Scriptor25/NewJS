@@ -82,7 +82,7 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
         return std::make_shared<IntegerExpression>(
             where,
             m_TypeContext.GetIntegerType(64, false),
-            type->GetSize(where, m_TemplateContext.GetBuilder()));
+            type->GetSize(m_TemplateContext.GetBuilder()));
     }
 
     if (NextAt("typeof"))

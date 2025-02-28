@@ -24,6 +24,8 @@ namespace NJS
 
         std::string Name;
         ReferenceInfo Result;
+        llvm::BasicBlock *HeadBlock;
+        llvm::BasicBlock *TailBlock;
         std::map<std::string, ValuePtr> Values;
     };
 
@@ -63,23 +65,21 @@ namespace NJS
         void Optimize(llvm::Function *function) const;
 
         [[nodiscard]] llvm::Value *CreateAlloca(llvm::Type *type, unsigned count = 0) const;
-        ValuePtr CreateAlloca(const SourceLocation &where, const TypePtr &type, bool is_const, unsigned count = 0);
+        ValuePtr CreateAlloca(const TypePtr &type, bool is_const, unsigned count = 0);
         ValuePtr CreateGlobal(
-            const SourceLocation &where,
             const std::string &name,
             const TypePtr &type,
             bool is_const,
             bool initialize,
             llvm::Constant *initializer = {});
 
-        ValuePtr CreateMember(const SourceLocation &where, const ValuePtr &value, const std::string &name);
+        ValuePtr CreateMember(const ValuePtr &value, const std::string &name);
 
-        ValuePtr CreateSubscript(const SourceLocation &where, ValuePtr array, ValuePtr index);
-        ValuePtr CreateSubscript(const SourceLocation &where, const ValuePtr &array, unsigned index);
+        ValuePtr CreateSubscript(ValuePtr array, ValuePtr index);
+        ValuePtr CreateSubscript(const ValuePtr &array, unsigned index);
 
-        ValuePtr CreateCast(const SourceLocation &where, const ValuePtr &value, const TypePtr &type);
+        ValuePtr CreateCast(const ValuePtr &value, const TypePtr &type);
         [[nodiscard]] llvm::Value *CreateCast(
-            const SourceLocation &where,
             const ValueInfo &ref,
             const TypePtr &src_type,
             const TypePtr &dst_type) const;
@@ -93,7 +93,12 @@ namespace NJS
 
         void GetFormat(llvm::FunctionCallee &callee) const;
 
-        void StackPush(const std::string &name = {}, const ReferenceInfo &result = {});
+        void StackPush(
+            const std::string &name = {},
+            const ReferenceInfo &result = {},
+            llvm::BasicBlock *head_block = nullptr,
+            llvm::
+            BasicBlock *tail_block = nullptr);
         void StackPop();
 
         [[nodiscard]] std::string GetName(bool absolute, const std::string &name) const;
@@ -129,11 +134,14 @@ namespace NJS
             const ValuePtr &left,
             const ValuePtr &right) const;
 
-        ValuePtr &DefineVariable(const SourceLocation &where, const std::string &name);
-        const NJS::ValuePtr &GetVariable(const SourceLocation &where, const std::string &name) const;
+        void DefineVariable(const std::string &name, ValuePtr value);
+        ValuePtr DefineVariableNoError(const std::string &name, ValuePtr value);
+        ValuePtr GetVariable(const std::string &name) const;
         ValuePtr &GetOrDefineVariable(const std::string &name);
 
         ReferenceInfo &CurrentFunctionResult();
+        llvm::BasicBlock *CurrentHeadBlock() const;
+        llvm::BasicBlock *CurrentTailBlock() const;
 
     private:
         std::string m_ModuleID;
@@ -148,6 +156,8 @@ namespace NJS
         std::unique_ptr<llvm::IRBuilder<>> m_LLVMBuilder;
 
         Passes m_Passes;
+
+        llvm::Function *m_Function;
 
         std::map<std::string, std::map<bool, ReferenceInfoMap<OperatorInfo<1>>>> m_UnaryOperatorMap;
         std::map<std::string, ReferenceInfoMap<ReferenceInfoMap<OperatorInfo<2>>>> m_BinaryOperatorMap;

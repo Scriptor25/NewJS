@@ -14,19 +14,18 @@ NJS::IntegerExpression::IntegerExpression(SourceLocation where, TypePtr type, co
 
 NJS::ValuePtr NJS::IntegerExpression::GenLLVM(
     Builder &builder,
-    ErrorInfo &error,
     const TypePtr &expected_type) const
 {
-    const auto result_type = Type
-                                 ? Type
-                                 : expected_type && expected_type->IsInteger()
-                                       ? expected_type
-                                       : builder.GetTypeContext().GetIntegerType(64, true);
-    const auto result_value = llvm::ConstantInt::get(
-        result_type->GetLLVM(Where, builder),
-        Value,
-        result_type->IsSigned(Where));
-    return RValue::Create(builder, result_type, result_value);
+    const auto type = Type
+                          ? Type
+                          : expected_type && expected_type->IsInteger()
+                                ? expected_type
+                                : builder.GetTypeContext().GetIntegerType(64, true);
+
+    return RValue::Create(
+        builder,
+        type,
+        llvm::ConstantInt::get(type->GetLLVM(builder), Value, Type::As<IntegerType>(type)->IsSigned()));
 }
 
 std::ostream &NJS::IntegerExpression::Print(std::ostream &stream)

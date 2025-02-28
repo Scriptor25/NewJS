@@ -25,7 +25,7 @@ PRINT(user1)
 PRINT(println)
 
 function printUser(const &{ name: n, surname: s, age: a, job: t }: User) {
-    println($" - {n} {s} ({abc}), {t}")
+    println($" - {n} {s} ({a}), {t}")
 }
 
 println("IT WORKS!")
@@ -162,3 +162,16 @@ println($"result = {result}")
 for (let i: u64; i < 64; ++i)
     println($"i = {2:u64 ** i}")
 println("Hello")
+
+for (let j: u64; j < 5; ++j)
+    for (let i: u64; i < 5; ++i) {
+        if (i == j)
+            continue
+        println($"{i} != {j}")
+    }
+
+for (let x: u64; x < 10; ++x) {
+    if (x > 5)
+        break
+    println($"{x}")
+}

@@ -19,7 +19,7 @@ NJS::FormatExpression::FormatExpression(
 {
 }
 
-NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, ErrorInfo &error, const TypePtr &) const
+NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
     constexpr auto BUFFER_SIZE = 1024;
 
@@ -48,10 +48,11 @@ NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, ErrorInfo &error,
         if (DynamicExpressions.contains(i))
         {
             auto &dynamic = DynamicExpressions.at(i);
-            const auto value = dynamic->GenLLVM(builder, error, {});
+
+            const auto value = dynamic->GenLLVM(builder, {});
             const auto size = arguments.size();
 
-            if (value->GetType()->TypeInfo(dynamic->Where, builder, arguments))
+            if (value->GetType()->TypeInfo(builder, arguments))
             {
                 arguments.resize(size);
                 continue;
@@ -59,23 +60,23 @@ NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, ErrorInfo &error,
 
             if (value->GetType()->IsPrimitive())
             {
-                arguments.emplace_back(value->Load(dynamic->Where));
+                arguments.emplace_back(value->Load());
                 continue;
             }
 
             if (value->IsLValue())
             {
-                arguments.emplace_back(value->GetPtr(dynamic->Where));
+                arguments.emplace_back(value->GetPointer());
                 continue;
             }
 
-            const auto const_ref = builder.CreateAlloca(dynamic->Where, value->GetType(), true);
-            const_ref->StoreForce(dynamic->Where, value);
-            arguments.emplace_back(const_ref->GetPtr(dynamic->Where));
+            const auto const_ref = builder.CreateAlloca(value->GetType(), true);
+            const_ref->StoreNoError(value);
+            arguments.emplace_back(const_ref->GetPointer());
             continue;
         }
 
-        Error(Where, "non-existent formatter operand at index {}", i);
+        return nullptr;
     }
 
     arguments.emplace_back(builder.GetBuilder().getInt32(ID_VOID));

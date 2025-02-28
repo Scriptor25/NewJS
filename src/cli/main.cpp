@@ -51,9 +51,9 @@ static void parse(
     NJS::Parser parser(type_ctx, template_ctx, input_stream, NJS::SourceLocation(input_filename), macros, is_main);
 
     parser.Parse(
-        [&](const NJS::StatementPtr &ptr)
+        [&](const NJS::StatementPtr &statement)
         {
-            ptr->GenLLVM(builder, TODO);
+            statement->GenLLVM(builder);
         });
 
     builder.Close();

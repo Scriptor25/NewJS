@@ -1,6 +1,5 @@
 #include <newjs/ast.hpp>
 #include <newjs/builder.hpp>
-#include <newjs/error.hpp>
 #include <newjs/std.hpp>
 #include <newjs/type.hpp>
 
@@ -15,7 +14,6 @@ bool NJS::IncompleteType::IsIncomplete() const
 }
 
 bool NJS::IncompleteType::TypeInfo(
-    const SourceLocation &where,
     Builder &builder,
     std::vector<llvm::Value *> &arguments) const
 {
@@ -30,7 +28,7 @@ NJS::IncompleteType::IncompleteType(TypeContext &type_context, std::string strin
 {
 }
 
-llvm::Type *NJS::IncompleteType::GenLLVM(const SourceLocation &where, const Builder &) const
+llvm::Type *NJS::IncompleteType::GenLLVM(const Builder &) const
 {
-    Error(where, "the incomplete type '{}' does not have a llvm representation", m_Name);
+    return nullptr;
 }

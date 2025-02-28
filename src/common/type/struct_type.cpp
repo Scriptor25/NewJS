@@ -1,7 +1,6 @@
 #include <ranges>
 #include <newjs/ast.hpp>
 #include <newjs/builder.hpp>
-#include <newjs/error.hpp>
 #include <newjs/std.hpp>
 #include <newjs/type.hpp>
 
@@ -29,28 +28,25 @@ bool NJS::StructType::IsStruct() const
     return true;
 }
 
-unsigned NJS::StructType::GetElementCount(const SourceLocation &) const
+unsigned NJS::StructType::GetElementCount() const
 {
     return m_ElementTypes.size();
 }
 
-NJS::MemberInfo NJS::StructType::GetMember(const SourceLocation &where, const std::string &name) const
+NJS::MemberInfo NJS::StructType::GetMember(const std::string &name) const
 {
     for (unsigned i = 0; i < m_ElementTypes.size(); ++i)
         if (m_ElementTypes[i].first == name)
             return {i, m_ElementTypes[i].first, m_ElementTypes[i].second};
-    Error(where, "no member '{}' in type {}", name, m_String);
+    return {};
 }
 
-NJS::MemberInfo NJS::StructType::GetMember(const SourceLocation &, const unsigned index) const
+NJS::MemberInfo NJS::StructType::GetMember(const unsigned index) const
 {
     return {index, m_ElementTypes[index].first, m_ElementTypes[index].second};
 }
 
-bool NJS::StructType::TypeInfo(
-    const SourceLocation &where,
-    Builder &builder,
-    std::vector<llvm::Value *> &arguments) const
+bool NJS::StructType::TypeInfo(Builder &builder, std::vector<llvm::Value *> &arguments) const
 {
     arguments.emplace_back(builder.GetBuilder().getInt32(ID_STRUCT));
     arguments.emplace_back(builder.GetBuilder().getInt32(m_ElementTypes.size()));
@@ -58,7 +54,7 @@ bool NJS::StructType::TypeInfo(
     for (const auto &[name_, type_]: m_ElementTypes)
     {
         arguments.emplace_back(StringExpression::GetString(builder, name_));
-        any_incomplete |= type_->TypeInfo(where, builder, arguments);
+        any_incomplete |= type_->TypeInfo(builder, arguments);
     }
     return any_incomplete;
 }
@@ -75,15 +71,15 @@ NJS::StructType::StructType(
 {
 }
 
-llvm::Type *NJS::StructType::GenLLVM(const SourceLocation &where, const Builder &builder) const
+llvm::Type *NJS::StructType::GenLLVM(const Builder &builder) const
 {
     const auto struct_name = "struct." + std::to_string(m_Index);
     if (const auto struct_type = llvm::StructType::getTypeByName(builder.GetContext(), struct_name))
         return struct_type;
 
     std::vector<llvm::Type *> types;
-    for (const auto &type: m_ElementTypes | std::ranges::views::values)
-        types.emplace_back(type->GetLLVM(where, builder));
+    for (const auto &element_type: m_ElementTypes | std::ranges::views::values)
+        types.emplace_back(element_type->GetLLVM(builder));
 
     return llvm::StructType::create(builder.GetContext(), types, struct_name, true);
 }

@@ -24,30 +24,27 @@ void NJS::DestructureStruct::CreateVars(
     ValuePtr value,
     const bool is_extern,
     const bool is_const,
-    const bool is_reference,
-    ErrorInfo &error)
+    const bool is_reference)
 {
     if (Type)
     {
         if (is_reference)
         {
             if (value->GetType() != Type)
-                Error(
-                    Where,
-                    "type mismatch: cannot create reference with type {} from value of type {}",
-                    Type,
-                    value->GetType());
+                return;
             if (value->IsConst() && !is_const)
-                Error(Where, "cannot reference constant value as mutable");
+                return;
         }
         else
-            value = builder.CreateCast(Where, value, Type);
+        {
+            value = builder.CreateCast(value, Type);
+        }
     }
 
     for (const auto &[name_, element_]: Elements)
     {
-        const auto member = builder.CreateMember(Where, value, name_);
-        element_->CreateVars(builder, member, is_extern, is_const, is_reference, error);
+        const auto member = builder.CreateMember(value, name_);
+        element_->CreateVars(builder, member, is_extern, is_const, is_reference);
     }
 }
 

@@ -21,10 +21,7 @@ NJS::BinaryExpression::BinaryExpression(
 {
 }
 
-NJS::ValuePtr NJS::BinaryExpression::GenLLVM(
-    Builder &builder,
-    ErrorInfo &error,
-    const TypePtr &expected_type) const
+NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     static const std::map<std::string_view, BinaryOperator> operators
     {
@@ -84,19 +81,17 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(
 
     auto left_operand = LeftOperand->GenLLVM(
         builder,
-        error,
         is_comparator
             ? nullptr
             : expected_type);
+
     auto right_operand = RightOperand->GenLLVM(
         builder,
-        error,
         is_comparator
             ? nullptr
             : is_assignment
                   ? left_operand->GetType()
                   : expected_type);
-
     if (auto [
             result_,
             left_,
@@ -109,34 +104,34 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(
         callee_)
     {
         const auto function_type = llvm::FunctionType::get(
-            result_.GetLLVM(Where, builder),
-            {
-                left_.GetLLVM(LeftOperand->Where, builder),
-                right_.GetLLVM(RightOperand->Where, builder),
-            },
+            result_.GetLLVM(builder),
+            {left_.GetLLVM(builder), right_.GetLLVM(builder)},
             false);
+
         if (left_.IsReference && !left_operand->IsLValue())
         {
-            const auto value = builder.CreateAlloca(LeftOperand->Where, left_operand->GetType(), true);
-            value->StoreForce(LeftOperand->Where, left_operand);
+            const auto value = builder.CreateAlloca(left_operand->GetType(), true);
+            value->StoreNoError(left_operand);
             left_operand = value;
         }
+
         if (right_.IsReference && !right_operand->IsLValue())
         {
-            const auto value = builder.CreateAlloca(RightOperand->Where, right_operand->GetType(), true);
-            value->StoreForce(RightOperand->Where, right_operand);
+            const auto value = builder.CreateAlloca(right_operand->GetType(), true);
+            value->StoreNoError(right_operand);
             right_operand = value;
         }
+
         const auto result_value = builder.GetBuilder().CreateCall(
             function_type,
             callee_,
             {
                 left_.IsReference
-                    ? left_operand->GetPtr(LeftOperand->Where)
-                    : left_operand->Load(LeftOperand->Where),
+                    ? left_operand->GetPointer()
+                    : left_operand->Load(),
                 right_.IsReference
-                    ? right_operand->GetPtr(RightOperand->Where)
-                    : right_operand->Load(RightOperand->Where)
+                    ? right_operand->GetPointer()
+                    : right_operand->Load()
             });
         if (result_.IsReference)
             return LValue::Create(builder, result_.Type, result_value, result_.IsConst);
@@ -147,16 +142,16 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(
 
     if (Operator == "=")
     {
-        destination->Store(Where, right_operand);
+        destination->Store(right_operand);
         return destination;
     }
 
     const auto left_type = left_operand->GetType();
     const auto right_type = right_operand->GetType();
-    const auto operand_type = GetHigherOrderOf(Where, builder.GetTypeContext(), left_type, right_type);
+    const auto operand_type = GetHigherOrderOf(builder.GetTypeContext(), left_type, right_type);
 
-    left_operand = builder.CreateCast(LeftOperand->Where, left_operand, operand_type);
-    right_operand = builder.CreateCast(RightOperand->Where, right_operand, operand_type);
+    left_operand = builder.CreateCast(left_operand, operand_type);
+    right_operand = builder.CreateCast(right_operand, operand_type);
 
     auto operator_ = Operator;
     if (is_assignment)
@@ -165,19 +160,18 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(
     if (operators.contains(operator_))
         if (auto result_value = operators.at(operator_)(
             builder,
-            Where,
             operand_type,
-            left_operand->Load(LeftOperand->Where),
-            right_operand->Load(RightOperand->Where)))
+            left_operand->Load(),
+            right_operand->Load()))
         {
             if (!is_assignment)
                 return result_value;
 
-            destination->Store(Where, result_value);
+            destination->Store(result_value);
             return destination;
         }
 
-    Error(Where, "undefined binary operator '{} {} {}'", operand_type, Operator, operand_type);
+    return nullptr;
 }
 
 std::ostream &NJS::BinaryExpression::Print(std::ostream &stream)

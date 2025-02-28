@@ -24,7 +24,7 @@ namespace NJS
         explicit ReferenceInfo(TypePtr type);
 
         [[nodiscard]] std::string GetString() const;
-        [[nodiscard]] llvm::Type *GetLLVM(const SourceLocation &where, const Builder &builder) const;
+        [[nodiscard]] llvm::Type *GetLLVM(const Builder &builder) const;
 
         std::ostream &Print(std::ostream &stream) const;
 

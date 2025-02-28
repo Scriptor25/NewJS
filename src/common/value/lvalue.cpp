@@ -1,11 +1,10 @@
 #include <newjs/builder.hpp>
-#include <newjs/error.hpp>
 #include <newjs/type.hpp>
 #include <newjs/value.hpp>
 
-NJS::ValuePtr NJS::LValue::Create(Builder &builder, const TypePtr &type, llvm::Value *ptr, const bool is_const)
+NJS::ValuePtr NJS::LValue::Create(Builder &builder, const TypePtr &type, llvm::Value *pointer, const bool is_const)
 {
-    return std::shared_ptr<LValue>(new LValue(builder, type, ptr, is_const));
+    return std::shared_ptr<LValue>(new LValue(builder, type, pointer, is_const));
 }
 
 bool NJS::LValue::IsLValue() const
@@ -18,45 +17,45 @@ bool NJS::LValue::IsConst() const
     return m_IsConst;
 }
 
-llvm::Value *NJS::LValue::GetPtr(const SourceLocation &) const
+llvm::Value *NJS::LValue::GetPointer() const
 {
-    return m_Ptr;
+    return m_Pointer;
 }
 
-llvm::Value *NJS::LValue::Load(const SourceLocation &where) const
+llvm::Value *NJS::LValue::Load() const
 {
-    return GetBuilder().GetBuilder().CreateLoad(GetType()->GetLLVM(where, GetBuilder()), m_Ptr);
+    return GetBuilder().GetBuilder().CreateLoad(GetType()->GetLLVM(GetBuilder()), m_Pointer);
 }
 
-void NJS::LValue::Store(const SourceLocation &where, llvm::Value *value) const
-{
-    if (m_IsConst)
-        Error(where, "invalid store: lvalue is marked constant");
-
-    if (value->getType() != GetType()->GetLLVM(where, GetBuilder()))
-        Error(where, "invalid store: type mismatch, <llvm type> != {}", GetType());
-
-    GetBuilder().GetBuilder().CreateStore(value, m_Ptr);
-}
-
-void NJS::LValue::Store(const SourceLocation &where, ValuePtr value) const
+void NJS::LValue::Store(llvm::Value *value) const
 {
     if (m_IsConst)
-        Error(where, "invalid store: lvalue is marked constant");
+        return;
 
-    value = GetBuilder().CreateCast(where, value, GetType());
-    GetBuilder().GetBuilder().CreateStore(value->Load(where), m_Ptr);
+    if (value->getType() != GetType()->GetLLVM(GetBuilder()))
+        return;
+
+    GetBuilder().GetBuilder().CreateStore(value, m_Pointer);
 }
 
-void NJS::LValue::StoreForce(const SourceLocation &where, ValuePtr value) const
+void NJS::LValue::Store(ValuePtr value) const
 {
-    value = GetBuilder().CreateCast(where, value, GetType());
-    GetBuilder().GetBuilder().CreateStore(value->Load(where), m_Ptr);
+    if (m_IsConst)
+        return;
+
+    value = GetBuilder().CreateCast(value, GetType());
+    GetBuilder().GetBuilder().CreateStore(value->Load(), m_Pointer);
 }
 
-NJS::LValue::LValue(Builder &builder, TypePtr type, llvm::Value *ptr, const bool is_const)
+void NJS::LValue::StoreNoError(ValuePtr value) const
+{
+    value = GetBuilder().CreateCast(value, GetType());
+    GetBuilder().GetBuilder().CreateStore(value->Load(), m_Pointer);
+}
+
+NJS::LValue::LValue(Builder &builder, TypePtr type, llvm::Value *pointer, const bool is_const)
     : Value(builder, std::move(type)),
-      m_Ptr(ptr),
+      m_Pointer(pointer),
       m_IsConst(is_const)
 {
 }

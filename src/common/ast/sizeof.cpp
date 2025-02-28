@@ -14,18 +14,20 @@ NJS::SizeOfExpression::SizeOfExpression(SourceLocation where, ExpressionPtr oper
 
 NJS::ValuePtr NJS::SizeOfExpression::GenLLVM(
     Builder &builder,
-    ErrorInfo &error,
     const TypePtr &expected_type) const
 {
-    const auto value = Operand->GenLLVM(builder, error, {});
+    const auto operand = Operand->GenLLVM(builder, {});
+
     const auto type = expected_type && expected_type->IsInteger()
                           ? expected_type
                           : builder.GetTypeContext().GetIntegerType(64, false);
-    const auto size = llvm::ConstantInt::get(
-        type->GetLLVM(Where, builder),
-        value->GetType()->GetSize(Where, builder),
-        type->IsSigned(Where));
-    return RValue::Create(builder, type, size);
+
+    const auto value_type = type->GetLLVM(builder);
+
+    const auto size = operand->GetType()->GetSize(builder);
+
+    const auto size_value = llvm::ConstantInt::get(value_type, size, Type::As<IntegerType>(type)->IsSigned());
+    return RValue::Create(builder, type, size_value);
 }
 
 std::ostream &NJS::SizeOfExpression::Print(std::ostream &stream)

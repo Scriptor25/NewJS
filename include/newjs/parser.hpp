@@ -78,6 +78,8 @@ namespace NJS
         ImportMapping ParseImportMapping();
 
         StatementPtr ParseStatement();
+        StatementPtr ParseBreakStatement();
+        StatementPtr ParseContinueStatement();
         StatementPtr ParseForStatement();
         StatementPtr ParseFunctionStatement(bool is_export, bool is_extern);
         StatementPtr ParseIfStatement();

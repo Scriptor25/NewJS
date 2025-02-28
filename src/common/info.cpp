@@ -33,11 +33,11 @@ std::string NJS::ReferenceInfo::GetString() const
     return (IsReference ? IsConst ? "const &" : "&" : "") + Type->GetString();
 }
 
-llvm::Type *NJS::ReferenceInfo::GetLLVM(const SourceLocation &where, const Builder &builder) const
+llvm::Type *NJS::ReferenceInfo::GetLLVM(const Builder &builder) const
 {
     if (IsReference)
         return builder.GetBuilder().getPtrTy();
-    return Type->GetLLVM(where, builder);
+    return Type->GetLLVM(builder);
 }
 
 std::ostream &NJS::ReferenceInfo::Print(std::ostream &stream) const

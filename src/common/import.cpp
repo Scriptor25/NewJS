@@ -51,7 +51,6 @@ struct std::formatter<std::set<std::string>> final : formatter<string>
 
 void NJS::ImportMapping::MapFunctions(
     Builder &builder,
-    const SourceLocation &where,
     const std::string &module_id,
     const std::vector<FunctionStatementPtr> &functions) const
 {
@@ -88,10 +87,7 @@ void NJS::ImportMapping::MapFunctions(
             parameters,
             function->IsVarArg);
 
-        auto callee = builder.GetOrCreateFunction(
-            type->GenFnLLVM(where, builder),
-            llvm::GlobalValue::ExternalLinkage,
-            name);
+        auto callee = builder.GetOrCreateFunction(type->GenFnLLVM(builder), llvm::GlobalValue::ExternalLinkage, name);
 
         if (function->Flags & FunctionFlags_Operator)
         {
@@ -116,13 +112,13 @@ void NJS::ImportMapping::MapFunctions(
 
         if (All)
         {
-            builder.DefineVariable(where, function->Name) = value;
+            builder.DefineVariable(function->Name, value);
             continue;
         }
 
         if (NameMap.contains(function->Name))
         {
-            builder.DefineVariable(where, NameMap.at(function->Name)) = value;
+            builder.DefineVariable(NameMap.at(function->Name), value);
             name_set.erase(function->Name);
             continue;
         }
@@ -132,17 +128,25 @@ void NJS::ImportMapping::MapFunctions(
     }
 
     if (!name_set.empty())
-        Error(where, "following symbols are missing in import: {}", name_set);
+        return;
 
     if (Name.empty())
         return;
 
-    const auto module_type = builder.GetTypeContext().GetStructType(element_types);
-    llvm::Value *module_value = llvm::Constant::getNullValue(module_type->GetLLVM(where, builder));
+    const auto struct_type = builder.GetTypeContext().GetStructType(element_types);
+
+    const auto type = struct_type->GetLLVM(builder);
+
+    llvm::Value *value = llvm::Constant::getNullValue(type);
     for (const auto &[name_, value_]: element_values)
-        module_value = builder.GetBuilder().CreateInsertValue(
-            module_value,
-            value_->Load(where),
-            module_type->GetMember(where, name_).Index);
-    builder.DefineVariable(where, Name) = RValue::Create(builder, module_type, module_value);
+    {
+        const auto [
+            member_index_,
+            member_name_,
+            member_type_
+        ] = struct_type->GetMember(name_);
+        value = builder.GetBuilder().CreateInsertValue(value, value_->Load(), member_index_);
+    }
+
+    builder.DefineVariable(Name, RValue::Create(builder, struct_type, value));
 }

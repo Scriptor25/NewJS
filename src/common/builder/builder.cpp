@@ -1,13 +1,19 @@
 #include <ranges>
+#include <utility>
+#include <llvm/IR/Verifier.h>
 #include <llvm/Passes/PassBuilder.h>
 #include <llvm/Transforms/InstCombine/InstCombine.h>
+#include <llvm/Transforms/Scalar/DCE.h>
+#include <llvm/Transforms/Scalar/EarlyCSE.h>
 #include <llvm/Transforms/Scalar/GVN.h>
+#include <llvm/Transforms/Scalar/InstSimplifyPass.h>
+#include <llvm/Transforms/Scalar/MemCpyOptimizer.h>
 #include <llvm/Transforms/Scalar/Reassociate.h>
 #include <llvm/Transforms/Scalar/SimplifyCFG.h>
+#include <llvm/Transforms/Scalar/SROA.h>
 #include <llvm/Transforms/Utils/Mem2Reg.h>
 #include <newjs/builder.hpp>
 #include <newjs/error.hpp>
-#include <newjs/location.hpp>
 #include <newjs/type.hpp>
 #include <newjs/type_context.hpp>
 #include <newjs/value.hpp>
@@ -39,11 +45,17 @@ NJS::Builder::Builder(
 
     m_Passes.SI->registerCallbacks(*m_Passes.PIC, m_Passes.MAM.get());
 
+    m_Passes.FPM->addPass(llvm::PromotePass());
+    m_Passes.FPM->addPass(llvm::SROAPass(llvm::SROAOptions::PreserveCFG));
+    m_Passes.FPM->addPass(llvm::MemCpyOptPass());
     m_Passes.FPM->addPass(llvm::InstCombinePass());
     m_Passes.FPM->addPass(llvm::ReassociatePass());
-    m_Passes.FPM->addPass(llvm::GVNPass());
+    m_Passes.FPM->addPass(llvm::InstSimplifyPass());
     m_Passes.FPM->addPass(llvm::SimplifyCFGPass());
-    m_Passes.FPM->addPass(llvm::PromotePass());
+    m_Passes.FPM->addPass(llvm::EarlyCSEPass());
+    m_Passes.FPM->addPass(llvm::GVNPass());
+    m_Passes.FPM->addPass(llvm::DCEPass());
+    m_Passes.FPM->addPass(llvm::LoopSimplifyPass());
 
     llvm::PassBuilder pass_builder;
     pass_builder.registerModuleAnalyses(*m_Passes.MAM);
@@ -55,9 +67,7 @@ NJS::Builder::Builder(
     else
         StackPush(m_ModuleID, ReferenceInfo(m_TypeContext.GetVoidType()));
 
-    auto &process = DefineVariable({}, "process");
-    process = CreateGlobal(
-        {},
+    const auto process = CreateGlobal(
         "process",
         m_TypeContext.GetStructType(
             {
@@ -66,6 +76,7 @@ NJS::Builder::Builder(
             }),
         false,
         is_main);
+    DefineVariable("process", process);
 
     if (is_main)
     {
@@ -73,26 +84,26 @@ NJS::Builder::Builder(
             GetBuilder().getInt32Ty(),
             {GetBuilder().getInt32Ty(), GetBuilder().getPtrTy()},
             false);
-        const auto function = llvm::Function::Create(
+        m_Function = llvm::Function::Create(
             type,
             llvm::GlobalValue::ExternalLinkage,
             "main",
             GetModule());
-        function->getArg(0)->setName("argc");
-        function->getArg(1)->setName("argv");
-        GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", function));
-        CreateMember({}, process, "argc")->Store({}, function->getArg(0));
-        CreateMember({}, process, "argv")->Store({}, function->getArg(1));
+        m_Function->getArg(0)->setName("argc");
+        m_Function->getArg(1)->setName("argv");
+        GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", m_Function));
+        CreateMember(process, "argc")->Store(m_Function->getArg(0));
+        CreateMember(process, "argv")->Store(m_Function->getArg(1));
         return;
     }
 
     const auto type = llvm::FunctionType::get(GetBuilder().getVoidTy(), false);
-    const auto function = llvm::Function::Create(
+    m_Function = llvm::Function::Create(
         type,
         llvm::GlobalValue::ExternalLinkage,
         GetName(true, "main"),
         GetModule());
-    GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", function));
+    GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", m_Function));
 }
 
 void NJS::Builder::Close()
@@ -105,6 +116,37 @@ void NJS::Builder::Close()
             GetBuilder().CreateRetVoid();
     }
     StackPop();
+
+    std::vector<llvm::BasicBlock *> deletable;
+    for (auto &block: *m_Function)
+    {
+        if (!block.hasNPredecessorsOrMore(1) && block.empty())
+        {
+            deletable.emplace_back(&block);
+            continue;
+        }
+        if (block.getTerminator())
+            continue;
+        if (m_Function->getReturnType()->isVoidTy())
+        {
+            GetBuilder().SetInsertPoint(&block);
+            GetBuilder().CreateRetVoid();
+            continue;
+        }
+        m_Function->print(llvm::errs());
+        return;
+    }
+
+    for (const auto block: deletable)
+        block->eraseFromParent();
+
+    if (verifyFunction(*m_Function, &llvm::errs()))
+    {
+        m_Function->print(llvm::errs());
+        return;
+    }
+
+    Optimize(m_Function);
 }
 
 const std::string &NJS::Builder::GetModuleID() const
@@ -159,7 +201,11 @@ void NJS::Builder::GetFormat(llvm::FunctionCallee &callee) const
     callee = llvm::FunctionCallee(type, function);
 }
 
-void NJS::Builder::StackPush(const std::string &name, const ReferenceInfo &result)
+void NJS::Builder::StackPush(
+    const std::string &name,
+    const ReferenceInfo &result,
+    llvm::BasicBlock *head_block,
+    llvm::BasicBlock *tail_block)
 {
     const auto frame_name = m_Stack.empty()
                                 ? name
@@ -169,7 +215,22 @@ void NJS::Builder::StackPush(const std::string &name, const ReferenceInfo &resul
                                   : m_Stack.empty()
                                         ? ReferenceInfo()
                                         : m_Stack.back().Result;
-    m_Stack.emplace_back(frame_name, frame_result);
+    const auto frame_head_block = head_block
+                                      ? head_block
+                                      : m_Stack.empty()
+                                            ? nullptr
+                                            : m_Stack.back().HeadBlock;
+    const auto frame_tail_block = tail_block
+                                      ? tail_block
+                                      : m_Stack.empty()
+                                            ? nullptr
+                                            : m_Stack.back().TailBlock;
+    m_Stack.emplace_back(
+        frame_name,
+        frame_result,
+        frame_head_block,
+        frame_tail_block,
+        std::map<std::string, ValuePtr>());
 }
 
 void NJS::Builder::StackPop()
@@ -305,20 +366,28 @@ NJS::OperatorInfo<2> NJS::Builder::FindOperator(
     return {};
 }
 
-NJS::ValuePtr &NJS::Builder::DefineVariable(const SourceLocation &where, const std::string &name)
+void NJS::Builder::DefineVariable(const std::string &name, ValuePtr value)
 {
     auto &stack = m_Stack.back();
     if (stack.Contains(name))
-        Error(where, "cannot redefine symbol '{}'", name);
-    return stack[name];
+        return;
+    stack[name] = std::move(value);
 }
 
-const NJS::ValuePtr &NJS::Builder::GetVariable(const SourceLocation &where, const std::string &name) const
+NJS::ValuePtr NJS::Builder::DefineVariableNoError(const std::string &name, ValuePtr value)
+{
+    auto &stack = m_Stack.back();
+    if (stack.Contains(name))
+        Error("cannot redefine symbol '{}'", name);
+    return stack[name] = std::move(value);
+}
+
+NJS::ValuePtr NJS::Builder::GetVariable(const std::string &name) const
 {
     for (auto &stack: std::ranges::reverse_view(m_Stack))
         if (stack.Contains(name))
             return stack[name];
-    Error(where, "undefined symbol '{}'", name);
+    return nullptr;
 }
 
 NJS::ValuePtr &NJS::Builder::GetOrDefineVariable(const std::string &name)
@@ -333,4 +402,14 @@ NJS::ValuePtr &NJS::Builder::GetOrDefineVariable(const std::string &name)
 NJS::ReferenceInfo &NJS::Builder::CurrentFunctionResult()
 {
     return m_Stack.back().Result;
+}
+
+llvm::BasicBlock *NJS::Builder::CurrentHeadBlock() const
+{
+    return m_Stack.back().HeadBlock;
+}
+
+llvm::BasicBlock *NJS::Builder::CurrentTailBlock() const
+{
+    return m_Stack.back().TailBlock;
 }

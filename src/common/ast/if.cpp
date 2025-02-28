@@ -17,7 +17,7 @@ NJS::IfStatement::IfStatement(
 {
 }
 
-NJS::ValuePtr NJS::IfStatement::GenLLVM(Builder &builder, ErrorInfo &error) const
+void NJS::IfStatement::GenLLVM(Builder &builder) const
 {
     const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent_function);
@@ -26,43 +26,26 @@ NJS::ValuePtr NJS::IfStatement::GenLLVM(Builder &builder, ErrorInfo &error) cons
                           : nullptr;
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent_function);
 
-    auto condition = Condition->GenLLVM(builder, error, builder.GetTypeContext().GetBooleanType());
-    condition = builder.CreateCast(Condition->Where, condition, builder.GetTypeContext().GetBooleanType());
-    const auto condition_value = condition->Load(Condition->Where);
-
-    if (const auto const_condition = llvm::dyn_cast<llvm::ConstantInt>(condition_value))
-    {
-        if (const_condition->isZero())
-        {
-            builder.GetBuilder().CreateBr(else_block ? else_block : end_block);
-            then_block->eraseFromParent();
-            then_block = nullptr;
-        }
-        else
-            builder.GetBuilder().CreateBr(then_block);
-    }
-    else
-        builder.GetBuilder().CreateCondBr(
-            condition_value,
-            then_block,
-            else_block ? else_block : end_block);
+    auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
+    condition = builder.CreateCast(condition, builder.GetTypeContext().GetBooleanType());
+    builder.GetBuilder().CreateCondBr(
+        condition->Load(),
+        then_block,
+        else_block ? else_block : end_block);
 
     const llvm::Instruction *then_terminator{};
-    if (then_block)
-    {
-        builder.GetBuilder().SetInsertPoint(then_block);
-        ThenBody->GenLLVM(builder, error);
-        then_block = builder.GetBuilder().GetInsertBlock();
-        then_terminator = then_block->getTerminator();
-        if (!then_terminator)
-            builder.GetBuilder().CreateBr(end_block);
-    }
+    builder.GetBuilder().SetInsertPoint(then_block);
+    ThenBody->GenLLVM(builder);
+    then_block = builder.GetBuilder().GetInsertBlock();
+    then_terminator = then_block->getTerminator();
+    if (!then_terminator)
+        builder.GetBuilder().CreateBr(end_block);
 
     const llvm::Instruction *else_terminator{};
     if (ElseBody)
     {
         builder.GetBuilder().SetInsertPoint(else_block);
-        ElseBody->GenLLVM(builder, error);
+        ElseBody->GenLLVM(builder);
         else_block = builder.GetBuilder().GetInsertBlock();
         else_terminator = else_block->getTerminator();
         if (!else_terminator)
@@ -72,11 +55,10 @@ NJS::ValuePtr NJS::IfStatement::GenLLVM(Builder &builder, ErrorInfo &error) cons
     if (then_terminator && else_terminator)
     {
         end_block->eraseFromParent();
-        return {};
+        return;
     }
 
     builder.GetBuilder().SetInsertPoint(end_block);
-    return {};
 }
 
 std::ostream &NJS::IfStatement::Print(std::ostream &stream)

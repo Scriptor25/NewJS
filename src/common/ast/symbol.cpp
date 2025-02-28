@@ -8,9 +8,9 @@ NJS::SymbolExpression::SymbolExpression(SourceLocation where, std::string name)
 {
 }
 
-NJS::ValuePtr NJS::SymbolExpression::GenLLVM(Builder &builder, ErrorInfo &error, const TypePtr &) const
+NJS::ValuePtr NJS::SymbolExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
-    return builder.GetVariable(Where, Name);
+    return builder.GetVariable(Name);
 }
 
 std::ostream &NJS::SymbolExpression::Print(std::ostream &stream)

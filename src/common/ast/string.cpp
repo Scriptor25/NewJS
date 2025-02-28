@@ -9,10 +9,10 @@ llvm::Constant *NJS::StringExpression::GetString(const Builder &builder, const s
 {
     static std::map<std::string, std::map<std::string, llvm::Constant *>> string_table;
 
-    auto &ptr = string_table[builder.GetModuleID()][value];
-    if (!ptr)
-        ptr = builder.GetBuilder().CreateGlobalStringPtr(value);
-    return ptr;
+    auto &pointer = string_table[builder.GetModuleID()][value];
+    if (!pointer)
+        pointer = builder.GetBuilder().CreateGlobalStringPtr(value);
+    return pointer;
 }
 
 NJS::StringExpression::StringExpression(SourceLocation where, std::string value)
@@ -21,7 +21,7 @@ NJS::StringExpression::StringExpression(SourceLocation where, std::string value)
 {
 }
 
-NJS::ValuePtr NJS::StringExpression::GenLLVM(Builder &builder, ErrorInfo &error, const TypePtr &) const
+NJS::ValuePtr NJS::StringExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
     const auto type = builder.GetTypeContext().GetStringType();
     const auto value = GetString(builder, Value);

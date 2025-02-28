@@ -9,10 +9,9 @@ NJS::CastExpression::CastExpression(SourceLocation where, TypePtr type, Expressi
 {
 }
 
-NJS::ValuePtr NJS::CastExpression::GenLLVM(Builder &builder, ErrorInfo &error, const TypePtr &) const
+NJS::ValuePtr NJS::CastExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
-    auto value = Operand->GenLLVM(builder, error, Type);
-    return builder.CreateCast(Where, value, Type);
+    return builder.CreateCast(Operand->GenLLVM(builder, Type), Type);
 }
 
 std::ostream &NJS::CastExpression::Print(std::ostream &stream)

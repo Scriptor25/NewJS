@@ -11,7 +11,7 @@ NJS::BooleanExpression::BooleanExpression(SourceLocation where, const bool value
 {
 }
 
-NJS::ValuePtr NJS::BooleanExpression::GenLLVM(Builder &builder, ErrorInfo &error, const TypePtr &) const
+NJS::ValuePtr NJS::BooleanExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
     const auto result_type = builder.GetTypeContext().GetBooleanType();
     const auto result_value = builder.GetBuilder().getInt1(Value);

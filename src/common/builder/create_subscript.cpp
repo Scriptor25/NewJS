@@ -4,7 +4,7 @@
 #include <newjs/type_context.hpp>
 #include <newjs/value.hpp>
 
-NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePtr array, ValuePtr index)
+NJS::ValuePtr NJS::Builder::CreateSubscript(ValuePtr array, ValuePtr index)
 {
     if (auto [
             result_,
@@ -15,98 +15,102 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, ValuePt
         callee_)
     {
         const auto function_type = llvm::FunctionType::get(
-            result_.GetLLVM(where, *this),
-            {
-                left_.GetLLVM(where, *this),
-                right_.GetLLVM(where, *this),
-            },
+            result_.GetLLVM(*this),
+            {left_.GetLLVM(*this), right_.GetLLVM(*this)},
             false);
+
         if (left_.IsReference && !array->IsLValue())
         {
-            const auto value = CreateAlloca(where, array->GetType(), true);
-            value->StoreForce(where, array);
+            const auto value = CreateAlloca(array->GetType(), true);
+            value->StoreNoError(array);
             array = value;
         }
+
         if (right_.IsReference && !index->IsLValue())
         {
-            const auto value = CreateAlloca(where, index->GetType(), true);
-            value->StoreForce(where, index);
+            const auto value = CreateAlloca(index->GetType(), true);
+            value->StoreNoError(index);
             index = value;
         }
+
         const auto result_value = GetBuilder().CreateCall(
             function_type,
             callee_,
             {
                 left_.IsReference
-                    ? array->GetPtr(where)
-                    : array->Load(where),
+                    ? array->GetPointer()
+                    : array->Load(),
                 right_.IsReference
-                    ? index->GetPtr(where)
-                    : index->Load(where),
+                    ? index->GetPointer()
+                    : index->Load()
             });
         if (result_.IsReference)
             return LValue::Create(*this, result_.Type, result_value, result_.IsConst);
         return RValue::Create(*this, result_.Type, result_value);
     }
 
-    const auto array_type = array->GetType();
-    const auto index_value = index->Load(where);
+    const auto index_value = index->Load();
 
-    if (array_type->IsPointer())
+    if (array->GetType()->IsPointer())
     {
-        const auto element_type = array_type->GetElement(where);
-        const auto ptr = GetBuilder().CreateGEP(
-            element_type->GetLLVM(where, *this),
-            array->Load(where),
+        const auto element_type = Type::As<PointerType>(array->GetType())->GetElement();
+        const auto pointer = GetBuilder().CreateGEP(
+            element_type->GetLLVM(*this),
+            array->Load(),
             {index_value});
-        return LValue::Create(*this, element_type, ptr, array_type->IsConst(where));
+        return LValue::Create(*this, element_type, pointer, Type::As<PointerType>(array->GetType())->IsConst());
     }
 
-    if (!array_type->IsArray() && !array_type->IsTuple())
-        Error(where, "no subscript into type {} with index type {}", array_type, index->GetType());
+    if (!array->GetType()->IsArray() && !array->GetType()->IsTuple())
+        return nullptr;
 
     const auto const_index = llvm::dyn_cast<llvm::ConstantInt>(index_value);
     if (!const_index && !array->IsLValue())
     {
-        const auto value = CreateAlloca(where, array_type, array->IsConst());
-        value->StoreForce(where, array);
+        const auto value = CreateAlloca(array->GetType(), array->IsConst());
+        value->StoreNoError(array);
         array = value;
     }
 
     if (array->IsLValue())
     {
-        const auto index_type = index_value->getType();
-        const auto zero = llvm::Constant::getNullValue(index_type);
-        const auto ptr = GetBuilder().CreateGEP(
-            array_type->GetLLVM(where, *this),
-            array->GetPtr(where),
+        const auto zero = llvm::Constant::getNullValue(index_value->getType());
+        const auto pointer = GetBuilder().CreateGEP(
+            array->GetType()->GetLLVM(*this),
+            array->GetPointer(),
             {zero, index_value});
 
         TypePtr type;
-        if (array_type->IsArray())
-            type = array_type->GetElement(where);
-        else if (array_type->IsTuple())
+        if (array->GetType()->IsArray())
+        {
+            type = Type::As<ArrayType>(array->GetType())->GetElement();
+        }
+        else if (array->GetType()->IsTuple())
         {
             if (!const_index)
-                Error(where, "subscript index for indexing into tuple must be a constant");
+                return nullptr;
+
             const auto i = const_index->getValue().getLimitedValue();
-            type = array_type->GetElement(where, i);
+            type = Type::As<TupleType>(array->GetType())->GetElement(i);
         }
-        return LValue::Create(*this, type, ptr, array->IsConst());
+        return LValue::Create(*this, type, pointer, array->IsConst());
     }
 
     if (!const_index)
-        Error(where, "subscript index for indexing into constant must be a constant");
+        return nullptr;
 
     const auto i = const_index->getValue().getLimitedValue();
-    const auto val = GetBuilder().CreateExtractValue(array->Load(where), i);
-    return RValue::Create(*this, array_type->GetElement(where, i), val);
+    const auto element_value = GetBuilder().CreateExtractValue(array->Load(), i);
+    const auto element_type = array->GetType()->IsArray()
+                                  ? Type::As<ArrayType>(array->GetType())->GetElement()
+                                  : Type::As<TupleType>(array->GetType())->GetElement(i);
+
+    return RValue::Create(*this, element_type, element_value);
 }
 
-NJS::ValuePtr NJS::Builder::CreateSubscript(const SourceLocation &where, const ValuePtr &array, const unsigned index)
+NJS::ValuePtr NJS::Builder::CreateSubscript(const ValuePtr &array, const unsigned index)
 {
     return CreateSubscript(
-        where,
         array,
         RValue::Create(
             *this,

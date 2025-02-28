@@ -11,12 +11,7 @@ llvm::Value *NJS::Builder::CreateAlloca(llvm::Type *type, const unsigned count) 
     return ptr;
 }
 
-NJS::ValuePtr NJS::Builder::CreateAlloca(
-    const SourceLocation &where,
-    const TypePtr &type,
-    const bool is_const,
-    const unsigned count)
+NJS::ValuePtr NJS::Builder::CreateAlloca(const TypePtr &type, const bool is_const, const unsigned count)
 {
-    const auto ptr = CreateAlloca(type->GetLLVM(where, *this), count);
-    return LValue::Create(*this, type, ptr, is_const);
+    return LValue::Create(*this, type, CreateAlloca(type->GetLLVM(*this), count), is_const);
 }

@@ -1,4 +1,3 @@
-#include <ranges>
 #include <utility>
 #include <llvm/IR/Verifier.h>
 #include <newjs/ast.hpp>
@@ -27,7 +26,7 @@ NJS::FunctionStatement::FunctionStatement(
 {
 }
 
-NJS::ValuePtr NJS::FunctionStatement::GenLLVM(Builder &builder, ErrorInfo &error) const
+void NJS::FunctionStatement::GenLLVM(Builder &builder) const
 {
     std::string function_name;
     if (Flags & FunctionFlags_Extern)
@@ -59,7 +58,7 @@ NJS::ValuePtr NJS::FunctionStatement::GenLLVM(Builder &builder, ErrorInfo &error
     if (new_define)
     {
         function = llvm::Function::Create(
-            type->GenFnLLVM(Where, builder),
+            type->GenFnLLVM(builder),
             (Flags & (FunctionFlags_Export | FunctionFlags_Extern))
                 ? llvm::GlobalValue::ExternalLinkage
                 : llvm::GlobalValue::InternalLinkage,
@@ -88,25 +87,23 @@ NJS::ValuePtr NJS::FunctionStatement::GenLLVM(Builder &builder, ErrorInfo &error
     {
         auto value = RValue::Create(builder, type, function);
         if (new_define)
-            builder.DefineVariable(Where, Name) = std::move(value);
+        {
+            builder.DefineVariable(Name, value);
+        }
         else
         {
             auto &reference = builder.GetOrDefineVariable(Name);
             if (reference && reference->GetType() != value->GetType())
-                Error(
-                    Where,
-                    "function prototype mismatch: {} != {}",
-                    reference->GetType(),
-                    value->GetType());
+                return;
             reference = std::move(value);
         }
     }
 
     if (!Body)
-        return {};
+        return;
 
     if (!function->empty())
-        Error(Where, "redefining function '{}' ({})", Name, function_name);
+        return;
 
     const auto end_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
@@ -128,16 +125,17 @@ NJS::ValuePtr NJS::FunctionStatement::GenLLVM(Builder &builder, ErrorInfo &error
                 parameter->Info.IsConst);
         else
             argument_value = RValue::Create(builder, parameter->Type, argument);
+
         parameter->CreateVars(
             builder,
             argument_value,
             false,
             parameter->Info.IsConst,
-            parameter->Info.IsReference,
-            error);
+            parameter->Info.IsReference);
     }
 
-    Body->GenLLVM(builder, error);
+    Body->GenLLVM(builder);
+
     builder.StackPop();
 
     std::vector<llvm::BasicBlock *> deletable;
@@ -157,7 +155,7 @@ NJS::ValuePtr NJS::FunctionStatement::GenLLVM(Builder &builder, ErrorInfo &error
             continue;
         }
         function->print(llvm::errs());
-        Error(Where, "not all code paths return a value: in function '{}' ({})", Name, function_name);
+        return;
     }
 
     for (const auto block: deletable)
@@ -166,14 +164,12 @@ NJS::ValuePtr NJS::FunctionStatement::GenLLVM(Builder &builder, ErrorInfo &error
     if (verifyFunction(*function, &llvm::errs()))
     {
         function->print(llvm::errs());
-        Error(Where, "failed to verify function '{}' ({})", Name, function_name);
+        return;
     }
 
     builder.Optimize(function);
 
     builder.GetBuilder().SetInsertPoint(end_block);
-
-    return {};
 }
 
 std::ostream &NJS::FunctionStatement::Print(std::ostream &stream)
@@ -219,7 +215,7 @@ NJS::FunctionExpression::FunctionExpression(
 {
 }
 
-NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, ErrorInfo &error, const TypePtr &) const
+NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
     static unsigned id = 0;
     const auto function_name = std::to_string(id++);
@@ -228,8 +224,9 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, ErrorInfo &erro
     for (const auto &parameter: Parameters)
         parameters.emplace_back(parameter->Info);
     const auto type = builder.GetTypeContext().GetFunctionType(Result, parameters, IsVarArg);
+
     const auto function = llvm::Function::Create(
-        type->GenFnLLVM(Where, builder),
+        type->GenFnLLVM(builder),
         llvm::GlobalValue::InternalLinkage,
         builder.GetName(false, function_name),
         builder.GetModule());
@@ -259,11 +256,11 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, ErrorInfo &erro
             argument_value,
             false,
             parameter->Info.IsConst,
-            parameter->Info.IsReference,
-            error);
+            parameter->Info.IsReference);
     }
 
-    Body->GenLLVM(builder, error);
+    Body->GenLLVM(builder);
+
     builder.StackPop();
 
     std::vector<llvm::BasicBlock *> deletable;
@@ -283,7 +280,7 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, ErrorInfo &erro
             continue;
         }
         function->print(llvm::errs());
-        Error(Where, "not all code paths return a value: in function lambda ({})", function_name);
+        return nullptr;
     }
 
     for (const auto block: deletable)
@@ -292,7 +289,7 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, ErrorInfo &erro
     if (verifyFunction(*function, &llvm::errs()))
     {
         function->print(llvm::errs());
-        Error(Where, "failed to verify function lambda ({})", function_name);
+        return nullptr;
     }
 
     builder.Optimize(function);

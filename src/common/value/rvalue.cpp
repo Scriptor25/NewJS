@@ -1,4 +1,3 @@
-#include <newjs/error.hpp>
 #include <newjs/type.hpp>
 #include <newjs/value.hpp>
 
@@ -17,29 +16,26 @@ bool NJS::RValue::IsConst() const
     return true;
 }
 
-llvm::Value *NJS::RValue::GetPtr(const SourceLocation &where) const
+llvm::Value *NJS::RValue::GetPointer() const
 {
-    Error(where, "cannot get pointer to rvalue");
+    return nullptr;
 }
 
-llvm::Value *NJS::RValue::Load(const SourceLocation &) const
+llvm::Value *NJS::RValue::Load() const
 {
     return m_Value;
 }
 
-void NJS::RValue::Store(const SourceLocation &where, llvm::Value *) const
+void NJS::RValue::Store(llvm::Value *) const
 {
-    Error(where, "cannot assign to rvalue");
 }
 
-void NJS::RValue::Store(const SourceLocation &where, ValuePtr) const
+void NJS::RValue::Store(ValuePtr) const
 {
-    Error(where, "cannot assign to rvalue");
 }
 
-void NJS::RValue::StoreForce(const SourceLocation &where, ValuePtr value) const
+void NJS::RValue::StoreNoError(ValuePtr) const
 {
-    Error(where, "cannot assign to rvalue");
 }
 
 NJS::RValue::RValue(Builder &builder, TypePtr type, llvm::Value *value)

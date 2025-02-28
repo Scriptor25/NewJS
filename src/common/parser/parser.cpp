@@ -60,8 +60,8 @@ bool NJS::Parser::IsImport() const
 void NJS::Parser::Parse(const Consumer &consumer)
 {
     while (m_Token.Type != TokenType_EOF)
-        if (const auto ptr = ParseStatement())
-            consumer(ptr);
+        if (const auto statement = ParseStatement())
+            consumer(statement);
 }
 
 void NJS::Parser::ResetBuffer()

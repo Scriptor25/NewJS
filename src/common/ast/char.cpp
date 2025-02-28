@@ -11,7 +11,7 @@ NJS::CharExpression::CharExpression(SourceLocation where, const char value)
 {
 }
 
-NJS::ValuePtr NJS::CharExpression::GenLLVM(Builder &builder, ErrorInfo &error, const TypePtr &) const
+NJS::ValuePtr NJS::CharExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
     const auto result_type = builder.GetTypeContext().GetCharType();
     const auto result_value = builder.GetBuilder().getInt8(Value);

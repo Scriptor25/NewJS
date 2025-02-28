@@ -10,10 +10,9 @@ NJS::MemberExpression::MemberExpression(SourceLocation where, ExpressionPtr obje
 {
 }
 
-NJS::ValuePtr NJS::MemberExpression::GenLLVM(Builder &builder, ErrorInfo &error, const TypePtr &) const
+NJS::ValuePtr NJS::MemberExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
-    const auto value = Object->GenLLVM(builder, error, {});
-    return builder.CreateMember(Where, value, Member);
+    return builder.CreateMember(Object->GenLLVM(builder, {}), Member);
 }
 
 std::ostream &NJS::MemberExpression::Print(std::ostream &stream)

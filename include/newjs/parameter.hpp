@@ -25,8 +25,7 @@ namespace NJS
             ValuePtr value,
             bool is_extern,
             bool is_const,
-            bool is_reference,
-            ErrorInfo &error);
+            bool is_reference);
 
         virtual std::ostream &Print(std::ostream &stream);
 
@@ -50,8 +49,7 @@ namespace NJS
             ValuePtr value,
             bool is_extern,
             bool is_const,
-            bool is_reference,
-            ErrorInfo &error) override;
+            bool is_reference) override;
 
         std::ostream &Print(std::ostream &stream) override;
 
@@ -72,8 +70,7 @@ namespace NJS
             ValuePtr value,
             bool is_extern,
             bool is_const,
-            bool is_reference,
-            ErrorInfo &error) override;
+            bool is_reference) override;
 
         std::ostream &Print(std::ostream &stream) override;
 

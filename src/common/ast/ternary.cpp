@@ -20,7 +20,6 @@ NJS::TernaryExpression::TernaryExpression(
 
 NJS::ValuePtr NJS::TernaryExpression::GenLLVM(
     Builder &builder,
-    ErrorInfo &error,
     const TypePtr &expected_type) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
@@ -28,40 +27,39 @@ NJS::ValuePtr NJS::TernaryExpression::GenLLVM(
     auto else_block = llvm::BasicBlock::Create(builder.GetContext(), "else", parent);
     const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
 
-    const auto condition = Condition->GenLLVM(builder, error, builder.GetTypeContext().GetBooleanType());
-    builder.GetBuilder().CreateCondBr(condition->Load(Condition->Where), then_block, else_block);
+    const auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
+    builder.GetBuilder().CreateCondBr(condition->Load(), then_block, else_block);
 
     builder.GetBuilder().SetInsertPoint(then_block);
-    auto then_value = ThenBody->GenLLVM(builder, error, expected_type);
+    auto then_value = ThenBody->GenLLVM(builder, expected_type);
     if (then_value->IsLValue())
-        then_value = RValue::Create(builder, then_value->GetType(), then_value->Load(ThenBody->Where));
+        then_value = RValue::Create(builder, then_value->GetType(), then_value->Load());
     then_block = builder.GetBuilder().GetInsertBlock();
     const auto then_term = builder.GetBuilder().CreateBr(end_block);
 
     builder.GetBuilder().SetInsertPoint(else_block);
-    auto else_value = ElseBody->GenLLVM(builder, error, expected_type);
+    auto else_value = ElseBody->GenLLVM(builder, expected_type);
     if (else_value->IsLValue())
-        else_value = RValue::Create(builder, else_value->GetType(), else_value->Load(ElseBody->Where));
+        else_value = RValue::Create(builder, else_value->GetType(), else_value->Load());
     else_block = builder.GetBuilder().GetInsertBlock();
     const auto else_term = builder.GetBuilder().CreateBr(end_block);
 
     const auto result_type = GetHigherOrderOf(
-        Where,
         builder.GetTypeContext(),
         then_value->GetType(),
         else_value->GetType());
 
     builder.GetBuilder().SetInsertPoint(then_term);
-    then_value = builder.CreateCast(ThenBody->Where, then_value, result_type);
+    then_value = builder.CreateCast(then_value, result_type);
     builder.GetBuilder().SetInsertPoint(else_term);
-    else_value = builder.CreateCast(ElseBody->Where, else_value, result_type);
+    else_value = builder.CreateCast(else_value, result_type);
 
-    const auto result_ty = result_type->GetLLVM(Where, builder);
+    const auto result_ty = result_type->GetLLVM(builder);
 
     builder.GetBuilder().SetInsertPoint(end_block);
     const auto phi_inst = builder.GetBuilder().CreatePHI(result_ty, 2);
-    phi_inst->addIncoming(then_value->Load(ThenBody->Where), then_block);
-    phi_inst->addIncoming(else_value->Load(ElseBody->Where), else_block);
+    phi_inst->addIncoming(then_value->Load(), then_block);
+    phi_inst->addIncoming(else_value->Load(), else_block);
 
     return RValue::Create(builder, result_type, phi_inst);
 }

@@ -9,12 +9,12 @@ NJS::SubscriptExpression::SubscriptExpression(SourceLocation where, ExpressionPt
 {
 }
 
-NJS::ValuePtr NJS::SubscriptExpression::GenLLVM(Builder &builder, ErrorInfo &error, const TypePtr &) const
+NJS::ValuePtr NJS::SubscriptExpression::GenLLVM(Builder &builder, const TypePtr &) const
 {
-    const auto array = Array->GenLLVM(builder, error, {});
-    const auto index = Index->GenLLVM(builder, error, {});
+    const auto array = Array->GenLLVM(builder, {});
+    const auto index = Index->GenLLVM(builder, {});
 
-    return builder.CreateSubscript(Where, array, index);
+    return builder.CreateSubscript(array, index);
 }
 
 std::ostream &NJS::SubscriptExpression::Print(std::ostream &stream)

@@ -33,38 +33,38 @@ bool NJS::FunctionType::IsFunction() const
     return true;
 }
 
-NJS::ReferenceInfo NJS::FunctionType::GetResult(const SourceLocation &) const
+NJS::ReferenceInfo NJS::FunctionType::GetResult() const
 {
     return m_Result;
 }
 
-NJS::ReferenceInfo NJS::FunctionType::GetParameter(const SourceLocation &, const unsigned index) const
+NJS::ReferenceInfo NJS::FunctionType::GetParameter(const unsigned index) const
 {
     return m_Parameters[index];
 }
 
-unsigned NJS::FunctionType::GetParameterCount(const SourceLocation &) const
+unsigned NJS::FunctionType::GetParameterCount() const
 {
     return m_Parameters.size();
 }
 
-bool NJS::FunctionType::IsVarArg(const SourceLocation &) const
+bool NJS::FunctionType::IsVarArg() const
 {
     return m_IsVarArg;
 }
 
-bool NJS::FunctionType::TypeInfo(const SourceLocation &, Builder &builder, std::vector<llvm::Value *> &arguments) const
+bool NJS::FunctionType::TypeInfo(Builder &builder, std::vector<llvm::Value *> &arguments) const
 {
     arguments.emplace_back(builder.GetBuilder().getInt32(ID_FUNCTION));
     return false;
 }
 
-llvm::FunctionType *NJS::FunctionType::GenFnLLVM(const SourceLocation &where, const Builder &builder) const
+llvm::FunctionType *NJS::FunctionType::GenFnLLVM(const Builder &builder) const
 {
     std::vector<llvm::Type *> types;
     for (const auto &parameter: m_Parameters)
-        types.emplace_back(parameter.GetLLVM(where, builder));
-    return llvm::FunctionType::get(m_Result.GetLLVM(where, builder), types, m_IsVarArg);
+        types.emplace_back(parameter.GetLLVM(builder));
+    return llvm::FunctionType::get(m_Result.GetLLVM(builder), types, m_IsVarArg);
 }
 
 NJS::FunctionType::FunctionType(
@@ -80,7 +80,7 @@ NJS::FunctionType::FunctionType(
 {
 }
 
-llvm::Type *NJS::FunctionType::GenLLVM(const SourceLocation &, const Builder &builder) const
+llvm::Type *NJS::FunctionType::GenLLVM(const Builder &builder) const
 {
     return builder.GetBuilder().getPtrTy();
 }

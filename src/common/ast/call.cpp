@@ -15,22 +15,20 @@ NJS::CallExpression::CallExpression(SourceLocation where, ExpressionPtr callee, 
 
 NJS::ValuePtr NJS::CallExpression::GenLLVM(
     Builder &builder,
-    ErrorInfo &error,
     const TypePtr &expected_type) const
 {
-    const auto callee = Callee->GenLLVM(builder, error, {});
-    const auto callee_type = std::dynamic_pointer_cast<FunctionType>(callee->GetType());
-
+    const auto callee = Callee->GenLLVM(builder, {});
+    const auto callee_type = Type::As<FunctionType>(callee->GetType());
     if (!callee_type)
-        Error(Where, "invalid callee: callee is not a function");
+        return nullptr;
 
-    const auto parameter_count = callee_type->GetParameterCount(Callee->Where);
+    const auto parameter_count = callee_type->GetParameterCount();
 
     if (Arguments.size() < parameter_count)
-        Error(Where, "not enough arguments");
+        return nullptr;
 
-    if (Arguments.size() > parameter_count && !callee_type->IsVarArg(Callee->Where))
-        Error(Where, "too many arguments");
+    if (Arguments.size() > parameter_count && !callee_type->IsVarArg())
+        return nullptr;
 
     std::vector<llvm::Value *> arguments(Arguments.size());
     for (unsigned i = 0; i < Arguments.size(); ++i)
@@ -40,52 +38,50 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(
             is_const_,
             is_reference_
         ] = (i < parameter_count)
-                ? callee_type->GetParameter(Callee->Where, i)
+                ? callee_type->GetParameter(i)
                 : ReferenceInfo();
 
         auto &argument = Arguments[i];
-        auto argument_value = argument->GenLLVM(builder, error, type_);
+        auto argument_value = argument->GenLLVM(builder, type_);
 
         if (!is_reference_)
         {
             if (type_)
-                argument_value = builder.CreateCast(argument->Where, argument_value, type_);
-            arguments[i] = argument_value->Load(argument->Where);
+                argument_value = builder.CreateCast(argument_value, type_);
+
+            arguments[i] = argument_value->Load();
             continue;
         }
 
         if (argument_value->GetType() != type_)
-            Error(
-                Where,
-                "type mismatch: cannot create reference with type {} from value of type {}",
-                type_,
-                argument_value->GetType());
+            return nullptr;
 
         if (argument_value->IsConst() && !is_const_)
-            Error(Where, "cannot reference constant value as mutable");
+            return nullptr;
 
         if (!argument_value->IsLValue())
         {
             if (!is_const_)
-                Error(Where, "cannot create mutable reference to constant");
-            const auto value = builder.CreateAlloca(Where, argument_value->GetType(), true);
-            value->StoreForce(Where, argument_value);
+                return nullptr;
+
+            const auto value = builder.CreateAlloca(argument_value->GetType(), true);
+            value->StoreNoError(argument_value);
             argument_value = value;
         }
 
-        arguments[i] = argument_value->GetPtr(argument->Where);
+        arguments[i] = argument_value->GetPointer();
     }
 
     const auto result_value = builder.GetBuilder().CreateCall(
-        callee_type->GenFnLLVM(Callee->Where, builder),
-        callee->Load(Callee->Where),
+        callee_type->GenFnLLVM(builder),
+        callee->Load(),
         arguments);
 
     auto [
         type_,
         is_const_,
         is_reference_
-    ] = callee_type->GetResult(Callee->Where);
+    ] = callee_type->GetResult();
     if (is_reference_)
         return LValue::Create(builder, type_, result_value, is_const_);
     return RValue::Create(builder, type_, result_value);

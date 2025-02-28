@@ -28,50 +28,46 @@ void NJS::Parameter::CreateVars(
     ValuePtr value,
     const bool is_extern,
     const bool is_const,
-    const bool is_reference,
-    ErrorInfo &error)
+    const bool is_reference)
 {
     const auto type = Type ? Type : value->GetType();
-    auto &variable = builder.DefineVariable(Where, Name);
+    ValuePtr variable;
 
     if (is_extern)
     {
-        const auto const_value = value ? llvm::dyn_cast<llvm::Constant>(value->Load(Where)) : nullptr;
-        variable = builder.CreateGlobal(Where, Name, type, is_const, value != nullptr, const_value);
-        if (value && !const_value)
-            variable->Store(Where, value);
-        return;
-    }
+        const auto const_value = value
+                                     ? llvm::dyn_cast<llvm::Constant>(value->Load())
+                                     : nullptr;
 
-    if (is_reference)
+        variable = builder.CreateGlobal(Name, type, is_const, value != nullptr, const_value);
+        if (value && !const_value)
+            variable->Store(value);
+    }
+    else if (is_reference)
     {
         if (value->GetType() != type)
-            Error(
-                Where,
-                "type mismatch: cannot create reference with type {} from value of type {}",
-                type,
-                value->GetType());
+            return;
         if (value->IsConst() && !is_const)
-            Error(Where, "cannot reference constant value as mutable");
-        variable = LValue::Create(builder, type, value->GetPtr(Where), is_const);
-        return;
+            return;
+        const auto pointer = value->GetPointer();
+        variable = LValue::Create(builder, type, pointer, is_const);
     }
-
-    if (is_const)
+    else if (is_const)
     {
-        value = builder.CreateCast(Where, value, type);
-        variable = RValue::Create(builder, type, value->Load(Where));
-        return;
+        value = builder.CreateCast(value, type);
+        const auto loaded = value->Load();
+        variable = RValue::Create(builder, type, loaded);
     }
-
-    variable = builder.CreateAlloca(Where, type, false);
-    if (value)
+    else
     {
-        variable->Store(Where, value);
-        return;
+        variable = builder.CreateAlloca(type, false);
+        if (value)
+            variable->Store(value);
+        else
+            variable->Store(llvm::Constant::getNullValue(type->GetLLVM(builder)));
     }
 
-    variable->Store(Where, llvm::Constant::getNullValue(type->GetLLVM(Where, builder)));
+    builder.DefineVariable(Name, variable);
 }
 
 std::ostream &NJS::Parameter::Print(std::ostream &stream)

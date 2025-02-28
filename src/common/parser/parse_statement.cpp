@@ -1,6 +1,7 @@
 #include <newjs/ast.hpp>
 #include <newjs/parameter.hpp>
 #include <newjs/parser.hpp>
+#include <newjs/type.hpp>
 
 NJS::StatementPtr NJS::Parser::ParseStatement()
 {
@@ -23,6 +24,10 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
     const auto is_export = NextAt("export");
     const auto is_extern = NextAt("extern");
 
+    if (At("break"))
+        return ParseBreakStatement();
+    if (At("continue"))
+        return ParseContinueStatement();
     if (At("{"))
         return ParseScopeStatement();
     if (At("for"))

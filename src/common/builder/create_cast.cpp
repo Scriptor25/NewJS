@@ -1,23 +1,20 @@
 #include <newjs/builder.hpp>
-#include <newjs/error.hpp>
 #include <newjs/type.hpp>
 #include <newjs/value.hpp>
 
-NJS::ValuePtr NJS::Builder::CreateCast(const SourceLocation &where, const ValuePtr &value, const TypePtr &type)
+NJS::ValuePtr NJS::Builder::CreateCast(const ValuePtr &value, const TypePtr &type)
 {
     if (value->GetType() == type)
         return value;
 
     const auto result = CreateCast(
-        where,
-        {value->Load(where), value->IsLValue() ? value->GetPtr(where) : nullptr},
+        {value->Load(), value->IsLValue() ? value->GetPointer() : nullptr},
         value->GetType(),
         type);
     return RValue::Create(*this, type, result);
 }
 
 llvm::Value *NJS::Builder::CreateCast(
-    const SourceLocation &where,
     const ValueInfo &ref,
     const TypePtr &src_type,
     const TypePtr &dst_type) const
@@ -27,14 +24,14 @@ llvm::Value *NJS::Builder::CreateCast(
     if (src_type == dst_type)
         return val_;
 
-    const auto ty = dst_type->GetLLVM(where, *this);
+    const auto ty = dst_type->GetLLVM(*this);
 
     if (src_type->IsInteger())
     {
         if (dst_type->IsInteger())
-            return GetBuilder().CreateIntCast(val_, ty, dst_type->IsSigned(where));
+            return GetBuilder().CreateIntCast(val_, ty, Type::As<IntegerType>(dst_type)->IsSigned());
         if (dst_type->IsFloatingPoint())
-            return src_type->IsSigned(where)
+            return Type::As<IntegerType>(src_type)->IsSigned()
                        ? GetBuilder().CreateSIToFP(val_, ty)
                        : GetBuilder().CreateUIToFP(val_, ty);
         if (dst_type->IsPointer())
@@ -44,7 +41,7 @@ llvm::Value *NJS::Builder::CreateCast(
     if (src_type->IsFloatingPoint())
     {
         if (dst_type->IsInteger())
-            return dst_type->IsSigned(where)
+            return Type::As<IntegerType>(dst_type)->IsSigned()
                        ? GetBuilder().CreateFPToSI(val_, ty)
                        : GetBuilder().CreateFPToUI(val_, ty);
         if (dst_type->IsFloatingPoint())
@@ -61,8 +58,9 @@ llvm::Value *NJS::Builder::CreateCast(
 
     if (ptr_ && src_type->IsArray())
     {
-        if (dst_type->IsPointer() && src_type->GetElement(where) == dst_type->GetElement(where))
-            return GetBuilder().CreateConstGEP2_64(src_type->GetLLVM(where, *this), ptr_, 0, 0);
+        if (dst_type->IsPointer() &&
+            Type::As<ArrayType>(src_type)->GetElement() == Type::As<PointerType>(dst_type)->GetElement())
+            return GetBuilder().CreateConstGEP2_64(src_type->GetLLVM(*this), ptr_, 0, 0);
     }
 
     if (src_type->IsFunction())
@@ -71,5 +69,5 @@ llvm::Value *NJS::Builder::CreateCast(
             return GetBuilder().CreatePointerCast(val_, ty);
     }
 
-    Error(where, "no cast from value of type {} to {}", src_type, dst_type);
+    return nullptr;
 }
