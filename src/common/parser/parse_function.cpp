@@ -80,7 +80,7 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
 
 NJS::ExpressionPtr NJS::Parser::ParseFunctionExpression()
 {
-    const auto where = Expect("?").Where;
+    const auto where = Expect("$").Where;
 
     std::vector<ParameterPtr> parameters;
     auto is_var_arg = false;

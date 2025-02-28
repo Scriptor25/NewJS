@@ -21,7 +21,7 @@ NJS::BinaryExpression::BinaryExpression(
 {
 }
 
-NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::BinaryExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     static const std::map<std::string_view, BinaryOperator> operators
     {
@@ -84,9 +84,6 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
         is_comparator
             ? nullptr
             : expected_type);
-    if (!left_operand)
-        return nullptr;
-
     auto right_operand = RightOperand->GenLLVM(
         builder,
         is_comparator
@@ -94,8 +91,6 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
             : is_assignment
                   ? left_operand->GetType()
                   : expected_type);
-    if (!right_operand)
-        return nullptr;
 
     if (auto [
             result_,
@@ -176,7 +171,7 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
             return destination;
         }
 
-    return nullptr;
+    Error(Where, "TODO");
 }
 
 std::ostream &NJS::BinaryExpression::Print(std::ostream &stream)

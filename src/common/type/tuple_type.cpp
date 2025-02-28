@@ -22,7 +22,7 @@ bool NJS::TupleType::IsTuple() const
 NJS::TypePtr NJS::TupleType::GetElement(const unsigned index) const
 {
     if (index >= m_ElementTypes.size())
-        return nullptr;
+        Error("cannot get element at {} of tuple type {}", index, m_String);
     return m_ElementTypes[index];
 }
 

@@ -21,7 +21,7 @@ extern function malloc(count: u32): void[]
 extern function free(block: void[])
 
 if (process.argc != 3) {
-    println($"not enough arguments, require 3, got {process.argc}")
+    println(f"not enough arguments, require 3, got {process.argc}")
     return 1
 }
 
@@ -47,7 +47,7 @@ const fn = switch (day) {
 if (fn == day_err || fn == part_err)
     return fn(0)
 
-const stream = fopen($"input/{day}.txt", "r")
+const stream = fopen(f"input/{day}.txt", "r")
 fseek(stream, 0, SEEK_END)
 const stream_size = ftell(stream)
 fseek(stream, 0, SEEK_SET)
@@ -56,6 +56,6 @@ fread(input, 1, stream_size, stream)
 fclose(stream)
 
 const result = fn(input)
-println($"result: {result}")
+println(f"result: {result}")
 
 free(input)

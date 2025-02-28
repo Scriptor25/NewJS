@@ -5,7 +5,7 @@ extern function malloc(n: u64): void[]
 extern function realloc(block: void[], n: u64): void[]
 extern function free(block: void[])
 
-#PRINT(X) "println($\"{#X}\")"
+#PRINT(X) "println(f\"{#X}\")"
 
 type User = {
     name: i8[],
@@ -25,7 +25,7 @@ PRINT(user1)
 PRINT(println)
 
 function printUser(const &{ name: n, surname: s, age: a, job: t }: User) {
-    println($" - {n} {s} ({a}), {t}")
+    println(f" - {n} {s} ({a}), {t}")
 }
 
 println("IT WORKS!")
@@ -39,21 +39,21 @@ function recurse(n: u32): u32 {
 
 const n: u32 = 10
 const r = recurse(n)
-println($"recurse({n}) = {r}")
+println(f"recurse({n}) = {r}")
 
-println($"fib({n}) = {fib(n)}")
+println(f"fib({n}) = {fib(n)}")
 
 const a1: u32[3] = [1, 2, 3]
 const t1 = ["Felix", user1, a1]
 
 function printArray(array: u32[3]) {
-    println($"{array}")
+    println(f"{array}")
 }
 
 printArray(a1)
 
 for (let i = 0; i < 3; ++i)
-    println($"a1[{i}] = {a1[i]}")
+    println(f"a1[{i}] = {a1[i]}")
 
 function foo(): () => u32 {
     function bar(): u32 {
@@ -62,13 +62,13 @@ function foo(): () => u32 {
     return bar
 }
 
-println($"foo() = {typeof(foo())}")
-println($"foo()() = {foo()()}")
+println(f"foo() = {typeof(foo())}")
+println(f"foo()() = {foo()()}")
 
 const [name1, {name, surname, age, job}] = ["Felix", user1]
 
-println($"{name1} {name} {surname} {age} {job} {[4:u32, 5:u32, 6:u32]}")
-println($"t1 = {t1}")
+println(f"{name1} {name} {surname} {age} {job} {[4:u32, 5:u32, 6:u32]}")
+println(f"t1 = {t1}")
 
 type<T> vec = {
     beg: T[],
@@ -136,7 +136,7 @@ vec_at<i8>(v, 0xA) = 'd'
 vec_at<i8>(v, 0xB) = '!'
 vec_push<i8>(v, 0)
 
-println($"v = {v}")
+println(f"v = {v}")
 vec_free<i8>(v)
 
 type<T> promise = {
@@ -157,21 +157,21 @@ function add(a: i32, b: i32): promise<i32> {
 }
 
 const result = await<i32>(add(123, 456))
-println($"result = {result}")
+println(f"result = {result}")
 
 for (let i: u64; i < 64; ++i)
-    println($"i = {2:u64 ** i}")
+    println(f"i = {2:u64 ** i}")
 println("Hello")
 
 for (let j: u64; j < 5; ++j)
     for (let i: u64; i < 5; ++i) {
         if (i == j)
             continue
-        println($"{i} != {j}")
+        println(f"{i} != {j}")
     }
 
 for (let x: u64; x < 10; ++x) {
     if (x > 5)
         break
-    println($"{x}")
+    println(f"{x}")
 }

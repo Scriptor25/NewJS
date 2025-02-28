@@ -7,8 +7,8 @@ extern function malloc(count: u64): void[]
 extern function realloc(block: void[], count: u64): void[]
 extern function free(block: void[])
 
-glfw.setErrorCallback(?(error_code: i32, description: i8[]) {
-    println($"[GLFW {error_code}] {description}")
+glfw.setErrorCallback($(error_code: i32, description: i8[]) {
+    println(f"[GLFW {error_code}] {description}")
 })
 
 if (!glfw.init()) {
@@ -25,7 +25,7 @@ if (window == 0) {
 glfw.makeContextCurrent(window)
 glfw.swapInterval(1)
 
-glfw.setKeyCallback(window, ?(window: GLFWwindow[], key: i32, scancode: i32, action: i32, mods: i32) {
+glfw.setKeyCallback(window, $(window: GLFWwindow[], key: i32, scancode: i32, action: i32, mods: i32) {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
         glfw.setWindowShouldClose(window, GLFW_TRUE)
 })

@@ -17,9 +17,10 @@ static void replace_all(std::string &src, const std::string &find, const std::st
         src.replace(pos, find.size(), replace);
 }
 
-NJS::ExpressionPtr NJS::Macro::Inflate(Parser &parent) const
+NJS::ExpressionPtr NJS::Macro::Inflate(Parser &parent) const try
 {
     auto source = Source;
+    auto where = parent.CurrentLocation();
     if (!Parameters.empty())
     {
         parent.Expect("(");
@@ -44,8 +45,12 @@ NJS::ExpressionPtr NJS::Macro::Inflate(Parser &parent) const
         parent.GetTypeContext(),
         parent.GetTemplateContext(),
         stream,
-        SourceLocation("<macro>"),
+        where,
         parent.GetMacroMap(),
         parent.IsMain());
     return parser.ParseExpression();
+}
+catch (RTError &error)
+{
+    Error(error, "in macro '{}'", Source);
 }

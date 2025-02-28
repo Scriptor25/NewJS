@@ -1,7 +1,6 @@
 #include <utility>
 #include <newjs/ast.hpp>
 #include <newjs/builder.hpp>
-#include <newjs/error.hpp>
 #include <newjs/std.hpp>
 #include <newjs/type.hpp>
 #include <newjs/type_context.hpp>
@@ -19,7 +18,7 @@ NJS::FormatExpression::FormatExpression(
 {
 }
 
-NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &) const
 {
     constexpr auto BUFFER_SIZE = 1024;
 
@@ -50,8 +49,6 @@ NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) 
             auto &dynamic = DynamicExpressions.at(i);
 
             const auto value = dynamic->GenLLVM(builder, {});
-            if (!value)
-                return nullptr;
             const auto size = arguments.size();
 
             if (value->GetType()->TypeInfo(builder, arguments))
@@ -78,7 +75,7 @@ NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) 
             continue;
         }
 
-        return nullptr;
+        Error(Where, "TODO");
     }
 
     arguments.emplace_back(builder.GetBuilder().getInt32(ID_VOID));
@@ -92,7 +89,7 @@ NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) 
 
 std::ostream &NJS::FormatExpression::Print(std::ostream &stream)
 {
-    stream << "$\"";
+    stream << "f\"";
     for (unsigned i = 0; i < Count; ++i)
     {
         if (StaticExpressions.contains(i))

@@ -21,7 +21,7 @@ NJS::StringExpression::StringExpression(SourceLocation where, std::string value)
 {
 }
 
-NJS::ValuePtr NJS::StringExpression::GenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::StringExpression::PGenLLVM(Builder &builder, const TypePtr &) const
 {
     const auto type = builder.GetTypeContext().GetStringType();
     const auto value = GetString(builder, Value);

@@ -11,7 +11,7 @@ NJS::WhileStatement::WhileStatement(SourceLocation where, ExpressionPtr conditio
 {
 }
 
-bool NJS::WhileStatement::GenLLVM(Builder &builder) const
+void NJS::WhileStatement::PGenLLVM(Builder &builder) const
 {
     const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
     const auto head_block = llvm::BasicBlock::Create(builder.GetContext(), "head", parent_function);
@@ -23,19 +23,15 @@ bool NJS::WhileStatement::GenLLVM(Builder &builder) const
 
     builder.GetBuilder().SetInsertPoint(head_block);
     auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
-    if (!condition)
-        return true;
     condition = builder.CreateCast(condition, builder.GetTypeContext().GetBooleanType());
     builder.GetBuilder().CreateCondBr(condition->Load(), loop_block, end_block);
 
     builder.GetBuilder().SetInsertPoint(loop_block);
-    if (Body->GenLLVM(builder))
-        return true;
+    Body->GenLLVM(builder);
     builder.GetBuilder().CreateBr(head_block);
 
     builder.GetBuilder().SetInsertPoint(end_block);
     builder.StackPop();
-    return false;
 }
 
 std::ostream &NJS::WhileStatement::Print(std::ostream &stream)

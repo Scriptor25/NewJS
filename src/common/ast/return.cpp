@@ -11,7 +11,7 @@ NJS::ReturnStatement::ReturnStatement(SourceLocation where, ExpressionPtr value)
 {
 }
 
-bool NJS::ReturnStatement::GenLLVM(Builder &builder) const
+void NJS::ReturnStatement::PGenLLVM(Builder &builder) const
 {
     auto &[
         type_,
@@ -22,33 +22,32 @@ bool NJS::ReturnStatement::GenLLVM(Builder &builder) const
     if (!Value)
     {
         if (!type_->IsVoid())
-            return true;
+            Error(Where, "TODO");
 
         builder.GetBuilder().CreateRetVoid();
-        return false;
+        return;
     }
 
     auto value = Value->GenLLVM(builder, type_);
     if (!value)
-        return true;
+        Error(Where, "TODO");
     value = builder.CreateCast(value, type_);
 
     if (is_reference_)
     {
         if (value->GetType() != type_)
-            return true;
+            Error(Where, "TODO");
 
         if (value->IsConst() && !is_const_)
-            return true;
+            Error(Where, "TODO");
 
         const auto pointer = value->GetPointer();
 
         builder.GetBuilder().CreateRet(pointer);
-        return false;
+        return;
     }
 
     builder.GetBuilder().CreateRet(value->Load());
-    return false;
 }
 
 std::ostream &NJS::ReturnStatement::Print(std::ostream &stream)

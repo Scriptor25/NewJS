@@ -33,6 +33,8 @@ namespace NJS
         [[nodiscard]] bool IsMain() const;
         [[nodiscard]] bool IsImport() const;
 
+        [[nodiscard]] SourceLocation CurrentLocation() const;
+
         void Parse(const Consumer &consumer);
 
         void ResetBuffer();
@@ -97,6 +99,7 @@ namespace NJS
         ExpressionPtr ParsePrimaryExpression();
         ExpressionPtr ParseScopeExpression();
         ExpressionPtr ParseStructExpression();
+        ExpressionPtr ParseSymbolExpression(const SourceLocation &where, const std::string &name);
         ExpressionPtr ParseSwitchExpression();
         ExpressionPtr ParseTupleExpression();
         ExpressionPtr ParseUnaryExpression();

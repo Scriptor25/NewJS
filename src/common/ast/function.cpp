@@ -26,7 +26,7 @@ NJS::FunctionStatement::FunctionStatement(
 {
 }
 
-bool NJS::FunctionStatement::GenLLVM(Builder &builder) const
+void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
 {
     std::string function_name;
     if (Flags & FunctionFlags_Extern)
@@ -94,16 +94,16 @@ bool NJS::FunctionStatement::GenLLVM(Builder &builder) const
         {
             auto &reference = builder.GetOrDefineVariable(Name);
             if (reference && reference->GetType() != value->GetType())
-                return true;
+                Error(Where, "TODO");
             reference = std::move(value);
         }
     }
 
     if (!Body)
-        return false;
+        return;
 
     if (!function->empty())
-        return true;
+        Error(Where, "TODO");
 
     const auto end_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
@@ -134,8 +134,7 @@ bool NJS::FunctionStatement::GenLLVM(Builder &builder) const
             parameter->Info.IsReference);
     }
 
-    if (Body->GenLLVM(builder))
-        return true;
+    Body->GenLLVM(builder);
 
     builder.StackPop();
 
@@ -156,7 +155,7 @@ bool NJS::FunctionStatement::GenLLVM(Builder &builder) const
             continue;
         }
         function->print(llvm::errs());
-        return true;
+        Error(Where, "TODO");
     }
 
     for (const auto block: deletable)
@@ -165,13 +164,12 @@ bool NJS::FunctionStatement::GenLLVM(Builder &builder) const
     if (verifyFunction(*function, &llvm::errs()))
     {
         function->print(llvm::errs());
-        return true;
+        Error(Where, "TODO");
     }
 
     builder.Optimize(function);
 
     builder.GetBuilder().SetInsertPoint(end_block);
-    return false;
 }
 
 std::ostream &NJS::FunctionStatement::Print(std::ostream &stream)
@@ -217,7 +215,7 @@ NJS::FunctionExpression::FunctionExpression(
 {
 }
 
-NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr &) const
 {
     static unsigned id = 0;
     const auto function_name = std::to_string(id++);
@@ -261,8 +259,7 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
             parameter->Info.IsReference);
     }
 
-    if (Body->GenLLVM(builder))
-        return nullptr;
+    Body->GenLLVM(builder);
 
     builder.StackPop();
 
@@ -283,7 +280,7 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
             continue;
         }
         function->print(llvm::errs());
-        return nullptr;
+        Error(Where, "TODO");
     }
 
     for (const auto block: deletable)
@@ -292,7 +289,7 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
     if (verifyFunction(*function, &llvm::errs()))
     {
         function->print(llvm::errs());
-        return nullptr;
+        Error(Where, "TODO");
     }
 
     builder.Optimize(function);
@@ -303,7 +300,7 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
 
 std::ostream &NJS::FunctionExpression::Print(std::ostream &stream)
 {
-    stream << '?';
+    stream << '$';
     if (!Parameters.empty())
     {
         stream << '(';

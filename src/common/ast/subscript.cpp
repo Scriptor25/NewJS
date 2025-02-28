@@ -9,14 +9,10 @@ NJS::SubscriptExpression::SubscriptExpression(SourceLocation where, ExpressionPt
 {
 }
 
-NJS::ValuePtr NJS::SubscriptExpression::GenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::SubscriptExpression::PGenLLVM(Builder &builder, const TypePtr &) const
 {
     const auto array = Array->GenLLVM(builder, {});
-    if (!array)
-        return nullptr;
     const auto index = Index->GenLLVM(builder, {});
-    if (!index)
-        return nullptr;
 
     return builder.CreateSubscript(array, index);
 }

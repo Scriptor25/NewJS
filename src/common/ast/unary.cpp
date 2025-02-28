@@ -20,9 +20,7 @@ NJS::UnaryExpression::UnaryExpression(
 {
 }
 
-NJS::ValuePtr NJS::UnaryExpression::GenLLVM(
-    Builder &builder,
-    const TypePtr &expected_type) const
+NJS::ValuePtr NJS::UnaryExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     static const std::map<std::string_view, UnaryOperator> operators
     {
@@ -42,8 +40,6 @@ NJS::ValuePtr NJS::UnaryExpression::GenLLVM(
     };
 
     auto operand = Operand->GenLLVM(builder, expected_type);
-    if (!operand)
-        return nullptr;
 
     if (auto [
             result_,
@@ -93,7 +89,7 @@ NJS::ValuePtr NJS::UnaryExpression::GenLLVM(
             return RValue::Create(builder, operand->GetType(), bkp_value);
         }
 
-    return nullptr;
+    Error(Where, "TODO");
 }
 
 std::ostream &NJS::UnaryExpression::Print(std::ostream &stream)

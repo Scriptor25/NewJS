@@ -69,5 +69,5 @@ llvm::Value *NJS::Builder::CreateCast(
             return GetBuilder().CreatePointerCast(val_, ty);
     }
 
-    return nullptr;
+    Error("cannot create cast for value of type {} to type {}", src_type, dst_type);
 }

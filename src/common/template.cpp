@@ -20,7 +20,7 @@ NJS::FunctionStatement NJS::Template::InflateFunction(Parser &parent, const std:
 {
     parent.GetTypeContext().PushTemplate(Parameters, arguments);
 
-    std::stringstream stream('?' + Source, std::ios_base::in);
+    std::stringstream stream('$' + Source, std::ios_base::in);
     Parser parser(
         parent.GetTypeContext(),
         parent.GetTemplateContext(),

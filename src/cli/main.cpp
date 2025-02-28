@@ -53,14 +53,14 @@ static void parse(
     parser.Parse(
         [&](const NJS::StatementPtr &statement)
         {
-            if (statement->GenLLVM(builder));
+            statement->GenLLVM(builder);
         });
 
     builder.Close();
     linker.Link(builder.MoveModule());
 }
 
-int main(const int argc, const char **argv)
+int main(const int argc, const char **argv) try
 {
     NJS::ArgParser arg_parser(
         {
@@ -141,4 +141,9 @@ int main(const int argc, const char **argv)
     }
     else
         linker.Emit(llvm::outs(), output_type);
+}
+catch (const NJS::RTError &error)
+{
+    error.Print(std::cerr);
+    return 1;
 }

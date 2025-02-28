@@ -18,13 +18,12 @@ NJS::ImportStatement::ImportStatement(
 {
 }
 
-bool NJS::ImportStatement::GenLLVM(Builder &builder) const
+void NJS::ImportStatement::PGenLLVM(Builder &builder) const
 {
     for (auto &sub_module_id: SubModuleIDs)
         builder.CreateModuleCall(sub_module_id);
 
     Mapping.MapFunctions(builder, ModuleID, Functions);
-    return false;
 }
 
 std::ostream &NJS::ImportStatement::Print(std::ostream &stream)

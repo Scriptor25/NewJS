@@ -6,13 +6,12 @@ NJS::BreakStatement::BreakStatement(SourceLocation where)
 {
 }
 
-bool NJS::BreakStatement::GenLLVM(Builder &builder) const
+void NJS::BreakStatement::PGenLLVM(Builder &builder) const
 {
     const auto dest = builder.CurrentTailBlock();
     if (!dest)
-        return true;
+        Error(Where, "TODO");
     builder.GetBuilder().CreateBr(dest);
-    return false;
 }
 
 std::ostream &NJS::BreakStatement::Print(std::ostream &stream)

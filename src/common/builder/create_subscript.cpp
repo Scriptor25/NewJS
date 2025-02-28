@@ -61,7 +61,10 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(ValuePtr array, ValuePtr index)
     }
 
     if (!array->GetType()->IsArray() && !array->GetType()->IsTuple())
-        return nullptr;
+        Error(
+            "cannot create subscript into value of type {} with index of type {}",
+            array->GetType(),
+            index->GetType());
 
     const auto const_index = llvm::dyn_cast<llvm::ConstantInt>(index_value);
     if (!const_index && !array->IsLValue())
@@ -87,7 +90,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(ValuePtr array, ValuePtr index)
         else if (array->GetType()->IsTuple())
         {
             if (!const_index)
-                return nullptr;
+                Error("cannot create subscript into tuple with non-constant index");
 
             const auto i = const_index->getValue().getLimitedValue();
             type = Type::As<TupleType>(array->GetType())->GetElement(i);
@@ -96,7 +99,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(ValuePtr array, ValuePtr index)
     }
 
     if (!const_index)
-        return nullptr;
+        Error("cannot create subscript into constant array or tuple with non-constant index");
 
     const auto i = const_index->getValue().getLimitedValue();
     const auto element_value = GetBuilder().CreateExtractValue(array->Load(), i);

@@ -12,9 +12,7 @@ NJS::TupleExpression::TupleExpression(SourceLocation where, TypePtr type, std::v
 {
 }
 
-NJS::ValuePtr NJS::TupleExpression::GenLLVM(
-    Builder &builder,
-    const TypePtr &expected_type) const
+NJS::ValuePtr NJS::TupleExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     TypePtr result_type;
     if (Type)
@@ -41,8 +39,6 @@ NJS::ValuePtr NJS::TupleExpression::GenLLVM(
     {
         auto type = get_element_type(i);
         auto value = Elements[i]->GenLLVM(builder, type);
-        if (!value)
-            return nullptr;
         element_values.emplace_back(value);
         element_types.emplace_back(value->GetType());
 

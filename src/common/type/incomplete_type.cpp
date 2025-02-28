@@ -30,5 +30,5 @@ NJS::IncompleteType::IncompleteType(TypeContext &type_context, std::string strin
 
 llvm::Type *NJS::IncompleteType::GenLLVM(const Builder &) const
 {
-    return nullptr;
+    Error("incomplete type {} does not have a llvm representation", m_Name);
 }

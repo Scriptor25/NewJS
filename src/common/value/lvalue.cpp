@@ -30,10 +30,10 @@ llvm::Value *NJS::LValue::Load() const
 void NJS::LValue::Store(llvm::Value *value) const
 {
     if (m_IsConst)
-        return;
+        Error("cannot store to constant lvalue");
 
     if (value->getType() != GetType()->GetLLVM(GetBuilder()))
-        return;
+        Error("cannot store value of type <llvm type> to lvalue of type {}", GetType());
 
     GetBuilder().GetBuilder().CreateStore(value, m_Pointer);
 }
@@ -41,7 +41,7 @@ void NJS::LValue::Store(llvm::Value *value) const
 void NJS::LValue::Store(ValuePtr value) const
 {
     if (m_IsConst)
-        return;
+        Error("cannot store to constant lvalue");
 
     value = GetBuilder().CreateCast(value, GetType());
     GetBuilder().GetBuilder().CreateStore(value->Load(), m_Pointer);

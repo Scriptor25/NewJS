@@ -58,10 +58,10 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
     if (At("["))
         return ParseTupleExpression();
 
-    if (At("?"))
+    if (At("$"))
         return ParseFunctionExpression();
 
-    if (At("$"))
+    if (At("f"))
         return ParseFormatExpression();
 
     if (At("switch"))
@@ -101,36 +101,7 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
     }
 
     if (At(TokenType_Symbol))
-    {
-        const auto name = Skip().StringValue;
-
-        if (m_MacroMap.contains(name))
-            return m_MacroMap.at(name).Inflate(*this);
-
-        if (m_TemplateContext.HasFunction(name))
-        {
-            std::vector<TypePtr> arguments;
-
-            Expect("<");
-            while (!At(">") && !AtEof())
-            {
-                arguments.emplace_back(ParseType());
-
-                if (!At(">"))
-                    Expect(",");
-            }
-            Expect(">");
-
-            std::string inflated_name;
-            if (!m_IsTemplate)
-                inflated_name = m_TemplateContext.InflateFunction(*this, name, arguments);
-            else
-                inflated_name = name;
-            return std::make_shared<SymbolExpression>(where, inflated_name);
-        }
-
-        return std::make_shared<SymbolExpression>(where, name);
-    }
+        return ParseSymbolExpression(where, Skip().StringValue);
 
     if (At(TokenType_Operator))
     {

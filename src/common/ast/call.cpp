@@ -13,25 +13,17 @@ NJS::CallExpression::CallExpression(SourceLocation where, ExpressionPtr callee, 
 {
 }
 
-NJS::ValuePtr NJS::CallExpression::GenLLVM(
-    Builder &builder,
-    const TypePtr &expected_type) const
+NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     const auto callee = Callee->GenLLVM(builder, {});
-    if (!callee)
-        return nullptr;
-
     const auto callee_type = Type::As<FunctionType>(callee->GetType());
-    if (!callee_type)
-        return nullptr;
-
     const auto parameter_count = callee_type->GetParameterCount();
 
     if (Arguments.size() < parameter_count)
-        return nullptr;
+        Error(Where, "TODO");
 
     if (Arguments.size() > parameter_count && !callee_type->IsVarArg())
-        return nullptr;
+        Error(Where, "TODO");
 
     std::vector<llvm::Value *> arguments(Arguments.size());
     for (unsigned i = 0; i < Arguments.size(); ++i)
@@ -46,8 +38,6 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(
 
         auto &argument = Arguments[i];
         auto argument_value = argument->GenLLVM(builder, type_);
-        if (!argument_value)
-            return nullptr;
 
         if (!is_reference_)
         {
@@ -59,15 +49,15 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(
         }
 
         if (argument_value->GetType() != type_)
-            return nullptr;
+            Error(Where, "TODO");
 
         if (argument_value->IsConst() && !is_const_)
-            return nullptr;
+            Error(Where, "TODO");
 
         if (!argument_value->IsLValue())
         {
             if (!is_const_)
-                return nullptr;
+                Error(Where, "TODO");
 
             const auto value = builder.CreateAlloca(argument_value->GetType(), true);
             value->StoreNoError(argument_value);

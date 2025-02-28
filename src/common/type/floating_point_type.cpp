@@ -48,6 +48,6 @@ llvm::Type *NJS::FloatingPointType::GenLLVM(const Builder &builder) const
         case 64:
             return builder.GetBuilder().getDoubleTy();
         default:
-            return nullptr;
+            Error("floating point type with {} bits does not have a llvm representation", m_Bits);
     }
 }

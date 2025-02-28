@@ -57,6 +57,11 @@ bool NJS::Parser::IsImport() const
     return m_IsImport;
 }
 
+NJS::SourceLocation NJS::Parser::CurrentLocation() const
+{
+    return m_Token.Where;
+}
+
 void NJS::Parser::Parse(const Consumer &consumer)
 {
     while (m_Token.Type != TokenType_EOF)
@@ -68,12 +73,12 @@ void NJS::Parser::ResetBuffer()
 {
     m_TemplateBuffer.clear();
     m_TemplateWhere = m_Where;
-    --m_TemplateWhere.Col;
+    --m_TemplateWhere.Column;
 }
 
 int NJS::Parser::Get()
 {
-    m_Where.Col++;
+    m_Where.Column++;
     const auto c = m_Stream.get();
     m_TemplateBuffer.push_back(static_cast<char>(c));
     return c;
@@ -81,14 +86,14 @@ int NJS::Parser::Get()
 
 void NJS::Parser::UnGet()
 {
-    m_Where.Col--;
+    m_Where.Column--;
     m_Stream.unget();
     m_TemplateBuffer.pop_back();
 }
 
 void NJS::Parser::NewLine()
 {
-    m_Where.Col = 0;
+    m_Where.Column = 0;
     ++m_Where.Row;
 }
 

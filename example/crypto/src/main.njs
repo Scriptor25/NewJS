@@ -19,16 +19,16 @@ mix_keys(user2.key, user2.pvt, user1.pub, 4)
 let dst: i8[1024]
 
 base64(dst, user1.key, 4)
-println($"user 1: {dst}")
+println(f"user 1: {dst}")
 
 base64(dst, user2.key, 4)
-println($"user 2: {dst}")
+println(f"user 2: {dst}")
 
 let src = "Hello World!"
-println($"original: {src}")
+println(f"original: {src}")
 
 xor(dst, src, user1.key, 16)
-println($"encoded: {dst}")
+println(f"encoded: {dst}")
 
 xor(dst, dst, user2.key, 16)
-println($"decoded: {dst}")
+println(f"decoded: {dst}")

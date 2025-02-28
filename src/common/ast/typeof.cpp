@@ -11,13 +11,9 @@ NJS::TypeOfExpression::TypeOfExpression(SourceLocation where, ExpressionPtr oper
 {
 }
 
-NJS::ValuePtr NJS::TypeOfExpression::GenLLVM(
-    Builder &builder,
-    const TypePtr &expected_type) const
+NJS::ValuePtr NJS::TypeOfExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     const auto operand = Operand->GenLLVM(builder, {});
-    if (!operand)
-        return nullptr;
     const auto type = builder.GetTypeContext().GetStringType();
     const auto value = StringExpression::GetString(builder, operand->GetType()->GetString());
     return RValue::Create(builder, type, value);

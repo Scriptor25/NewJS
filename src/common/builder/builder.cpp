@@ -387,7 +387,7 @@ NJS::ValuePtr NJS::Builder::GetVariable(const std::string &name) const
     for (auto &stack: std::ranges::reverse_view(m_Stack))
         if (stack.Contains(name))
             return stack[name];
-    return nullptr;
+    Error("cannot find symbol {}", name);
 }
 
 NJS::ValuePtr &NJS::Builder::GetOrDefineVariable(const std::string &name)

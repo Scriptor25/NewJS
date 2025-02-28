@@ -16,4 +16,4 @@ launch: $(TARGET)
 	newjs -o $@ -t obj $<
 
 $(TARGET): $(OBJ)
-	gcc -o $@ $^ -lstdnewjs -lglfw
+	gcc -o $@ $^ -lstdnewjs -lglfw3 -lgdi32 -lopengl32

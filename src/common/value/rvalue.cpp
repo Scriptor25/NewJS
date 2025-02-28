@@ -18,7 +18,7 @@ bool NJS::RValue::IsConst() const
 
 llvm::Value *NJS::RValue::GetPointer() const
 {
-    return nullptr;
+    Error("cannot get pointer to rvalue");
 }
 
 llvm::Value *NJS::RValue::Load() const
@@ -28,14 +28,17 @@ llvm::Value *NJS::RValue::Load() const
 
 void NJS::RValue::Store(llvm::Value *) const
 {
+    Error("cannot store to rvalue");
 }
 
 void NJS::RValue::Store(ValuePtr) const
 {
+    Error("cannot store to rvalue");
 }
 
 void NJS::RValue::StoreNoError(ValuePtr) const
 {
+    Error("cannot store to rvalue");
 }
 
 NJS::RValue::RValue(Builder &builder, TypePtr type, llvm::Value *value)
