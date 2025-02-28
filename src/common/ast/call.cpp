@@ -40,7 +40,7 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(
             type_,
             is_const_,
             is_reference_
-        ] = (i < parameter_count)
+        ] = i < parameter_count
                 ? callee_type->GetParameter(i)
                 : ReferenceInfo();
 

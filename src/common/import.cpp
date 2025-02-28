@@ -63,7 +63,7 @@ void NJS::ImportMapping::MapFunctions(
 
     for (const auto &function: functions)
     {
-        auto name = (function->Flags & FunctionFlags_Extern) ? std::string() : module_id + '.';
+        auto name = function->Flags & FunctionFlags_Extern ? std::string() : module_id + '.';
         if (function->Flags & FunctionFlags_Operator)
         {
             if (function->Parameters.size() == 1)

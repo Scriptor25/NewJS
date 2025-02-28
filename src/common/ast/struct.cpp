@@ -46,12 +46,8 @@ NJS::ValuePtr NJS::StructExpression::GenLLVM(
     const auto struct_type = result_type->GetLLVM<llvm::StructType>(builder);
 
     llvm::Value *struct_value = llvm::ConstantStruct::getNullValue(struct_type);
-    for (unsigned i = 0; i < element_values.size(); ++i)
+    for (auto &[element_name_, element_value_]: element_values)
     {
-        auto [
-            element_name_,
-            element_value_
-        ] = element_values[i];
         auto [
             index_,
             name_,

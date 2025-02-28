@@ -1,6 +1,5 @@
 #pragma once
 
-#include <llvm/IR/Value.h>
 #include <newjs/newjs.hpp>
 
 namespace NJS

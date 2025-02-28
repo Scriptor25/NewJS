@@ -49,7 +49,7 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
             }
 
             if (auto function = std::dynamic_pointer_cast<FunctionStatement>(statement);
-                function && (function->Flags & FunctionFlags_Export))
+                function && function->Flags & FunctionFlags_Export)
             {
                 function->Body = {};
                 functions.emplace_back(function);

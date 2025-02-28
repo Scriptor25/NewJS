@@ -59,7 +59,7 @@ bool NJS::FunctionStatement::GenLLVM(Builder &builder) const
     {
         function = llvm::Function::Create(
             type->GenFnLLVM(builder),
-            (Flags & (FunctionFlags_Export | FunctionFlags_Extern))
+            Flags & (FunctionFlags_Export | FunctionFlags_Extern)
                 ? llvm::GlobalValue::ExternalLinkage
                 : llvm::GlobalValue::InternalLinkage,
             function_name,
@@ -261,7 +261,8 @@ NJS::ValuePtr NJS::FunctionExpression::GenLLVM(Builder &builder, const TypePtr &
             parameter->Info.IsReference);
     }
 
-    Body->GenLLVM(builder);
+    if (Body->GenLLVM(builder))
+        return nullptr;
 
     builder.StackPop();
 

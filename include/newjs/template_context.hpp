@@ -13,7 +13,7 @@ namespace NJS
     public:
         explicit TemplateContext(Builder &builder);
 
-        Builder &GetBuilder() const;
+        [[nodiscard]] Builder &GetBuilder() const;
 
         void InsertType(
             const SourceLocation &where,

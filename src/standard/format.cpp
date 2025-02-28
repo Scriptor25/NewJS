@@ -274,13 +274,13 @@ Type *ParseType(va_list &arg_ptr)
     }
 }
 
-void Incomplete_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, va_list &arg_ptr)
+void Incomplete_AppendV(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, va_list &)
 {
     const auto self = reinterpret_cast<IncompleteType *>(type);
     offset += snprintf(buffer + offset, buffer_size - offset, "[%s]", self->Name);
 }
 
-void Incomplete_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, char *&ptr)
+void Incomplete_AppendP(Type *type, char *buffer, const unsigned buffer_size, unsigned &offset, char *&)
 {
     const auto self = reinterpret_cast<IncompleteType *>(type);
     offset += snprintf(buffer + offset, buffer_size - offset, "[%s]", self->Name);

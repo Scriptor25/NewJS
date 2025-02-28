@@ -10,7 +10,7 @@ namespace NJS
 {
     struct Template
     {
-        std::string GetName(const std::vector<TypePtr> &arguments) const;
+        [[nodiscard]] std::string GetName(const std::vector<TypePtr> &arguments) const;
 
         FunctionStatement InflateFunction(Parser &parent, const std::vector<TypePtr> &arguments) const;
         TypePtr InflateType(Parser &parent, const std::vector<TypePtr> &arguments) const;

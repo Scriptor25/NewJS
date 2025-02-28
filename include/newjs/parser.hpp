@@ -27,11 +27,11 @@ namespace NJS
             bool is_import = false,
             std::set<std::filesystem::path> parsed_set = {});
 
-        TypeContext &GetTypeContext() const;
-        TemplateContext &GetTemplateContext() const;
-        std::map<std::string, Macro> &GetMacroMap() const;
-        bool IsMain() const;
-        bool IsImport() const;
+        [[nodiscard]] TypeContext &GetTypeContext() const;
+        [[nodiscard]] TemplateContext &GetTemplateContext() const;
+        [[nodiscard]] std::map<std::string, Macro> &GetMacroMap() const;
+        [[nodiscard]] bool IsMain() const;
+        [[nodiscard]] bool IsImport() const;
 
         void Parse(const Consumer &consumer);
 

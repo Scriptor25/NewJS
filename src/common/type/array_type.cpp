@@ -1,5 +1,4 @@
 #include <newjs/builder.hpp>
-#include <newjs/error.hpp>
 #include <newjs/std.hpp>
 #include <newjs/type.hpp>
 

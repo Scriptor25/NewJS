@@ -136,12 +136,12 @@ namespace NJS
 
         void DefineVariable(const std::string &name, ValuePtr value);
         ValuePtr DefineVariableNoError(const std::string &name, ValuePtr value);
-        ValuePtr GetVariable(const std::string &name) const;
+        [[nodiscard]] ValuePtr GetVariable(const std::string &name) const;
         ValuePtr &GetOrDefineVariable(const std::string &name);
 
         ReferenceInfo &CurrentFunctionResult();
-        llvm::BasicBlock *CurrentHeadBlock() const;
-        llvm::BasicBlock *CurrentTailBlock() const;
+        [[nodiscard]] llvm::BasicBlock *CurrentHeadBlock() const;
+        [[nodiscard]] llvm::BasicBlock *CurrentTailBlock() const;
 
     private:
         std::string m_ModuleID;

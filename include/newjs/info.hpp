@@ -1,9 +1,13 @@
 #pragma once
 
-#include <llvm/IR/Type.h>
-#include <llvm/IR/Value.h>
 #include <newjs/error.hpp>
 #include <newjs/newjs.hpp>
+
+namespace llvm
+{
+    class Value;
+    class Type;
+}
 
 namespace NJS
 {

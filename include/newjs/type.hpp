@@ -74,7 +74,7 @@ namespace NJS
     public:
         static std::string GenString(const std::string &name);
 
-        bool IsIncomplete() const override;
+        [[nodiscard]] bool IsIncomplete() const override;
 
         bool TypeInfo(
             Builder &builder,

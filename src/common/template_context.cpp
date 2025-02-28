@@ -52,9 +52,8 @@ std::string NJS::TemplateContext::InflateFunction(
         return name;
     m_InflatedFunctions.emplace(name);
 
-    template_
-            .InflateFunction(parent, arguments)
-            .GenLLVM(m_Builder);
+    if (const auto function = template_.InflateFunction(parent, arguments); function.GenLLVM(m_Builder));
+
     return name;
 }
 

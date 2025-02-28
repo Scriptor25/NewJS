@@ -1,7 +1,6 @@
 #include <newjs/ast.hpp>
 #include <newjs/parameter.hpp>
 #include <newjs/parser.hpp>
-#include <newjs/type.hpp>
 
 NJS::StatementPtr NJS::Parser::ParseStatement()
 {

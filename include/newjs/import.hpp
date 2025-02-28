@@ -3,7 +3,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <newjs/error.hpp>
 #include <newjs/newjs.hpp>
 
 namespace NJS

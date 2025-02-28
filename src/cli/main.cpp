@@ -53,7 +53,7 @@ static void parse(
     parser.Parse(
         [&](const NJS::StatementPtr &statement)
         {
-            statement->GenLLVM(builder);
+            if (statement->GenLLVM(builder));
         });
 
     builder.Close();
