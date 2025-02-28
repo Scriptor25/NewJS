@@ -94,7 +94,7 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
         {
             auto &reference = builder.GetOrDefineVariable(Name);
             if (reference && reference->GetType() != value->GetType())
-                Error(Where, "TODO");
+                Error(Where, "function declaration mismatch, {} != {}", reference->GetType(), value->GetType());
             reference = std::move(value);
         }
     }
@@ -103,7 +103,7 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
         return;
 
     if (!function->empty())
-        Error(Where, "TODO");
+        Error(Where, "cannot re-define function");
 
     const auto end_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
@@ -155,7 +155,7 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
             continue;
         }
         function->print(llvm::errs());
-        Error(Where, "TODO");
+        Error(Where, "not all code paths return");
     }
 
     for (const auto block: deletable)
@@ -164,7 +164,7 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
     if (verifyFunction(*function, &llvm::errs()))
     {
         function->print(llvm::errs());
-        Error(Where, "TODO");
+        Error(Where, "failed to verify function");
     }
 
     builder.Optimize(function);
@@ -280,7 +280,7 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
             continue;
         }
         function->print(llvm::errs());
-        Error(Where, "TODO");
+        Error(Where, "not all code paths return");
     }
 
     for (const auto block: deletable)
@@ -289,7 +289,7 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
     if (verifyFunction(*function, &llvm::errs()))
     {
         function->print(llvm::errs());
-        Error(Where, "TODO");
+        Error(Where, "failed to verify function");
     }
 
     builder.Optimize(function);

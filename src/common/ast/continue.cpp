@@ -10,7 +10,7 @@ void NJS::ContinueStatement::PGenLLVM(Builder &builder) const
 {
     const auto dest = builder.CurrentHeadBlock();
     if (!dest)
-        Error(Where, "TODO");
+        Error(Where, "no control flow block to continue from");
     builder.GetBuilder().CreateBr(dest);
 }
 

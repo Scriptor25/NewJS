@@ -89,7 +89,7 @@ NJS::ValuePtr NJS::UnaryExpression::PGenLLVM(Builder &builder, const TypePtr &ex
             return RValue::Create(builder, operand->GetType(), bkp_value);
         }
 
-    Error(Where, "TODO");
+    Error(Where, "undefined unary operator {}{}{}", Prefix ? Operator : "", operand->GetType(), Prefix ? "" : Operator);
 }
 
 std::ostream &NJS::UnaryExpression::Print(std::ostream &stream)

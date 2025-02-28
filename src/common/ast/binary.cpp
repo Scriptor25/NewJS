@@ -171,7 +171,7 @@ NJS::ValuePtr NJS::BinaryExpression::PGenLLVM(Builder &builder, const TypePtr &e
             return destination;
         }
 
-    Error(Where, "TODO");
+    Error(Where, "undefined binary operator {} {} {}", left_type, Operator, right_type);
 }
 
 std::ostream &NJS::BinaryExpression::Print(std::ostream &stream)

@@ -10,9 +10,9 @@ void NJS::Statement::GenLLVM(Builder &builder) const try
 {
     PGenLLVM(builder);
 }
-catch (RTError &error)
+catch (const RTError &error)
 {
-    Error(Where, std::move(error));
+    Error(Where, error);
 }
 
 NJS::Expression::Expression(SourceLocation where)
@@ -24,16 +24,16 @@ NJS::ValuePtr NJS::Expression::GenLLVM(Builder &builder, const TypePtr &expected
 {
     return PGenLLVM(builder, expected_type);
 }
-catch (RTError &error)
+catch (const RTError &error)
 {
-    Error(Where, std::move(error));
+    Error(Where, error);
 }
 
 void NJS::Expression::PGenLLVM(Builder &builder) const try
 {
     (void) GenLLVM(builder, {});
 }
-catch (RTError &error)
+catch (const RTError &error)
 {
-    Error(Where, std::move(error));
+    Error(Where, error);
 }

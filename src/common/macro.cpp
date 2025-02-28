@@ -50,7 +50,7 @@ NJS::ExpressionPtr NJS::Macro::Inflate(Parser &parent) const try
         parent.IsMain());
     return parser.ParseExpression();
 }
-catch (RTError &error)
+catch (const RTError &error)
 {
     Error(error, "in macro '{}'", Source);
 }

@@ -20,10 +20,10 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
     const auto parameter_count = callee_type->GetParameterCount();
 
     if (Arguments.size() < parameter_count)
-        Error(Where, "TODO");
+        Error(Where, "not enough arguments, {} < {}", Arguments.size(), parameter_count);
 
     if (Arguments.size() > parameter_count && !callee_type->IsVarArg())
-        Error(Where, "TODO");
+        Error(Where, "too many arguments, {} > {}", Arguments.size(), parameter_count);
 
     std::vector<llvm::Value *> arguments(Arguments.size());
     for (unsigned i = 0; i < Arguments.size(); ++i)
@@ -49,16 +49,13 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
         }
 
         if (argument_value->GetType() != type_)
-            Error(Where, "TODO");
+            Error(Where, "type mismatch, {} != {}", argument_value->GetType(), type_);
 
         if (argument_value->IsConst() && !is_const_)
-            Error(Where, "TODO");
+            Error(Where, "cannot pass constant value as mutable");
 
         if (!argument_value->IsLValue())
         {
-            if (!is_const_)
-                Error(Where, "TODO");
-
             const auto value = builder.CreateAlloca(argument_value->GetType(), true);
             value->StoreNoError(argument_value);
             argument_value = value;

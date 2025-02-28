@@ -22,31 +22,27 @@ void NJS::ReturnStatement::PGenLLVM(Builder &builder) const
     if (!Value)
     {
         if (!type_->IsVoid())
-            Error(Where, "TODO");
+            Error(Where, "cannot return void for non-void return type {}", type_);
 
         builder.GetBuilder().CreateRetVoid();
         return;
     }
 
     auto value = Value->GenLLVM(builder, type_);
-    if (!value)
-        Error(Where, "TODO");
-    value = builder.CreateCast(value, type_);
 
     if (is_reference_)
     {
         if (value->GetType() != type_)
-            Error(Where, "TODO");
+            Error(Where, "type mismatch, {} != {}", value->GetType(), type_);
 
         if (value->IsConst() && !is_const_)
-            Error(Where, "TODO");
+            Error(Where, "cannot pass constant value as mutable");
 
-        const auto pointer = value->GetPointer();
-
-        builder.GetBuilder().CreateRet(pointer);
+        builder.GetBuilder().CreateRet(value->GetPointer());
         return;
     }
 
+    value = builder.CreateCast(value, type_);
     builder.GetBuilder().CreateRet(value->Load());
 }
 

@@ -6,18 +6,20 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
 {
     while (NextAt(";"))
     {
+        if (AtEof())
+            return nullptr;
     }
 
     if (At("#"))
     {
         ParseMacro();
-        return {};
+        return nullptr;
     }
 
     if (At("type"))
     {
         ParseTypeAlias();
-        return {};
+        return nullptr;
     }
 
     const auto is_export = NextAt("export");

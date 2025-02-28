@@ -10,7 +10,7 @@ void NJS::BreakStatement::PGenLLVM(Builder &builder) const
 {
     const auto dest = builder.CurrentTailBlock();
     if (!dest)
-        Error(Where, "TODO");
+        Error(Where, "no control flow block to break to");
     builder.GetBuilder().CreateBr(dest);
 }
 

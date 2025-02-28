@@ -1,3 +1,4 @@
+#include <iostream>
 #include <newjs/error.hpp>
 
 NJS::RTError::RTError(SourceLocation where, std::string message)
@@ -6,10 +7,22 @@ NJS::RTError::RTError(SourceLocation where, std::string message)
 {
 }
 
-NJS::RTError::RTError(SourceLocation where, std::string message, RTError &&cause)
+NJS::RTError::RTError(SourceLocation where, std::string message, RTError cause)
     : m_Where(std::move(where)),
       m_Message(std::move(message)),
-      m_Cause(std::make_unique<RTError>(std::move(cause)))
+      m_Cause(std::make_shared<RTError>(std::move(cause)))
+{
+}
+
+NJS::RTError::RTError(std::string message, RTError cause)
+    : m_Where(cause.m_Where),
+      m_Message(std::move(message)),
+      m_Cause(std::make_shared<RTError>(std::move(cause)))
+{
+}
+
+NJS::RTError::RTError(std::string message)
+    : m_Message(std::move(message))
 {
 }
 
@@ -22,14 +35,14 @@ std::ostream &NJS::RTError::Print(std::ostream &stream) const
     ] = m_Where;
 
     const auto not_redundant = !m_Cause || m_Cause->m_Where != m_Where;
-    const auto has_where = !filename_.empty() && not_redundant;
+    const auto has_where = !filename_.empty();
     const auto has_message = !m_Message.empty();
 
-    if (has_where)
+    if (has_where && (has_message || not_redundant))
         stream << "at " << filename_ << ':' << row_ << ':' << column_ << ": ";
     if (has_message)
         stream << m_Message;
-    if (has_message || has_where)
+    if ((has_where && not_redundant) || has_message)
         stream << std::endl;
 
     if (m_Cause)
@@ -37,7 +50,7 @@ std::ostream &NJS::RTError::Print(std::ostream &stream) const
     return stream;
 }
 
-void NJS::Error(const SourceLocation &where, RTError &&cause) noexcept(false)
+void NJS::Error(SourceLocation where, RTError cause) noexcept(false)
 {
-    throw RTError(where, {}, std::move(cause));
+    throw RTError(std::move(where), {}, std::move(cause));
 }

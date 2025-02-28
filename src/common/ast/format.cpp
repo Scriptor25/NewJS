@@ -44,6 +44,7 @@ NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
 
             continue;
         }
+
         if (DynamicExpressions.contains(i))
         {
             auto &dynamic = DynamicExpressions.at(i);
@@ -75,7 +76,7 @@ NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
             continue;
         }
 
-        Error(Where, "TODO");
+        Error(Where, "invalid format operand index {}", i);
     }
 
     arguments.emplace_back(builder.GetBuilder().getInt32(ID_VOID));
