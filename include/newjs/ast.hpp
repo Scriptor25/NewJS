@@ -18,7 +18,7 @@ namespace NJS
         explicit Statement(SourceLocation where);
 
         virtual ~Statement() = default;
-        virtual void GenLLVM(Builder &builder) const = 0;
+        [[nodiscard]] virtual bool GenLLVM(Builder &builder) const = 0;
         virtual std::ostream &Print(std::ostream &stream) = 0;
 
         SourceLocation Where;
@@ -28,7 +28,7 @@ namespace NJS
     {
         explicit BreakStatement(SourceLocation where);
 
-        void GenLLVM(Builder &builder) const override;
+        [[nodiscard]] bool GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
     };
 
@@ -36,7 +36,7 @@ namespace NJS
     {
         explicit ContinueStatement(SourceLocation where);
 
-        void GenLLVM(Builder &builder) const override;
+        [[nodiscard]] bool GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
     };
 
@@ -49,7 +49,7 @@ namespace NJS
             StatementPtr loop,
             StatementPtr body);
 
-        void GenLLVM(Builder &builder) const override;
+        [[nodiscard]] bool GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         StatementPtr Initializer;
@@ -69,7 +69,7 @@ namespace NJS
             ReferenceInfo result,
             StatementPtr body);
 
-        void GenLLVM(Builder &builder) const override;
+        [[nodiscard]] bool GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         unsigned Flags;
@@ -84,7 +84,7 @@ namespace NJS
     {
         IfStatement(SourceLocation where, ExpressionPtr condition, StatementPtr then_body, StatementPtr else_body);
 
-        void GenLLVM(Builder &builder) const override;
+        [[nodiscard]] bool GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Condition;
@@ -102,7 +102,7 @@ namespace NJS
             std::string module_id,
             std::set<std::string> sub_module_ids);
 
-        void GenLLVM(Builder &builder) const override;
+        [[nodiscard]] bool GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ImportMapping Mapping;
@@ -116,7 +116,7 @@ namespace NJS
     {
         ReturnStatement(SourceLocation where, ExpressionPtr value);
 
-        void GenLLVM(Builder &builder) const override;
+        [[nodiscard]] bool GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Value;
@@ -126,7 +126,7 @@ namespace NJS
     {
         ScopeStatement(SourceLocation where, std::vector<StatementPtr> children);
 
-        void GenLLVM(Builder &builder) const override;
+        [[nodiscard]] bool GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         std::vector<StatementPtr> Children;
@@ -140,7 +140,7 @@ namespace NJS
             std::map<StatementPtr, std::vector<ExpressionPtr>> cases,
             StatementPtr default_case);
 
-        void GenLLVM(Builder &builder) const override;
+        [[nodiscard]] bool GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Condition;
@@ -158,7 +158,7 @@ namespace NJS
             ParameterPtr parameter,
             ExpressionPtr value);
 
-        void GenLLVM(Builder &builder) const override;
+        [[nodiscard]] bool GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         bool IsExtern;
@@ -172,7 +172,7 @@ namespace NJS
     {
         WhileStatement(SourceLocation where, ExpressionPtr condition, StatementPtr body);
 
-        void GenLLVM(Builder &builder) const override;
+        [[nodiscard]] bool GenLLVM(Builder &builder) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Condition;
@@ -183,8 +183,8 @@ namespace NJS
     {
         explicit Expression(SourceLocation where);
 
-        void GenLLVM(Builder &builder) const override;
-        virtual ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const = 0;
+        [[nodiscard]] bool GenLLVM(Builder &builder) const override;
+        [[nodiscard]] virtual ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const = 0;
     };
 
     struct BinaryExpression final : Expression
@@ -195,7 +195,7 @@ namespace NJS
             ExpressionPtr left_operand,
             ExpressionPtr right_operand);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         std::string Operator;
@@ -207,7 +207,7 @@ namespace NJS
     {
         BooleanExpression(SourceLocation where, bool value);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         bool Value;
@@ -217,7 +217,7 @@ namespace NJS
     {
         CallExpression(SourceLocation where, ExpressionPtr callee, std::vector<ExpressionPtr> arguments);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Callee;
@@ -228,7 +228,7 @@ namespace NJS
     {
         CastExpression(SourceLocation where, TypePtr type, ExpressionPtr operand);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         TypePtr Type;
@@ -239,7 +239,7 @@ namespace NJS
     {
         CharExpression(SourceLocation where, char value);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         char Value;
@@ -253,7 +253,7 @@ namespace NJS
             std::map<unsigned, std::string> static_expressions,
             std::map<unsigned, ExpressionPtr> dynamic_expressions);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         unsigned Count;
@@ -265,7 +265,7 @@ namespace NJS
     {
         FloatingPointExpression(SourceLocation where, TypePtr type, double value);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         TypePtr Type;
@@ -281,7 +281,7 @@ namespace NJS
             ReferenceInfo result,
             StatementPtr body);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         std::vector<ParameterPtr> Parameters;
@@ -294,7 +294,7 @@ namespace NJS
     {
         IntegerExpression(SourceLocation where, TypePtr type, uint64_t value);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         TypePtr Type;
@@ -305,7 +305,7 @@ namespace NJS
     {
         MemberExpression(SourceLocation where, ExpressionPtr object, std::string member);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Object;
@@ -316,7 +316,7 @@ namespace NJS
     {
         ScopeExpression(SourceLocation where, std::vector<StatementPtr> children, ExpressionPtr last);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         std::vector<StatementPtr> Children;
@@ -327,7 +327,7 @@ namespace NJS
     {
         SizeOfExpression(SourceLocation where, ExpressionPtr operand);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Operand;
@@ -339,7 +339,7 @@ namespace NJS
 
         StringExpression(SourceLocation where, std::string value);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         std::string Value;
@@ -352,7 +352,7 @@ namespace NJS
             TypePtr type,
             std::vector<std::pair<std::string, ExpressionPtr>> elements);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         TypePtr Type;
@@ -363,7 +363,7 @@ namespace NJS
     {
         SubscriptExpression(SourceLocation where, ExpressionPtr array, ExpressionPtr index);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Array;
@@ -378,7 +378,7 @@ namespace NJS
             std::map<ExpressionPtr, std::vector<ExpressionPtr>> cases,
             ExpressionPtr default_case);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Condition;
@@ -390,7 +390,7 @@ namespace NJS
     {
         SymbolExpression(SourceLocation where, std::string name);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         std::string Name;
@@ -404,7 +404,7 @@ namespace NJS
             ExpressionPtr then_body,
             ExpressionPtr else_body);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Condition;
@@ -416,7 +416,7 @@ namespace NJS
     {
         TupleExpression(SourceLocation where, TypePtr type, std::vector<ExpressionPtr> elements);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         TypePtr Type;
@@ -427,7 +427,7 @@ namespace NJS
     {
         TypeOfExpression(SourceLocation where, ExpressionPtr operand);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         ExpressionPtr Operand;
@@ -437,7 +437,7 @@ namespace NJS
     {
         UnaryExpression(SourceLocation where, std::string operator_, bool prefix, ExpressionPtr operand);
 
-        ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
         std::string Operator;

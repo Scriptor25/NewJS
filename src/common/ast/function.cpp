@@ -26,7 +26,7 @@ NJS::FunctionStatement::FunctionStatement(
 {
 }
 
-void NJS::FunctionStatement::GenLLVM(Builder &builder) const
+bool NJS::FunctionStatement::GenLLVM(Builder &builder) const
 {
     std::string function_name;
     if (Flags & FunctionFlags_Extern)
@@ -94,16 +94,16 @@ void NJS::FunctionStatement::GenLLVM(Builder &builder) const
         {
             auto &reference = builder.GetOrDefineVariable(Name);
             if (reference && reference->GetType() != value->GetType())
-                return;
+                return true;
             reference = std::move(value);
         }
     }
 
     if (!Body)
-        return;
+        return false;
 
     if (!function->empty())
-        return;
+        return true;
 
     const auto end_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
@@ -134,7 +134,8 @@ void NJS::FunctionStatement::GenLLVM(Builder &builder) const
             parameter->Info.IsReference);
     }
 
-    Body->GenLLVM(builder);
+    if (Body->GenLLVM(builder))
+        return true;
 
     builder.StackPop();
 
@@ -155,7 +156,7 @@ void NJS::FunctionStatement::GenLLVM(Builder &builder) const
             continue;
         }
         function->print(llvm::errs());
-        return;
+        return true;
     }
 
     for (const auto block: deletable)
@@ -164,12 +165,13 @@ void NJS::FunctionStatement::GenLLVM(Builder &builder) const
     if (verifyFunction(*function, &llvm::errs()))
     {
         function->print(llvm::errs());
-        return;
+        return true;
     }
 
     builder.Optimize(function);
 
     builder.GetBuilder().SetInsertPoint(end_block);
+    return false;
 }
 
 std::ostream &NJS::FunctionStatement::Print(std::ostream &stream)

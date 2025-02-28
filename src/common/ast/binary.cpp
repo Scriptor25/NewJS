@@ -84,6 +84,8 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
         is_comparator
             ? nullptr
             : expected_type);
+    if (!left_operand)
+        return nullptr;
 
     auto right_operand = RightOperand->GenLLVM(
         builder,
@@ -92,6 +94,9 @@ NJS::ValuePtr NJS::BinaryExpression::GenLLVM(Builder &builder, const TypePtr &ex
             : is_assignment
                   ? left_operand->GetType()
                   : expected_type);
+    if (!right_operand)
+        return nullptr;
+
     if (auto [
             result_,
             left_,

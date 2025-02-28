@@ -18,6 +18,9 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(
     const TypePtr &expected_type) const
 {
     const auto callee = Callee->GenLLVM(builder, {});
+    if (!callee)
+        return nullptr;
+
     const auto callee_type = Type::As<FunctionType>(callee->GetType());
     if (!callee_type)
         return nullptr;
@@ -43,6 +46,8 @@ NJS::ValuePtr NJS::CallExpression::GenLLVM(
 
         auto &argument = Arguments[i];
         auto argument_value = argument->GenLLVM(builder, type_);
+        if (!argument_value)
+            return nullptr;
 
         if (!is_reference_)
         {

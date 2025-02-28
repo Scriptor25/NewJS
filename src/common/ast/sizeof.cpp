@@ -17,6 +17,8 @@ NJS::ValuePtr NJS::SizeOfExpression::GenLLVM(
     const TypePtr &expected_type) const
 {
     const auto operand = Operand->GenLLVM(builder, {});
+    if (!operand)
+        return nullptr;
 
     const auto type = expected_type && expected_type->IsInteger()
                           ? expected_type

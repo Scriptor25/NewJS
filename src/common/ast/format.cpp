@@ -50,6 +50,8 @@ NJS::ValuePtr NJS::FormatExpression::GenLLVM(Builder &builder, const TypePtr &) 
             auto &dynamic = DynamicExpressions.at(i);
 
             const auto value = dynamic->GenLLVM(builder, {});
+            if (!value)
+                return nullptr;
             const auto size = arguments.size();
 
             if (value->GetType()->TypeInfo(builder, arguments))

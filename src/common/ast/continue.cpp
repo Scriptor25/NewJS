@@ -6,9 +6,13 @@ NJS::ContinueStatement::ContinueStatement(SourceLocation where)
 {
 }
 
-void NJS::ContinueStatement::GenLLVM(Builder &builder) const
+bool NJS::ContinueStatement::GenLLVM(Builder &builder) const
 {
-    builder.GetBuilder().CreateBr(builder.CurrentHeadBlock());
+    const auto dest = builder.CurrentHeadBlock();
+    if (!dest)
+        return true;
+    builder.GetBuilder().CreateBr(dest);
+    return false;
 }
 
 std::ostream &NJS::ContinueStatement::Print(std::ostream &stream)

@@ -16,6 +16,8 @@ NJS::ValuePtr NJS::TypeOfExpression::GenLLVM(
     const TypePtr &expected_type) const
 {
     const auto operand = Operand->GenLLVM(builder, {});
+    if (!operand)
+        return nullptr;
     const auto type = builder.GetTypeContext().GetStringType();
     const auto value = StringExpression::GetString(builder, operand->GetType()->GetString());
     return RValue::Create(builder, type, value);

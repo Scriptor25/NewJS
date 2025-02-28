@@ -34,6 +34,8 @@ NJS::ValuePtr NJS::StructExpression::GenLLVM(
                         ? result_type->GetMember(name_).Type
                         : nullptr;
         auto value = element_->GenLLVM(builder, type);
+        if (!value)
+            return nullptr;
         element_values.emplace_back(name_, value);
         element_types.emplace_back(name_, value->GetType());
     }

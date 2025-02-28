@@ -41,6 +41,8 @@ NJS::ValuePtr NJS::TupleExpression::GenLLVM(
     {
         auto type = get_element_type(i);
         auto value = Elements[i]->GenLLVM(builder, type);
+        if (!value)
+            return nullptr;
         element_values.emplace_back(value);
         element_types.emplace_back(value->GetType());
 

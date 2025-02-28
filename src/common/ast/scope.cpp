@@ -8,12 +8,14 @@ NJS::ScopeStatement::ScopeStatement(SourceLocation where, std::vector<StatementP
 {
 }
 
-void NJS::ScopeStatement::GenLLVM(Builder &builder) const
+bool NJS::ScopeStatement::GenLLVM(Builder &builder) const
 {
     builder.StackPush();
     for (const auto &child: Children)
-        child->GenLLVM(builder);
+        if (child->GenLLVM(builder))
+            return true;
     builder.StackPop();
+    return false;
 }
 
 std::ostream &NJS::ScopeStatement::Print(std::ostream &stream)
@@ -42,8 +44,11 @@ NJS::ValuePtr NJS::ScopeExpression::GenLLVM(
 {
     builder.StackPush();
     for (const auto &child: Children)
-        child->GenLLVM(builder);
+        if (child->GenLLVM(builder))
+            return nullptr;
     auto result = Last->GenLLVM(builder, expected_type);
+    if (!result)
+        return nullptr;
     builder.StackPop();
     return result;
 }

@@ -42,6 +42,8 @@ NJS::ValuePtr NJS::UnaryExpression::GenLLVM(
     };
 
     auto operand = Operand->GenLLVM(builder, expected_type);
+    if (!operand)
+        return nullptr;
 
     if (auto [
             result_,
