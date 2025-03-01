@@ -16,13 +16,17 @@ NJS::CallExpression::CallExpression(SourceLocation where, ExpressionPtr callee, 
 NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
 {
     const auto callee = Callee->GenLLVM(builder, {});
-    const auto callee_type = Type::As<FunctionType>(callee->GetType());
-    const auto parameter_count = callee_type->GetParameterCount();
+
+    if (!callee->GetType()->IsFunction())
+        Error(Where, "cannot call non-function callee of type {}", callee->GetType());
+
+    const auto function_type = Type::As<FunctionType>(callee->GetType());
+    const auto parameter_count = function_type->GetParameterCount();
 
     if (Arguments.size() < parameter_count)
         Error(Where, "not enough arguments, {} < {}", Arguments.size(), parameter_count);
 
-    if (Arguments.size() > parameter_count && !callee_type->IsVarArg())
+    if (Arguments.size() > parameter_count && !function_type->IsVarArg())
         Error(Where, "too many arguments, {} > {}", Arguments.size(), parameter_count);
 
     std::vector<llvm::Value *> arguments(Arguments.size());
@@ -33,7 +37,7 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
             is_const_,
             is_reference_
         ] = i < parameter_count
-                ? callee_type->GetParameter(i)
+                ? function_type->GetParameter(i)
                 : ReferenceInfo();
 
         auto &argument = Arguments[i];
@@ -65,7 +69,7 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
     }
 
     const auto result_value = builder.GetBuilder().CreateCall(
-        callee_type->GenFnLLVM(builder),
+        function_type->GenFnLLVM(builder),
         callee->Load(),
         arguments);
 
@@ -73,7 +77,7 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
         type_,
         is_const_,
         is_reference_
-    ] = callee_type->GetResult();
+    ] = function_type->GetResult();
     if (is_reference_)
         return LValue::Create(builder, type_, result_value, is_const_);
     return RValue::Create(builder, type_, result_value);

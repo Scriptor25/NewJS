@@ -266,7 +266,7 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
     std::vector<llvm::BasicBlock *> deletable;
     for (auto &block: *function)
     {
-        if (!block.hasNPredecessorsOrMore(1) && block.empty())
+        if (&block != entry_block && block.hasNPredecessors(0) && block.empty())
         {
             deletable.emplace_back(&block);
             continue;

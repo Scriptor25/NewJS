@@ -179,7 +179,7 @@ for (let x: u64; x < 10; ++x) {
     ASSERT(x <= 5 && "x should not be greater than 5")
 }
 
-switch (n.load) {
+switch (await<i32>(add(1, 2))) {
     case 0 {
         break
     }

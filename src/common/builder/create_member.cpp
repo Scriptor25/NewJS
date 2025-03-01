@@ -4,17 +4,19 @@
 
 NJS::ValuePtr NJS::Builder::CreateMember(const ValuePtr &value, const std::string &name)
 {
-    const auto value_type = value->GetType();
+    if (!value->GetType()->IsStruct())
+        Error("cannot access member of non-struct value of type {}", value->GetType());
+    const auto struct_type = Type::As<StructType>(value->GetType());
 
     const auto [
         index_,
         name_,
         type_
-    ] = Type::As<StructType>(value_type)->GetMember(name);
+    ] = struct_type->GetMember(name);
 
     if (value->IsLValue())
     {
-        const auto type = value_type->GetLLVM(*this);
+        const auto type = struct_type->GetLLVM(*this);
         const auto pointer = value->GetPointer();
 
         const auto gep = GetBuilder().CreateStructGEP(type, pointer, index_);
