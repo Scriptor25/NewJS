@@ -2,6 +2,14 @@ SRC = $(wildcard src/*.njs)
 OBJ = $(patsubst %.njs,%.o,$(SRC))
 TARGET = main
 
+LDFLAGS = -lstdnewjs
+
+ifeq ($(OS),Windows_NT)
+	LDFLAGS += -lglfw3 -lgdi32 -lopengl32
+else
+	LDFLAGS += -lglfw
+endif
+
 .PHONY: all clean launch
 
 all: $(TARGET)
@@ -16,4 +24,4 @@ launch: $(TARGET)
 	newjs -o $@ -t obj $<
 
 $(TARGET): $(OBJ)
-	gcc -o $@ $^ -lstdnewjs -lglfw3 -lgdi32 -lopengl32
+	gcc -o $@ $^ $(LDFLAGS)
