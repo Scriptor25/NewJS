@@ -28,9 +28,9 @@ void NJS::ForStatement::PGenLLVM(Builder &builder) const
     const auto post_loop_block = Loop
                                      ? llvm::BasicBlock::Create(builder.GetContext(), "post_loop", parent_function)
                                      : head_block;
-    const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent_function);
+    const auto tail_block = llvm::BasicBlock::Create(builder.GetContext(), "tail", parent_function);
 
-    builder.StackPush({}, {}, post_loop_block, end_block);
+    builder.StackPush({}, {}, post_loop_block, tail_block);
 
     if (Initializer)
         Initializer->GenLLVM(builder);
@@ -42,7 +42,7 @@ void NJS::ForStatement::PGenLLVM(Builder &builder) const
     {
         auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
         condition = builder.CreateCast(condition, builder.GetTypeContext().GetBooleanType());
-        builder.GetBuilder().CreateCondBr(condition->Load(), loop_block, end_block);
+        builder.GetBuilder().CreateCondBr(condition->Load(), loop_block, tail_block);
     }
     else
     {
@@ -60,7 +60,7 @@ void NJS::ForStatement::PGenLLVM(Builder &builder) const
         builder.GetBuilder().CreateBr(head_block);
     }
 
-    builder.GetBuilder().SetInsertPoint(end_block);
+    builder.GetBuilder().SetInsertPoint(tail_block);
     builder.StackPop();
 }
 

@@ -23,7 +23,7 @@ NJS::ValuePtr NJS::TernaryExpression::PGenLLVM(Builder &builder, const TypePtr &
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent);
     auto else_block = llvm::BasicBlock::Create(builder.GetContext(), "else", parent);
-    const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
+    const auto tail_block = llvm::BasicBlock::Create(builder.GetContext(), "tail", parent);
 
     const auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
     builder.GetBuilder().CreateCondBr(condition->Load(), then_block, else_block);
@@ -33,14 +33,14 @@ NJS::ValuePtr NJS::TernaryExpression::PGenLLVM(Builder &builder, const TypePtr &
     if (then_value->IsLValue())
         then_value = RValue::Create(builder, then_value->GetType(), then_value->Load());
     then_block = builder.GetBuilder().GetInsertBlock();
-    const auto then_term = builder.GetBuilder().CreateBr(end_block);
+    const auto then_term = builder.GetBuilder().CreateBr(tail_block);
 
     builder.GetBuilder().SetInsertPoint(else_block);
     auto else_value = ElseBody->GenLLVM(builder, expected_type);
     if (else_value->IsLValue())
         else_value = RValue::Create(builder, else_value->GetType(), else_value->Load());
     else_block = builder.GetBuilder().GetInsertBlock();
-    const auto else_term = builder.GetBuilder().CreateBr(end_block);
+    const auto else_term = builder.GetBuilder().CreateBr(tail_block);
 
     const auto result_type = GetHigherOrderOf(
         builder.GetTypeContext(),
@@ -54,7 +54,7 @@ NJS::ValuePtr NJS::TernaryExpression::PGenLLVM(Builder &builder, const TypePtr &
 
     const auto result_ty = result_type->GetLLVM(builder);
 
-    builder.GetBuilder().SetInsertPoint(end_block);
+    builder.GetBuilder().SetInsertPoint(tail_block);
     const auto phi_inst = builder.GetBuilder().CreatePHI(result_ty, 2);
     phi_inst->addIncoming(then_value->Load(), then_block);
     phi_inst->addIncoming(else_value->Load(), else_block);

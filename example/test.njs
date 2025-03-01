@@ -18,10 +18,10 @@ type User = {
 }
 
 const user1: User = {
-    name: "Felix",
-    surname: "Schreiber",
+    name: "Max",
+    surname: "Mustermann",
     age: 18,
-    job: "App Development"
+    job: "Programmer"
 }
 
 PRINT(user1)
@@ -177,4 +177,15 @@ for (let x: u64; x < 10; ++x) {
     if (x > 5)
         break
     ASSERT(x <= 5 && "x should not be greater than 5")
+}
+
+switch (1) {
+    case 0 {
+        break
+    }
+    case 1 {
+    }
+    case 2 {
+        return 123
+    }
 }

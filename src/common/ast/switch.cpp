@@ -19,10 +19,12 @@ NJS::SwitchStatement::SwitchStatement(
 void NJS::SwitchStatement::PGenLLVM(Builder &builder) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
-    const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
+    const auto tail_block = llvm::BasicBlock::Create(builder.GetContext(), "tail", parent);
     const auto default_dest = DefaultCase
                                   ? llvm::BasicBlock::Create(builder.GetContext(), "default", parent)
-                                  : end_block;
+                                  : tail_block;
+
+    builder.StackPush({}, {}, {}, tail_block);
 
     const auto condition = Condition->GenLLVM(builder, {});
     const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(), default_dest);
@@ -31,7 +33,7 @@ void NJS::SwitchStatement::PGenLLVM(Builder &builder) const
     {
         builder.GetBuilder().SetInsertPoint(default_dest);
         DefaultCase->GenLLVM(builder);
-        builder.GetBuilder().CreateBr(end_block);
+        builder.GetBuilder().CreateBr(tail_block);
     }
 
     for (const auto &[case_, entries_]: Cases)
@@ -45,10 +47,11 @@ void NJS::SwitchStatement::PGenLLVM(Builder &builder) const
         }
         builder.GetBuilder().SetInsertPoint(dest);
         case_->GenLLVM(builder);
-        builder.GetBuilder().CreateBr(end_block);
+        builder.GetBuilder().CreateBr(tail_block);
     }
 
-    builder.GetBuilder().SetInsertPoint(end_block);
+    builder.GetBuilder().SetInsertPoint(tail_block);
+    builder.StackPop();
 }
 
 std::ostream &NJS::SwitchStatement::Print(std::ostream &stream)
@@ -95,7 +98,9 @@ NJS::ValuePtr NJS::SwitchExpression::PGenLLVM(Builder &builder, const TypePtr &e
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto default_dest = llvm::BasicBlock::Create(builder.GetContext(), "default", parent);
-    const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent);
+    const auto tail_block = llvm::BasicBlock::Create(builder.GetContext(), "tail", parent);
+
+    builder.StackPush({}, {}, {}, tail_block);
 
     const auto condition = Condition->GenLLVM(builder, {});
     const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(), default_dest);
@@ -111,7 +116,7 @@ NJS::ValuePtr NJS::SwitchExpression::PGenLLVM(Builder &builder, const TypePtr &e
         default_value = builder.CreateCast(default_value, result_type);
         default_dest = builder.GetBuilder().GetInsertBlock();
         dest_blocks.emplace_back(default_dest, default_value);
-        builder.GetBuilder().CreateBr(end_block);
+        builder.GetBuilder().CreateBr(tail_block);
     }
     for (const auto &[case_, entries_]: Cases)
     {
@@ -129,12 +134,14 @@ NJS::ValuePtr NJS::SwitchExpression::PGenLLVM(Builder &builder, const TypePtr &e
         case_value = builder.CreateCast(case_value, result_type);
         dest = builder.GetBuilder().GetInsertBlock();
         dest_blocks.emplace_back(dest, case_value);
-        builder.GetBuilder().CreateBr(end_block);
+        builder.GetBuilder().CreateBr(tail_block);
     }
 
     const auto result_ty = result_type->GetLLVM(builder);
 
-    builder.GetBuilder().SetInsertPoint(end_block);
+    builder.GetBuilder().SetInsertPoint(tail_block);
+    builder.StackPop();
+
     const auto phi_inst = builder.GetBuilder().CreatePHI(result_ty, dest_blocks.size());
     for (const auto &[dest_, value_]: dest_blocks)
         phi_inst->addIncoming(value_->Load(), dest_);

@@ -105,7 +105,7 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
     if (!function->empty())
         Error(Where, "cannot re-define function");
 
-    const auto end_block = builder.GetBuilder().GetInsertBlock();
+    const auto insert_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
     builder.GetBuilder().SetInsertPoint(entry_block);
 
@@ -169,7 +169,7 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
 
     builder.Optimize(function);
 
-    builder.GetBuilder().SetInsertPoint(end_block);
+    builder.GetBuilder().SetInsertPoint(insert_block);
 }
 
 std::ostream &NJS::FunctionStatement::Print(std::ostream &stream)
@@ -231,7 +231,7 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
         builder.GetName(false, function_name),
         builder.GetModule());
 
-    const auto end_block = builder.GetBuilder().GetInsertBlock();
+    const auto insert_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
     builder.GetBuilder().SetInsertPoint(entry_block);
 
@@ -294,7 +294,7 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
 
     builder.Optimize(function);
 
-    builder.GetBuilder().SetInsertPoint(end_block);
+    builder.GetBuilder().SetInsertPoint(insert_block);
     return RValue::Create(builder, type, function);
 }
 

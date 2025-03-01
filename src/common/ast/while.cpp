@@ -16,21 +16,21 @@ void NJS::WhileStatement::PGenLLVM(Builder &builder) const
     const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
     const auto head_block = llvm::BasicBlock::Create(builder.GetContext(), "head", parent_function);
     const auto loop_block = llvm::BasicBlock::Create(builder.GetContext(), "loop", parent_function);
-    const auto end_block = llvm::BasicBlock::Create(builder.GetContext(), "end", parent_function);
+    const auto tail_block = llvm::BasicBlock::Create(builder.GetContext(), "tail", parent_function);
 
-    builder.StackPush({}, {}, head_block, end_block);
+    builder.StackPush({}, {}, head_block, tail_block);
     builder.GetBuilder().CreateBr(head_block);
 
     builder.GetBuilder().SetInsertPoint(head_block);
     auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
     condition = builder.CreateCast(condition, builder.GetTypeContext().GetBooleanType());
-    builder.GetBuilder().CreateCondBr(condition->Load(), loop_block, end_block);
+    builder.GetBuilder().CreateCondBr(condition->Load(), loop_block, tail_block);
 
     builder.GetBuilder().SetInsertPoint(loop_block);
     Body->GenLLVM(builder);
     builder.GetBuilder().CreateBr(head_block);
 
-    builder.GetBuilder().SetInsertPoint(end_block);
+    builder.GetBuilder().SetInsertPoint(tail_block);
     builder.StackPop();
 }
 
