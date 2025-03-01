@@ -16,7 +16,7 @@ std::string NJS::Template::GetName(const std::vector<TypePtr> &arguments) const
     return Name + '.' + arguments_string;
 }
 
-NJS::FunctionStatement NJS::Template::InflateFunction(Parser &parent, const std::vector<TypePtr> &arguments) const
+NJS::FunctionStatement NJS::Template::InflateFunction(const Parser &parent, const std::vector<TypePtr> &arguments) const
 {
     parent.GetTypeContext().PushTemplate(Parameters, arguments);
 
@@ -28,7 +28,7 @@ NJS::FunctionStatement NJS::Template::InflateFunction(Parser &parent, const std:
         Where,
         parent.GetMacroMap(),
         parent.IsMain());
-    auto inflated = std::dynamic_pointer_cast<FunctionExpression>(parser.ParseFunctionExpression());
+    const auto inflated = std::dynamic_pointer_cast<FunctionExpression>(parser.ParseFunctionExpression());
 
     parent.GetTypeContext().PopTemplate();
 

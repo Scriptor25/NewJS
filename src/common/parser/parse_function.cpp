@@ -16,7 +16,7 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
 
     std::vector<std::string> template_arguments;
     const auto parent_is_template = m_IsTemplate;
-    const auto is_template = NextAt("<");
+    const auto is_template = !is_export && !is_extern && NextAt("<");
     if (is_template)
     {
         flags |= FunctionFlags_Template;
