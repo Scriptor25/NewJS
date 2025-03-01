@@ -12,7 +12,7 @@ void NJS::Statement::GenLLVM(Builder &builder) const try
 }
 catch (const RTError &error)
 {
-    Error(Where, error);
+    Error(error, Where, {});
 }
 
 NJS::Expression::Expression(SourceLocation where)
@@ -26,7 +26,7 @@ NJS::ValuePtr NJS::Expression::GenLLVM(Builder &builder, const TypePtr &expected
 }
 catch (const RTError &error)
 {
-    Error(Where, error);
+    Error(error, Where, {});
 }
 
 void NJS::Expression::PGenLLVM(Builder &builder) const try
@@ -35,5 +35,5 @@ void NJS::Expression::PGenLLVM(Builder &builder) const try
 }
 catch (const RTError &error)
 {
-    Error(Where, error);
+    Error(error, Where, {});
 }

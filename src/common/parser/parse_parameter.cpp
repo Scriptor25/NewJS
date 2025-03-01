@@ -3,7 +3,7 @@
 
 NJS::ParameterPtr NJS::Parser::ParseParameter(const bool is_const, const bool is_reference)
 {
-    auto where = m_Token.Where;
+    auto where = CurrentLocation();
 
     if (NextAt("{"))
     {
@@ -84,7 +84,7 @@ void NJS::Parser::ParseParameterMap(std::map<std::string, ParameterPtr> &paramet
 {
     while (!At(delimiter) && !AtEof())
     {
-        auto where = m_Token.Where;
+        auto where = CurrentLocation();
         auto name = Expect(TokenType_Symbol).StringValue;
         parameters[name] = NextAt(":")
                                ? ParseParameter(false, false)

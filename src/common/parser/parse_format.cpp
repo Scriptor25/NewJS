@@ -11,38 +11,42 @@ NJS::ExpressionPtr NJS::Parser::ParseFormatExpression()
 
     const auto source = Expect(TokenType_String).StringValue;
 
-    std::map<unsigned, std::string> statics;
-    std::map<unsigned, ExpressionPtr> dynamics;
+    std::map<unsigned, std::string> static_operands;
+    std::map<unsigned, ExpressionPtr> dynamic_operands;
 
-    unsigned index = 0;
-    unsigned current = 0;
-    for (size_t beg; (beg = source.find('{', current)) != std::string::npos;)
+    std::string static_operand;
+    unsigned operand_index = 0;
+
+    for (unsigned i = 0; i < source.size(); ++i)
     {
-        if (source[beg + 1] == '{')
+        if (source[i] != '{')
         {
-            const auto str = source.substr(current, beg + 1);
-            statics[index++] = str;
-            current = beg + 2;
+            static_operand += source[i];
             continue;
         }
-        if (const auto str = source.substr(current, beg); !str.empty())
-            statics[index++] = str;
-        current = beg + 1;
-
-        std::stringstream stream(source.substr(current));
+        if (i == source.size() - 1 || source[i + 1] == '}')
+        {
+            static_operand += source[i++];
+            continue;
+        }
+        if (!static_operand.empty())
+        {
+            static_operands[operand_index++] = static_operand;
+            static_operand.clear();
+        }
+        std::stringstream stream(source.substr(i + 1));
         Parser parser(
             m_TypeContext,
             m_TemplateContext,
             stream,
-            SourceLocation(where.Filename, where.Row, where.Column + current + 1),
+            SourceLocation(where.Filename, where.Row, where.Column + i + 1),
             m_MacroMap,
             m_IsMain);
-        dynamics[index++] = parser.ParseExpression();
-
-        current += stream.tellg();
+        dynamic_operands[operand_index++] = parser.ParseExpression();
+        i += stream.tellg();
     }
-    if (current < source.length())
-        statics[index++] = source.substr(current);
+    if (!static_operand.empty())
+        static_operands[operand_index++] = static_operand;
 
-    return std::make_shared<FormatExpression>(where, index, statics, dynamics);
+    return std::make_shared<FormatExpression>(where, operand_index, static_operands, dynamic_operands);
 }

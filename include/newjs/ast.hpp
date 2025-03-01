@@ -279,16 +279,16 @@ namespace NJS
     {
         FormatExpression(
             SourceLocation where,
-            unsigned count,
-            std::map<unsigned, std::string> static_expressions,
-            std::map<unsigned, ExpressionPtr> dynamic_expressions);
+            unsigned operand_count,
+            std::map<unsigned, std::string> static_operands,
+            std::map<unsigned, ExpressionPtr> dynamic_operands);
 
         [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) const override;
         std::ostream &Print(std::ostream &stream) override;
 
-        unsigned Count;
-        std::map<unsigned, std::string> StaticExpressions;
-        std::map<unsigned, ExpressionPtr> DynamicExpressions;
+        unsigned OperandCount;
+        std::map<unsigned, std::string> StaticOperands;
+        std::map<unsigned, ExpressionPtr> DynamicOperands;
     };
 
     struct FloatingPointExpression final : Expression

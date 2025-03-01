@@ -16,9 +16,10 @@ void NJS::Parser::ParseMacro()
         Expect(")");
     }
 
+    auto where = CurrentLocation();
     std::string source;
     do
         source += Expect(TokenType_String).StringValue;
     while (At(TokenType_String));
-    m_MacroMap[std::move(name)] = {std::move(parameters), std::move(source)};
+    m_MacroMap[std::move(name)] = {std::move(where), std::move(parameters), std::move(source)};
 }

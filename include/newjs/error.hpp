@@ -1,54 +1,64 @@
 #pragma once
 
 #include <format>
-#include <memory>
-#include <string_view>
+#include <vector>
 #include <newjs/location.hpp>
 
 namespace NJS
 {
-    class RTError final
+    struct ErrorFrame final
+    {
+        std::ostream &PrintWhere(std::ostream &stream) const;
+        std::ostream &PrintMessage(std::ostream &stream) const;
+
+        SourceLocation Where;
+        std::string Message;
+    };
+
+    class RTError final : public std::exception
     {
     public:
-        RTError(SourceLocation where, std::string message);
-        RTError(SourceLocation where, std::string message, RTError cause);
-        RTError(std::string message, RTError cause);
-        explicit RTError(std::string message);
+        RTError() = default;
+        RTError(const RTError &cause, const ErrorFrame &frame);
 
         std::ostream &Print(std::ostream &stream) const;
 
+        [[nodiscard]] char const *what() const noexcept override;
+
     private:
-        SourceLocation m_Where;
-        std::string m_Message;
-        std::shared_ptr<RTError> m_Cause;
+        std::vector<ErrorFrame> m_Trace;
     };
 
-    [[noreturn]] void Error(SourceLocation where, RTError cause) noexcept(false);
+    RTError operator+(const RTError &lhs, const ErrorFrame &rhs);
+
+
+    [[noreturn]] void Error(const RTError &cause, SourceLocation where, std::string message);
 
     template<typename... Args>
-    [[noreturn]] void Error(const std::string_view &format, Args &&... args) noexcept(false)
+    [[noreturn]] void Error(const std::string_view &format, Args &&... args)
     {
         auto message = std::vformat(format, std::make_format_args(args...));
-        throw RTError(std::move(message));
+        Error({}, {}, std::move(message));
     }
 
     template<typename... Args>
     [[noreturn]] void Error(
         SourceLocation where,
         const std::string_view &format,
-        Args &&... args) noexcept(false)
+        Args &&... args)
     {
         auto message = std::vformat(format, std::make_format_args(args...));
-        throw RTError(std::move(where), std::move(message));
+        Error({}, std::move(where), std::move(message));
     }
 
     template<typename... Args>
     [[noreturn]] void Error(
         RTError cause,
+        SourceLocation where,
         const std::string_view &format,
-        Args &&... args) noexcept(false)
+        Args &&... args)
     {
         auto message = std::vformat(format, std::make_format_args(args...));
-        throw RTError(std::move(message), std::move(cause));
+        Error(std::move(cause), std::move(where), std::move(message));
     }
 }

@@ -8,13 +8,13 @@
 
 NJS::FormatExpression::FormatExpression(
     SourceLocation where,
-    const unsigned count,
+    const unsigned operand_count,
     std::map<unsigned, std::string> static_expressions,
-    std::map<unsigned, ExpressionPtr> dynamic_expressions)
+    std::map<unsigned, ExpressionPtr> dynamic_operands)
     : Expression(std::move(where)),
-      Count(count),
-      StaticExpressions(std::move(static_expressions)),
-      DynamicExpressions(std::move(dynamic_expressions))
+      OperandCount(operand_count),
+      StaticOperands(std::move(static_expressions)),
+      DynamicOperands(std::move(dynamic_operands))
 {
 }
 
@@ -29,11 +29,11 @@ NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
     arguments.emplace_back(buffer_pointer);
     arguments.emplace_back(builder.GetBuilder().getInt64(BUFFER_SIZE));
 
-    for (unsigned i = 0; i < Count; ++i)
+    for (unsigned i = 0; i < OperandCount; ++i)
     {
-        if (StaticExpressions.contains(i))
+        if (StaticOperands.contains(i))
         {
-            const auto value = StaticExpressions.at(i);
+            const auto value = StaticOperands.at(i);
             const auto string_value = StringExpression::GetString(builder, value);
 
             arguments.emplace_back(builder.GetBuilder().getInt32(ID_POINTER));
@@ -45,9 +45,9 @@ NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
             continue;
         }
 
-        if (DynamicExpressions.contains(i))
+        if (DynamicOperands.contains(i))
         {
-            auto &dynamic = DynamicExpressions.at(i);
+            auto &dynamic = DynamicOperands.at(i);
 
             const auto value = dynamic->GenLLVM(builder, {});
             const auto size = arguments.size();
@@ -91,12 +91,12 @@ NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
 std::ostream &NJS::FormatExpression::Print(std::ostream &stream)
 {
     stream << "f\"";
-    for (unsigned i = 0; i < Count; ++i)
+    for (unsigned i = 0; i < OperandCount; ++i)
     {
-        if (StaticExpressions.contains(i))
-            stream << StaticExpressions[i];
-        else if (DynamicExpressions.contains(i))
-            DynamicExpressions[i]->Print(stream << '{') << '}';
+        if (StaticOperands.contains(i))
+            stream << StaticOperands[i];
+        else if (DynamicOperands.contains(i))
+            DynamicOperands[i]->Print(stream << '{') << '}';
     }
     return stream << '"';
 }

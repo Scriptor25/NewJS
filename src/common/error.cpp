@@ -1,56 +1,68 @@
 #include <iostream>
+#include <ranges>
 #include <newjs/error.hpp>
 
-NJS::RTError::RTError(SourceLocation where, std::string message)
-    : m_Where(std::move(where)),
-      m_Message(std::move(message))
-{
-}
-
-NJS::RTError::RTError(SourceLocation where, std::string message, RTError cause)
-    : m_Where(std::move(where)),
-      m_Message(std::move(message)),
-      m_Cause(std::make_shared<RTError>(std::move(cause)))
-{
-}
-
-NJS::RTError::RTError(std::string message, RTError cause)
-    : m_Where(cause.m_Where),
-      m_Message(std::move(message)),
-      m_Cause(std::make_shared<RTError>(std::move(cause)))
-{
-}
-
-NJS::RTError::RTError(std::string message)
-    : m_Message(std::move(message))
-{
-}
-
-std::ostream &NJS::RTError::Print(std::ostream &stream) const
+std::ostream &NJS::ErrorFrame::PrintWhere(std::ostream &stream) const
 {
     auto &[
         filename_,
         row_,
         column_
-    ] = m_Where;
+    ] = Where;
 
-    const auto not_redundant = !m_Cause || m_Cause->m_Where != m_Where;
-    const auto has_where = !filename_.empty();
-    const auto has_message = !m_Message.empty();
+    if (filename_.empty())
+        return stream;
 
-    if (has_where && (has_message || not_redundant))
-        stream << "at " << filename_ << ':' << row_ << ':' << column_ << ": ";
-    if (has_message)
-        stream << m_Message;
-    if ((has_where && not_redundant) || has_message)
+    return stream << "at " << filename_ << ':' << row_ << ':' << column_ << ": ";
+}
+
+std::ostream &NJS::ErrorFrame::PrintMessage(std::ostream &stream) const
+{
+    return stream << Message;
+}
+
+NJS::RTError::RTError(const RTError &cause, const ErrorFrame &frame)
+{
+    m_Trace.emplace_back(frame);
+    for (const auto &trace_frame: cause.m_Trace)
+    {
+        auto &[
+            where_,
+            message_
+        ] = m_Trace.back();
+        if (where_ != trace_frame.Where && trace_frame.Where)
+        {
+            m_Trace.emplace_back(trace_frame);
+        }
+        else if (message_.empty() && !trace_frame.Message.empty())
+        {
+            message_ = trace_frame.Message;
+        }
+    }
+}
+
+std::ostream &NJS::RTError::Print(std::ostream &stream) const
+{
+    for (auto &frame: m_Trace)
+    {
+        frame.PrintWhere(stream);
+        frame.PrintMessage(stream);
         stream << std::endl;
-
-    if (m_Cause)
-        m_Cause->Print(stream);
+    }
     return stream;
 }
 
-void NJS::Error(SourceLocation where, RTError cause) noexcept(false)
+char const *NJS::RTError::what() const noexcept
 {
-    throw RTError(std::move(where), {}, std::move(cause));
+    return "RTError";
+}
+
+NJS::RTError NJS::operator+(const RTError &lhs, const ErrorFrame &rhs)
+{
+    return {lhs, rhs};
+}
+
+void NJS::Error(const RTError &cause, SourceLocation where, std::string message)
+{
+    throw cause + ErrorFrame(std::move(where), std::move(message));
 }

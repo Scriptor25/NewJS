@@ -5,7 +5,7 @@ extern function malloc(n: u64): void[]
 extern function realloc(block: void[], n: u64): void[]
 extern function free(block: void[])
 
-#PRINT(X) "println(f\"{#X}\")"
+#PRINT(X) "println(f\"#X = {#X}\")"
 
 type User = {
     name: i8[],
@@ -79,7 +79,7 @@ function<T> vec_new(n: u64): vec<T> {
     const ptr: T[] = malloc(n * sizeof<T>)
     return {
         beg: ptr,
-        end: &ptr[n],
+        end: &ptr[n]
     }
 }
 

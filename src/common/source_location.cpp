@@ -12,3 +12,8 @@ NJS::SourceLocation::SourceLocation(std::string filename, const unsigned row, co
       Column(column)
 {
 }
+
+NJS::SourceLocation::operator bool() const
+{
+    return !Filename.empty();
+}

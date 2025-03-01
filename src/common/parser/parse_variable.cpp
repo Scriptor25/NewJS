@@ -4,7 +4,7 @@
 
 NJS::StatementPtr NJS::Parser::ParseVariableStatement(const bool is_extern)
 {
-    const auto where = m_Token.Where;
+    auto where = CurrentLocation();
 
     const auto is_const = NextAt("const");
     if (!is_const)

@@ -4,7 +4,7 @@
 
 NJS::TypePtr NJS::Parser::ParseType()
 {
-    const auto where = m_Token.Where;
+    auto where = CurrentLocation();
 
     TypePtr type;
     if (At("["))

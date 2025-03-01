@@ -37,24 +37,32 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
     std::vector<FunctionStatementPtr> functions;
     std::set<std::string> sub_module_ids;
 
-    parser.Parse(
-        [&](const StatementPtr &statement)
-        {
-            if (const auto import_ = std::dynamic_pointer_cast<ImportStatement>(statement); m_IsMain && import_)
+    try
+    {
+        parser.Parse(
+            [&](const StatementPtr &statement)
             {
-                for (auto &sub_module_id: import_->SubModuleIDs)
-                    sub_module_ids.emplace(sub_module_id);
-                sub_module_ids.emplace(import_->ModuleID);
-                return;
-            }
+                if (const auto import_ = std::dynamic_pointer_cast<ImportStatement>(statement); m_IsMain && import_)
+                {
+                    for (auto &sub_module_id: import_->SubModuleIDs)
+                        sub_module_ids.emplace(sub_module_id);
+                    sub_module_ids.emplace(import_->ModuleID);
+                    return;
+                }
 
-            if (auto function = std::dynamic_pointer_cast<FunctionStatement>(statement);
-                function && function->Flags & FunctionFlags_Export)
-            {
-                function->Body = {};
-                functions.emplace_back(function);
-            }
-        });
+                if (auto function = std::dynamic_pointer_cast<FunctionStatement>(statement);
+                    function && function->Flags & FunctionFlags_Export)
+                {
+                    function->Body = {};
+                    functions.emplace_back(function);
+                }
+            });
+    }
+    catch (const RTError &error)
+    {
+        Error(error, where, {});
+    }
+
     stream.close();
 
     auto module_id = filepath.filename().replace_extension().string();

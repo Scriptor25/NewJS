@@ -143,12 +143,12 @@ NJS::Token NJS::Parser::Expect(const TokenType type)
 {
     if (At(type))
         return Skip();
-    Error(m_Token.Where, "unexpected token {}, expected {}", m_Token, type);
+    Error(CurrentLocation(), "unexpected token {}, expected {}", m_Token, type);
 }
 
 NJS::Token NJS::Parser::Expect(const std::string &value)
 {
     if (At(value))
         return Skip();
-    Error(m_Token.Where, "unexpected token {}, expected '{}'", m_Token, value);
+    Error(CurrentLocation(), "unexpected token {}, expected '{}'", m_Token, value);
 }

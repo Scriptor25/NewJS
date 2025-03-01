@@ -7,7 +7,7 @@
 
 NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
 {
-    const auto where = m_Token.Where;
+    auto where = CurrentLocation();
 
     if (At(TokenType_Int))
     {
@@ -110,5 +110,5 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
         return std::make_shared<UnaryExpression>(where, op, true, operand);
     }
 
-    Error(m_Token.Where, "unused token {}", m_Token);
+    Error(where, "unused token {}", m_Token);
 }

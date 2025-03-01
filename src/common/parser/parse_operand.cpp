@@ -6,7 +6,7 @@ NJS::ExpressionPtr NJS::Parser::ParseOperandExpression()
     auto ptr = ParsePrimaryExpression();
     do
     {
-        const auto where = m_Token.Where;
+        auto where = CurrentLocation();
 
         if (NextAt("."))
         {

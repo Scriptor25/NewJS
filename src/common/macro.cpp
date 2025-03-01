@@ -52,5 +52,5 @@ NJS::ExpressionPtr NJS::Macro::Inflate(Parser &parent) const try
 }
 catch (const RTError &error)
 {
-    Error(error, "in macro '{}'", Source);
+    Error(error, Where, "in macro '{}'", Source);
 }
