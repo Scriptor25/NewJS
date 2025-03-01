@@ -20,9 +20,9 @@ void NJS::SwitchStatement::PGenLLVM(Builder &builder) const
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     const auto tail_block = llvm::BasicBlock::Create(builder.GetContext(), "tail", parent);
-    const auto default_dest = DefaultCase
-                                  ? llvm::BasicBlock::Create(builder.GetContext(), "default", parent)
-                                  : tail_block;
+    auto default_dest = DefaultCase
+                            ? llvm::BasicBlock::Create(builder.GetContext(), "default", parent)
+                            : tail_block;
 
     builder.StackPush({}, {}, {}, tail_block);
 
@@ -33,12 +33,14 @@ void NJS::SwitchStatement::PGenLLVM(Builder &builder) const
     {
         builder.GetBuilder().SetInsertPoint(default_dest);
         DefaultCase->GenLLVM(builder);
-        builder.GetBuilder().CreateBr(tail_block);
+        default_dest = builder.GetBuilder().GetInsertBlock();
+        if (!default_dest->getTerminator())
+            builder.GetBuilder().CreateBr(tail_block);
     }
 
     for (const auto &[case_, entries_]: Cases)
     {
-        const auto dest = llvm::BasicBlock::Create(builder.GetContext(), "case", parent);
+        auto dest = llvm::BasicBlock::Create(builder.GetContext(), "case", parent);
         for (const auto &entry: entries_)
         {
             const auto value = entry->GenLLVM(builder, condition->GetType());
@@ -47,7 +49,9 @@ void NJS::SwitchStatement::PGenLLVM(Builder &builder) const
         }
         builder.GetBuilder().SetInsertPoint(dest);
         case_->GenLLVM(builder);
-        builder.GetBuilder().CreateBr(tail_block);
+        dest = builder.GetBuilder().GetInsertBlock();
+        if (!dest->getTerminator())
+            builder.GetBuilder().CreateBr(tail_block);
     }
 
     builder.GetBuilder().SetInsertPoint(tail_block);
@@ -116,7 +120,8 @@ NJS::ValuePtr NJS::SwitchExpression::PGenLLVM(Builder &builder, const TypePtr &e
         default_value = builder.CreateCast(default_value, result_type);
         default_dest = builder.GetBuilder().GetInsertBlock();
         dest_blocks.emplace_back(default_dest, default_value);
-        builder.GetBuilder().CreateBr(tail_block);
+        if (!default_dest->getTerminator())
+            builder.GetBuilder().CreateBr(tail_block);
     }
     for (const auto &[case_, entries_]: Cases)
     {
@@ -134,7 +139,8 @@ NJS::ValuePtr NJS::SwitchExpression::PGenLLVM(Builder &builder, const TypePtr &e
         case_value = builder.CreateCast(case_value, result_type);
         dest = builder.GetBuilder().GetInsertBlock();
         dest_blocks.emplace_back(dest, case_value);
-        builder.GetBuilder().CreateBr(tail_block);
+        if (!dest->getTerminator())
+            builder.GetBuilder().CreateBr(tail_block);
     }
 
     const auto result_ty = result_type->GetLLVM(builder);

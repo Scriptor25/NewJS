@@ -38,7 +38,7 @@ NJS::MemberInfo NJS::StructType::GetMember(const std::string &name) const
     for (unsigned i = 0; i < m_ElementTypes.size(); ++i)
         if (m_ElementTypes[i].first == name)
             return {i, m_ElementTypes[i].first, m_ElementTypes[i].second};
-    return {};
+    Error("undefined member '{}' in type {}", name, m_String);
 }
 
 NJS::MemberInfo NJS::StructType::GetMember(const unsigned index) const

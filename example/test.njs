@@ -179,7 +179,7 @@ for (let x: u64; x < 10; ++x) {
     ASSERT(x <= 5 && "x should not be greater than 5")
 }
 
-switch (1) {
+switch (n.load) {
     case 0 {
         break
     }
@@ -187,5 +187,10 @@ switch (1) {
     }
     case 2 {
         return 123
+    }
+    default {
+        if (1 == 2)
+            break
+        return 456
     }
 }
