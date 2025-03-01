@@ -187,8 +187,8 @@ void NJS::Builder::Optimize(llvm::Function *function) const
 void NJS::Builder::GetFormat(llvm::FunctionCallee &callee) const
 {
     const auto type = llvm::FunctionType::get(
-        GetBuilder().getVoidTy(),
-        {GetBuilder().getPtrTy(), GetBuilder().getInt64Ty()},
+        GetBuilder().getPtrTy(),
+        {GetBuilder().getInt32Ty()},
         true);
 
     if (const auto function = GetModule().getFunction("format"))

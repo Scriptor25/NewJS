@@ -24,7 +24,7 @@ extern FILE *std_err;
 
 extern int rand_max;
 
-void format(char *buffer, unsigned buffer_size, ...);
+const char *format(unsigned count, ...);
 void println(const char *message);
 int64_t parse_int(const char *str);
 double parse_float(const char *str);

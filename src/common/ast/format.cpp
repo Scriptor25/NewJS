@@ -20,15 +20,8 @@ NJS::FormatExpression::FormatExpression(
 
 NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &) const
 {
-    constexpr auto BUFFER_SIZE = 1024;
-
-    const auto buffer_pointer = builder.CreateAlloca(builder.GetBuilder().getInt8Ty(), BUFFER_SIZE);
-
     std::vector<llvm::Value *> arguments;
-
-    arguments.emplace_back(buffer_pointer);
-    arguments.emplace_back(builder.GetBuilder().getInt64(BUFFER_SIZE));
-
+    arguments.emplace_back(builder.GetBuilder().getInt32(OperandCount));
     for (unsigned i = 0; i < OperandCount; ++i)
     {
         if (StaticOperands.contains(i))
@@ -83,9 +76,9 @@ NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
 
     llvm::FunctionCallee format_callee;
     builder.GetFormat(format_callee);
-    builder.GetBuilder().CreateCall(format_callee, arguments);
+    const auto buffer = builder.GetBuilder().CreateCall(format_callee, arguments);
 
-    return RValue::Create(builder, builder.GetTypeContext().GetStringType(), buffer_pointer);
+    return RValue::Create(builder, builder.GetTypeContext().GetStringType(), buffer);
 }
 
 std::ostream &NJS::FormatExpression::Print(std::ostream &stream)
