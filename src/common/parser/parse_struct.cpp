@@ -9,7 +9,14 @@ NJS::ExpressionPtr NJS::Parser::ParseStructExpression()
     std::vector<std::pair<std::string, ExpressionPtr>> elements;
     while (!At("}") && !AtEof())
     {
-        const auto [where_, type_, name_, int_, fp_] = Expect(TokenType_Symbol);
+        auto [
+            where_,
+            type_,
+            raw_,
+            name_,
+            int_,
+            float_
+        ] = Expect(TokenType_Symbol);
 
         ExpressionPtr value;
         if (!NextAt(":"))

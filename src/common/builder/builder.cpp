@@ -46,7 +46,7 @@ NJS::Builder::Builder(
     m_Passes.SI->registerCallbacks(*m_Passes.PIC, m_Passes.MAM.get());
 
     m_Passes.FPM->addPass(llvm::PromotePass());
-    m_Passes.FPM->addPass(llvm::SROAPass(llvm::SROAOptions::PreserveCFG));
+    m_Passes.FPM->addPass(llvm::SROAPass(llvm::SROAOptions::ModifyCFG));
     m_Passes.FPM->addPass(llvm::MemCpyOptPass());
     m_Passes.FPM->addPass(llvm::InstCombinePass());
     m_Passes.FPM->addPass(llvm::ReassociatePass());

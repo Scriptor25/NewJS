@@ -1,10 +1,9 @@
-#include <istream>
 #include <newjs/error.hpp>
 #include <newjs/parser.hpp>
 
 NJS::Token &NJS::Parser::Next()
 {
-    static const std::map<std::string, std::set<char>> operator_append
+    static const std::map<std::string, std::set<int>> operator_append
     {
         {".", {'.'}},
         {"..", {'.'}},
@@ -95,7 +94,7 @@ NJS::Token &NJS::Parser::Next()
                     case ':':
                         where = m_Where;
                         value += static_cast<char>(c);
-                        return m_Token = {where, TokenType_Other, value};
+                        return m_Token = {where, TokenType_Other, value, value};
 
                     case '0':
                         where = m_Where;
@@ -197,13 +196,13 @@ NJS::Token &NJS::Parser::Next()
                     break;
                 }
                 UnGet();
-                return m_Token = {where, TokenType_Operator, value};
+                return m_Token = {where, TokenType_Operator, value, value};
 
             case State_Bin:
                 if ('0' > c || c > '1')
                 {
                     UnGet();
-                    return m_Token = {where, TokenType_Int, value, (std::stoull(value, nullptr, 2))};
+                    return m_Token = {where, TokenType_Int, "0b" + value, value, (std::stoull(value, nullptr, 2))};
                 }
                 value += static_cast<char>(c);
                 c = Get();
@@ -213,7 +212,7 @@ NJS::Token &NJS::Parser::Next()
                 if ('0' > c || c > '7')
                 {
                     UnGet();
-                    return m_Token = {where, TokenType_Int, value, (std::stoull(value, nullptr, 8))};
+                    return m_Token = {where, TokenType_Int, "0" + value, value, (std::stoull(value, nullptr, 8))};
                 }
                 value += static_cast<char>(c);
                 c = Get();
@@ -253,14 +252,14 @@ NJS::Token &NJS::Parser::Next()
                 }
                 UnGet();
                 if (is_float)
-                    return m_Token = {where, TokenType_FP, value, 0, std::stod(value)};
-                return m_Token = {where, TokenType_Int, value, std::stoull(value, nullptr, 10)};
+                    return m_Token = {where, TokenType_FP, value, value, 0, std::stod(value)};
+                return m_Token = {where, TokenType_Int, value, value, std::stoull(value, nullptr, 10)};
 
             case State_Hex:
                 if (!isxdigit(c))
                 {
                     UnGet();
-                    return m_Token = {where, TokenType_Int, value, (std::stoull(value, nullptr, 16))};
+                    return m_Token = {where, TokenType_Int, "0x" + value, value, (std::stoull(value, nullptr, 16))};
                 }
                 value += static_cast<char>(c);
                 c = Get();
@@ -270,7 +269,7 @@ NJS::Token &NJS::Parser::Next()
                 if (!(isalnum(c) || c == '_'))
                 {
                     UnGet();
-                    return m_Token = {where, TokenType_Symbol, value};
+                    return m_Token = {where, TokenType_Symbol, value, value};
                 }
                 value += static_cast<char>(c);
                 c = Get();
@@ -278,7 +277,7 @@ NJS::Token &NJS::Parser::Next()
 
             case State_String:
                 if (c == '"')
-                    return m_Token = {where, TokenType_String, value};
+                    return m_Token = {where, TokenType_String, '"' + value + '"', value};
                 if (c == '\\')
                     c = Escape(Get());
                 value += static_cast<char>(c);
@@ -287,7 +286,7 @@ NJS::Token &NJS::Parser::Next()
 
             case State_Char:
                 if (c == '\'')
-                    return m_Token = {where, TokenType_Char, value};
+                    return m_Token = {where, TokenType_Char, '\'' + value + '\'', value};
                 if (c == '\\')
                     c = Escape(Get());
                 value += static_cast<char>(c);

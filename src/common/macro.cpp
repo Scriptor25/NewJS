@@ -17,6 +17,16 @@ static void replace_all(std::string &src, const std::string &find, const std::st
         src.replace(pos, find.size(), replace);
 }
 
+static std::string escape(std::string src)
+{
+    for (unsigned i = 0; i < src.size(); ++i)
+    {
+        if (src[i] == '"')
+            src.insert(src.begin() + i++, '\\');
+    }
+    return src;
+}
+
 NJS::ExpressionPtr NJS::Macro::Inflate(Parser &parent) const try
 {
     auto source = Source;
@@ -26,13 +36,14 @@ NJS::ExpressionPtr NJS::Macro::Inflate(Parser &parent) const try
         parent.Expect("(");
         for (const auto &parameter: Parameters)
         {
-            std::string argument;
-            while (!parent.At(",") && !parent.At(")") && !parent.AtEof())
-                argument += parent.Skip().StringValue + ' ';
-            argument.pop_back();
+            auto argument = parent.ParseStatement();
+            std::stringstream stream;
+            argument->Print(stream);
+            auto argument_string = stream.str();
 
-            replace_all(source, "##" + parameter, to_upper(argument));
-            replace_all(source, "#" + parameter, argument);
+            replace_all(source, "##" + parameter, to_upper(escape(argument_string)));
+            replace_all(source, "#" + parameter, escape(argument_string));
+            replace_all(source, "%" + parameter, argument_string);
 
             if (!parent.At(")"))
                 parent.Expect(",");

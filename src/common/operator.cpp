@@ -192,7 +192,7 @@ NJS::ValuePtr NJS::OperatorLOr(
             builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateOr(lhs, rhs));
 
-    if (type->IsInteger())
+    if (type->IsInteger() || type->IsPointer())
     {
         const auto lhs_not_null = builder.GetBuilder().CreateIsNotNull(lhs);
         const auto rhs_not_null = builder.GetBuilder().CreateIsNotNull(rhs);
@@ -218,7 +218,7 @@ NJS::ValuePtr NJS::OperatorLXor(
             builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateXor(lhs, rhs));
 
-    if (type->IsInteger())
+    if (type->IsInteger() || type->IsPointer())
     {
         const auto lhs_not_null = builder.GetBuilder().CreateIsNotNull(lhs);
         const auto rhs_not_null = builder.GetBuilder().CreateIsNotNull(rhs);
@@ -244,7 +244,7 @@ NJS::ValuePtr NJS::OperatorLAnd(
             builder.GetTypeContext().GetBooleanType(),
             builder.GetBuilder().CreateAnd(lhs, rhs));
 
-    if (type->IsInteger())
+    if (type->IsInteger() || type->IsPointer())
     {
         const auto lhs_not_null = builder.GetBuilder().CreateIsNotNull(lhs);
         const auto rhs_not_null = builder.GetBuilder().CreateIsNotNull(rhs);

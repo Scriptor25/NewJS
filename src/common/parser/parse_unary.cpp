@@ -8,7 +8,7 @@ NJS::ExpressionPtr NJS::Parser::ParseUnaryExpression()
     if (At("++") || At("--"))
     {
         const auto token = Skip();
-        ptr = std::make_shared<UnaryExpression>(token.Where, token.StringValue, false, ptr);
+        ptr = std::make_shared<UnaryExpression>(token.Where, token.String, false, ptr);
     }
 
     return ptr;

@@ -16,7 +16,7 @@ void NJS::Parser::ParseTypeAlias()
         std::vector<TypePtr> types;
         while (!At(">") && !AtEof())
         {
-            auto name = Expect(TokenType_Symbol).StringValue;
+            auto name = Expect(TokenType_Symbol).String;
             template_arguments.emplace_back(name);
             types.emplace_back(m_TypeContext.GetIncompleteType(name));
 
@@ -28,7 +28,7 @@ void NJS::Parser::ParseTypeAlias()
         m_TypeContext.PushTemplate(template_arguments, types);
     }
 
-    const auto name = Expect(TokenType_Symbol).StringValue;
+    const auto name = Expect(TokenType_Symbol).String;
     if (m_IsTemplate)
         ResetBuffer();
 

@@ -109,7 +109,7 @@ bool NJS::Parser::At(const TokenType type) const
 
 bool NJS::Parser::At(const std::string &value) const
 {
-    return m_Token.StringValue == value;
+    return m_Token.String == value;
 }
 
 bool NJS::Parser::NextAt(const TokenType type)

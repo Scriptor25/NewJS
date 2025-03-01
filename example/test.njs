@@ -5,7 +5,10 @@ extern function malloc(n: u64): void[]
 extern function realloc(block: void[], n: u64): void[]
 extern function free(block: void[])
 
-#PRINT(X) "println(f\"#X = {#X}\")"
+#PRINT(X)  "println(f\"#X = {#X}\")"
+#ASSERT(X) "assert(%X, \"#X\")"
+
+function assert(x: u1, string: i8[const]) { if (!x) println(f"assertion '{string}' failed") }
 
 type User = {
     name: i8[],
@@ -157,7 +160,7 @@ function add(a: i32, b: i32): promise<i32> {
 }
 
 const result = await<i32>(add(123, 456))
-println(f"result = {result}")
+PRINT(result)
 
 for (let i: u64; i < 64; ++i)
     println(f"i = {2:u64 ** i}")
@@ -167,11 +170,11 @@ for (let j: u64; j < 5; ++j)
     for (let i: u64; i < 5; ++i) {
         if (i == j)
             continue
-        println(f"{i} != {j}")
+        ASSERT(i != j && "i should not be equal to j")
     }
 
 for (let x: u64; x < 10; ++x) {
     if (x > 5)
         break
-    println(f"{x}")
+    ASSERT(x <= 5 && "x should not be greater than 5")
 }

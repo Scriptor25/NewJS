@@ -23,9 +23,10 @@ namespace NJS
     {
         SourceLocation Where;
         TokenType Type = TokenType_EOF;
-        std::string StringValue;
-        uint64_t IntValue = 0;
-        double FPValue = 0.0;
+        std::string Raw;
+        std::string String;
+        uint64_t Int = 0;
+        double Float = 0.0;
     };
 }
 
@@ -62,7 +63,7 @@ namespace std
                 ctx.out(),
                 "[ {}: '{}' ]",
                 token.Type,
-                token.StringValue
+                token.String
             );
         }
     };

@@ -26,7 +26,7 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
         std::vector<TypePtr> types;
         while (!At(">"))
         {
-            auto name = Expect(TokenType_Symbol).StringValue;
+            auto name = Expect(TokenType_Symbol).String;
             template_arguments.emplace_back(name);
             types.emplace_back(m_TypeContext.GetIncompleteType(name));
 
@@ -45,10 +45,10 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
     if (!is_extern && !is_template && NextAt("operator"))
     {
         flags |= FunctionFlags_Operator;
-        name = Expect(TokenType_Operator).StringValue;
+        name = Expect(TokenType_Operator).String;
     }
     else
-        name = Expect(TokenType_Symbol).StringValue;
+        name = Expect(TokenType_Symbol).String;
 
     std::vector<ParameterPtr> parameters;
     Expect("(");

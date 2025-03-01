@@ -13,7 +13,7 @@ NJS::TypePtr NJS::Parser::ParseType()
         type = ParseStructType();
     else if (At("("))
         type = ParseFunctionType();
-    else if (const auto sym = Expect(TokenType_Symbol).StringValue; m_TemplateContext.HasType(sym))
+    else if (const auto sym = Expect(TokenType_Symbol).String; m_TemplateContext.HasType(sym))
     {
         std::vector<TypePtr> arguments;
 
@@ -77,7 +77,7 @@ NJS::TypePtr NJS::Parser::ParseType()
         {
             if (At(TokenType_Int))
             {
-                const auto count = Skip().IntValue;
+                const auto count = Skip().Int;
                 type = m_TypeContext.GetArrayType(type, count);
             }
             else
@@ -155,7 +155,7 @@ void NJS::Parser::ParseTypeMap(std::vector<std::pair<std::string, TypePtr>> &typ
 {
     while (!At(delim) && !AtEof())
     {
-        const auto name = Expect(TokenType_Symbol).StringValue;
+        const auto name = Expect(TokenType_Symbol).String;
         Expect(":");
         types.emplace_back(name, ParseType());
 

@@ -11,7 +11,7 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
 
     if (At(TokenType_Int))
     {
-        const auto value = Skip().IntValue;
+        const auto value = Skip().Int;
         TypePtr type;
         if (NextAt(":"))
             type = ParseType();
@@ -20,7 +20,7 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
 
     if (At(TokenType_FP))
     {
-        const auto value = Skip().FPValue;
+        const auto value = Skip().Float;
         TypePtr type;
         if (NextAt(":"))
             type = ParseType();
@@ -31,13 +31,13 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
     {
         std::string value;
         do
-            value += Skip().StringValue;
+            value += Skip().String;
         while (At(TokenType_String));
         return std::make_shared<StringExpression>(where, value);
     }
 
     if (At(TokenType_Char))
-        return std::make_shared<CharExpression>(where, Skip().StringValue[0]);
+        return std::make_shared<CharExpression>(where, Skip().String[0]);
 
     if (NextAt("true"))
         return std::make_shared<BooleanExpression>(where, true);
@@ -101,11 +101,11 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
     }
 
     if (At(TokenType_Symbol))
-        return ParseSymbolExpression(where, Skip().StringValue);
+        return ParseSymbolExpression(where, Skip().String);
 
     if (At(TokenType_Operator))
     {
-        const auto op = Skip().StringValue;
+        const auto op = Skip().String;
         const auto operand = ParseOperandExpression();
         return std::make_shared<UnaryExpression>(where, op, true, operand);
     }

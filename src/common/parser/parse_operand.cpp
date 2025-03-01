@@ -10,7 +10,7 @@ NJS::ExpressionPtr NJS::Parser::ParseOperandExpression()
 
         if (NextAt("."))
         {
-            const auto name = Expect(TokenType_Symbol).StringValue;
+            const auto name = Expect(TokenType_Symbol).String;
             ptr = std::make_shared<MemberExpression>(where, ptr, name);
             continue;
         }

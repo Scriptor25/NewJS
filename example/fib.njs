@@ -1,4 +1,4 @@
-extern function println(message: i8[])
+extern function println(message: i8[const])
 
 export function fib(n: u32): u32 {
     let a: u32 = 0

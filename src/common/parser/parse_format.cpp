@@ -9,7 +9,7 @@ NJS::ExpressionPtr NJS::Parser::ParseFormatExpression()
     if (!At(TokenType_String))
         return ParseSymbolExpression(where, "f");
 
-    const auto source = Expect(TokenType_String).StringValue;
+    const auto source = Expect(TokenType_String).String;
 
     std::map<unsigned, std::string> static_operands;
     std::map<unsigned, ExpressionPtr> dynamic_operands;

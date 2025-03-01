@@ -42,23 +42,30 @@ NJS::ExpressionPtr NJS::Parser::ParseBinaryExpression(ExpressionPtr lhs, const u
 
     auto get_pre = [&]
     {
-        return OPS.at(m_Token.StringValue);
+        return OPS.at(m_Token.String);
     };
     auto has_pre = [&]
     {
-        return OPS.contains(m_Token.StringValue);
+        return OPS.contains(m_Token.String);
     };
 
     while (At(TokenType_Operator) && has_pre() && get_pre() >= min_pre)
     {
         const auto op_pre = get_pre();
-        const auto [where_, type_, op_, int_, fp_] = Skip();
+        auto [
+            where_,
+            type_,
+            raw_,
+            value_,
+            int_,
+            float_
+        ] = Skip();
 
         auto rhs = ParseUnaryExpression();
         while (At(TokenType_Operator) && has_pre() && (get_pre() > op_pre || (!get_pre() && get_pre() >= op_pre)))
             rhs = ParseBinaryExpression(rhs, op_pre + (get_pre() > op_pre ? 1 : 0));
 
-        if (op_ == "?")
+        if (value_ == "?")
         {
             Expect(":");
             const auto else_ = ParseExpression();
@@ -66,7 +73,7 @@ NJS::ExpressionPtr NJS::Parser::ParseBinaryExpression(ExpressionPtr lhs, const u
             continue;
         }
 
-        lhs = std::make_shared<BinaryExpression>(where_, op_, lhs, rhs);
+        lhs = std::make_shared<BinaryExpression>(where_, value_, lhs, rhs);
     }
 
     return lhs;
