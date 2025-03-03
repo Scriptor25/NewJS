@@ -98,7 +98,7 @@ public:
     {
         const auto str_len = strlen(s);
         reserve(str_len);
-        memcpy_s(data + length, reserved - length, s, str_len);
+        memcpy(data + length, s, str_len);
         length += str_len;
     }
 
