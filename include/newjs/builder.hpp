@@ -134,8 +134,7 @@ namespace NJS
             const ValuePtr &left,
             const ValuePtr &right) const;
 
-        void DefineVariable(const std::string &name, ValuePtr value);
-        ValuePtr DefineVariableNoError(const std::string &name, ValuePtr value);
+        ValuePtr &DefineVariable(const std::string &name);
         [[nodiscard]] ValuePtr GetVariable(const std::string &name) const;
         ValuePtr &GetOrDefineVariable(const std::string &name);
 

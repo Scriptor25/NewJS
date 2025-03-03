@@ -88,7 +88,7 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
         auto value = RValue::Create(builder, type, function);
         if (new_define)
         {
-            builder.DefineVariable(Name, value);
+            builder.DefineVariable(Name) = value;
         }
         else
         {

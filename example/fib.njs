@@ -13,7 +13,7 @@ export function fib(n: u32): u32 {
 
 function<T> gen_fib(n: T): T {
     let a: T = 0
-    let b: T = 0
+    let b: T = 1
     for (let i: T = 1; i < n; ++i) {
         const c = a + b
         a = b
@@ -26,8 +26,5 @@ const n: u32 = 10
 const f = fib(n)
 println(f"fib({n}) = {f}")
 
-{
-    const n: u64 = 10
-    const f = gen_fib<u64>(n)
-    println(f"fib({n}) = {f}")
-}
+const gf = gen_fib<u64>(n)
+println(f"fib({n}) = {gf}")

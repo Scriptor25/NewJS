@@ -1,6 +1,5 @@
 #include <utility>
 #include <newjs/builder.hpp>
-#include <newjs/error.hpp>
 #include <newjs/parameter.hpp>
 #include <newjs/parser.hpp>
 #include <newjs/type.hpp>
@@ -31,7 +30,8 @@ void NJS::Parameter::CreateVars(
     const bool is_reference)
 {
     const auto type = Type ? Type : value->GetType();
-    ValuePtr variable;
+
+    auto &variable = builder.DefineVariable(Name);
 
     if (is_extern)
     {
@@ -42,8 +42,10 @@ void NJS::Parameter::CreateVars(
         variable = builder.CreateGlobal(Name, type, is_const, value != nullptr, const_value);
         if (value && !const_value)
             variable->Store(value);
+        return;
     }
-    else if (is_reference)
+
+    if (is_reference)
     {
         if (value->GetType() != type)
             return;
@@ -51,23 +53,22 @@ void NJS::Parameter::CreateVars(
             return;
         const auto pointer = value->GetPointer();
         variable = LValue::Create(builder, type, pointer, is_const);
+        return;
     }
-    else if (is_const)
+
+    if (is_const)
     {
         value = builder.CreateCast(value, type);
         const auto loaded = value->Load();
         variable = RValue::Create(builder, type, loaded);
-    }
-    else
-    {
-        variable = builder.CreateAlloca(type, false);
-        if (value)
-            variable->Store(value);
-        else
-            variable->Store(llvm::Constant::getNullValue(type->GetLLVM(builder)));
+        return;
     }
 
-    builder.DefineVariable(Name, variable);
+    variable = builder.CreateAlloca(type, false);
+    if (value)
+        variable->Store(value);
+    else
+        variable->Store(llvm::Constant::getNullValue(type->GetLLVM(builder)));
 }
 
 std::ostream &NJS::Parameter::Print(std::ostream &stream)

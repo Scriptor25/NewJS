@@ -18,6 +18,7 @@ NJS::ExpressionPtr NJS::Parser::ParseBinaryExpression(ExpressionPtr lhs, const u
         {"<<=", 0},
         {">>=", 0},
         {"?", 0},
+        {"??", 0},
         {"||", 1},
         {"^^", 2},
         {"&&", 3},
@@ -70,6 +71,12 @@ NJS::ExpressionPtr NJS::Parser::ParseBinaryExpression(ExpressionPtr lhs, const u
             Expect(":");
             const auto else_ = ParseExpression();
             lhs = std::make_shared<TernaryExpression>(where_, lhs, rhs, else_);
+            continue;
+        }
+
+        if (value_ == "??")
+        {
+            lhs = std::make_shared<TernaryExpression>(where_, lhs, lhs, rhs);
             continue;
         }
 

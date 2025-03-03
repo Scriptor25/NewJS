@@ -76,7 +76,7 @@ NJS::Builder::Builder(
             }),
         false,
         is_main);
-    DefineVariable("process", process);
+    DefineVariable("process") = process;
 
     if (is_main)
     {
@@ -366,20 +366,12 @@ NJS::OperatorInfo<2> NJS::Builder::FindOperator(
     return {};
 }
 
-void NJS::Builder::DefineVariable(const std::string &name, ValuePtr value)
-{
-    auto &stack = m_Stack.back();
-    if (stack.Contains(name))
-        return;
-    stack[name] = std::move(value);
-}
-
-NJS::ValuePtr NJS::Builder::DefineVariableNoError(const std::string &name, ValuePtr value)
+NJS::ValuePtr &NJS::Builder::DefineVariable(const std::string &name)
 {
     auto &stack = m_Stack.back();
     if (stack.Contains(name))
         Error("cannot redefine symbol '{}'", name);
-    return stack[name] = std::move(value);
+    return stack[name];
 }
 
 NJS::ValuePtr NJS::Builder::GetVariable(const std::string &name) const
@@ -387,7 +379,7 @@ NJS::ValuePtr NJS::Builder::GetVariable(const std::string &name) const
     for (auto &stack: std::ranges::reverse_view(m_Stack))
         if (stack.Contains(name))
             return stack[name];
-    Error("cannot find symbol {}", name);
+    Error("undefined symbol {}", name);
 }
 
 NJS::ValuePtr &NJS::Builder::GetOrDefineVariable(const std::string &name)
@@ -395,8 +387,7 @@ NJS::ValuePtr &NJS::Builder::GetOrDefineVariable(const std::string &name)
     for (auto &stack: std::ranges::reverse_view(m_Stack))
         if (stack.Contains(name))
             return stack[name];
-    auto &stack = m_Stack.back();
-    return stack[name];
+    return m_Stack.back()[name];
 }
 
 NJS::ReferenceInfo &NJS::Builder::CurrentFunctionResult()

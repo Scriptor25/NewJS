@@ -194,3 +194,9 @@ switch (await<i32>(add(1, 2))) {
         return 456
     }
 }
+
+{
+    const foo = 123
+    const bar = 456
+    const a = foo ?? bar ?? 789
+}
