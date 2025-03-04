@@ -47,7 +47,6 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
         {
             if (type_)
                 argument_value = builder.CreateCast(argument_value, type_);
-
             arguments[i] = argument_value->Load();
             continue;
         }
@@ -83,7 +82,7 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
     return RValue::Create(builder, type_, result_value);
 }
 
-std::ostream &NJS::CallExpression::Print(std::ostream &stream)
+std::ostream &NJS::CallExpression::Print(std::ostream &stream) const
 {
     Callee->Print(stream) << '(';
     for (unsigned i = 0; i < Arguments.size(); ++i)

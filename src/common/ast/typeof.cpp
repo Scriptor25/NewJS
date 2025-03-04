@@ -15,11 +15,11 @@ NJS::ValuePtr NJS::TypeOfExpression::PGenLLVM(Builder &builder, const TypePtr &e
 {
     const auto operand = Operand->GenLLVM(builder, {});
     const auto type = builder.GetTypeContext().GetStringType();
-    const auto value = StringExpression::GetString(builder, operand->GetType()->GetString());
+    const auto value = builder.GetString(operand->GetType()->GetString());
     return RValue::Create(builder, type, value);
 }
 
-std::ostream &NJS::TypeOfExpression::Print(std::ostream &stream)
+std::ostream &NJS::TypeOfExpression::Print(std::ostream &stream) const
 {
     return Operand->Print(stream << "typeof(") << ")";
 }

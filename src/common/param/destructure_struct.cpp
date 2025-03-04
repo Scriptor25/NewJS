@@ -7,9 +7,8 @@
 NJS::DestructureStruct::DestructureStruct(
     SourceLocation where,
     std::map<std::string, ParameterPtr> elements,
-    TypePtr type,
     ReferenceInfo info)
-    : Parameter(std::move(where), {}, std::move(type), std::move(info)),
+    : Parameter(std::move(where), {}, std::move(info)),
       Elements(std::move(elements))
 {
 }
@@ -26,18 +25,18 @@ void NJS::DestructureStruct::CreateVars(
     const bool is_const,
     const bool is_reference)
 {
-    if (Type)
+    if (Info.Type)
     {
         if (is_reference)
         {
-            if (value->GetType() != Type)
-                return;
+            if (value->GetType() != Info.Type)
+                Error(Where, "TODO");
             if (value->IsConst() && !is_const)
-                return;
+                Error(Where, "TODO");
         }
         else
         {
-            value = builder.CreateCast(value, Type);
+            value = builder.CreateCast(value, Info.Type);
         }
     }
 
@@ -48,7 +47,7 @@ void NJS::DestructureStruct::CreateVars(
     }
 }
 
-std::ostream &NJS::DestructureStruct::Print(std::ostream &stream)
+std::ostream &NJS::DestructureStruct::Print(std::ostream &stream, bool with_info)
 {
     if (Info.IsReference)
     {
@@ -64,10 +63,10 @@ std::ostream &NJS::DestructureStruct::Print(std::ostream &stream)
             first = false;
         else
             stream << ", ";
-        element->Print(stream << name << ": ");
+        element->Print(stream << name << ": ", false);
     }
     stream << " }";
-    if (Type)
-        Type->Print(stream << ": ");
+    if (Info.Type)
+        Info.Type->Print(stream << ": ");
     return stream;
 }

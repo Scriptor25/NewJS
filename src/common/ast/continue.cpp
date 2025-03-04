@@ -14,7 +14,7 @@ void NJS::ContinueStatement::PGenLLVM(Builder &builder) const
     builder.GetBuilder().CreateBr(dest);
 }
 
-std::ostream &NJS::ContinueStatement::Print(std::ostream &stream)
+std::ostream &NJS::ContinueStatement::Print(std::ostream &stream) const
 {
     return stream << "continue";
 }

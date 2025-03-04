@@ -404,3 +404,11 @@ llvm::BasicBlock *NJS::Builder::CurrentTailBlock() const
 {
     return m_Stack.back().TailBlock;
 }
+
+llvm::Constant *NJS::Builder::GetString(const std::string &value)
+{
+    auto &pointer = m_StringTable[value];
+    if (!pointer)
+        pointer = GetBuilder().CreateGlobalStringPtr(value);
+    return pointer;
+}

@@ -26,7 +26,7 @@ NJS::ValuePtr NJS::IntegerExpression::PGenLLVM(Builder &builder, const TypePtr &
         llvm::ConstantInt::get(type->GetLLVM(builder), Value, Type::As<IntegerType>(type)->IsSigned()));
 }
 
-std::ostream &NJS::IntegerExpression::Print(std::ostream &stream)
+std::ostream &NJS::IntegerExpression::Print(std::ostream &stream) const
 {
     return stream << Value;
 }

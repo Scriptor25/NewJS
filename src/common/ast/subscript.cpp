@@ -17,7 +17,7 @@ NJS::ValuePtr NJS::SubscriptExpression::PGenLLVM(Builder &builder, const TypePtr
     return builder.CreateSubscript(array, index);
 }
 
-std::ostream &NJS::SubscriptExpression::Print(std::ostream &stream)
+std::ostream &NJS::SubscriptExpression::Print(std::ostream &stream) const
 {
     return Index->Print(Array->Print(stream) << '[') << ']';
 }

@@ -27,7 +27,7 @@ NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
         if (StaticOperands.contains(i))
         {
             const auto value = StaticOperands.at(i);
-            const auto string_value = StringExpression::GetString(builder, value);
+            const auto string_value = builder.GetString(value);
 
             arguments.emplace_back(builder.GetBuilder().getInt32(ID_POINTER));
             arguments.emplace_back(builder.GetBuilder().getInt32(ID_INTEGER));
@@ -81,15 +81,15 @@ NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
     return RValue::Create(builder, builder.GetTypeContext().GetStringType(), buffer);
 }
 
-std::ostream &NJS::FormatExpression::Print(std::ostream &stream)
+std::ostream &NJS::FormatExpression::Print(std::ostream &stream) const
 {
     stream << "f\"";
     for (unsigned i = 0; i < OperandCount; ++i)
     {
         if (StaticOperands.contains(i))
-            stream << StaticOperands[i];
+            stream << StaticOperands.at(i);
         else if (DynamicOperands.contains(i))
-            DynamicOperands[i]->Print(stream << '{') << '}';
+            DynamicOperands.at(i)->Print(stream << '{') << '}';
     }
     return stream << '"';
 }

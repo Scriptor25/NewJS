@@ -23,7 +23,7 @@ NJS::ValuePtr NJS::FloatingPointExpression::PGenLLVM(Builder &builder, const Typ
     return RValue::Create(builder, type, llvm::ConstantFP::get(type->GetLLVM(builder), Value));
 }
 
-std::ostream &NJS::FloatingPointExpression::Print(std::ostream &stream)
+std::ostream &NJS::FloatingPointExpression::Print(std::ostream &stream) const
 {
     return stream << Value;
 }

@@ -15,7 +15,6 @@ namespace NJS
         Parameter(
             SourceLocation where,
             std::string name,
-            TypePtr type,
             ReferenceInfo info);
         virtual ~Parameter() = default;
 
@@ -27,11 +26,10 @@ namespace NJS
             bool is_const,
             bool is_reference);
 
-        virtual std::ostream &Print(std::ostream &stream);
+        virtual std::ostream &Print(std::ostream &stream, bool with_info);
 
         SourceLocation Where;
         std::string Name;
-        TypePtr Type;
         ReferenceInfo Info;
     };
 
@@ -40,7 +38,6 @@ namespace NJS
         DestructureStruct(
             SourceLocation where,
             std::map<std::string, ParameterPtr> elements,
-            TypePtr type,
             ReferenceInfo info);
 
         bool RequireValue() override;
@@ -51,7 +48,7 @@ namespace NJS
             bool is_const,
             bool is_reference) override;
 
-        std::ostream &Print(std::ostream &stream) override;
+        std::ostream &Print(std::ostream &stream, bool with_info) override;
 
         std::map<std::string, ParameterPtr> Elements;
     };
@@ -61,7 +58,6 @@ namespace NJS
         DestructureTuple(
             SourceLocation where,
             std::vector<ParameterPtr> elements,
-            TypePtr type,
             ReferenceInfo info);
 
         bool RequireValue() override;
@@ -72,7 +68,7 @@ namespace NJS
             bool is_const,
             bool is_reference) override;
 
-        std::ostream &Print(std::ostream &stream) override;
+        std::ostream &Print(std::ostream &stream, bool with_info) override;
 
         std::vector<ParameterPtr> Elements;
     };

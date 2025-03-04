@@ -6,14 +6,10 @@
 NJS::VariableStatement::VariableStatement(
     SourceLocation where,
     const bool is_extern,
-    const bool is_const,
-    const bool is_reference,
     ParameterPtr parameter,
     ExpressionPtr value)
     : Statement(std::move(where)),
       IsExtern(is_extern),
-      IsConst(is_const),
-      IsReference(is_reference),
       Parameter(std::move(parameter)),
       Value(std::move(value))
 {
@@ -22,19 +18,19 @@ NJS::VariableStatement::VariableStatement(
 void NJS::VariableStatement::PGenLLVM(Builder &builder) const
 {
     const auto value = Value
-                           ? Value->GenLLVM(builder, Parameter->Type)
+                           ? Value->GenLLVM(builder, Parameter->Info.Type)
                            : nullptr;
-    Parameter->CreateVars(builder, value, IsExtern, IsConst, IsReference);
+    Parameter->CreateVars(builder, value, IsExtern, Parameter->Info.IsConst, Parameter->Info.IsReference);
 }
 
-std::ostream &NJS::VariableStatement::Print(std::ostream &stream)
+std::ostream &NJS::VariableStatement::Print(std::ostream &stream) const
 {
     if (IsExtern)
         stream << "extern ";
-    stream << (IsConst ? "const " : "let ");
-    if (IsReference)
+    stream << (Parameter->Info.IsConst ? "const " : "let ");
+    if (Parameter->Info.IsReference)
         stream << "&";
-    Parameter->Print(stream);
+    Parameter->Print(stream, false);
     if (Value)
         Value->Print(stream << " = ");
     return stream;

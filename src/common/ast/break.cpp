@@ -14,7 +14,7 @@ void NJS::BreakStatement::PGenLLVM(Builder &builder) const
     builder.GetBuilder().CreateBr(dest);
 }
 
-std::ostream &NJS::BreakStatement::Print(std::ostream &stream)
+std::ostream &NJS::BreakStatement::Print(std::ostream &stream) const
 {
     return stream << "break";
 }

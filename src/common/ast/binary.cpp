@@ -174,7 +174,7 @@ NJS::ValuePtr NJS::BinaryExpression::PGenLLVM(Builder &builder, const TypePtr &e
     Error(Where, "undefined binary operator {} {} {}", left_type, Operator, right_type);
 }
 
-std::ostream &NJS::BinaryExpression::Print(std::ostream &stream)
+std::ostream &NJS::BinaryExpression::Print(std::ostream &stream) const
 {
     return RightOperand->Print(LeftOperand->Print(stream) << ' ' << Operator << ' ');
 }

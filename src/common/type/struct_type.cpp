@@ -53,7 +53,7 @@ bool NJS::StructType::TypeInfo(Builder &builder, std::vector<llvm::Value *> &arg
     auto any_incomplete = false;
     for (const auto &[name_, type_]: m_ElementTypes)
     {
-        arguments.emplace_back(StringExpression::GetString(builder, name_));
+        arguments.emplace_back(builder.GetString(name_));
         any_incomplete |= type_->TypeInfo(builder, arguments);
     }
     return any_incomplete;

@@ -63,7 +63,7 @@ NJS::ValuePtr NJS::TernaryExpression::PGenLLVM(Builder &builder, const TypePtr &
     return RValue::Create(builder, result_type, phi_inst);
 }
 
-std::ostream &NJS::TernaryExpression::Print(std::ostream &stream)
+std::ostream &NJS::TernaryExpression::Print(std::ostream &stream) const
 {
     return ElseBody->Print(ThenBody->Print(Condition->Print(stream) << " ? ") << " : ");
 }

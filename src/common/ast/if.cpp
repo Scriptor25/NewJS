@@ -61,7 +61,7 @@ void NJS::IfStatement::PGenLLVM(Builder &builder) const
     builder.GetBuilder().SetInsertPoint(tail_block);
 }
 
-std::ostream &NJS::IfStatement::Print(std::ostream &stream)
+std::ostream &NJS::IfStatement::Print(std::ostream &stream) const
 {
     ThenBody->Print(Condition->Print(stream << "if (") << ") ");
     if (ElseBody)

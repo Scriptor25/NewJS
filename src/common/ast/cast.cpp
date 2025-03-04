@@ -14,7 +14,7 @@ NJS::ValuePtr NJS::CastExpression::PGenLLVM(Builder &builder, const TypePtr &) c
     return builder.CreateCast(Operand->GenLLVM(builder, Type), Type);
 }
 
-std::ostream &NJS::CastExpression::Print(std::ostream &stream)
+std::ostream &NJS::CastExpression::Print(std::ostream &stream) const
 {
     return Type->Print(Operand->Print(stream) << " as ");
 }

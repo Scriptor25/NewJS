@@ -142,6 +142,8 @@ namespace NJS
         [[nodiscard]] llvm::BasicBlock *CurrentHeadBlock() const;
         [[nodiscard]] llvm::BasicBlock *CurrentTailBlock() const;
 
+        llvm::Constant *GetString(const std::string &value);
+
     private:
         std::string m_ModuleID;
         bool m_IsMain;
@@ -162,5 +164,7 @@ namespace NJS
         std::map<std::string, ReferenceInfoMap<ReferenceInfoMap<OperatorInfo<2>>>> m_BinaryOperatorMap;
 
         std::vector<StackFrame> m_Stack;
+
+        std::map<std::string, llvm::Constant *> m_StringTable;
     };
 }

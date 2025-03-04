@@ -18,7 +18,7 @@ bool NJS::IncompleteType::TypeInfo(
     std::vector<llvm::Value *> &arguments) const
 {
     arguments.emplace_back(builder.GetBuilder().getInt32(ID_INCOMPLETE));
-    arguments.emplace_back(StringExpression::GetString(builder, m_Name));
+    arguments.emplace_back(builder.GetString(m_Name));
     return true;
 }
 

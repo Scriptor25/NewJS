@@ -27,7 +27,7 @@ NJS::ValuePtr NJS::SizeOfExpression::PGenLLVM(Builder &builder, const TypePtr &e
     return RValue::Create(builder, type, size_value);
 }
 
-std::ostream &NJS::SizeOfExpression::Print(std::ostream &stream)
+std::ostream &NJS::SizeOfExpression::Print(std::ostream &stream) const
 {
     return Operand->Print(stream << "sizeof(") << ")";
 }

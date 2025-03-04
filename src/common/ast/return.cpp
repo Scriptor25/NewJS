@@ -46,7 +46,7 @@ void NJS::ReturnStatement::PGenLLVM(Builder &builder) const
     builder.GetBuilder().CreateRet(value->Load());
 }
 
-std::ostream &NJS::ReturnStatement::Print(std::ostream &stream)
+std::ostream &NJS::ReturnStatement::Print(std::ostream &stream) const
 {
     if (Value)
         return Value->Print(stream << "return ");

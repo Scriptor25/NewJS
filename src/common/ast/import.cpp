@@ -26,7 +26,7 @@ void NJS::ImportStatement::PGenLLVM(Builder &builder) const
     Mapping.MapFunctions(builder, ModuleID, Functions);
 }
 
-std::ostream &NJS::ImportStatement::Print(std::ostream &stream)
+std::ostream &NJS::ImportStatement::Print(std::ostream &stream) const
 {
     return Mapping.Print(stream << "import ") << " from " << '"' << Filepath.string() << '"';
 }

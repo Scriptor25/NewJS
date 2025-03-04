@@ -7,9 +7,8 @@
 NJS::DestructureTuple::DestructureTuple(
     SourceLocation where,
     std::vector<ParameterPtr> elements,
-    TypePtr type,
     ReferenceInfo info)
-    : Parameter(std::move(where), {}, std::move(type), std::move(info)),
+    : Parameter(std::move(where), {}, std::move(info)),
       Elements(std::move(elements))
 {
 }
@@ -26,18 +25,18 @@ void NJS::DestructureTuple::CreateVars(
     const bool is_const,
     const bool is_reference)
 {
-    if (Type)
+    if (Info.Type)
     {
         if (is_reference)
         {
-            if (value->GetType() != Type)
-                return;
+            if (value->GetType() != Info.Type)
+                Error(Where, "TODO");
             if (value->IsConst() && !is_const)
-                return;
+                Error(Where, "TODO");
         }
         else
         {
-            value = builder.CreateCast(value, Type);
+            value = builder.CreateCast(value, Info.Type);
         }
     }
 
@@ -48,7 +47,7 @@ void NJS::DestructureTuple::CreateVars(
     }
 }
 
-std::ostream &NJS::DestructureTuple::Print(std::ostream &stream)
+std::ostream &NJS::DestructureTuple::Print(std::ostream &stream, bool with_info)
 {
     if (Info.IsReference)
     {
@@ -61,10 +60,10 @@ std::ostream &NJS::DestructureTuple::Print(std::ostream &stream)
     {
         if (i > 0)
             stream << ", ";
-        Elements[i]->Print(stream);
+        Elements[i]->Print(stream, false);
     }
     stream << " ]";
-    if (Type)
-        Type->Print(stream << ": ");
+    if (Info.Type)
+        Info.Type->Print(stream << ": ");
     return stream;
 }

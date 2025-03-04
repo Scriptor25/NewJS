@@ -8,18 +8,16 @@
 NJS::Parameter::Parameter(
     SourceLocation where,
     std::string name,
-    TypePtr type,
     ReferenceInfo info)
     : Where(std::move(where)),
       Name(std::move(name)),
-      Type(std::move(type)),
       Info(std::move(info))
 {
 }
 
 bool NJS::Parameter::RequireValue()
 {
-    return false;
+    return Info.IsConst || Info.IsReference;
 }
 
 void NJS::Parameter::CreateVars(
@@ -29,7 +27,9 @@ void NJS::Parameter::CreateVars(
     const bool is_const,
     const bool is_reference)
 {
-    const auto type = Type ? Type : value->GetType();
+    const auto type = Info.Type
+                          ? Info.Type
+                          : value->GetType();
 
     auto &variable = builder.DefineVariable(Name);
 
@@ -48,9 +48,9 @@ void NJS::Parameter::CreateVars(
     if (is_reference)
     {
         if (value->GetType() != type)
-            return;
+            Error(Where, "TODO");
         if (value->IsConst() && !is_const)
-            return;
+            Error(Where, "TODO");
         const auto pointer = value->GetPointer();
         variable = LValue::Create(builder, type, pointer, is_const);
         return;
@@ -71,16 +71,16 @@ void NJS::Parameter::CreateVars(
         variable->Store(llvm::Constant::getNullValue(type->GetLLVM(builder)));
 }
 
-std::ostream &NJS::Parameter::Print(std::ostream &stream)
+std::ostream &NJS::Parameter::Print(std::ostream &stream, const bool with_info)
 {
-    if (Info.IsReference)
+    if (with_info && Info.IsReference)
     {
         if (Info.IsConst)
             stream << "const ";
         stream << "&";
     }
     stream << Name;
-    if (Type)
-        Type->Print(stream << ": ");
+    if (Info.Type)
+        Info.Type->Print(stream << ": ");
     return stream;
 }

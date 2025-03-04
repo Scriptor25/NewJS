@@ -66,7 +66,7 @@ NJS::ValuePtr NJS::TupleExpression::PGenLLVM(Builder &builder, const TypePtr &ex
     return RValue::Create(builder, result_type, tuple_value);
 }
 
-std::ostream &NJS::TupleExpression::Print(std::ostream &stream)
+std::ostream &NJS::TupleExpression::Print(std::ostream &stream) const
 {
     if (Elements.empty())
         return stream << "[]";

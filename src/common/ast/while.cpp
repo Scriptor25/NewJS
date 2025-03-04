@@ -34,7 +34,7 @@ void NJS::WhileStatement::PGenLLVM(Builder &builder) const
     builder.StackPop();
 }
 
-std::ostream &NJS::WhileStatement::Print(std::ostream &stream)
+std::ostream &NJS::WhileStatement::Print(std::ostream &stream) const
 {
     return Body->Print(Condition->Print(stream << "while (") << ") ");
 }

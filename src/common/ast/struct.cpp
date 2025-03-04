@@ -56,7 +56,7 @@ NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &e
     return RValue::Create(builder, result_type, struct_value);
 }
 
-std::ostream &NJS::StructExpression::Print(std::ostream &stream)
+std::ostream &NJS::StructExpression::Print(std::ostream &stream) const
 {
     if (Elements.empty())
         return stream << "{}";

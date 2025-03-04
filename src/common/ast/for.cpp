@@ -64,7 +64,7 @@ void NJS::ForStatement::PGenLLVM(Builder &builder) const
     builder.StackPop();
 }
 
-std::ostream &NJS::ForStatement::Print(std::ostream &stream)
+std::ostream &NJS::ForStatement::Print(std::ostream &stream) const
 {
     stream << "for (";
     if (Initializer)

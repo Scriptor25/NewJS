@@ -16,7 +16,7 @@ void NJS::ScopeStatement::PGenLLVM(Builder &builder) const
     builder.StackPop();
 }
 
-std::ostream &NJS::ScopeStatement::Print(std::ostream &stream)
+std::ostream &NJS::ScopeStatement::Print(std::ostream &stream) const
 {
     if (Children.empty())
         return stream << "{}";
@@ -46,7 +46,7 @@ NJS::ValuePtr NJS::ScopeExpression::PGenLLVM(Builder &builder, const TypePtr &ex
     return result;
 }
 
-std::ostream &NJS::ScopeExpression::Print(std::ostream &stream)
+std::ostream &NJS::ScopeExpression::Print(std::ostream &stream) const
 {
     if (Children.empty())
         return Last->Print(stream << "{ ") << " }";

@@ -120,11 +120,11 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
         if (parameter->Info.IsReference)
             argument_value = LValue::Create(
                 builder,
-                parameter->Type,
+                parameter->Info.Type,
                 argument,
                 parameter->Info.IsConst);
         else
-            argument_value = RValue::Create(builder, parameter->Type, argument);
+            argument_value = RValue::Create(builder, parameter->Info.Type, argument);
 
         parameter->CreateVars(
             builder,
@@ -172,7 +172,7 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
     builder.GetBuilder().SetInsertPoint(insert_block);
 }
 
-std::ostream &NJS::FunctionStatement::Print(std::ostream &stream)
+std::ostream &NJS::FunctionStatement::Print(std::ostream &stream) const
 {
     if (Flags & FunctionFlags_Extern)
         stream << "extern ";
@@ -187,7 +187,7 @@ std::ostream &NJS::FunctionStatement::Print(std::ostream &stream)
     {
         if (i > 0)
             stream << ", ";
-        Parameters[i]->Print(stream);
+        Parameters[i]->Print(stream, true);
     }
     if (IsVarArg)
     {
@@ -246,11 +246,11 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
         if (parameter->Info.IsReference)
             argument_value = LValue::Create(
                 builder,
-                parameter->Type,
+                parameter->Info.Type,
                 argument,
                 parameter->Info.IsConst);
         else
-            argument_value = RValue::Create(builder, parameter->Type, argument);
+            argument_value = RValue::Create(builder, parameter->Info.Type, argument);
         parameter->CreateVars(
             builder,
             argument_value,
@@ -298,7 +298,7 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
     return RValue::Create(builder, type, function);
 }
 
-std::ostream &NJS::FunctionExpression::Print(std::ostream &stream)
+std::ostream &NJS::FunctionExpression::Print(std::ostream &stream) const
 {
     stream << '$';
     if (!Parameters.empty())
@@ -308,7 +308,7 @@ std::ostream &NJS::FunctionExpression::Print(std::ostream &stream)
         {
             if (i > 0)
                 stream << ", ";
-            Parameters[i]->Print(stream);
+            Parameters[i]->Print(stream, true);
         }
         if (IsVarArg)
         {

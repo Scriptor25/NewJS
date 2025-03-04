@@ -13,8 +13,7 @@ NJS::ParameterPtr NJS::Parser::ParseParameter(const bool is_const, const bool is
         return std::make_shared<DestructureStruct>(
             where,
             parameters,
-            type,
-            ReferenceInfo(type, is_const, is_reference));
+            ReferenceInfo(std::move(type), is_const, is_reference));
     }
 
     if (NextAt("["))
@@ -25,8 +24,7 @@ NJS::ParameterPtr NJS::Parser::ParseParameter(const bool is_const, const bool is
         return std::make_shared<DestructureTuple>(
             where,
             parameters,
-            type,
-            ReferenceInfo(type, is_const, is_reference));
+            ReferenceInfo(std::move(type), is_const, is_reference));
     }
 
     auto name = Expect(TokenType_Symbol).String;
@@ -34,8 +32,7 @@ NJS::ParameterPtr NJS::Parser::ParseParameter(const bool is_const, const bool is
     return std::make_shared<Parameter>(
         where,
         name,
-        type,
-        ReferenceInfo(type, is_const, is_reference));
+        ReferenceInfo(std::move(type), is_const, is_reference));
 }
 
 bool NJS::Parser::ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string &delimiter)
@@ -91,8 +88,7 @@ void NJS::Parser::ParseParameterMap(std::map<std::string, ParameterPtr> &paramet
                                : std::make_shared<Parameter>(
                                    where,
                                    name,
-                                   nullptr,
-                                   ReferenceInfo(nullptr, false, false));
+                                   ReferenceInfo());
 
         if (!At(delimiter))
             Expect(",");

@@ -15,7 +15,7 @@ NJS::ValuePtr NJS::MemberExpression::PGenLLVM(Builder &builder, const TypePtr &)
     return builder.CreateMember(Object->GenLLVM(builder, {}), Member);
 }
 
-std::ostream &NJS::MemberExpression::Print(std::ostream &stream)
+std::ostream &NJS::MemberExpression::Print(std::ostream &stream) const
 {
     return Object->Print(stream) << '.' << Member;
 }

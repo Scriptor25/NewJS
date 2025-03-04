@@ -58,7 +58,7 @@ void NJS::SwitchStatement::PGenLLVM(Builder &builder) const
     builder.StackPop();
 }
 
-std::ostream &NJS::SwitchStatement::Print(std::ostream &stream)
+std::ostream &NJS::SwitchStatement::Print(std::ostream &stream) const
 {
     Condition->Print(stream << "switch (") << ") {" << std::endl;
     Indent();
@@ -155,7 +155,7 @@ NJS::ValuePtr NJS::SwitchExpression::PGenLLVM(Builder &builder, const TypePtr &e
     return RValue::Create(builder, result_type, phi_inst);
 }
 
-std::ostream &NJS::SwitchExpression::Print(std::ostream &stream)
+std::ostream &NJS::SwitchExpression::Print(std::ostream &stream) const
 {
     Condition->Print(stream << "switch (") << ") {" << std::endl;
     Indent();
