@@ -139,7 +139,7 @@ vec_at<i8>(v, 0xA) = 'd'
 vec_at<i8>(v, 0xB) = '!'
 vec_push<i8>(v, 0)
 
-println(f"v = {v}")
+println(f"v = {v.beg}")
 vec_free<i8>(v)
 
 type<T> promise = {
