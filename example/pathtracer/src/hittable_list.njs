@@ -9,7 +9,7 @@ extern function free(block: void[])
 type hittable_list
 
 type hittable_list = {
-    hit: (hittable_list&, ray, interval, record&) => u1,
+    hit: (&hittable_list, ray, interval, &record) => u1,
     objects: hittable[][],
     size: u64,
 }

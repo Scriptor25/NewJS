@@ -23,21 +23,21 @@ export function operator-(v: vec3): vec3 {
     ]
 }
 
-export function operator+=(&self: vec3, other: vec3): vec3& {
+export function operator+=(&self: vec3, other: vec3): &vec3 {
     self[0] += other[0]
     self[1] += other[1]
     self[2] += other[2]
     return self
 }
 
-export function operator*=(&self: vec3, other: f64): vec3& {
+export function operator*=(&self: vec3, other: f64): &vec3 {
     self[0] *= other
     self[1] *= other
     self[2] *= other
     return self
 }
 
-export function operator/=(&self: vec3, other: f64): vec3& {
+export function operator/=(&self: vec3, other: f64): &vec3 {
     return self *= 1.0 / other
 }
 

@@ -18,7 +18,7 @@ export function len(const &self: vec2): f64 {
     return sqrt(self[0] * self[0] + self[1] * self[1])
 }
 
-export function operator++(&self: vec2): vec2& {
+export function operator++(&self: vec2): &vec2 {
     ++self[0] ; ++self[1]
     return self
 }
@@ -29,7 +29,7 @@ export function operator++(&self: vec2, ...): vec2 {
     return old
 }
 
-export function operator--(&self: vec2): vec2& {
+export function operator--(&self: vec2): &vec2 {
     --self[0] ; --self[1]
     return self
 }
@@ -44,37 +44,37 @@ export function operator-(const &self: vec2): vec2 {
     return new(-self[0], -self[1])
 }
 
-export function operator=(&self: vec2, const &v: vec2): vec2& {
+export function operator=(&self: vec2, const &v: vec2): &vec2 {
     self[0] = v[0]
     self[1] = v[1]
     return self
 }
 
-export function operator=(&self: vec2, s: f64): vec2& {
+export function operator=(&self: vec2, s: f64): &vec2 {
     self[0] = s
     self[1] = s
     return self
 }
 
-export function operator+=(&self: vec2, const &v: vec2): vec2& {
+export function operator+=(&self: vec2, const &v: vec2): &vec2 {
     self[0] += v[0]
     self[1] += v[1]
     return self
 }
 
-export function operator-=(&self: vec2, const &v: vec2): vec2& {
+export function operator-=(&self: vec2, const &v: vec2): &vec2 {
     self[0] -= v[0]
     self[1] -= v[1]
     return self
 }
 
-export function operator*=(&self: vec2, s: f64): vec2& {
+export function operator*=(&self: vec2, s: f64): &vec2 {
     self[0] *= s
     self[1] *= s
     return self
 }
 
-export function operator/=(&self: vec2, s: f64): vec2& {
+export function operator/=(&self: vec2, s: f64): &vec2 {
     return self *= (1. / s)
 }
 

@@ -6,7 +6,7 @@ import record from "./record.njs"
 type metal
 
 type metal = {
-    scatter: (metal&, ray, record, color&, ray&) => u1,
+    scatter: (&metal, ray, record, &color, &ray) => u1,
     albedo: color,
     fuzz: f64,
 }

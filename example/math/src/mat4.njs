@@ -18,7 +18,7 @@ export function identity(): mat4 {
     }
 }
 
-export function operator[(&self: mat4, index: i64): vec4& {
+export function operator[(&self: mat4, index: i64): &vec4 {
     if (index == 0)
         return self.r0
     if (index == 1)
@@ -30,7 +30,7 @@ export function operator[(&self: mat4, index: i64): vec4& {
     return *(0 as vec4[])
 }
 
-export function operator[(const &self: mat4, index: i64): const vec4& {
+export function operator[(const &self: mat4, index: i64): const &vec4 {
     if (index == 0)
         return self.r0
     if (index == 1)
@@ -50,14 +50,14 @@ export function transpose(const &self: mat4): mat4 {
     return m
 }
 
-export function operator=(&self: mat4, const &other: mat4): mat4& {
+export function operator=(&self: mat4, const &other: mat4): &mat4 {
     for (let j = 0; j < 4; ++j)
         for (let i = 0; i < 4; ++i)
             self[j][i] = other[j][i]
     return self
 }
 
-export function operator*=(&self: mat4, const &other: mat4): mat4& {
+export function operator*=(&self: mat4, const &other: mat4): &mat4 {
     const s = self
     const t = transpose(other)
     for (let j = 0; j < 4; ++j)

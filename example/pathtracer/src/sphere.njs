@@ -8,7 +8,7 @@ extern function sqrt(x: f64): f64
 type sphere
 
 type sphere = {
-    hit: (sphere&, ray, interval, record&) => u1,
+    hit: (&sphere, ray, interval, &record) => u1,
     center: point3,
     radius: f64,
     mat: material[],

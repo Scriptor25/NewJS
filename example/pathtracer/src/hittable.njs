@@ -5,7 +5,7 @@ import record   from "./record.njs"
 type hittable
 
 type hittable = {
-    hit: (hittable[], ray, interval, record&) => u1
+    hit: (hittable[], ray, interval, &record) => u1
 }
 
 export function hit(self: hittable[], r: ray, ray_t: interval, &rec: record): u1 {

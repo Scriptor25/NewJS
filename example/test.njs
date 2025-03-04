@@ -95,15 +95,15 @@ function<T> vec_size(const &self: vec<T>): u64 {
     return self.end - self.beg
 }
 
-function<T> vec_front(&self: vec<T>): T& {
+function<T> vec_front(&self: vec<T>): &T {
     return *self.beg
 }
 
-function<T> vec_back(&self: vec<T>): T& {
+function<T> vec_back(&self: vec<T>): &T {
     return self.end[-1]
 }
 
-function<T> vec_at(&self: vec<T>, pos: u64): T& {
+function<T> vec_at(&self: vec<T>, pos: u64): &T {
     return self.beg[pos]
 }
 

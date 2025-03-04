@@ -39,6 +39,6 @@ function<T> vec_pop(&self: vec<T>): T {
     return self.base[--self.size]
 }
 
-function<T> vec_at(&self: vec<T>, pos: u64): T& {
+function<T> vec_at(&self: vec<T>, pos: u64): &T {
     return self.base[pos]
 }

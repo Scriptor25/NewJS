@@ -23,7 +23,7 @@ export function new(e0: f64, e1: f64, e2: f64, e3: f64): vec4 {
     }
 }
 
-export function operator[(&self: vec4, index: i64): f64& {
+export function operator[(&self: vec4, index: i64): &f64 {
     if (index == 0)
         return self.e0
     if (index == 1)
@@ -35,7 +35,7 @@ export function operator[(&self: vec4, index: i64): f64& {
     return *(0 as f64[])
 }
 
-export function operator[(const &self: vec4, index: i64): const f64& {
+export function operator[(const &self: vec4, index: i64): const &f64 {
     if (index == 0)
         return self.e0
     if (index == 1)

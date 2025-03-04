@@ -10,7 +10,7 @@ extern function fmin(a: f64, b: f64): f64
 type dielectric
 
 type dielectric = {
-    scatter: (dielectric&, ray, record, color&, ray&) => u1,
+    scatter: (&dielectric, ray, record, &color, &ray) => u1,
     albedo: color,
     refraction_index: f64,
 }
