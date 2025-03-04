@@ -47,7 +47,7 @@ println(f"recurse({n}) = {r}")
 println(f"fib({n}) = {fib(n)}")
 
 const a1: u32[3] = [1, 2, 3]
-const t1 = ["Felix", user1, a1]
+const t1 = ["Max", user1, a1]
 
 function printArray(array: u32[3]) {
     println(f"{array}")
@@ -68,7 +68,7 @@ function foo(): () => u32 {
 println(f"foo() = {typeof(foo())}")
 println(f"foo()() = {foo()()}")
 
-const [name1, {name, surname, age, job}] = ["Felix", user1]
+const [name1, {name, surname, age, job}] = ["Max", user1]
 
 println(f"{name1} {name} {surname} {age} {job} {[4:u32, 5:u32, 6:u32]}")
 println(f"t1 = {t1}")
