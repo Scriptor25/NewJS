@@ -9,13 +9,17 @@ NJS::ValuePtr NJS::Builder::CreateGlobal(
     const bool initialize,
     llvm::Constant *initializer)
 {
-    const auto ty = type->GetLLVM(*this);
+    const auto value_type = type->GetLLVM(*this);
     const auto global = new llvm::GlobalVariable(
         GetModule(),
-        ty,
+        value_type,
         is_const,
         llvm::GlobalValue::ExternalLinkage,
-        initializer ? initializer : initialize ? llvm::Constant::getNullValue(ty) : nullptr,
+        initializer
+            ? initializer
+            : initialize
+                  ? llvm::Constant::getNullValue(value_type)
+                  : nullptr,
         name);
     return LValue::Create(*this, type, global, is_const);
 }

@@ -201,12 +201,8 @@ switch (0) {
 }
 
 {
-    const printResult = $(const &a: i32, const &b: i32, const &result: i32) {
-        println(f"asm for {a} + {b} = {result}")
-    }
-
-    let a: i32 = 5
-    let b: i32 = 3
-    let result: i32 = asm<"addl %ebx, %eax" : "={eax},{eax},{ebx}">(a, b)
-    printResult(a, b, result)
+    const a: i32 = 5
+    const b: i32 = 3
+    const result = asm volatile("addl $2, $1" : "=r"<i32> : "r"(a), "r"(b))
+    println(f"asm for {a} + {b} = {result}")
 }

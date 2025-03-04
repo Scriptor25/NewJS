@@ -3,14 +3,12 @@
 #include <map>
 #include <memory>
 #include <vector>
-#include <llvm/Analysis/CGSCCPassManager.h>
-#include <llvm/Analysis/LoopAnalysisManager.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Module.h>
-#include <llvm/IR/PassManager.h>
 #include <llvm/Passes/StandardInstrumentations.h>
 #include <newjs/info.hpp>
 #include <newjs/newjs.hpp>
+#include <newjs/pass_manager.hpp>
 
 namespace NJS
 {
@@ -29,23 +27,12 @@ namespace NJS
         std::map<std::string, ValuePtr> Values;
     };
 
-    struct Passes
-    {
-        std::unique_ptr<llvm::FunctionPassManager> FPM;
-        std::unique_ptr<llvm::LoopAnalysisManager> LAM;
-        std::unique_ptr<llvm::FunctionAnalysisManager> FAM;
-        std::unique_ptr<llvm::CGSCCAnalysisManager> CGAM;
-        std::unique_ptr<llvm::ModuleAnalysisManager> MAM;
-        std::unique_ptr<llvm::PassInstrumentationCallbacks> PIC;
-        std::unique_ptr<llvm::StandardInstrumentations> SI;
-    };
-
     class Builder
     {
     public:
         Builder(
-            TypeContext &ctx,
-            llvm::LLVMContext &context,
+            TypeContext &type_context,
+            llvm::LLVMContext &llvm_context,
             const std::string &module_id,
             const std::string &source_filename,
             bool is_main);
@@ -156,7 +143,7 @@ namespace NJS
         std::unique_ptr<llvm::Module> m_LLVMModule;
         std::unique_ptr<llvm::IRBuilder<>> m_LLVMBuilder;
 
-        Passes m_Passes;
+        PassManager m_PassManager;
 
         llvm::Function *m_Function;
 

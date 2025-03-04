@@ -1,17 +1,6 @@
 #include <ranges>
 #include <utility>
 #include <llvm/IR/Verifier.h>
-#include <llvm/Passes/PassBuilder.h>
-#include <llvm/Transforms/InstCombine/InstCombine.h>
-#include <llvm/Transforms/Scalar/DCE.h>
-#include <llvm/Transforms/Scalar/EarlyCSE.h>
-#include <llvm/Transforms/Scalar/GVN.h>
-#include <llvm/Transforms/Scalar/InstSimplifyPass.h>
-#include <llvm/Transforms/Scalar/MemCpyOptimizer.h>
-#include <llvm/Transforms/Scalar/Reassociate.h>
-#include <llvm/Transforms/Scalar/SimplifyCFG.h>
-#include <llvm/Transforms/Scalar/SROA.h>
-#include <llvm/Transforms/Utils/Mem2Reg.h>
 #include <newjs/builder.hpp>
 #include <newjs/error.hpp>
 #include <newjs/type.hpp>
@@ -19,48 +8,20 @@
 #include <newjs/value.hpp>
 
 NJS::Builder::Builder(
-    TypeContext &ctx,
-    llvm::LLVMContext &context,
+    TypeContext &type_context,
+    llvm::LLVMContext &llvm_context,
     const std::string &module_id,
     const std::string &source_filename,
     const bool is_main)
     : m_ModuleID(module_id),
       m_IsMain(is_main),
-      m_TypeContext(ctx),
-      m_LLVMContext(context)
+      m_TypeContext(type_context),
+      m_LLVMContext(llvm_context),
+      m_PassManager(llvm_context)
 {
     m_LLVMBuilder = std::make_unique<llvm::IRBuilder<>>(m_LLVMContext);
     m_LLVMModule = std::make_unique<llvm::Module>(module_id, m_LLVMContext);
     m_LLVMModule->setSourceFileName(source_filename);
-
-    m_Passes = {
-        .FPM = std::make_unique<llvm::FunctionPassManager>(),
-        .LAM = std::make_unique<llvm::LoopAnalysisManager>(),
-        .FAM = std::make_unique<llvm::FunctionAnalysisManager>(),
-        .CGAM = std::make_unique<llvm::CGSCCAnalysisManager>(),
-        .MAM = std::make_unique<llvm::ModuleAnalysisManager>(),
-        .PIC = std::make_unique<llvm::PassInstrumentationCallbacks>(),
-        .SI = std::make_unique<llvm::StandardInstrumentations>(m_LLVMContext, true),
-    };
-
-    m_Passes.SI->registerCallbacks(*m_Passes.PIC, m_Passes.MAM.get());
-
-    m_Passes.FPM->addPass(llvm::PromotePass());
-    m_Passes.FPM->addPass(llvm::SROAPass(llvm::SROAOptions::ModifyCFG));
-    m_Passes.FPM->addPass(llvm::MemCpyOptPass());
-    m_Passes.FPM->addPass(llvm::InstCombinePass());
-    m_Passes.FPM->addPass(llvm::ReassociatePass());
-    m_Passes.FPM->addPass(llvm::InstSimplifyPass());
-    m_Passes.FPM->addPass(llvm::SimplifyCFGPass());
-    m_Passes.FPM->addPass(llvm::EarlyCSEPass());
-    m_Passes.FPM->addPass(llvm::GVNPass());
-    m_Passes.FPM->addPass(llvm::DCEPass());
-    m_Passes.FPM->addPass(llvm::LoopSimplifyPass());
-
-    llvm::PassBuilder pass_builder;
-    pass_builder.registerModuleAnalyses(*m_Passes.MAM);
-    pass_builder.registerFunctionAnalyses(*m_Passes.FAM);
-    pass_builder.crossRegisterProxies(*m_Passes.LAM, *m_Passes.FAM, *m_Passes.CGAM, *m_Passes.MAM);
 
     if (is_main)
         StackPush(m_ModuleID, ReferenceInfo(m_TypeContext.GetIntegerType(32, true)));
@@ -181,7 +142,7 @@ llvm::IRBuilder<> &NJS::Builder::GetBuilder() const
 
 void NJS::Builder::Optimize(llvm::Function *function) const
 {
-    m_Passes.FPM->run(*function, *m_Passes.FAM);
+    m_PassManager.FPM().run(*function, m_PassManager.FAM());
 }
 
 void NJS::Builder::GetFormat(llvm::FunctionCallee &callee) const

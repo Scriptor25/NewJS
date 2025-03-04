@@ -212,23 +212,25 @@ namespace NJS
     {
         AsmExpression(
             SourceLocation where,
-            std::string asm_string,
+            std::string source,
             std::string constraints,
-            bool dialect_intel,
-            bool has_side_effects,
-            bool is_align_stack,
+            bool is_intel,
+            bool is_volatile,
+            bool is_align,
             bool can_throw,
-            std::vector<ExpressionPtr> arguments);
+            std::vector<ExpressionPtr> operands,
+            TypePtr output_type);
 
         std::ostream &Print(std::ostream &stream) const override;
 
-        std::string AsmString;
+        std::string Source;
         std::string Constraints;
-        bool DialectIntel;
-        bool HasSideEffects;
-        bool IsAlignStack;
-        bool CanThrow;
-        std::vector<ExpressionPtr> Arguments;
+        bool IsIntel;
+        bool IsVolatile;
+        bool IsAlign;
+        bool IsThrow;
+        std::vector<ExpressionPtr> Operands;
+        TypePtr OutputType;
 
     protected:
         [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) const override;

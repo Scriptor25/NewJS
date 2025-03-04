@@ -61,7 +61,7 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_export, cons
         result.Type = m_TypeContext.GetVoidType();
 
     StatementPtr body;
-    if (!is_extern && At("{"))
+    if (At("{"))
         body = ParseScopeStatement();
 
     if (is_template)
