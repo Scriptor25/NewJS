@@ -164,7 +164,6 @@ PRINT(result)
 
 for (let i: u64; i < 64; ++i)
     println(f"i = {2:u64 ** i}")
-println("Hello")
 
 for (let j: u64; j < 5; ++j)
     for (let i: u64; i < 5; ++i) {

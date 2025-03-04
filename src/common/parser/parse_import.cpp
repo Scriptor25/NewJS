@@ -86,10 +86,8 @@ NJS::ImportMapping NJS::Parser::ParseImportMapping()
     Expect("{");
     while (!At("}") && !AtEof())
     {
-        if (NextAt("."))
+        if (NextAt("..."))
         {
-            Expect(".");
-            Expect(".");
             overflow = Expect(TokenType_Symbol).String;
             break;
         }

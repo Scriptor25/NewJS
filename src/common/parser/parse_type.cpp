@@ -4,7 +4,7 @@
 
 NJS::TypePtr NJS::Parser::ParseType()
 {
-    auto where = CurrentLocation();
+    const auto where = CurrentLocation();
 
     TypePtr type;
     if (At("["))
@@ -35,11 +35,11 @@ NJS::TypePtr NJS::Parser::ParseType()
     {
         if (sym == "void")
             type = m_TypeContext.GetVoidType();
-        else if (sym == "bool")
+        else if (sym == "boolean")
             type = m_TypeContext.GetBooleanType();
         else if (sym == "char")
             type = m_TypeContext.GetCharType();
-        else if (sym == "str")
+        else if (sym == "string")
             type = m_TypeContext.GetStringType();
         else if (sym == "i1")
             type = m_TypeContext.GetIntegerType(1, true);
@@ -127,8 +127,8 @@ NJS::ReferenceInfo NJS::Parser::ParseReferenceInfo()
 {
     ReferenceInfo info;
     info.IsConst = NextAt("const");
-    info.Type = ParseType();
     info.IsReference = NextAt("&");
+    info.Type = ParseType();
     return info;
 }
 
@@ -136,10 +136,8 @@ bool NJS::Parser::ParseTypeList(std::vector<TypePtr> &types, const std::string &
 {
     while (!At(delim) && !AtEof())
     {
-        if (NextAt("."))
+        if (NextAt("..."))
         {
-            Expect(".");
-            Expect(".");
             Expect(delim);
             return true;
         }
@@ -169,10 +167,8 @@ bool NJS::Parser::ParseReferenceInfoList(std::vector<ReferenceInfo> &infos, cons
 {
     while (!At(delim) && !AtEof())
     {
-        if (NextAt("."))
+        if (NextAt("..."))
         {
-            Expect(".");
-            Expect(".");
             Expect(delim);
             return true;
         }
