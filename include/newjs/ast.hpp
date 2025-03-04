@@ -214,7 +214,7 @@ namespace NJS
             SourceLocation where,
             std::string asm_string,
             std::string constraints,
-            std::string dialect,
+            bool dialect_intel,
             bool has_side_effects,
             bool is_align_stack,
             bool can_throw,
@@ -224,7 +224,7 @@ namespace NJS
 
         std::string AsmString;
         std::string Constraints;
-        std::string Dialect;
+        bool DialectIntel;
         bool HasSideEffects;
         bool IsAlignStack;
         bool CanThrow;

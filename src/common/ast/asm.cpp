@@ -8,7 +8,7 @@ NJS::AsmExpression::AsmExpression(
     SourceLocation where,
     std::string asm_string,
     std::string constraints,
-    std::string dialect,
+    const bool dialect_intel,
     const bool has_side_effects,
     const bool is_align_stack,
     const bool can_throw,
@@ -16,7 +16,7 @@ NJS::AsmExpression::AsmExpression(
     : Expression(std::move(where)),
       AsmString(std::move(asm_string)),
       Constraints(std::move(constraints)),
-      Dialect(std::move(dialect)),
+      DialectIntel(dialect_intel),
       HasSideEffects(has_side_effects),
       IsAlignStack(is_align_stack),
       CanThrow(can_throw),
@@ -27,10 +27,10 @@ NJS::AsmExpression::AsmExpression(
 std::ostream &NJS::AsmExpression::Print(std::ostream &stream) const
 {
     stream << "asm<" << AsmString;
-    if (!Dialect.empty())
-        stream << " : " << Dialect;
     if (!Constraints.empty())
         stream << " : " << Constraints;
+    if (DialectIntel)
+        stream << " : " << DialectIntel;
     if (HasSideEffects)
         stream << " : sideeffect";
     if (IsAlignStack)
@@ -71,13 +71,9 @@ NJS::ValuePtr NJS::AsmExpression::PGenLLVM(Builder &builder, const TypePtr &expe
 
     const auto function_type = llvm::FunctionType::get(result_type, parameter_types, false);
 
-    llvm::InlineAsm::AsmDialect asm_dialect;
-    if (Dialect.empty() || Dialect == "att")
-        asm_dialect = llvm::InlineAsm::AD_ATT;
-    else if (Dialect == "intel")
-        asm_dialect = llvm::InlineAsm::AD_Intel;
-    else
-        Error(Where, "undefined assembler dialect '{}'", Dialect);
+    const auto asm_dialect = DialectIntel
+                                 ? llvm::InlineAsm::AD_Intel
+                                 : llvm::InlineAsm::AD_ATT;
 
     const auto inline_asm = llvm::InlineAsm::get(
         function_type,

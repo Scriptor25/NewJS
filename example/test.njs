@@ -201,8 +201,12 @@ switch (0) {
 }
 
 {
+    const printResult = $(const &a: i32, const &b: i32, const &result: i32) {
+        println(f"asm for {a} + {b} = {result}")
+    }
+
     let a: i32 = 5
     let b: i32 = 3
-    let result: i32 = asm<"addl $2, $0" : att : "=r,0,r">(a, b)
-    println(f"asm for {a} + {b} = {result}")
+    let result: i32 = asm<"addl %ebx, %eax" : "={eax},{eax},{ebx}">(a, b)
+    printResult(a, b, result)
 }

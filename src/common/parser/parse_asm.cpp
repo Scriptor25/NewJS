@@ -8,10 +8,6 @@ NJS::ExpressionPtr NJS::Parser::ParseAsmExpression()
 
     auto asm_string = Expect(TokenType_String).String;
 
-    std::string dialect;
-    if (NextAt(":"))
-        dialect = Expect(TokenType_Symbol).String;
-
     std::string constraints;
     if (NextAt(":"))
         constraints = Expect(TokenType_String).String;
@@ -34,6 +30,7 @@ NJS::ExpressionPtr NJS::Parser::ParseAsmExpression()
         Expect(")");
     }
 
+    const auto dialect_intel = attributes.contains("intel");
     const auto has_side_effects = attributes.contains("sideeffect");
     const auto is_align_stack = attributes.contains("alignstack");
     const auto can_throw = attributes.contains("throw");
@@ -42,7 +39,7 @@ NJS::ExpressionPtr NJS::Parser::ParseAsmExpression()
         std::move(where),
         std::move(asm_string),
         std::move(constraints),
-        std::move(dialect),
+        dialect_intel,
         has_side_effects,
         is_align_stack,
         can_throw,
