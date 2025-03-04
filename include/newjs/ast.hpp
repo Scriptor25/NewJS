@@ -208,6 +208,32 @@ namespace NJS
         [[nodiscard]] virtual ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) const = 0;
     };
 
+    struct AsmExpression final : Expression
+    {
+        AsmExpression(
+            SourceLocation where,
+            std::string asm_string,
+            std::string constraints,
+            std::string dialect,
+            bool has_side_effects,
+            bool is_align_stack,
+            bool can_throw,
+            std::vector<ExpressionPtr> arguments);
+
+        std::ostream &Print(std::ostream &stream) const override;
+
+        std::string AsmString;
+        std::string Constraints;
+        std::string Dialect;
+        bool HasSideEffects;
+        bool IsAlignStack;
+        bool CanThrow;
+        std::vector<ExpressionPtr> Arguments;
+
+    protected:
+        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) const override;
+    };
+
     struct BinaryExpression final : Expression
     {
         BinaryExpression(

@@ -100,6 +100,9 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
         return std::make_shared<StringExpression>(where, type->GetString());
     }
 
+    if (At("asm"))
+        return ParseAsmExpression();
+
     if (At(TokenType_Symbol))
         return ParseSymbolExpression(where, Skip().String);
 

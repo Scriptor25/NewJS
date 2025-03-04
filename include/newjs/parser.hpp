@@ -92,6 +92,7 @@ namespace NJS
         StatementPtr ParseWhileStatement();
 
         ExpressionPtr ParseExpression();
+        ExpressionPtr ParseAsmExpression();
         ExpressionPtr ParseBinaryExpression(ExpressionPtr lhs, unsigned min_pre);
         ExpressionPtr ParseFormatExpression();
         ExpressionPtr ParseFunctionExpression();

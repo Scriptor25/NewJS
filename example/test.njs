@@ -199,3 +199,10 @@ switch (await<i32>(add(1, 2))) {
     const bar = 456
     const a = foo ?? bar ?? 789
 }
+
+{
+    let a: i32 = 5
+    let b: i32 = 3
+    let result: i32 = asm<"addl %%ebx, %%eax" : att : "=a,a,b">(a, b)
+    println(f"asm for {a} + {b} = {result}")
+}
