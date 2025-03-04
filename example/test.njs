@@ -178,7 +178,7 @@ for (let x: u64; x < 10; ++x) {
     ASSERT(x <= 5 && "x should not be greater than 5")
 }
 
-switch (await<i32>(add(1, 2))) {
+switch (0) {
     case 0 {
         break
     }
@@ -203,6 +203,6 @@ switch (await<i32>(add(1, 2))) {
 {
     let a: i32 = 5
     let b: i32 = 3
-    let result: i32 = asm<"addl %%ebx, %%eax" : att : "=a,a,b">(a, b)
+    let result: i32 = asm<"addl $2, $0" : att : "=r,0,r">(a, b)
     println(f"asm for {a} + {b} = {result}")
 }
