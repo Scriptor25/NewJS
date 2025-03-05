@@ -179,10 +179,9 @@ for (let x: u64; x < 10; ++x) {
 }
 
 switch (0) {
-    case 0 {
-        break
-    }
+    case 0 -> break
     case 1 {
+        println("Hello World!")
     }
     case 2 {
         return 123
