@@ -141,11 +141,11 @@ int main(const int argc, const char **argv) try
         if (error_code)
             NJS::Error("failed to open output file '{}': {}", output_filename, error_code.message());
 
-        linker.Emit(output_stream, output_type);
+        linker.Emit(output_stream, output_type, target_triple);
         output_stream.close();
     }
     else
-        linker.Emit(llvm::outs(), output_type);
+        linker.Emit(llvm::outs(), output_type, target_triple);
 }
 catch (const NJS::RTError &error)
 {
