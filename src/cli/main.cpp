@@ -19,6 +19,7 @@ enum ARG_ID
     ARG_ID_TYPE,
     ARG_ID_HELP,
     ARG_ID_VERSION,
+    ARG_ID_TARGET,
 };
 
 static llvm::CodeGenFileType to_type(const std::string_view &str)
@@ -74,6 +75,7 @@ int main(const int argc, const char **argv) try
                 false
             },
             {ARG_ID_MAIN, "Specify which module name is the main module.", {"--main", "-m"}, false},
+            {ARG_ID_TARGET, "Specify output target triple, defaults to host target.", {"--triple", "-T"}, false},
         });
     arg_parser.Parse(argc, argv);
 
@@ -127,6 +129,9 @@ int main(const int argc, const char **argv) try
         parse(linker, module_id, module_id == module_main, input_stream, input_path);
         input_stream.close();
     }
+
+    std::string target_triple;
+    arg_parser.Option(ARG_ID_TARGET, target_triple);
 
     if (!output_filename.empty())
     {

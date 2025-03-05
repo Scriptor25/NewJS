@@ -15,7 +15,10 @@ namespace NJS
         [[nodiscard]] llvm::Module &LLVMModule() const;
 
         void Link(std::unique_ptr<llvm::Module> &&module) const;
-        void Emit(llvm::raw_pwrite_stream &output_stream, llvm::CodeGenFileType output_type) const;
+        void Emit(
+            llvm::raw_pwrite_stream &output_stream,
+            llvm::CodeGenFileType output_type,
+            std::string target_triple = {}) const;
 
     private:
         bool m_AppendNames;

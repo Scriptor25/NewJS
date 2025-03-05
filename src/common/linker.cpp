@@ -49,7 +49,10 @@ void NJS::Linker::Link(std::unique_ptr<llvm::Module> &&module) const
     }
 }
 
-void NJS::Linker::Emit(llvm::raw_pwrite_stream &output_stream, const llvm::CodeGenFileType output_type) const
+void NJS::Linker::Emit(
+    llvm::raw_pwrite_stream &output_stream,
+    const llvm::CodeGenFileType output_type,
+    std::string target_triple) const
 {
     if (verifyModule(LLVMModule(), &llvm::errs()))
         Error("failed to verify module");
@@ -66,9 +69,10 @@ void NJS::Linker::Emit(llvm::raw_pwrite_stream &output_stream, const llvm::CodeG
     llvm::InitializeAllAsmParsers();
     llvm::InitializeAllAsmPrinters();
 
-    std::string error;
+    if (target_triple.empty())
+        target_triple = llvm::sys::getDefaultTargetTriple();
 
-    const auto target_triple = llvm::sys::getDefaultTargetTriple();
+    std::string error;
     const auto target = llvm::TargetRegistry::lookupTarget(target_triple, error);
 
     if (!target)
