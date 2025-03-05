@@ -141,19 +141,22 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
     std::vector<llvm::BasicBlock *> deletable;
     for (auto &block: *function)
     {
-        if (!block.hasNPredecessorsOrMore(1) && block.empty())
+        if (&block != entry_block && block.hasNPredecessors(0) && block.empty())
         {
             deletable.emplace_back(&block);
             continue;
         }
+
         if (block.getTerminator())
             continue;
+
         if (function->getReturnType()->isVoidTy())
         {
             builder.GetBuilder().SetInsertPoint(&block);
             builder.GetBuilder().CreateRetVoid();
             continue;
         }
+
         function->print(llvm::errs());
         Error(Where, "not all code paths return");
     }
@@ -271,14 +274,17 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
             deletable.emplace_back(&block);
             continue;
         }
+
         if (block.getTerminator())
             continue;
+
         if (function->getReturnType()->isVoidTy())
         {
             builder.GetBuilder().SetInsertPoint(&block);
             builder.GetBuilder().CreateRetVoid();
             continue;
         }
+
         function->print(llvm::errs());
         Error(Where, "not all code paths return");
     }
