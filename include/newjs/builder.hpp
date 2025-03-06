@@ -15,16 +15,17 @@ namespace NJS
     struct StackFrame
     {
         [[nodiscard]] bool Contains(const std::string &) const;
-        const ValuePtr &operator[](const std::string &) const;
-        ValuePtr &operator[](const std::string &);
+        const std::pair<bool, ValuePtr> &operator[](const std::string &) const;
+        std::pair<bool, ValuePtr> &operator[](const std::string &);
 
         [[nodiscard]] std::string GetChildName(const std::string &) const;
 
+        bool IsFunctionEntry;
         std::string Name;
         ReferenceInfo Result;
         llvm::BasicBlock *HeadBlock;
         llvm::BasicBlock *TailBlock;
-        std::map<std::string, ValuePtr> Values;
+        std::map<std::string, std::pair<bool, ValuePtr>> Values;
     };
 
     class Builder
@@ -121,9 +122,9 @@ namespace NJS
             const ValuePtr &left,
             const ValuePtr &right) const;
 
-        ValuePtr &DefineVariable(const std::string &name);
-        [[nodiscard]] ValuePtr GetVariable(const std::string &name) const;
-        ValuePtr &GetOrDefineVariable(const std::string &name);
+        ValuePtr &DefineVariable(const std::string &name, bool is_global);
+        [[nodiscard]] const NJS::ValuePtr &GetVariable(const std::string &name) const;
+        ValuePtr &GetOrDefineVariable(const std::string &name, bool is_global);
 
         ReferenceInfo &CurrentFunctionResult();
         [[nodiscard]] llvm::BasicBlock *CurrentHeadBlock() const;

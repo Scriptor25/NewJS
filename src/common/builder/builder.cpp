@@ -37,7 +37,7 @@ NJS::Builder::Builder(
             }),
         false,
         is_main);
-    DefineVariable("process") = process;
+    DefineVariable("process", true) = process;
 
     if (is_main)
     {
@@ -81,19 +81,22 @@ void NJS::Builder::Close()
     std::vector<llvm::BasicBlock *> deletable;
     for (auto &block: *m_Function)
     {
-        if (!block.hasNPredecessorsOrMore(1) && block.empty())
+        if (&block != &m_Function->getEntryBlock() && block.hasNPredecessors(0) && block.empty())
         {
             deletable.emplace_back(&block);
             continue;
         }
+
         if (block.getTerminator())
             continue;
+
         if (m_Function->getReturnType()->isVoidTy())
         {
             GetBuilder().SetInsertPoint(&block);
             GetBuilder().CreateRetVoid();
             continue;
         }
+
         m_Function->print(llvm::errs());
         return;
     }
@@ -168,30 +171,46 @@ void NJS::Builder::StackPush(
     llvm::BasicBlock *head_block,
     llvm::BasicBlock *tail_block)
 {
-    const auto frame_name = m_Stack.empty()
-                                ? name
-                                : m_Stack.back().GetChildName(name);
-    const auto frame_result = result.Type
-                                  ? result
-                                  : m_Stack.empty()
-                                        ? ReferenceInfo()
-                                        : m_Stack.back().Result;
-    const auto frame_head_block = head_block
-                                      ? head_block
-                                      : m_Stack.empty()
-                                            ? nullptr
-                                            : m_Stack.back().HeadBlock;
-    const auto frame_tail_block = tail_block
-                                      ? tail_block
-                                      : m_Stack.empty()
-                                            ? nullptr
-                                            : m_Stack.back().TailBlock;
+    const auto is_function_entry = static_cast<bool>(result.Type);
+    std::map<std::string, std::pair<bool, ValuePtr>> values;
+
+    if (m_Stack.empty())
+    {
+        m_Stack.emplace_back(
+            is_function_entry,
+            name,
+            result,
+            head_block,
+            tail_block,
+            values);
+        return;
+    }
+
+    const auto frame_name = m_Stack.back().GetChildName(name);
+
+    if (is_function_entry)
+    {
+        m_Stack.emplace_back(
+            is_function_entry,
+            frame_name,
+            result,
+            head_block,
+            tail_block,
+            values);
+        return;
+    }
+
+    const auto frame_result = m_Stack.back().Result;
+    const auto frame_head_block = head_block ? head_block : m_Stack.back().HeadBlock;
+    const auto frame_tail_block = tail_block ? tail_block : m_Stack.back().TailBlock;
+
     m_Stack.emplace_back(
+        is_function_entry,
         frame_name,
         frame_result,
         frame_head_block,
         frame_tail_block,
-        std::map<std::string, ValuePtr>());
+        values);
 }
 
 void NJS::Builder::StackPop()
@@ -327,28 +346,45 @@ NJS::OperatorInfo<2> NJS::Builder::FindOperator(
     return {};
 }
 
-NJS::ValuePtr &NJS::Builder::DefineVariable(const std::string &name)
+NJS::ValuePtr &NJS::Builder::DefineVariable(const std::string &name, const bool is_global)
 {
-    auto &stack = m_Stack.back();
-    if (stack.Contains(name))
+    if (m_Stack.back().Contains(name))
         Error("cannot redefine symbol '{}'", name);
-    return stack[name];
+
+    auto &[is_global_, value_] = m_Stack.back()[name];
+    is_global_ = is_global;
+    return value_;
 }
 
-NJS::ValuePtr NJS::Builder::GetVariable(const std::string &name) const
+const NJS::ValuePtr &NJS::Builder::GetVariable(const std::string &name) const
 {
+    auto only_is_global = false;
     for (auto &stack: std::ranges::reverse_view(m_Stack))
+    {
         if (stack.Contains(name))
-            return stack[name];
+            if (const auto &[is_global_, value_] = stack[name];
+                !only_is_global || is_global_)
+                return value_;
+        only_is_global |= stack.IsFunctionEntry;
+    }
     Error("undefined symbol {}", name);
 }
 
-NJS::ValuePtr &NJS::Builder::GetOrDefineVariable(const std::string &name)
+NJS::ValuePtr &NJS::Builder::GetOrDefineVariable(const std::string &name, bool is_global)
 {
+    auto only_is_global = false;
     for (auto &stack: std::ranges::reverse_view(m_Stack))
+    {
         if (stack.Contains(name))
-            return stack[name];
-    return m_Stack.back()[name];
+            if (auto &[is_global_, value_] = stack[name];
+                !only_is_global || is_global_)
+                return value_;
+        only_is_global |= stack.IsFunctionEntry;
+    }
+
+    auto &[is_global_, value_] = m_Stack.back()[name];
+    is_global_ = is_global;
+    return value_;
 }
 
 NJS::ReferenceInfo &NJS::Builder::CurrentFunctionResult()

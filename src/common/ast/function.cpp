@@ -88,11 +88,11 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
         auto value = RValue::Create(builder, type, function);
         if (new_define)
         {
-            builder.DefineVariable(Name) = value;
+            builder.DefineVariable(Name, true) = value;
         }
         else
         {
-            auto &reference = builder.GetOrDefineVariable(Name);
+            auto &reference = builder.GetOrDefineVariable(Name, true);
             if (reference && reference->GetType() != value->GetType())
                 Error(Where, "function declaration mismatch, {} != {}", reference->GetType(), value->GetType());
             reference = std::move(value);
@@ -220,9 +220,6 @@ NJS::FunctionExpression::FunctionExpression(
 
 NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr &) const
 {
-    static unsigned id = 0;
-    const auto function_name = std::to_string(id++);
-
     std::vector<ReferenceInfo> parameters;
     for (const auto &parameter: Parameters)
         parameters.emplace_back(parameter->Info);
@@ -231,14 +228,14 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
     const auto function = llvm::Function::Create(
         type->GenFnLLVM(builder),
         llvm::GlobalValue::InternalLinkage,
-        builder.GetName(false, function_name),
+        builder.GetName(false, "lambda"),
         builder.GetModule());
 
     const auto insert_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
     builder.GetBuilder().SetInsertPoint(entry_block);
 
-    builder.StackPush(function_name, Result);
+    builder.StackPush("lambda", Result);
     for (unsigned i = 0; i < Parameters.size(); ++i)
     {
         const auto parameter = Parameters[i];

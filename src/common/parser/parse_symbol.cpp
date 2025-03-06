@@ -21,7 +21,7 @@ NJS::ExpressionPtr NJS::Parser::ParseSymbolExpression(const SourceLocation &wher
         Expect(">");
 
         std::string inflated_name;
-        if (!m_IsTemplate)
+        if (!m_IsTemplate && !m_IsImport)
             inflated_name = m_TemplateContext.InflateFunction(*this, name, arguments);
         else
             inflated_name = name;

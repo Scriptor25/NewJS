@@ -112,13 +112,13 @@ void NJS::ImportMapping::MapFunctions(
 
         if (All)
         {
-            builder.DefineVariable(function->Name) = value;
+            builder.DefineVariable(function->Name, true) = value;
             continue;
         }
 
         if (NameMap.contains(function->Name))
         {
-            builder.DefineVariable(NameMap.at(function->Name)) = value;
+            builder.DefineVariable(NameMap.at(function->Name), true) = value;
             name_set.erase(function->Name);
             continue;
         }
@@ -148,5 +148,5 @@ void NJS::ImportMapping::MapFunctions(
         value = builder.GetBuilder().CreateInsertValue(value, value_->Load(), member_index_);
     }
 
-    builder.DefineVariable(Name) = RValue::Create(builder, struct_type, value);
+    builder.DefineVariable(Name, true) = RValue::Create(builder, struct_type, value);
 }

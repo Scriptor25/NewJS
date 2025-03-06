@@ -31,7 +31,7 @@ void NJS::Parameter::CreateVars(
                           ? Info.Type
                           : value->GetType();
 
-    auto &variable = builder.DefineVariable(Name);
+    auto &variable = builder.DefineVariable(Name, is_extern);
 
     if (is_extern)
     {

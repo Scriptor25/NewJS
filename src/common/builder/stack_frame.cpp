@@ -5,12 +5,12 @@ bool NJS::StackFrame::Contains(const std::string &name) const
     return Values.contains(name);
 }
 
-const NJS::ValuePtr &NJS::StackFrame::operator[](const std::string &name) const
+const std::pair<bool, NJS::ValuePtr> &NJS::StackFrame::operator[](const std::string &name) const
 {
     return Values.at(name);
 }
 
-NJS::ValuePtr &NJS::StackFrame::operator[](const std::string &name)
+std::pair<bool, NJS::ValuePtr> &NJS::StackFrame::operator[](const std::string &name)
 {
     return Values[name];
 }
