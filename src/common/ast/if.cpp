@@ -27,7 +27,15 @@ void NJS::IfStatement::PGenLLVM(Builder &builder) const
     const auto tail_block = llvm::BasicBlock::Create(builder.GetContext(), "tail", parent_function);
 
     auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
-    condition = builder.CreateCast(condition, builder.GetTypeContext().GetBooleanType());
+    if (!condition->GetType()->IsBoolean())
+    {
+        if (!condition->GetType()->IsIntegerLike())
+            Error(Where, "TODO");
+        condition = RValue::Create(
+            builder,
+            builder.GetTypeContext().GetBooleanType(),
+            builder.GetBuilder().CreateIsNotNull(condition->Load()));
+    }
     builder.GetBuilder().CreateCondBr(
         condition->Load(),
         then_block,
