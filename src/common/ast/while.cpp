@@ -26,7 +26,7 @@ void NJS::WhileStatement::PGenLLVM(Builder &builder) const
     if (!condition->GetType()->IsBoolean())
     {
         if (!condition->GetType()->IsIntegerLike())
-            Error(Where, "TODO");
+            Error(Where, "cannot use value of non-integer-like type {} as condition", condition->GetType());
         condition = RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),

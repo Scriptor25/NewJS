@@ -22,7 +22,7 @@ NJS::ValuePtr NJS::MemberExpression::PGenLLVM(Builder &builder, const TypePtr &)
     if (Dereference)
     {
         if (!object->GetType()->IsPointer())
-            Error(Where, "TODO");
+            Error(Where, "cannot dereference value of non-pointer type {}", object->GetType());
         const auto pointer_type = Type::As<PointerType>(object->GetType());
         object = LValue::Create(builder, pointer_type->GetElement(), object->Load(), pointer_type->IsConst());
     }
