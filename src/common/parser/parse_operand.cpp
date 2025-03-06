@@ -8,9 +8,9 @@ NJS::ExpressionPtr NJS::Parser::ParseOperandExpression()
     {
         auto where = CurrentLocation();
 
-        if (At(".") || At("->"))
+        if (At(".") || At("*."))
         {
-            const auto dereference = NextAt("->");
+            const auto dereference = NextAt("*.");
             if (!dereference)
                 Skip();
             const auto name = Expect(TokenType_Symbol).String;
