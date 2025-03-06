@@ -81,6 +81,12 @@ NJS::ValuePtr NJS::OperatorLT(
                 ? builder.GetBuilder().CreateICmpSLT(left_value, right_value)
                 : builder.GetBuilder().CreateICmpULT(left_value, right_value));
 
+    if (left_type->IsIntegerLike())
+        return RValue::Create(
+            builder,
+            builder.GetTypeContext().GetBooleanType(),
+            builder.GetBuilder().CreateICmpULT(left_value, right_value));
+
     if (left_type->IsFloatingPoint())
         return RValue::Create(
             builder,
@@ -110,6 +116,12 @@ NJS::ValuePtr NJS::OperatorLE(
             Type::As<IntegerType>(left_type)->IsSigned()
                 ? builder.GetBuilder().CreateICmpSLE(left_value, right_value)
                 : builder.GetBuilder().CreateICmpULE(left_value, right_value));
+
+    if (left_type->IsIntegerLike())
+        return RValue::Create(
+            builder,
+            builder.GetTypeContext().GetBooleanType(),
+            builder.GetBuilder().CreateICmpULE(left_value, right_value));
 
     if (left_type->IsFloatingPoint())
         return RValue::Create(
@@ -141,6 +153,12 @@ NJS::ValuePtr NJS::OperatorGT(
                 ? builder.GetBuilder().CreateICmpSGT(left_value, right_value)
                 : builder.GetBuilder().CreateICmpUGT(left_value, right_value));
 
+    if (left_type->IsIntegerLike())
+        return RValue::Create(
+            builder,
+            builder.GetTypeContext().GetBooleanType(),
+            builder.GetBuilder().CreateICmpUGT(left_value, right_value));
+
     if (left_type->IsFloatingPoint())
         return RValue::Create(
             builder,
@@ -170,6 +188,12 @@ NJS::ValuePtr NJS::OperatorGE(
             Type::As<IntegerType>(left_type)->IsSigned()
                 ? builder.GetBuilder().CreateICmpSGE(left_value, right_value)
                 : builder.GetBuilder().CreateICmpUGE(left_value, right_value));
+
+    if (left_type->IsIntegerLike())
+        return RValue::Create(
+            builder,
+            builder.GetTypeContext().GetBooleanType(),
+            builder.GetBuilder().CreateICmpUGE(left_value, right_value));
 
     if (left_type->IsFloatingPoint())
         return RValue::Create(

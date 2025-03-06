@@ -25,19 +25,16 @@ void NJS::DestructureTuple::CreateVars(
     const bool is_const,
     const bool is_reference)
 {
-    if (Info.Type)
+    if (is_reference)
     {
-        if (is_reference)
-        {
-            if (value->GetType() != Info.Type)
-                Error(Where, "cannot create reference of type {} to value of type {}", Info.Type, value->GetType());
-            if (value->IsConst() && !is_const)
-                Error(Where, "cannot create non-constant reference from constant value");
-        }
-        else
-        {
-            value = builder.CreateCast(value, Info.Type);
-        }
+        if (Info.Type && value->GetType() != Info.Type)
+            Error(Where, "cannot create reference of type {} to value of type {}", Info.Type, value->GetType());
+        if (value->IsConst() && !is_const)
+            Error(Where, "cannot create non-constant reference from constant value");
+    }
+    else if (Info.Type)
+    {
+        value = builder.CreateCast(value, Info.Type);
     }
 
     for (unsigned i = 0; i < Elements.size(); ++i)

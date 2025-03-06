@@ -47,7 +47,7 @@ void NJS::Parameter::CreateVars(
 
     if (is_reference)
     {
-        if (value->GetType() != Info.Type)
+        if (Info.Type && value->GetType() != Info.Type)
             Error(Where, "cannot create reference of type {} to value of type {}", Info.Type, value->GetType());
         if (value->IsConst() && !is_const)
             Error(Where, "cannot create non-constant reference from constant value");
