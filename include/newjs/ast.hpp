@@ -370,12 +370,13 @@ namespace NJS
 
     struct MemberExpression final : Expression
     {
-        MemberExpression(SourceLocation where, ExpressionPtr object, std::string member);
+        MemberExpression(SourceLocation where, ExpressionPtr object, std::string member, bool dereference);
 
         std::ostream &Print(std::ostream &stream) const override;
 
         ExpressionPtr Object;
         std::string Member;
+        bool Dereference;
 
     protected:
         [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) const override;

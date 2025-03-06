@@ -8,10 +8,13 @@ NJS::ExpressionPtr NJS::Parser::ParseOperandExpression()
     {
         auto where = CurrentLocation();
 
-        if (NextAt("."))
+        if (At(".") || At("->"))
         {
+            const auto dereference = NextAt("->");
+            if (!dereference)
+                Skip();
             const auto name = Expect(TokenType_Symbol).String;
-            ptr = std::make_shared<MemberExpression>(where, ptr, name);
+            ptr = std::make_shared<MemberExpression>(where, ptr, name, dereference);
             continue;
         }
 

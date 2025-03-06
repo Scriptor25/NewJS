@@ -2,17 +2,31 @@
 #include <newjs/ast.hpp>
 #include <newjs/builder.hpp>
 #include <newjs/type.hpp>
+#include <newjs/value.hpp>
 
-NJS::MemberExpression::MemberExpression(SourceLocation where, ExpressionPtr object, std::string member)
+NJS::MemberExpression::MemberExpression(
+    SourceLocation where,
+    ExpressionPtr object,
+    std::string member,
+    const bool dereference)
     : Expression(std::move(where)),
       Object(std::move(object)),
-      Member(std::move(member))
+      Member(std::move(member)),
+      Dereference(dereference)
 {
 }
 
 NJS::ValuePtr NJS::MemberExpression::PGenLLVM(Builder &builder, const TypePtr &) const
 {
-    return builder.CreateMember(Object->GenLLVM(builder, {}), Member);
+    auto object = Object->GenLLVM(builder, {});
+    if (Dereference)
+    {
+        if (!object->GetType()->IsPointer())
+            Error(Where, "TODO");
+        const auto pointer_type = Type::As<PointerType>(object->GetType());
+        object = LValue::Create(builder, pointer_type->GetElement(), object->Load(), pointer_type->IsConst());
+    }
+    return builder.CreateMember(object, Member);
 }
 
 std::ostream &NJS::MemberExpression::Print(std::ostream &stream) const
