@@ -53,7 +53,7 @@ Something that has been considered black magic by myself, because I don't know h
 touch them, but else, here's how you use them:
 
 ```
-function<A, B, C> foo(bar: A): [ B, C ] { ... }
+function<A, B, C> foo(bar: A): B { ... }
 ```
 
 Function templates must be implemented and can not be predefined. They provide you with a way of creating functions
@@ -92,6 +92,14 @@ There are a few default types in NewJS:
 | f64      | 8           | 64-bit floating point   |
 | void     | -           | nothing                 |
 
+There are some builtin aliases for types:
+
+| Mnemonic | Description       | Original  |
+|----------|-------------------|-----------|
+| boolean  | a boolean         | u1        |
+| char     | a character       | i8        |
+| string   | a constant string | i8[const] |
+
 You can use these primitives directly or combine them in different ways:
 
 | Mnemonic                | Size (Byte)               | Description                                                                          |
@@ -102,5 +110,31 @@ You can use these primitives directly or combine them in different ways:
 | [ X, Y, ... ]           | dependent on the elements | a tuple of a variable number of different typed elements                             |
 | { foo: X, bar: Y, ... } | dependent on the elements | a struct of a variable number of typed members, identifiable uniquely by their names |
 | (X) => Y                | system dependent          | a function type taking argument of type X and returning type Y                       |
+
+To create an alias for a type, use
+
+```
+type A = B
+```
+
+where `A` is the name of the alias and `B` is any type. This can be used for creating aliases for structs, tuples,
+arrays, etc., e.g.
+
+```
+type my_struct_t = {
+    field_a: i32,
+    field_b: u32,
+    field_c: i8[const],
+}
+```
+
+And, again, you can make templates, but this time for types. This is demonstrated here for a generic pair type:
+
+```
+type<F, S> pair = {
+    fst: F,
+    snd: S,
+}
+```
 
 # TODO
