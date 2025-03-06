@@ -146,6 +146,20 @@ NJS::ValuePtr NJS::BinaryExpression::PGenLLVM(Builder &builder, const TypePtr &e
         return destination;
     }
 
+    auto operator_ = Operator;
+    if (is_assignment)
+        operator_.pop_back();
+
+    if (operators.contains(operator_))
+        if (auto result_value = operators.at(operator_)(builder, left_operand, right_operand))
+        {
+            if (!is_assignment)
+                return result_value;
+
+            destination->Store(result_value);
+            return destination;
+        }
+
     const auto left_type = left_operand->GetType();
     const auto right_type = right_operand->GetType();
     const auto operand_type = GetHigherOrderOf(builder.GetTypeContext(), left_type, right_type);
@@ -153,16 +167,8 @@ NJS::ValuePtr NJS::BinaryExpression::PGenLLVM(Builder &builder, const TypePtr &e
     left_operand = builder.CreateCast(left_operand, operand_type);
     right_operand = builder.CreateCast(right_operand, operand_type);
 
-    auto operator_ = Operator;
-    if (is_assignment)
-        operator_.pop_back();
-
     if (operators.contains(operator_))
-        if (auto result_value = operators.at(operator_)(
-            builder,
-            operand_type,
-            left_operand->Load(),
-            right_operand->Load()))
+        if (auto result_value = operators.at(operator_)(builder, left_operand, right_operand))
         {
             if (!is_assignment)
                 return result_value;

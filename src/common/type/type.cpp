@@ -71,6 +71,16 @@ unsigned NJS::Type::GetSize(const Builder &builder)
     return m_Size = builder.GetModule().getDataLayout().getTypeAllocSize(type);
 }
 
+bool NJS::Type::IsIntegerLike() const
+{
+    return IsInteger() || IsPointer() || IsFunction();
+}
+
+bool NJS::Type::IsBoolean() const
+{
+    return IsInteger() && dynamic_cast<const IntegerType *>(this)->GetBits() == 1;
+}
+
 bool NJS::Type::IsPrimitive() const
 {
     return false;

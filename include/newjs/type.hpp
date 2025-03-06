@@ -40,6 +40,8 @@ namespace NJS
         }
 
         unsigned GetSize(const Builder &builder);
+        [[nodiscard]] bool IsIntegerLike() const;
+        [[nodiscard]] bool IsBoolean() const;
 
         [[nodiscard]] virtual bool IsPrimitive() const;
         [[nodiscard]] virtual bool IsIncomplete() const;

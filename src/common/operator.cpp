@@ -6,201 +6,207 @@
 
 NJS::ValuePtr NJS::OperatorEQ(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsIntegerLike())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            builder.GetBuilder().CreateICmpEQ(lhs, rhs));
+            builder.GetBuilder().CreateICmpEQ(left_value, right_value));
 
-    if (type->IsFloatingPoint())
+    if (left_type->IsFloatingPoint())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            builder.GetBuilder().CreateFCmpOEQ(lhs, rhs));
-
-    if (type->IsPointer() || type->IsFunction())
-    {
-        const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
-        const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
-        return OperatorEQ(builder, builder.GetTypeContext().GetIntegerType(64, false), lhs_int, rhs_int);
-    }
+            builder.GetBuilder().CreateFCmpOEQ(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorNE(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsIntegerLike())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            builder.GetBuilder().CreateICmpNE(lhs, rhs));
+            builder.GetBuilder().CreateICmpNE(left_value, right_value));
 
-    if (type->IsFloatingPoint())
+    if (left_type->IsFloatingPoint())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            builder.GetBuilder().CreateFCmpONE(lhs, rhs));
-
-    if (type->IsPointer() || type->IsFunction())
-    {
-        const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
-        const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
-        return OperatorNE(builder, builder.GetTypeContext().GetIntegerType(64, false), lhs_int, rhs_int);
-    }
+            builder.GetBuilder().CreateFCmpONE(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorLT(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            Type::As<IntegerType>(type)->IsSigned()
-                ? builder.GetBuilder().CreateICmpSLT(lhs, rhs)
-                : builder.GetBuilder().CreateICmpULT(lhs, rhs));
+            Type::As<IntegerType>(left_type)->IsSigned()
+                ? builder.GetBuilder().CreateICmpSLT(left_value, right_value)
+                : builder.GetBuilder().CreateICmpULT(left_value, right_value));
 
-    if (type->IsFloatingPoint())
+    if (left_type->IsFloatingPoint())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            builder.GetBuilder().CreateFCmpOLT(lhs, rhs));
-
-    if (type->IsPointer() || type->IsFunction())
-    {
-        const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
-        const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
-        return OperatorLT(builder, builder.GetTypeContext().GetIntegerType(64, false), lhs_int, rhs_int);
-    }
+            builder.GetBuilder().CreateFCmpOLT(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorLE(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            Type::As<IntegerType>(type)->IsSigned()
-                ? builder.GetBuilder().CreateICmpSLE(lhs, rhs)
-                : builder.GetBuilder().CreateICmpULE(lhs, rhs));
+            Type::As<IntegerType>(left_type)->IsSigned()
+                ? builder.GetBuilder().CreateICmpSLE(left_value, right_value)
+                : builder.GetBuilder().CreateICmpULE(left_value, right_value));
 
-    if (type->IsFloatingPoint())
+    if (left_type->IsFloatingPoint())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            builder.GetBuilder().CreateFCmpOLE(lhs, rhs));
-
-    if (type->IsPointer() || type->IsFunction())
-    {
-        const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
-        const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
-        return OperatorLE(builder, builder.GetTypeContext().GetIntegerType(64, false), lhs_int, rhs_int);
-    }
+            builder.GetBuilder().CreateFCmpOLE(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorGT(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            Type::As<IntegerType>(type)->IsSigned()
-                ? builder.GetBuilder().CreateICmpSGT(lhs, rhs)
-                : builder.GetBuilder().CreateICmpUGT(lhs, rhs));
+            Type::As<IntegerType>(left_type)->IsSigned()
+                ? builder.GetBuilder().CreateICmpSGT(left_value, right_value)
+                : builder.GetBuilder().CreateICmpUGT(left_value, right_value));
 
-    if (type->IsFloatingPoint())
+    if (left_type->IsFloatingPoint())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            builder.GetBuilder().CreateFCmpOGT(lhs, rhs));
-
-    if (type->IsPointer() || type->IsFunction())
-    {
-        const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
-        const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
-        return OperatorGT(builder, builder.GetTypeContext().GetIntegerType(64, false), lhs_int, rhs_int);
-    }
+            builder.GetBuilder().CreateFCmpOGT(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorGE(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            Type::As<IntegerType>(type)->IsSigned()
-                ? builder.GetBuilder().CreateICmpSGE(lhs, rhs)
-                : builder.GetBuilder().CreateICmpUGE(lhs, rhs));
+            Type::As<IntegerType>(left_type)->IsSigned()
+                ? builder.GetBuilder().CreateICmpSGE(left_value, right_value)
+                : builder.GetBuilder().CreateICmpUGE(left_value, right_value));
 
-    if (type->IsFloatingPoint())
+    if (left_type->IsFloatingPoint())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            builder.GetBuilder().CreateFCmpOGE(lhs, rhs));
-
-    if (type->IsPointer() || type->IsFunction())
-    {
-        const auto lhs_int = builder.GetBuilder().CreatePtrToInt(lhs, builder.GetBuilder().getInt64Ty());
-        const auto rhs_int = builder.GetBuilder().CreatePtrToInt(rhs, builder.GetBuilder().getInt64Ty());
-        return OperatorGE(builder, builder.GetTypeContext().GetIntegerType(64, false), lhs_int, rhs_int);
-    }
+            builder.GetBuilder().CreateFCmpOGE(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorLOr(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger() && Type::As<IntegerType>(type)->GetBits() == 1)
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type->IsBoolean() && right_type->IsBoolean())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            builder.GetBuilder().CreateOr(lhs, rhs));
+            builder.GetBuilder().CreateOr(left_value, right_value));
 
-    if (type->IsInteger() || type->IsPointer())
+    if (left_type->IsIntegerLike() && right_type->IsIntegerLike())
     {
-        const auto lhs_not_null = builder.GetBuilder().CreateIsNotNull(lhs);
-        const auto rhs_not_null = builder.GetBuilder().CreateIsNotNull(rhs);
-        return OperatorLOr(
+        const auto lhs_not_null = RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            lhs_not_null,
-            rhs_not_null);
+            builder.GetBuilder().CreateIsNotNull(left_value));
+        const auto rhs_not_null = RValue::Create(
+            builder,
+            builder.GetTypeContext().GetBooleanType(),
+            builder.GetBuilder().CreateIsNotNull(right_value));
+        return OperatorLOr(builder, lhs_not_null, rhs_not_null);
     }
 
     return nullptr;
@@ -208,25 +214,31 @@ NJS::ValuePtr NJS::OperatorLOr(
 
 NJS::ValuePtr NJS::OperatorLXor(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger() && Type::As<IntegerType>(type)->GetBits() == 1)
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type->IsBoolean() && right_type->IsBoolean())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            builder.GetBuilder().CreateXor(lhs, rhs));
+            builder.GetBuilder().CreateXor(left_value, right_value));
 
-    if (type->IsInteger() || type->IsPointer())
+    if (left_type->IsIntegerLike() && right_type->IsIntegerLike())
     {
-        const auto lhs_not_null = builder.GetBuilder().CreateIsNotNull(lhs);
-        const auto rhs_not_null = builder.GetBuilder().CreateIsNotNull(rhs);
-        return OperatorLXor(
+        const auto lhs_not_null = RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            lhs_not_null,
-            rhs_not_null);
+            builder.GetBuilder().CreateIsNotNull(left_value));
+        const auto rhs_not_null = RValue::Create(
+            builder,
+            builder.GetTypeContext().GetBooleanType(),
+            builder.GetBuilder().CreateIsNotNull(right_value));
+        return OperatorLXor(builder, lhs_not_null, rhs_not_null);
     }
 
     return nullptr;
@@ -234,25 +246,31 @@ NJS::ValuePtr NJS::OperatorLXor(
 
 NJS::ValuePtr NJS::OperatorLAnd(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger() && Type::As<IntegerType>(type)->GetBits() == 1)
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type->IsBoolean() && right_type->IsBoolean())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            builder.GetBuilder().CreateAnd(lhs, rhs));
+            builder.GetBuilder().CreateAnd(left_value, right_value));
 
-    if (type->IsInteger() || type->IsPointer())
+    if (left_type->IsIntegerLike() && right_type->IsIntegerLike())
     {
-        const auto lhs_not_null = builder.GetBuilder().CreateIsNotNull(lhs);
-        const auto rhs_not_null = builder.GetBuilder().CreateIsNotNull(rhs);
-        return OperatorLAnd(
+        const auto lhs_not_null = RValue::Create(
             builder,
             builder.GetTypeContext().GetBooleanType(),
-            lhs_not_null,
-            rhs_not_null);
+            builder.GetBuilder().CreateIsNotNull(left_value));
+        const auto rhs_not_null = RValue::Create(
+            builder,
+            builder.GetTypeContext().GetBooleanType(),
+            builder.GetBuilder().CreateIsNotNull(right_value));
+        return OperatorLAnd(builder, lhs_not_null, rhs_not_null);
     }
 
     return nullptr;
@@ -260,234 +278,330 @@ NJS::ValuePtr NJS::OperatorLAnd(
 
 NJS::ValuePtr NJS::OperatorOr(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
         return RValue::Create(
             builder,
-            type,
-            builder.GetBuilder().CreateOr(lhs, rhs));
+            left_type,
+            builder.GetBuilder().CreateOr(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorXor(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
         return RValue::Create(
             builder,
-            type,
-            builder.GetBuilder().CreateXor(lhs, rhs));
+            left_type,
+            builder.GetBuilder().CreateXor(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorAnd(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
         return RValue::Create(
             builder,
-            type,
-            builder.GetBuilder().CreateAnd(lhs, rhs));
+            left_type,
+            builder.GetBuilder().CreateAnd(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorAdd(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
-        return RValue::Create(
-            builder,
-            type,
-            builder.GetBuilder().CreateAdd(lhs, rhs));
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
 
-    if (type->IsFloatingPoint())
+    if (left_type->IsPointer() && right_type->IsInteger())
         return RValue::Create(
             builder,
-            type,
-            builder.GetBuilder().CreateFAdd(lhs, rhs));
+            left_type,
+            builder.GetBuilder().CreatePtrAdd(left_value, right_value));
+
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
+        return RValue::Create(
+            builder,
+            left_type,
+            builder.GetBuilder().CreateAdd(left_value, right_value));
+
+    if (left_type->IsFloatingPoint())
+        return RValue::Create(
+            builder,
+            left_type,
+            builder.GetBuilder().CreateFAdd(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorSub(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type->IsPointer() && right_type->IsInteger())
         return RValue::Create(
             builder,
-            type,
-            builder.GetBuilder().CreateSub(lhs, rhs));
+            left_type,
+            builder.GetBuilder().CreatePtrAdd(left_value, builder.GetBuilder().CreateNeg(right_value)));
 
-    if (type->IsFloatingPoint())
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
         return RValue::Create(
             builder,
-            type,
-            builder.GetBuilder().CreateFSub(lhs, rhs));
+            left_type,
+            builder.GetBuilder().CreateSub(left_value, right_value));
 
-    if (type->IsPointer())
+    if (left_type->IsFloatingPoint())
+        return RValue::Create(
+            builder,
+            left_type,
+            builder.GetBuilder().CreateFSub(left_value, right_value));
+
+    if (left_type->IsPointer())
         return RValue::Create(
             builder,
             builder.GetTypeContext().GetIntegerType(64, true),
             builder.GetBuilder().CreatePtrDiff(
-                Type::As<PointerType>(type)->GetElement()->GetLLVM(builder),
-                lhs,
-                rhs));
+                Type::As<PointerType>(left_type)->GetElement()->GetLLVM(builder),
+                left_value,
+                right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorMul(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
-        return RValue::Create(
-            builder,
-            type,
-            builder.GetBuilder().CreateMul(lhs, rhs));
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
 
-    if (type->IsFloatingPoint())
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
         return RValue::Create(
             builder,
-            type,
-            builder.GetBuilder().CreateFMul(lhs, rhs));
+            left_type,
+            builder.GetBuilder().CreateMul(left_value, right_value));
+
+    if (left_type->IsFloatingPoint())
+        return RValue::Create(
+            builder,
+            left_type,
+            builder.GetBuilder().CreateFMul(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorDiv(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
-        return RValue::Create(
-            builder,
-            type,
-            Type::As<IntegerType>(type)->IsSigned()
-                ? builder.GetBuilder().CreateSDiv(lhs, rhs)
-                : builder.GetBuilder().CreateUDiv(lhs, rhs));
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
 
-    if (type->IsFloatingPoint())
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
         return RValue::Create(
             builder,
-            type,
-            builder.GetBuilder().CreateFDiv(lhs, rhs));
+            left_type,
+            Type::As<IntegerType>(left_type)->IsSigned()
+                ? builder.GetBuilder().CreateSDiv(left_value, right_value)
+                : builder.GetBuilder().CreateUDiv(left_value, right_value));
+
+    if (left_type->IsFloatingPoint())
+        return RValue::Create(
+            builder,
+            left_type,
+            builder.GetBuilder().CreateFDiv(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorRem(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
         return RValue::Create(
             builder,
-            type,
-            Type::As<IntegerType>(type)->IsSigned()
-                ? builder.GetBuilder().CreateSRem(lhs, rhs)
-                : builder.GetBuilder().CreateURem(lhs, rhs));
+            left_type,
+            Type::As<IntegerType>(left_type)->IsSigned()
+                ? builder.GetBuilder().CreateSRem(left_value, right_value)
+                : builder.GetBuilder().CreateURem(left_value, right_value));
+
+    if (left_type->IsFloatingPoint())
+        return RValue::Create(
+            builder,
+            left_type,
+            builder.GetBuilder().CreateFRem(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorPow(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type->IsInteger())
     {
-        const auto dst_ty = builder
-                .GetTypeContext()
-                .GetFloatingPointType(Type::As<IntegerType>(type)->GetBits())
-                ->GetLLVM(builder);
-        const auto src_ty = type->GetLLVM(builder);
-        const auto lhs_fp = Type::As<IntegerType>(type)->IsSigned()
-                                ? builder.GetBuilder().CreateSIToFP(lhs, dst_ty)
-                                : builder.GetBuilder().CreateUIToFP(lhs, dst_ty);
-        const auto rhs_fp = Type::As<IntegerType>(type)->IsSigned()
-                                ? builder.GetBuilder().CreateSIToFP(rhs, dst_ty)
-                                : builder.GetBuilder().CreateUIToFP(rhs, dst_ty);
-        const auto val = builder.GetBuilder().CreateBinaryIntrinsic(llvm::Intrinsic::pow, lhs_fp, rhs_fp);
-        return RValue::Create(
-            builder,
-            type,
-            Type::As<IntegerType>(type)->IsSigned()
-                ? builder.GetBuilder().CreateFPToSI(val, src_ty)
-                : builder.GetBuilder().CreateFPToUI(val, src_ty));
+        const auto left_fp = builder.CreateCast(
+            left,
+            builder.GetTypeContext().GetFloatingPointType(Type::As<IntegerType>(left_type)->GetBits()));
+        return OperatorPow(builder, left_fp, right);
     }
 
-    if (type->IsFloatingPoint())
+    if (right_type->IsInteger())
+    {
+        const auto right_fp = builder.CreateCast(
+            right,
+            builder.GetTypeContext().GetFloatingPointType(Type::As<IntegerType>(right_type)->GetBits()));
+        return OperatorPow(builder, left, right_fp);
+    }
+
+    if (left_type->IsFloatingPoint() && right_type->IsFloatingPoint())
+    {
+        if (left_type != right_type)
+        {
+            const auto type = GetHigherOrderOf(builder.GetTypeContext(), left_type, right_type);
+            const auto left_cast = builder.CreateCast(left, type);
+            const auto right_cast = builder.CreateCast(right, type);
+            return OperatorPow(builder, left_cast, right_cast);
+        }
+
         return RValue::Create(
             builder,
-            type,
-            builder.GetBuilder().CreateBinaryIntrinsic(llvm::Intrinsic::pow, lhs, rhs));
+            left_type,
+            builder.GetBuilder().CreateBinaryIntrinsic(llvm::Intrinsic::pow, left_value, right_value));
+    }
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorShL(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
         return RValue::Create(
             builder,
-            type,
-            builder.GetBuilder().CreateShl(lhs, rhs));
+            left_type,
+            builder.GetBuilder().CreateShl(left_value, right_value));
 
     return nullptr;
 }
 
 NJS::ValuePtr NJS::OperatorShR(
     Builder &builder,
-    const TypePtr &type,
-    llvm::Value *lhs,
-    llvm::Value *rhs)
+    const ValuePtr &left,
+    const ValuePtr &right)
 {
-    if (type->IsInteger())
+    const auto left_type = left->GetType();
+    const auto right_type = right->GetType();
+    const auto left_value = left->Load();
+    const auto right_value = right->Load();
+
+    if (left_type != right_type)
+        return nullptr;
+
+    if (left_type->IsInteger())
         return RValue::Create(
             builder,
-            type,
-            Type::As<IntegerType>(type)->IsSigned()
-                ? builder.GetBuilder().CreateAShr(lhs, rhs)
-                : builder.GetBuilder().CreateLShr(lhs, rhs));
+            left_type,
+            Type::As<IntegerType>(left_type)->IsSigned()
+                ? builder.GetBuilder().CreateAShr(left_value, right_value)
+                : builder.GetBuilder().CreateLShr(left_value, right_value));
 
     return nullptr;
 }
 
-NJS::ValuePtr NJS::OperatorInc(Builder &builder, const ValuePtr &value)
+NJS::ValuePtr NJS::OperatorInc(Builder &builder, const ValuePtr &operand)
 {
-    const auto val = value->Load();
-    const auto type = value->GetType();
+    const auto value = operand->Load();
+    const auto type = operand->GetType();
     const auto ty = type->GetLLVM(builder);
 
     if (type->IsInteger())
@@ -495,22 +609,30 @@ NJS::ValuePtr NJS::OperatorInc(Builder &builder, const ValuePtr &value)
             builder,
             type,
             builder.GetBuilder().CreateAdd(
-                val,
+                value,
                 llvm::ConstantInt::get(ty, 1, Type::As<IntegerType>(type)->IsSigned())));
 
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
             type,
-            builder.GetBuilder().CreateFAdd(val, llvm::ConstantFP::get(ty, 1.0)));
+            builder.GetBuilder().CreateFAdd(value, llvm::ConstantFP::get(ty, 1.0)));
+
+    if (type->IsPointer())
+        return RValue::Create(
+            builder,
+            type,
+            builder.GetBuilder().CreatePtrAdd(
+                value,
+                llvm::ConstantInt::get(ty, 1, false)));
 
     return nullptr;
 }
 
-NJS::ValuePtr NJS::OperatorDec(Builder &builder, const ValuePtr &value)
+NJS::ValuePtr NJS::OperatorDec(Builder &builder, const ValuePtr &operand)
 {
-    const auto val = value->Load();
-    const auto type = value->GetType();
+    const auto value = operand->Load();
+    const auto type = operand->GetType();
     const auto ty = type->GetLLVM(builder);
 
     if (type->IsInteger())
@@ -518,87 +640,95 @@ NJS::ValuePtr NJS::OperatorDec(Builder &builder, const ValuePtr &value)
             builder,
             type,
             builder.GetBuilder().CreateSub(
-                val,
+                value,
                 llvm::ConstantInt::get(ty, 1, Type::As<IntegerType>(type)->IsSigned())));
 
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
             type,
-            builder.GetBuilder().CreateFSub(val, llvm::ConstantFP::get(ty, 1.0)));
+            builder.GetBuilder().CreateFSub(value, llvm::ConstantFP::get(ty, 1.0)));
+
+    if (type->IsPointer())
+        return RValue::Create(
+            builder,
+            type,
+            builder.GetBuilder().CreatePtrAdd(
+                value,
+                llvm::ConstantInt::get(ty, -1, true)));
 
     return nullptr;
 }
 
-NJS::ValuePtr NJS::OperatorNeg(Builder &builder, const ValuePtr &value)
+NJS::ValuePtr NJS::OperatorNeg(Builder &builder, const ValuePtr &operand)
 {
-    const auto val = value->Load();
-    const auto type = value->GetType();
+    const auto value = operand->Load();
+    const auto type = operand->GetType();
 
     if (type->IsInteger())
         return RValue::Create(
             builder,
             type,
-            builder.GetBuilder().CreateNeg(val));
+            builder.GetBuilder().CreateNeg(value));
 
     if (type->IsFloatingPoint())
         return RValue::Create(
             builder,
             type,
-            builder.GetBuilder().CreateFNeg(val));
+            builder.GetBuilder().CreateFNeg(value));
 
     return nullptr;
 }
 
-NJS::ValuePtr NJS::OperatorLNot(Builder &builder, const ValuePtr &value)
+NJS::ValuePtr NJS::OperatorLNot(Builder &builder, const ValuePtr &operand)
 {
-    const auto val = value->Load();
-    const auto type = value->GetType();
+    const auto value = operand->Load();
+    const auto type = operand->GetType();
+
+    if (type->IsIntegerLike())
+        return RValue::Create(
+            builder,
+            type,
+            builder.GetBuilder().CreateIsNull(value));
+
+    return nullptr;
+}
+
+NJS::ValuePtr NJS::OperatorNot(Builder &builder, const ValuePtr &operand)
+{
+    const auto value = operand->Load();
+    const auto type = operand->GetType();
 
     if (type->IsInteger())
         return RValue::Create(
             builder,
             type,
-            builder.GetBuilder().CreateIsNull(val));
+            builder.GetBuilder().CreateNot(value));
 
     return nullptr;
 }
 
-NJS::ValuePtr NJS::OperatorNot(Builder &builder, const ValuePtr &value)
+NJS::ValuePtr NJS::OperatorRef(Builder &builder, const ValuePtr &operand)
 {
-    const auto val = value->Load();
-    const auto type = value->GetType();
-
-    if (type->IsInteger())
-        return RValue::Create(
-            builder,
-            type,
-            builder.GetBuilder().CreateNot(val));
-
-    return nullptr;
-}
-
-NJS::ValuePtr NJS::OperatorRef(Builder &builder, const ValuePtr &value)
-{
-    const auto ptr = value->GetPointer();
-    const auto type = value->GetType();
+    const auto pointer = operand->GetPointer();
+    const auto type = operand->GetType();
 
     return RValue::Create(
         builder,
-        builder.GetTypeContext().GetPointerType(type, value->IsConst()),
-        ptr);
+        builder.GetTypeContext().GetPointerType(type, operand->IsConst()),
+        pointer);
 }
 
-NJS::ValuePtr NJS::OperatorDeref(Builder &builder, const ValuePtr &value)
+NJS::ValuePtr NJS::OperatorDeref(Builder &builder, const ValuePtr &operand)
 {
-    const auto val = value->Load();
-    const auto type = value->GetType();
+    const auto value = operand->Load();
+    const auto type = operand->GetType();
 
     if (type->IsPointer())
         return LValue::Create(
             builder,
             Type::As<PointerType>(type)->GetElement(),
-            val,
+            value,
             Type::As<PointerType>(type)->IsConst());
 
     return nullptr;
