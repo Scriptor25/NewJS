@@ -277,7 +277,7 @@ NJS::Token &NJS::Parser::Next()
                 break;
 
             case State_String:
-                if (c == '"')
+                if (c == '"' || c < 0)
                     return m_Token = {where, TokenType_String, '"' + value + '"', value};
                 if (c == '\\')
                     c = Escape(Get());
@@ -286,7 +286,7 @@ NJS::Token &NJS::Parser::Next()
                 break;
 
             case State_Char:
-                if (c == '\'')
+                if (c == '\'' || c < 0)
                     return m_Token = {where, TokenType_Char, '\'' + value + '\'', value};
                 if (c == '\\')
                     c = Escape(Get());
