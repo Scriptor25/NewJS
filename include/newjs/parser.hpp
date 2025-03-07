@@ -88,7 +88,7 @@ namespace NJS
         StatementPtr ParseReturnStatement();
         StatementPtr ParseScopeStatement();
         StatementPtr ParseSwitchStatement();
-        StatementPtr ParseVariableStatement(bool is_extern);
+        StatementPtr ParseVariableStatement(bool is_export, bool is_extern);
         StatementPtr ParseWhileStatement();
 
         ExpressionPtr ParseExpression();

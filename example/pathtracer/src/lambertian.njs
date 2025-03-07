@@ -6,11 +6,11 @@ import record from "./record.njs"
 type lambertian
 
 type lambertian = {
-    scatter: (&lambertian, ray, record, &color, &ray) => u1,
+    scatter: (const &lambertian, const &ray, const &record, &color, &ray) => u1,
     albedo: color,
 }
 
-function scatter(&self: lambertian, r_in: ray, rec: record, &attenuation: color, &scattered: ray): u1 {
+function scatter(const &self: lambertian, const &r_in: ray, const &rec: record, &attenuation: color, &scattered: ray): u1 {
     let scatter_direction = rec.normal + math.random_unit_vector()
 
     if (math.near_zero(scatter_direction))
@@ -21,7 +21,7 @@ function scatter(&self: lambertian, r_in: ray, rec: record, &attenuation: color,
     return true
 }
 
-export function create(albedo: color): lambertian {
+export function create(const &albedo: color): lambertian {
     return {
         scatter,
         albedo,

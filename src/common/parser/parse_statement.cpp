@@ -40,7 +40,7 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
     if (At("import"))
         return ParseImportStatement();
     if (At("let") || At("const"))
-        return ParseVariableStatement(is_extern);
+        return ParseVariableStatement(is_export, is_extern);
     if (At("return"))
         return ParseReturnStatement();
     if (At("switch"))

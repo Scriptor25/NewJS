@@ -130,6 +130,7 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
             builder,
             argument_value,
             false,
+            false,
             parameter->Info.IsConst,
             parameter->Info.IsReference);
     }
@@ -254,6 +255,7 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
         parameter->CreateVars(
             builder,
             argument_value,
+            false,
             false,
             parameter->Info.IsConst,
             parameter->Info.IsReference);

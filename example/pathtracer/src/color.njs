@@ -17,10 +17,9 @@ export function write_color(&image: image, pixel_color: color) {
     const fg = linear_to_gamma(pixel_color[1])
     const fb = linear_to_gamma(pixel_color[2])
 
-    const intensity: interval = { min: 0.000, max: 0.999 }
-    const ir: i32 = (256 * interval.clamp(intensity, fr))
-    const ig: i32 = (256 * interval.clamp(intensity, fg))
-    const ib: i32 = (256 * interval.clamp(intensity, fb))
+    const ir: i32 = (256 * interval.clamp(interval.intensity, fr))
+    const ig: i32 = (256 * interval.clamp(interval.intensity, fg))
+    const ib: i32 = (256 * interval.clamp(interval.intensity, fb))
 
     ppm.write(image, ir, ig, ib)
 }

@@ -162,8 +162,8 @@ function add(a: i32, b: i32): promise<i32> {
 const result = await<i32>(add(123, 456))
 PRINT(result)
 
-for (let i: u64; i < 64; ++i)
-    println(f"i = {2:u64 ** i}")
+for (let i = 0; i < 64; ++i)
+    println(f"i = {(2 ** i) as u64}")
 
 for (let j: u64; j < 5; ++j)
     for (let i: u64; i < 5; ++i) {

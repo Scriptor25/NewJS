@@ -12,7 +12,7 @@ extern function free(block: void[])
 
 extern function println(msg: i8[])
 
-function<T> make(value: T): T[] {
+function<T> make(const &value: T): T[] {
     const ptr: T[] = malloc(sizeof<T>);
     (*ptr) = value;
     return ptr

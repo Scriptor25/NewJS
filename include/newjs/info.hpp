@@ -92,7 +92,7 @@ namespace NJS
     {
         unsigned Index;
         std::string Name;
-        TypePtr Type;
+        ReferenceInfo Info;
     };
 
     template<>

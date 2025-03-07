@@ -29,7 +29,7 @@ NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &e
     for (const auto &[name_, element_]: Elements)
     {
         auto type = result_type
-                        ? result_type->GetMember(name_).Type
+                        ? result_type->GetMember(name_).Info.Type
                         : nullptr;
         auto value = element_->GenLLVM(builder, type);
         element_values.emplace_back(name_, value);
@@ -37,7 +37,7 @@ NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &e
     }
 
     if (!result_type)
-        result_type = builder.GetTypeContext().GetStructType(element_types);
+        result_type = builder.GetTypeContext().GetUnsafeStructType(element_types);
 
     const auto struct_type = result_type->GetLLVM<llvm::StructType>(builder);
     llvm::Value *struct_value = llvm::ConstantStruct::getNullValue(struct_type);
@@ -46,10 +46,10 @@ NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &e
         auto [
             index_,
             name_,
-            type_
+            info_
         ] = result_type->GetMember(element_name_);
 
-        element_value_ = builder.CreateCast(element_value_, type_);
+        element_value_ = builder.CreateCast(element_value_, info_.Type);
         struct_value = builder.GetBuilder().CreateInsertValue(struct_value, element_value_->Load(), index_);
     }
 

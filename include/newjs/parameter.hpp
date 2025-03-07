@@ -22,6 +22,7 @@ namespace NJS
         virtual void CreateVars(
             Builder &builder,
             ValuePtr value,
+            bool is_export,
             bool is_extern,
             bool is_const,
             bool is_reference);
@@ -44,6 +45,7 @@ namespace NJS
         void CreateVars(
             Builder &builder,
             ValuePtr value,
+            bool is_export,
             bool is_extern,
             bool is_const,
             bool is_reference) override;
@@ -64,6 +66,7 @@ namespace NJS
         void CreateVars(
             Builder &builder,
             ValuePtr value,
+            bool is_export,
             bool is_extern,
             bool is_const,
             bool is_reference) override;

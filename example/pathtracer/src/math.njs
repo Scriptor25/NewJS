@@ -7,19 +7,11 @@ extern function fmin(a: f64, b: f64): f64
 type vec3 = f64[3]
 type point3 = vec3
 
-export function operator-(&self: vec3): vec3 {
+export function operator-(const &self: vec3): vec3 {
     return [
         -self[0],
         -self[1],
         -self[2],
-    ]
-}
-
-export function operator-(v: vec3): vec3 {
-    return [
-        -v[0],
-        -v[1],
-        -v[2],
     ]
 }
 
@@ -41,22 +33,22 @@ export function operator/=(&self: vec3, other: f64): &vec3 {
     return self *= 1.0 / other
 }
 
-export function length_squared(v: vec3): f64 {
+export function length_squared(const &v: vec3): f64 {
     return v[0] * v[0] + v[1] * v[1] + v[2] * v[2]
 }
 
-export function length(v: vec3): f64 {
+export function length(const &v: vec3): f64 {
     return sqrt(length_squared(v))
 }
 
-export function near_zero(v: vec3): u1 {
+export function near_zero(const &v: vec3): u1 {
     const s = 1e-8
     return (fabs(v[0]) < s)
         && (fabs(v[1]) < s)
         && (fabs(v[2]) < s)
 }
 
-export function operator+(a: vec3, b: vec3): vec3 {
+export function operator+(const &a: vec3, const &b: vec3): vec3 {
     return [
         a[0] + b[0],
         a[1] + b[1],
@@ -64,7 +56,7 @@ export function operator+(a: vec3, b: vec3): vec3 {
     ]
 }
 
-export function operator-(a: vec3, b: vec3): vec3 {
+export function operator-(const &a: vec3, const &b: vec3): vec3 {
     return [
         a[0] - b[0],
         a[1] - b[1],
@@ -72,7 +64,7 @@ export function operator-(a: vec3, b: vec3): vec3 {
     ]
 }
 
-export function operator*(a: vec3, b: vec3): vec3 {
+export function operator*(const &a: vec3, const &b: vec3): vec3 {
     return [
         a[0] * b[0],
         a[1] * b[1],
@@ -80,7 +72,7 @@ export function operator*(a: vec3, b: vec3): vec3 {
     ]
 }
 
-export function operator*(a: f64, b: vec3): vec3 {
+export function operator*(a: f64, const &b: vec3): vec3 {
     return [
         a * b[0],
         a * b[1],
@@ -88,21 +80,21 @@ export function operator*(a: f64, b: vec3): vec3 {
     ]
 }
 
-export function operator*(a: vec3, b: f64): vec3 {
+export function operator*(const &a: vec3, b: f64): vec3 {
     return b * a
 }
 
-export function operator/(a: vec3, b: f64): vec3 {
+export function operator/(const &a: vec3, b: f64): vec3 {
     return (1 / b) * a
 }
 
-export function dot(a: vec3, b: vec3): f64 {
+export function dot(const &a: vec3, const &b: vec3): f64 {
     return a[0] * b[0]
          + a[1] * b[1]
          + a[2] * b[2]
 }
 
-export function cross(a: vec3, b: vec3): vec3 {
+export function cross(const &a: vec3, const &b: vec3): vec3 {
     return [
         a[1] * b[2] - a[2] * b[1],
         a[2] * b[0] - a[0] * b[2],
@@ -110,7 +102,7 @@ export function cross(a: vec3, b: vec3): vec3 {
     ]
 }
 
-export function unit_vector(v: vec3): vec3 {
+export function unit_vector(const &v: vec3): vec3 {
     return v / length(v)
 }
 
@@ -139,7 +131,7 @@ export function random_unit_vector(): vec3 {
     }
 }
 
-export function random_on_hemisphere(normal: vec3): vec3 {
+export function random_on_hemisphere(const &normal: vec3): vec3 {
     const on_unit_sphere = random_unit_vector()
     if (dot(on_unit_sphere, normal) > 0.0)
         return on_unit_sphere
@@ -158,11 +150,11 @@ export function random_in_unit_disk(): vec3 {
     }
 }
 
-export function reflect(v: vec3, n: vec3): vec3 {
+export function reflect(const &v: vec3, const &n: vec3): vec3 {
     return v - 2.0 * dot(v, n) * n
 }
 
-export function refract(v: vec3, n: vec3, eta: f64): vec3 {
+export function refract(const &v: vec3, const &n: vec3, eta: f64): vec3 {
     const cos_theta = fmin(dot(-v, n), 1.0)
     const r_out_perp = eta * (v + cos_theta * n)
     const r_out_para = -sqrt(fabs(1.0 - length_squared(r_out_perp))) * n

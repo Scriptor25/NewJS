@@ -25,6 +25,6 @@ export function end(&self: image) {
     self.stream = 0
 }
 
-export function write(&self: image, r: i32, g: i32, b: i32) {
+export function write(const &self: image, r: i32, g: i32, b: i32) {
     fprintf(self.stream, "%c%c%c", r, g, b)
 }

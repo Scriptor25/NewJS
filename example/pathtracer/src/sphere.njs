@@ -8,13 +8,13 @@ extern function sqrt(x: f64): f64
 type sphere
 
 type sphere = {
-    hit: (&sphere, ray, interval, &record) => u1,
+    hit: (const &sphere, const &ray, interval, &record) => u1,
     center: point3,
     radius: f64,
-    mat: material[],
+    mat: material[const],
 }
 
-function hit(&self: sphere, r: ray, ray_t: interval, &rec: record): u1 {
+function hit(const &self: sphere, const &r: ray, ray_t: interval, &rec: record): u1 {
     const oc = self.center - r.origin
     const a = math.length_squared(r.direction)
     const b = math.dot(r.direction, oc)
@@ -43,7 +43,7 @@ function hit(&self: sphere, r: ray, ray_t: interval, &rec: record): u1 {
     return true
 }
 
-export function create(center: point3, radius: f64, mat: material[]): sphere {
+export function create(const &center: point3, radius: f64, mat: material[const]): sphere {
     return {
         hit,
         center,

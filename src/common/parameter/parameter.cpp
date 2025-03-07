@@ -23,6 +23,7 @@ bool NJS::Parameter::RequireValue()
 void NJS::Parameter::CreateVars(
     Builder &builder,
     ValuePtr value,
+    const bool is_export,
     const bool is_extern,
     const bool is_const,
     const bool is_reference)
@@ -31,15 +32,21 @@ void NJS::Parameter::CreateVars(
                           ? Info.Type
                           : value->GetType();
 
-    auto &variable = builder.DefineVariable(Name, is_extern);
+    auto &variable = builder.DefineVariable(Name, is_export || is_extern);
 
-    if (is_extern)
+    if (is_export || is_extern)
     {
         const auto const_value = value
                                      ? llvm::dyn_cast<llvm::Constant>(value->Load())
                                      : nullptr;
 
-        variable = builder.CreateGlobal(Name, type, is_const, value != nullptr, const_value);
+        std::string name;
+        if (is_extern)
+            name = Name;
+        else
+            name = builder.GetName(true, Name);
+
+        variable = builder.CreateGlobal(name, type, is_const, value != nullptr, const_value);
         if (value && !const_value)
             variable->Store(value);
         return;

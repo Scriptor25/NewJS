@@ -21,6 +21,7 @@ bool NJS::DestructureTuple::RequireValue()
 void NJS::DestructureTuple::CreateVars(
     Builder &builder,
     ValuePtr value,
+    const bool is_export,
     const bool is_extern,
     const bool is_const,
     const bool is_reference)
@@ -40,7 +41,7 @@ void NJS::DestructureTuple::CreateVars(
     for (unsigned i = 0; i < Elements.size(); ++i)
     {
         const auto element = builder.CreateSubscript(value, i);
-        Elements[i]->CreateVars(builder, element, is_extern, is_const, is_reference);
+        Elements[i]->CreateVars(builder, element, is_export, is_extern, is_const, is_reference);
     }
 }
 

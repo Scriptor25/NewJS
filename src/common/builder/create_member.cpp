@@ -11,8 +11,13 @@ NJS::ValuePtr NJS::Builder::CreateMember(const ValuePtr &value, const std::strin
     const auto [
         index_,
         name_,
-        type_
+        info_
     ] = struct_type->GetMember(name);
+    const auto [
+        type_,
+        is_const_,
+        is_reference_
+    ] = info_;
 
     if (value->IsLValue())
     {
@@ -20,9 +25,14 @@ NJS::ValuePtr NJS::Builder::CreateMember(const ValuePtr &value, const std::strin
         const auto pointer = value->GetPointer();
 
         const auto gep = GetBuilder().CreateStructGEP(type, pointer, index_);
-        return LValue::Create(*this, type_, gep, value->IsConst());
+        auto member_value = LValue::Create(*this, type_, gep, value->IsConst());
+        if (is_reference_)
+            return LValue::Create(*this, type_, member_value->Load(), is_const_);
+        return member_value;
     }
 
     const auto member_value = GetBuilder().CreateExtractValue(value->Load(), index_);
+    if (is_reference_)
+        return LValue::Create(*this, type_, member_value, is_const_);
     return RValue::Create(*this, type_, member_value);
 }

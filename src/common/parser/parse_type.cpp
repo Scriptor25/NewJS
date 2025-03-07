@@ -107,7 +107,7 @@ NJS::TypePtr NJS::Parser::ParseStructType()
     Expect("{");
     std::vector<std::pair<std::string, TypePtr>> element_types;
     ParseTypeMap(element_types, "}");
-    return m_TypeContext.GetStructType(element_types);
+    return m_TypeContext.GetUnsafeStructType(element_types);
 }
 
 NJS::TypePtr NJS::Parser::ParseFunctionType()

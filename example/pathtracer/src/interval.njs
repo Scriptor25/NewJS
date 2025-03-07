@@ -5,22 +5,26 @@ type interval = {
     max: f64,
 }
 
-export function size(i: interval): f64 {
-    return i.max - i.min
+export const empty: interval = { min: infinity, max: -infinity }
+export const universe: interval = { min: -infinity, max: infinity }
+export const intensity: interval = { min: 0.000, max: 0.999 }
+
+export function size(const &self: interval): f64 {
+    return self.max - self.min
 }
 
-export function contains(i: interval, x: f64): u1 {
-    return i.min <= x && x <= i.max
+export function contains(const &self: interval, x: f64): u1 {
+    return self.min <= x && x <= self.max
 }
 
-export function surrounds(i: interval, x: f64): u1 {
-    return i.min < x && x < i.max
+export function surrounds(const &self: interval, x: f64): u1 {
+    return self.min < x && x < self.max
 }
 
-export function clamp(i: interval, x: f64): f64 {
-    return x < i.min
-           ? i.min
-           : x > i.max
-           ? i.max
+export function clamp(const &self: interval, x: f64): f64 {
+    return x < self.min
+           ? self.min
+           : x > self.max
+           ? self.max
            : x
 }

@@ -1,6 +1,7 @@
 #include <fstream>
 #include <newjs/ast.hpp>
 #include <newjs/error.hpp>
+#include <newjs/parameter.hpp>
 #include <newjs/parser.hpp>
 
 NJS::StatementPtr NJS::Parser::ParseImportStatement()
@@ -34,7 +35,7 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
         true,
         m_ParsedSet);
 
-    std::vector<FunctionStatementPtr> functions;
+    std::vector<StatementPtr> values;
     std::set<std::string> sub_module_ids;
 
     try
@@ -42,19 +43,29 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
         parser.Parse(
             [&](const StatementPtr &statement)
             {
-                if (const auto import_ = std::dynamic_pointer_cast<ImportStatement>(statement); m_IsMain && import_)
+                if (const auto value = std::dynamic_pointer_cast<ImportStatement>(statement);
+                    m_IsMain && value)
                 {
-                    for (auto &sub_module_id: import_->SubModuleIDs)
+                    for (auto &sub_module_id: value->SubModuleIDs)
                         sub_module_ids.emplace(sub_module_id);
-                    sub_module_ids.emplace(import_->ModuleID);
+                    sub_module_ids.emplace(value->ModuleID);
                     return;
                 }
 
-                if (auto function = std::dynamic_pointer_cast<FunctionStatement>(statement);
-                    function && function->Flags & FunctionFlags_Export)
+                if (auto value = std::dynamic_pointer_cast<FunctionStatement>(statement);
+                    value && value->Flags & FunctionFlags_Export)
                 {
-                    function->Body = {};
-                    functions.emplace_back(function);
+                    value->Body = {};
+                    values.emplace_back(value);
+                    return;
+                }
+
+                if (auto value = std::dynamic_pointer_cast<VariableStatement>(statement);
+                    value && value->IsExport)
+                {
+                    value->Value = {};
+                    values.emplace_back(value);
+                    return;
                 }
             });
     }
@@ -69,7 +80,7 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
     if (m_IsMain)
         sub_module_ids.emplace(module_id);
 
-    return std::make_shared<ImportStatement>(where, mapping, filepath, functions, module_id, sub_module_ids);
+    return std::make_shared<ImportStatement>(where, mapping, filepath, values, module_id, sub_module_ids);
 }
 
 NJS::ImportMapping NJS::Parser::ParseImportMapping()

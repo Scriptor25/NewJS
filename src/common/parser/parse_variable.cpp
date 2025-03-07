@@ -2,7 +2,7 @@
 #include <newjs/parameter.hpp>
 #include <newjs/parser.hpp>
 
-NJS::StatementPtr NJS::Parser::ParseVariableStatement(const bool is_extern)
+NJS::StatementPtr NJS::Parser::ParseVariableStatement(const bool is_export, const bool is_extern)
 {
     auto where = CurrentLocation();
 
@@ -17,5 +17,5 @@ NJS::StatementPtr NJS::Parser::ParseVariableStatement(const bool is_extern)
     if ((parameter->RequireValue() && (Expect("="), true)) || NextAt("="))
         value = ParseExpression();
 
-    return std::make_shared<VariableStatement>(where, is_extern, parameter, value);
+    return std::make_shared<VariableStatement>(where, is_export, is_extern, parameter, value);
 }

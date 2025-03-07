@@ -52,9 +52,17 @@ NJS::ArrayTypePtr NJS::TypeContext::GetArrayType(const TypePtr &element_type, un
     return GetType<ArrayType>(element_type, count);
 }
 
-NJS::StructTypePtr NJS::TypeContext::GetStructType(const std::vector<std::pair<std::string, TypePtr>> &element_types)
+NJS::StructTypePtr NJS::TypeContext::GetUnsafeStructType(const std::vector<std::pair<std::string, TypePtr>> &element_types)
 {
-    return GetType<StructType>(element_types);
+    std::vector<std::pair<std::string, ReferenceInfo>> elements(element_types.size());
+    for (unsigned i = 0; i < element_types.size(); ++i)
+        elements[i] = {element_types[i].first, ReferenceInfo(element_types[i].second)};
+    return GetStructType(elements);
+}
+
+NJS::StructTypePtr NJS::TypeContext::GetStructType(const std::vector<std::pair<std::string, ReferenceInfo>> &elements)
+{
+    return GetType<StructType>(elements);
 }
 
 NJS::TupleTypePtr NJS::TypeContext::GetTupleType(const std::vector<TypePtr> &element_types)

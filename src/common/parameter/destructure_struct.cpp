@@ -21,6 +21,7 @@ bool NJS::DestructureStruct::RequireValue()
 void NJS::DestructureStruct::CreateVars(
     Builder &builder,
     ValuePtr value,
+    const bool is_export,
     const bool is_extern,
     const bool is_const,
     const bool is_reference)
@@ -40,7 +41,7 @@ void NJS::DestructureStruct::CreateVars(
     for (const auto &[name_, element_]: Elements)
     {
         const auto member = builder.CreateMember(value, name_);
-        element_->CreateVars(builder, member, is_extern, is_const, is_reference);
+        element_->CreateVars(builder, member, is_export, is_extern, is_const, is_reference);
     }
 }
 

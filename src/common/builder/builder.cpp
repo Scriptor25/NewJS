@@ -30,7 +30,7 @@ NJS::Builder::Builder(
 
     const auto process = CreateGlobal(
         "process",
-        m_TypeContext.GetStructType(
+        m_TypeContext.GetUnsafeStructType(
             {
                 {"argc", m_TypeContext.GetIntegerType(32, true)},
                 {"argv", m_TypeContext.GetPointerType(m_TypeContext.GetStringType(), false)},

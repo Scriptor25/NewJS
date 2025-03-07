@@ -111,7 +111,7 @@ namespace NJS
             SourceLocation where,
             ImportMapping mapping,
             std::filesystem::path filepath,
-            std::vector<FunctionStatementPtr> functions,
+            std::vector<StatementPtr> values,
             std::string module_id,
             std::set<std::string> sub_module_ids);
 
@@ -119,7 +119,7 @@ namespace NJS
 
         ImportMapping Mapping;
         std::filesystem::path Filepath;
-        std::vector<FunctionStatementPtr> Functions;
+        std::vector<StatementPtr> Values;
         std::string ModuleID;
         std::set<std::string> SubModuleIDs;
 
@@ -171,10 +171,16 @@ namespace NJS
 
     struct VariableStatement final : Statement
     {
-        VariableStatement(SourceLocation where, bool is_extern, ParameterPtr parameter, ExpressionPtr value);
+        VariableStatement(
+            SourceLocation where,
+            bool is_export,
+            bool is_extern,
+            ParameterPtr parameter,
+            ExpressionPtr value);
 
         std::ostream &Print(std::ostream &stream) const override;
 
+        bool IsExport;
         bool IsExtern;
         ParameterPtr Parameter;
         ExpressionPtr Value;

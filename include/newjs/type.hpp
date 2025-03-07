@@ -212,7 +212,7 @@ namespace NJS
         friend TypeContext;
 
     public:
-        static std::string GenString(const std::vector<std::pair<std::string, TypePtr>> &element_types);
+        static std::string GenString(const std::vector<std::pair<std::string, ReferenceInfo>> &elements);
 
         [[nodiscard]] bool IsStruct() const override;
         [[nodiscard]] unsigned GetElementCount() const;
@@ -227,11 +227,11 @@ namespace NJS
         StructType(
             TypeContext &type_context,
             std::string string,
-            std::vector<std::pair<std::string, TypePtr>> element_types);
+            std::vector<std::pair<std::string, ReferenceInfo>> elements);
 
         [[nodiscard]] llvm::Type *GenLLVM(const Builder &builder) const override;
 
-        std::vector<std::pair<std::string, TypePtr>> m_ElementTypes;
+        std::vector<std::pair<std::string, ReferenceInfo>> m_Elements;
         unsigned m_Index;
     };
 

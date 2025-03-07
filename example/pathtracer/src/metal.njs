@@ -6,12 +6,12 @@ import record from "./record.njs"
 type metal
 
 type metal = {
-    scatter: (&metal, ray, record, &color, &ray) => u1,
+    scatter: (const &metal, const &ray, const &record, &color, &ray) => u1,
     albedo: color,
     fuzz: f64,
 }
 
-function scatter(&self: metal, r_in: ray, rec: record, &attenuation: color, &scattered: ray): u1 {
+function scatter(const &self: metal, const &r_in: ray, const &rec: record, &attenuation: color, &scattered: ray): u1 {
     let reflected = math.reflect(r_in.direction, rec.normal)
     reflected = math.unit_vector(reflected) + (self.fuzz * math.random_unit_vector())
     scattered = { origin: rec.p, direction: reflected }
@@ -19,7 +19,7 @@ function scatter(&self: metal, r_in: ray, rec: record, &attenuation: color, &sca
     return math.dot(scattered.direction, rec.normal) > 0
 }
 
-export function create(albedo: color, fuzz: f64): metal {
+export function create(const &albedo: color, fuzz: f64): metal {
     return {
         scatter,
         albedo,
