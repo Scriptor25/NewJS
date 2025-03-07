@@ -82,7 +82,7 @@ function<T> vec_new(n: u64): vec<T> {
     const ptr: T[] = malloc(n * sizeof<T>)
     return {
         beg: ptr,
-        end: &ptr[n]
+        end: ptr + n,
     }
 }
 
@@ -100,27 +100,29 @@ function<T> vec_front(&self: vec<T>): &T {
 }
 
 function<T> vec_back(&self: vec<T>): &T {
+    if (self.beg == self.end)
+        return *(0 as T[])
     return self.end[-1]
 }
 
 function<T> vec_at(&self: vec<T>, pos: u64): &T {
+    if (pos >= vec_size<T>(self))
+        return *(0 as T[])
     return self.beg[pos]
 }
 
-function<T> vec_push(&self: vec<T>, element: T) {
+function<T> vec_push(&self: vec<T>, const &element: T) {
     const size = vec_size<T>(self) + 1
-    const ptr: T[] = realloc(self.beg, size * sizeof<T>)
-    self.beg = ptr
-    self.end = &ptr[size]
+    self.beg = realloc(self.beg, size * sizeof<T>)
+    self.end = self.beg + size
     vec_back<T>(self) = element
 }
 
 function<T> vec_pop(&self: vec<T>): T {
-    const element: T = vec_back<T>(self)
+    const element = vec_back<T>(self)
     const size = vec_size<T>(self) - 1
-    const ptr: T[] = realloc(self.beg, size * sizeof<T>)
-    self.beg = ptr
-    self.end = ptr + size
+    self.beg = realloc(self.beg, size * sizeof<T>)
+    self.end = self.beg + size
     return element
 }
 
