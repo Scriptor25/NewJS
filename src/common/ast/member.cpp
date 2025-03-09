@@ -26,7 +26,7 @@ NJS::ValuePtr NJS::MemberExpression::PGenLLVM(Builder &builder, const TypePtr &)
         const auto pointer_type = Type::As<PointerType>(object->GetType());
         object = LValue::Create(builder, pointer_type->GetElement(), object->Load(), pointer_type->IsConst());
     }
-    return builder.CreateMember(object, Member);
+    return builder.CreateMember(object, Member).Value;
 }
 
 std::ostream &NJS::MemberExpression::Print(std::ostream &stream) const

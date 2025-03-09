@@ -53,8 +53,8 @@ NJS::Builder::Builder(
         m_Function->getArg(0)->setName("argc");
         m_Function->getArg(1)->setName("argv");
         GetBuilder().SetInsertPoint(llvm::BasicBlock::Create(GetContext(), "entry", m_Function));
-        CreateMember(process, "argc")->Store(m_Function->getArg(0));
-        CreateMember(process, "argv")->Store(m_Function->getArg(1));
+        CreateMember(process, "argc").Value->Store(m_Function->getArg(0));
+        CreateMember(process, "argv").Value->Store(m_Function->getArg(1));
         return;
     }
 

@@ -40,8 +40,14 @@ void NJS::DestructureStruct::CreateVars(
 
     for (const auto &[name_, element_]: Elements)
     {
-        const auto member = builder.CreateMember(value, name_);
-        element_->CreateVars(builder, member, is_export, is_extern, is_const, is_reference);
+        const auto [value_, is_reference_] = builder.CreateMember(value, name_);
+        element_->CreateVars(
+            builder,
+            value_,
+            is_export,
+            is_extern,
+            is_reference_ ? value_->IsConst() : is_const,
+            is_reference_ || is_reference);
     }
 }
 

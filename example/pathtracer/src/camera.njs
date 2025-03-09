@@ -4,6 +4,7 @@ import hittable from "./hittable.njs"
 import material from "./material.njs"
 import math     from "./math.njs"
 import ppm      from "./ppm.njs"
+import pthread  from "./pthread.njs"
 import ray      from "./ray.njs"
 import record   from "./record.njs"
 
@@ -121,23 +122,61 @@ function get_ray(const &self: camera, i: u32, j: u32): ray {
     return { origin, direction }
 }
 
+type line_arg_t = {
+    const &self: camera,
+    world: hittable[],
+    &img: image_t,
+    j: u32,
+}
+
+extern function srand(seed: u32): void
+
+function render_line(args: void[]): void[] {
+    const &{self, world, img, j} = *(args as line_arg_t[const])
+
+    fprintf(std_err, "[%4d / %4d]\n", j + 1:u32, self.image_height)
+    fflush(std_err)
+
+    srand(j * 123)
+
+    for (let i: u32; i < self.image_width; ++i) {
+        let pixel_color: color
+        for (let sample = 0; sample < self.samples_per_pixel; ++sample) {
+            pixel_color += ray_color(self, get_ray(self, i, j), self.max_depth, world)
+        }
+        color.write_color(img, i, j, self.pixel_sample_scale * pixel_color)
+    }
+
+    return 0
+}
+
+type<F, S> pair = {
+    fst: F,
+    snd: S,
+}
+
+extern function malloc(count: u64): void[]
+extern function free(block: void[]): void
+
 export function render(&self: camera, world: hittable[]) {
     initialize(self)
 
-    let image = ppm.begin("./out.ppm", self.image_width, self.image_height)
+    let img = ppm.create("./out.ppm", self.image_width, self.image_height)
+    const ts: pair<pthread_t, line_arg_t>[] = malloc(self.image_height * sizeof<pair<pthread_t, line_arg_t> >)
     for (let j: u32; j < self.image_height; ++j) {
-        fprintf(std_err, "\r[%4d / %4d]", j + 1:u32, self.image_height)
-        fflush(std_err)
-
-        for (let i: u32; i < self.image_width; ++i) {
-            let pixel_color: color
-            for (let sample = 0; sample < self.samples_per_pixel; ++sample) {
-                pixel_color += ray_color(self, get_ray(self, i, j), self.max_depth, world)
-            }
-            color.write_color(image, self.pixel_sample_scale * pixel_color)
+        ts[j].snd = {
+            self,
+            world,
+            img,
+            j,
         }
+        pthread.create(ts[j].fst, 0, render_line, &ts[j].snd)
     }
-    ppm.end(image)
+    for (let j: u32; j < self.image_height; ++j)
+        pthread.join(ts[j].fst, 0)
+    free(ts)
+    ppm.flush(img)
+    ppm.close(img)
 
     fprintf(std_err, "\rDone         \n")
     fflush(std_err)

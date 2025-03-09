@@ -48,9 +48,19 @@ NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &e
             name_,
             info_
         ] = result_type->GetMember(element_name_);
+        auto [
+            type_,
+            is_const_,
+            is_reference_
+        ] = info_;
 
-        element_value_ = builder.CreateCast(element_value_, info_.Type);
-        struct_value = builder.GetBuilder().CreateInsertValue(struct_value, element_value_->Load(), index_);
+        // TODO: check reference validity
+
+        element_value_ = builder.CreateCast(element_value_, type_);
+        struct_value = builder.GetBuilder().CreateInsertValue(
+            struct_value,
+            is_reference_ ? element_value_->GetPointer() : element_value_->Load(),
+            index_);
     }
 
     return RValue::Create(builder, result_type, struct_value);

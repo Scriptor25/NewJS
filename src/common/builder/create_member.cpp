@@ -2,7 +2,7 @@
 #include <newjs/type.hpp>
 #include <newjs/value.hpp>
 
-NJS::ValuePtr NJS::Builder::CreateMember(const ValuePtr &value, const std::string &name)
+NJS::MemberValue NJS::Builder::CreateMember(const ValuePtr &value, const std::string &name)
 {
     if (!value->GetType()->IsStruct())
         Error("cannot access member of non-struct value of type {}", value->GetType());
@@ -25,14 +25,16 @@ NJS::ValuePtr NJS::Builder::CreateMember(const ValuePtr &value, const std::strin
         const auto pointer = value->GetPointer();
 
         const auto gep = GetBuilder().CreateStructGEP(type, pointer, index_);
-        auto member_value = LValue::Create(*this, type_, gep, value->IsConst());
         if (is_reference_)
-            return LValue::Create(*this, type_, member_value->Load(), is_const_);
-        return member_value;
+            return {
+                LValue::Create(*this, type_, GetBuilder().CreateLoad(GetBuilder().getPtrTy(), gep), is_const_),
+                true
+            };
+        return {LValue::Create(*this, type_, gep, value->IsConst()), false};
     }
 
     const auto member_value = GetBuilder().CreateExtractValue(value->Load(), index_);
     if (is_reference_)
-        return LValue::Create(*this, type_, member_value, is_const_);
-    return RValue::Create(*this, type_, member_value);
+        return {LValue::Create(*this, type_, member_value, is_const_), true};
+    return {RValue::Create(*this, type_, member_value), false};
 }

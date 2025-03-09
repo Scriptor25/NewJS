@@ -28,6 +28,12 @@ namespace NJS
         std::map<std::string, std::pair<bool, ValuePtr>> Values;
     };
 
+    struct MemberValue
+    {
+        ValuePtr Value;
+        bool IsReference;
+    };
+
     class Builder
     {
     public:
@@ -61,7 +67,7 @@ namespace NJS
             bool initialize,
             llvm::Constant *initializer = {});
 
-        ValuePtr CreateMember(const ValuePtr &value, const std::string &name);
+        MemberValue CreateMember(const ValuePtr &value, const std::string &name);
 
         ValuePtr CreateSubscript(ValuePtr array, ValuePtr index);
         ValuePtr CreateSubscript(const ValuePtr &array, unsigned index);

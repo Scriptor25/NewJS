@@ -18,7 +18,7 @@ NJS::TypePtr NJS::Parser::ParseType()
         std::vector<TypePtr> arguments;
 
         Expect("<");
-        while (!At(">") && !AtEof())
+        while (!At(">"))
         {
             arguments.emplace_back(ParseType());
             if (!At(">"))
@@ -105,9 +105,9 @@ NJS::TypePtr NJS::Parser::ParseTupleType()
 NJS::TypePtr NJS::Parser::ParseStructType()
 {
     Expect("{");
-    std::vector<std::pair<std::string, TypePtr>> element_types;
-    ParseTypeMap(element_types, "}");
-    return m_TypeContext.GetUnsafeStructType(element_types);
+    std::vector<std::pair<std::string, ReferenceInfo>> elements;
+    ParseReferenceInfoMap(elements, "}");
+    return m_TypeContext.GetStructType(elements);
 }
 
 NJS::TypePtr NJS::Parser::ParseFunctionType()
@@ -132,50 +132,69 @@ NJS::ReferenceInfo NJS::Parser::ParseReferenceInfo()
     return info;
 }
 
-bool NJS::Parser::ParseTypeList(std::vector<TypePtr> &types, const std::string &delim)
+bool NJS::Parser::ParseTypeList(std::vector<TypePtr> &types, const std::string &delimiter)
 {
-    while (!At(delim) && !AtEof())
+    while (!At(delimiter))
     {
         if (NextAt("..."))
         {
-            Expect(delim);
+            Expect(delimiter);
             return true;
         }
         types.emplace_back(ParseType());
-        if (!At(delim))
+        if (!At(delimiter))
             Expect(",");
     }
-    Expect(delim);
+    Expect(delimiter);
     return false;
 }
 
-void NJS::Parser::ParseTypeMap(std::vector<std::pair<std::string, TypePtr>> &types, const std::string &delim)
+void NJS::Parser::ParseTypeMap(std::vector<std::pair<std::string, TypePtr>> &types, const std::string &delimiter)
 {
-    while (!At(delim) && !AtEof())
+    while (!At(delimiter))
     {
         const auto name = Expect(TokenType_Symbol).String;
         Expect(":");
         types.emplace_back(name, ParseType());
 
-        if (!At(delim))
+        if (!At(delimiter))
             Expect(",");
     }
-    Expect(delim);
+    Expect(delimiter);
 }
 
-bool NJS::Parser::ParseReferenceInfoList(std::vector<ReferenceInfo> &infos, const std::string &delim)
+bool NJS::Parser::ParseReferenceInfoList(std::vector<ReferenceInfo> &infos, const std::string &delimiter)
 {
-    while (!At(delim) && !AtEof())
+    while (!At(delimiter))
     {
         if (NextAt("..."))
         {
-            Expect(delim);
+            Expect(delimiter);
             return true;
         }
         infos.emplace_back(ParseReferenceInfo());
-        if (!At(delim))
+        if (!At(delimiter))
             Expect(",");
     }
-    Expect(delim);
+    Expect(delimiter);
     return false;
+}
+
+void NJS::Parser::ParseReferenceInfoMap(
+    std::vector<std::pair<std::string, ReferenceInfo>> &infos,
+    const std::string &delimiter)
+{
+    while (!At(delimiter))
+    {
+        const auto is_const = NextAt("const");
+        const auto is_reference = NextAt("&");
+        const auto name = Expect(TokenType_Symbol).String;
+        Expect(":");
+
+        infos.emplace_back(name, ReferenceInfo(ParseType(), is_const, is_reference));
+
+        if (!At(delimiter))
+            Expect(",");
+    }
+    Expect(delimiter);
 }

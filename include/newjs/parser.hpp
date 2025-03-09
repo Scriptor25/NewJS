@@ -62,9 +62,12 @@ namespace NJS
         TypePtr ParseStructType();
         TypePtr ParseFunctionType();
         ReferenceInfo ParseReferenceInfo();
-        bool ParseTypeList(std::vector<TypePtr> &types, const std::string &delim);
-        void ParseTypeMap(std::vector<std::pair<std::string, TypePtr>> &types, const std::string &delim);
-        bool ParseReferenceInfoList(std::vector<ReferenceInfo> &infos, const std::string &delim);
+        bool ParseTypeList(std::vector<TypePtr> &types, const std::string &delimiter);
+        void ParseTypeMap(std::vector<std::pair<std::string, TypePtr>> &types, const std::string &delimiter);
+        bool ParseReferenceInfoList(std::vector<ReferenceInfo> &infos, const std::string &delimiter);
+        void ParseReferenceInfoMap(
+            std::vector<std::pair<std::string, ReferenceInfo>> &infos,
+            const std::string &delimiter);
 
         ParameterPtr ParseParameter(bool is_const, bool is_reference);
         bool ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string &delimiter);
