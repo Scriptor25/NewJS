@@ -137,7 +137,7 @@ function render_line(args: void[]): void[] {
     fprintf(std_err, "[%4d / %4d]\n", j + 1:u32, self.image_height)
     fflush(std_err)
 
-    srand(j * 123)
+    srand(j * self.image_width)
 
     for (let i: u32; i < self.image_width; ++i) {
         let pixel_color: color
@@ -162,22 +162,28 @@ export function render(&self: camera, world: hittable[]) {
     initialize(self)
 
     let img = ppm.create("./out.ppm", self.image_width, self.image_height)
-    const ts: pair<pthread_t, line_arg_t>[] = malloc(self.image_height * sizeof<pair<pthread_t, line_arg_t> >)
-    for (let j: u32; j < self.image_height; ++j) {
-        ts[j].snd = {
-            self,
-            world,
-            img,
-            j,
+
+    const THREAD_COUNT: u32 = 10
+    const ts: pair<pthread_t, line_arg_t>[] = malloc(THREAD_COUNT * sizeof<pair<pthread_t, line_arg_t> >)
+    for (let j: u32; j < self.image_height; j += THREAD_COUNT) {
+        for (let x: u32; x < THREAD_COUNT && j + x < self.image_height; ++x) {
+            ts[x].snd = {
+                self,
+                world,
+                img,
+                j: j + x,
+            }
+            pthread.create(ts[x].fst, 0, render_line, &ts[x].snd)
         }
-        pthread.create(ts[j].fst, 0, render_line, &ts[j].snd)
+        for (let x: u32; x < THREAD_COUNT; ++x)
+            pthread.join(ts[x].fst, 0)
+        ppm.flush(img)
     }
-    for (let j: u32; j < self.image_height; ++j)
-        pthread.join(ts[j].fst, 0)
     free(ts)
+
     ppm.flush(img)
     ppm.close(img)
 
-    fprintf(std_err, "\rDone         \n")
+    fprintf(std_err, "Done\n")
     fflush(std_err)
 }
