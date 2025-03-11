@@ -5,6 +5,7 @@ import record from "./record.njs"
 
 type metal = {
     scatter: (const &metal, const &ray, const &record, &color, &ray) => u1,
+
     albedo: color,
     fuzz: f64,
 }
@@ -12,7 +13,7 @@ type metal = {
 function scatter(const &self: metal, const &r_in: ray, const &rec: record, &attenuation: color, &scattered: ray): u1 {
     let reflected = vec3.reflect(r_in.direction, rec.normal)
     reflected = vec3.unit_vector(reflected) + (self.fuzz * vec3.random_unit_vector())
-    scattered = { origin: rec.p, direction: reflected }
+    scattered = ray.create(rec.p, reflected, 0)
     attenuation = self.albedo
     return vec3.dot(scattered.direction, rec.normal) > 0
 }
@@ -20,6 +21,7 @@ function scatter(const &self: metal, const &r_in: ray, const &rec: record, &atte
 export function create(const &albedo: color, fuzz: f64): metal {
     return {
         scatter,
+    
         albedo,
         fuzz,
     }

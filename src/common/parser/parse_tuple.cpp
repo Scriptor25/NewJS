@@ -1,5 +1,6 @@
 #include <newjs/ast.hpp>
 #include <newjs/parser.hpp>
+#include <newjs/type.hpp>
 
 NJS::ExpressionPtr NJS::Parser::ParseTupleExpression()
 {
@@ -19,7 +20,14 @@ NJS::ExpressionPtr NJS::Parser::ParseTupleExpression()
 
     TypePtr type;
     if (NextAt(":"))
+    {
         type = ParseType();
+        if (!type->IsArray() && !type->IsTuple())
+            Error(
+                where,
+                "invalid type postfix for tuple or array expression, must be tuple- or array-like, but is {}",
+                type);
+    }
 
     return std::make_shared<TupleExpression>(where, type, elements);
 }

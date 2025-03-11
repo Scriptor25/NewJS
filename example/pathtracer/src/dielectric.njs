@@ -35,7 +35,7 @@ function scatter(const &self: dielectric, const &r_in: ray, const &rec: record, 
     else
         direction = vec3.refract(unit_direction, rec.normal, ri)
 
-    scattered = { origin: rec.p, direction }
+    scattered = ray.create(rec.p, direction, 0)
     attenuation = self.albedo
     return true
 }

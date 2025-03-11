@@ -1,5 +1,5 @@
-#infinity "(1.0:f64/0.0:f64)"
-#pi "(3.1415926535897932385:f64)"
+#infinity "(1.0 / 0.0)"
+#pi       "(3.1415926535897932385)"
 
 extern let rand_max: i32
 extern function rand(): i32

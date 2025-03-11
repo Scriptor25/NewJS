@@ -128,7 +128,7 @@ function get_ray(const &self: camera, i: u32, j: u32): ray {
     const direction = pixel_sample - origin
 	const time = common.random()
 
-    return { origin, direction, time }
+    return ray.create(origin, direction, time)
 }
 
 type line_arg_t = {

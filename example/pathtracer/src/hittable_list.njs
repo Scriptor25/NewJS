@@ -15,13 +15,13 @@ type hittable_list = {
 }
 
 function hit(const &self: hittable_list, const &r: ray, ray_t: interval, &rec: record): u1 {
-    let temp_rec: record
+    let temp_rec = record.create()
     let hit_anything = false
     let closest_so_far = ray_t.max
 
     for (let i = 0; i < self.size; ++i) {
-        const object = self.objects[i]
-        if (hittable.hit(object, r, { min: ray_t.min, max: closest_so_far }, temp_rec)) {
+        const &object = self.objects[i]
+        if (hittable.hit(object, r, interval.create(ray_t.min, closest_so_far), temp_rec)) {
             hit_anything = true
             closest_so_far = temp_rec.t
             rec = temp_rec
@@ -40,8 +40,5 @@ export function create(): hittable_list {
     return {
         hit,
         add,
-        
-        objects: 0,
-        size: 0,
     }
 }

@@ -13,7 +13,7 @@ NJS::ValuePtr NJS::Builder::CreateGlobal(
     const auto global = new llvm::GlobalVariable(
         GetModule(),
         value_type,
-        is_const,
+        false,
         llvm::GlobalValue::ExternalLinkage,
         initializer
             ? initializer

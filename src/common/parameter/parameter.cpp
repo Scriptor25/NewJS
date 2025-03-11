@@ -48,7 +48,7 @@ void NJS::Parameter::CreateVars(
 
         variable = builder.CreateGlobal(name, type, is_const, value != nullptr, const_value);
         if (value && !const_value)
-            variable->Store(value);
+            variable->StoreNoError(value);
         return;
     }
 

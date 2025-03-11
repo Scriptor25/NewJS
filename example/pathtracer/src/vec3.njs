@@ -157,11 +157,11 @@ export function random_on_hemisphere(const &normal: vec3): vec3 {
 
 export function random_in_unit_disk(): vec3 {
     for (;;) {
-        const p = [
+        const p = create(
             common.random_range(-1, 1),
             common.random_range(-1, 1),
-            0.0,
-        ]:vec3
+            0,
+        )
         if (p.length_squared() < 1.0)
             return p
     }

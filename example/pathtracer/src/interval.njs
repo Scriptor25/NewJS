@@ -42,6 +42,6 @@ export function create(min: f64, max: f64): interval {
     }
 }
 
-export let empty: interval     = create( infinity, -infinity)
-export let universe: interval  = create(-infinity,  infinity)
-export let intensity: interval = create(    0.000,     0.999)
+export const empty: interval     = create( infinity, -infinity)
+export const universe: interval  = create(-infinity,  infinity)
+export const intensity: interval = create(    0.000,     0.999)
