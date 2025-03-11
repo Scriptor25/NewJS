@@ -6,12 +6,15 @@ extern function fmin(a: f64, b: f64): f64
 
 type vec3 = {
     near_zero: (const &vec3) => u1,
+    length_squared: (const &vec3) => f64,
     length: (const &vec3) => f64,
 
     e: f64[3],
 }
 
 type point3 = vec3
+
+export function create(e0: f64, e1: f64, e2: f64): vec3
 
 export function operator[(&self: vec3, index: i64): &f64 {
     return self.e[index]
@@ -22,11 +25,11 @@ export function operator[(const &self: vec3, index: i64): const &f64 {
 }
 
 export function operator-(const &self: vec3): vec3 {
-    return [
+    return create(
         -self.e[0],
         -self.e[1],
         -self.e[2],
-    ]
+    )
 }
 
 export function operator+=(&self: vec3, const &other: vec3): &vec3 {
@@ -48,35 +51,35 @@ export function operator/=(&self: vec3, other: f64): &vec3 {
 }
 
 export function operator+(const &a: vec3, const &b: vec3): vec3 {
-    return [
+    return create(
         a.e[0] + b.e[0],
         a.e[1] + b.e[1],
         a.e[2] + b.e[2],
-    ]
+    )
 }
 
 export function operator-(const &a: vec3, const &b: vec3): vec3 {
-    return [
+    return create(
         a.e[0] - b.e[0],
         a.e[1] - b.e[1],
         a.e[2] - b.e[2],
-    ]
+    )
 }
 
 export function operator*(const &a: vec3, const &b: vec3): vec3 {
-    return [
+    return create(
         a.e[0] * b.e[0],
         a.e[1] * b.e[1],
         a.e[2] * b.e[2],
-    ]
+    )
 }
 
 export function operator*(a: f64, const &b: vec3): vec3 {
-    return [
+    return create(
         a * b.e[0],
         a * b.e[1],
         a * b.e[2],
-    ]
+    )
 }
 
 export function operator*(const &a: vec3, b: f64): vec3 {
@@ -109,11 +112,11 @@ export function dot(const &a: vec3, const &b: vec3): f64 {
 }
 
 export function cross(const &a: vec3, const &b: vec3): vec3 {
-    return [
+    return create(
         a.e[1] * b.e[2] - a.e[2] * b.e[1],
         a.e[2] * b.e[0] - a.e[0] * b.e[2],
         a.e[0] * b.e[1] - a.e[1] * b.e[0],
-    ]
+    )
 }
 
 export function unit_vector(const &v: vec3): vec3 {
@@ -121,19 +124,19 @@ export function unit_vector(const &v: vec3): vec3 {
 }
 
 export function random_vector(): vec3 {
-    return [
+    return create(
         common.random(),
         common.random(),
         common.random(),
-    ]
+    )
 }
 
 export function random_range_vector(min: f64, max: f64): vec3 {
-    return [
+    return create(
         common.random_range(min, max),
         common.random_range(min, max),
         common.random_range(min, max),
-    ]
+    )
 }
 
 export function random_unit_vector(): vec3 {
@@ -178,6 +181,7 @@ export function refract(const &v: vec3, const &n: vec3, eta: f64): vec3 {
 export function create(e0: f64, e1: f64, e2: f64): vec3 {
     return {
         near_zero,
+        length_squared,
         length,
 
         e: [e0, e1, e2],
@@ -187,6 +191,7 @@ export function create(e0: f64, e1: f64, e2: f64): vec3 {
 export function empty(): vec3 {
     return {
         near_zero,
+        length_squared,
         length,
     }
 }

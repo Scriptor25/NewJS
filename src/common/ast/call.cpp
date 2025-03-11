@@ -41,7 +41,22 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
         ] = function_type->GetParameter(0);
 
         if (type_ == object->GetType())
+        {
+            if (is_reference_)
+            {
+                if (!is_const_ && object->IsConst())
+                    Error(
+                        Where,
+                        "cannot call optional-self style function requiring non-constant operand with constant caller");
+                if (!object->IsLValue())
+                {
+                    const auto value = builder.CreateAlloca(object->GetType(), true);
+                    value->StoreNoError(object);
+                    object = value;
+                }
+            }
             first_argument = is_reference_ ? object->GetPointer() : object->Load();
+        }
     }
 
     if (!first_argument)

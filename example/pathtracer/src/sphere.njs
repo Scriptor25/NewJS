@@ -35,7 +35,7 @@ function hit(const &self: sphere, const &r: ray, ray_t: interval, &rec: record):
     }
 
     rec.t = root
-    rec.p = ray.at(r, rec.t)
+    rec.p = r.at(rec.t)
     rec.mat = self.mat
 
     const outward_normal = (rec.p - center) / self.radius
