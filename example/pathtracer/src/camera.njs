@@ -1,8 +1,9 @@
 import color    from "./color.njs"
 import common   from "./common.njs"
 import hittable from "./hittable.njs"
+import interval from "./interval.njs"
 import material from "./material.njs"
-import math     from "./math.njs"
+import vec3     from "./vec3.njs"
 import ppm      from "./ppm.njs"
 import pthread  from "./pthread.njs"
 import ray      from "./ray.njs"
@@ -18,6 +19,12 @@ extern function fflush(stream: FILE[])
 extern function tan(x: f64): f64
 
 type camera = {
+    initialize: (&camera) => void,
+    get_ray: (const &camera, u32, u32) => ray,
+    defocus_disk_sample: (const &camera) => point3,
+    ray_color: (const &camera, ray, u32, hittable[]) => color,
+    render: (&camera, hittable[]) => void,
+
     aspect_ratio: f64,
 
     image_width: u32,
@@ -52,6 +59,7 @@ type camera = {
 
 function initialize(&self: camera) {
     self.image_height = self.image_width / self.aspect_ratio
+    self.image_height = max_of<u32>(self.image_height, 1)
 
     self.pixel_sample_scale = 1.0 / self.samples_per_pixel
 
@@ -62,9 +70,9 @@ function initialize(&self: camera) {
     const viewport_height = 2 * h * self.focus_dist
     const viewport_width = viewport_height * ((self.image_width as f64) / (self.image_height as f64))
 
-    self.w = math.unit_vector(self.lookfrom - self.lookat)
-    self.u = math.unit_vector(math.cross(self.vup, self.w))
-    self.v = math.cross(self.w, self.u)
+    self.w = vec3.unit_vector(self.lookfrom - self.lookat)
+    self.u = vec3.unit_vector(vec3.cross(self.vup, self.w))
+    self.v = vec3.cross(self.w, self.u)
 
     const viewport_u = viewport_width * self.u
     const viewport_v = -viewport_height * self.v
@@ -82,29 +90,29 @@ function initialize(&self: camera) {
 
 function ray_color(const &self: camera, r: ray, depth: u32, world: hittable[]): color {
     if (!depth)
-        return [ 0.0, 0.0, 0.0 ]
+        return vec3.empty()
 
-    let rec: record
+    let rec = record.create()
 
-    if (hittable.hit(world, r, { min: 0.001, max: infinity }, rec)) {
-        let attenuation: color
-        let scattered: ray
+    if (hittable.hit(world, r, interval.create(0.001, infinity), rec)) {
+        let attenuation = vec3.empty()
+        let scattered = ray.empty()
         if (material.scatter(rec.mat, r, rec, attenuation, scattered))
-            return attenuation * ray_color(self, scattered, depth - 1, world)
-        return [ 0.0, 0.0, 0.0 ]
+            return attenuation * self.ray_color(scattered, depth - 1, world)
+        return vec3.empty()
     }
 
-    const unit_direction = math.unit_vector(r.direction)
-    const a = 0.5 * (unit_direction[1] + 1.0)
-    return (1.0 - a) * [ 1.0, 1.0, 1.0 ]:vec3 + a * [ 0.5, 0.7, 1.0 ]:vec3
+    const unit_direction = vec3.unit_vector(r.direction)
+    const a = 0.5 * (unit_direction[1] + 1)
+    return (1 - a) * vec3.create(1, 1, 1) + a * vec3.create(0.5, 0.7, 1)
 }
 
 function sample_square(): vec3 {
-    return [ common.random() - 0.5, common.random() - 0.5, 0.0 ]
+    return vec3.create(common.random() - 0.5, common.random() - 0.5, 0)
 }
 
 function defocus_disk_sample(const &self: camera): point3 {
-    const p = math.random_in_unit_disk()
+    const p = vec3.random_in_unit_disk()
     return self.center + (p[0] * self.defocus_disk_u) + (p[1] * self.defocus_disk_v)
 }
 
@@ -116,10 +124,11 @@ function get_ray(const &self: camera, i: u32, j: u32): ray {
 
     const origin = (self.defocus_angle <= 0)
                  ? self.center
-                 : defocus_disk_sample(self)
+                 : self.defocus_disk_sample()
     const direction = pixel_sample - origin
+	const time = common.random()
 
-    return { origin, direction }
+    return { origin, direction, time }
 }
 
 type line_arg_t = {
@@ -142,7 +151,7 @@ function render_line(args: void[]): void[] {
     for (let i: u32; i < self.image_width; ++i) {
         let pixel_color: color
         for (let sample = 0; sample < self.samples_per_pixel; ++sample) {
-            pixel_color += ray_color(self, get_ray(self, i, j), self.max_depth, world)
+            pixel_color += self.ray_color(self.get_ray(i, j), self.max_depth, world)
         }
         color.write_color(img, i, j, self.pixel_sample_scale * pixel_color)
     }
@@ -158,8 +167,8 @@ type<F, S> pair = {
 extern function malloc(count: u64): void[]
 extern function free(block: void[]): void
 
-export function render(&self: camera, world: hittable[]) {
-    initialize(self)
+function render(&self: camera, world: hittable[]) {
+    self.initialize()
 
     let img = ppm.create("./out.ppm", self.image_width, self.image_height)
 
@@ -177,13 +186,23 @@ export function render(&self: camera, world: hittable[]) {
         }
         for (let x: u32; x < THREAD_COUNT; ++x)
             pthread.join(ts[x].fst, 0)
-        ppm.flush(img)
+        img.flush()
     }
     free(ts)
 
-    ppm.flush(img)
-    ppm.close(img)
+    img.flush()
+    img.close()
 
     fprintf(std_err, "Done\n")
     fflush(std_err)
+}
+
+export function create(): camera {
+    return {
+        initialize,
+        get_ray,
+        defocus_disk_sample,
+        ray_color,
+        render,
+    }
 }

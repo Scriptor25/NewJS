@@ -16,12 +16,10 @@ export function random_range(min: f64, max: f64): f64 {
     return min + (max - min) * random()
 }
 
-/*
-function<T> min(a: T, b: T): T {
+function<T> min_of(a: T, b: T): T {
     return a < b ? a : b
 }
 
-function<T> max(a: T, b: T): T {
+function<T> max_of(a: T, b: T): T {
     return a > b ? a : b
 }
-*/

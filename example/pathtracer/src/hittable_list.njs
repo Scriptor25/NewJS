@@ -6,10 +6,10 @@ import record    from "./record.njs"
 extern function realloc(block: void[], count: u32): void[]
 extern function free(block: void[])
 
-type hittable_list
-
 type hittable_list = {
     hit: (const &hittable_list, const &ray, interval, &record) => u1,
+    add: (&hittable_list, hittable[const]) => void,
+
     objects: hittable[const][],
     size: u64,
 }
@@ -31,21 +31,17 @@ function hit(const &self: hittable_list, const &r: ray, ray_t: interval, &rec: r
     return hit_anything
 }
 
-export function create(): hittable_list {
-    return {
-        hit,
-        objects: 0,
-        size: 0,
-    }
-}
-
-export function add(&self: hittable_list, object: hittable[const]) {
+function add(&self: hittable_list, object: hittable[const]) {
     self.objects = realloc(self.objects, (self.size + 1) * sizeof<hittable[const]>)
     self.objects[self.size++] = object
 }
 
-function destroy(&self: hittable_list) {
-    free(self.objects)
-    self.objects = 0
-    self.size = 0
+export function create(): hittable_list {
+    return {
+        hit,
+        add,
+        
+        objects: 0,
+        size: 0,
+    }
 }

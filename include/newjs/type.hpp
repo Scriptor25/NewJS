@@ -29,7 +29,8 @@ namespace NJS
 
         std::ostream &Print(std::ostream &stream) const;
 
-        [[nodiscard]] std::string GetString() const;
+        [[nodiscard]] TypeContext &GetContext() const;
+        [[nodiscard]] const std::string &GetString() const;
 
         template<typename T = llvm::Type>
         T *GetLLVM(const Builder &builder)

@@ -2,17 +2,17 @@
 #include <newjs/type.hpp>
 #include <newjs/type_context.hpp>
 
-const NJS::TypePtr &NJS::TypeContext::GetType(const SourceLocation &where, const std::string &string) const
+const NJS::TypePtr &NJS::TypeContext::GetType(const std::string &string) const
 {
     if (!m_TemplateStack.empty())
     {
         if (m_TemplateStack.back().contains(string))
             return m_TemplateStack.back().at(string);
-        Error(where, "no type {}", string);
+        Error("no type {}", string);
     }
     if (m_Types.contains(string))
         return m_Types.at(string);
-    Error(where, "no type {}", string);
+    Error("no type {}", string);
 }
 
 NJS::TypePtr &NJS::TypeContext::DefType(const std::string &string)
@@ -52,7 +52,8 @@ NJS::ArrayTypePtr NJS::TypeContext::GetArrayType(const TypePtr &element_type, un
     return GetType<ArrayType>(element_type, count);
 }
 
-NJS::StructTypePtr NJS::TypeContext::GetUnsafeStructType(const std::vector<std::pair<std::string, TypePtr>> &element_types)
+NJS::StructTypePtr NJS::TypeContext::GetUnsafeStructType(
+    const std::vector<std::pair<std::string, TypePtr>> &element_types)
 {
     std::vector<std::pair<std::string, ReferenceInfo>> elements(element_types.size());
     for (unsigned i = 0; i < element_types.size(); ++i)

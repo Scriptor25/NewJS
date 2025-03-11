@@ -18,7 +18,14 @@ NJS::ValuePtr NJS::TupleExpression::PGenLLVM(Builder &builder, const TypePtr &ex
     if (Type)
         result_type = Type;
     else if (expected_type)
+    {
+        if (!expected_type->IsArray() && !expected_type->IsTuple())
+            Error(
+                Where,
+                "invalid expected type for tuple or array expression, must be tuple- or array-like, but is {}",
+                expected_type);
         result_type = expected_type;
+    }
 
     const auto get_element_type = [&](const unsigned index)
     {

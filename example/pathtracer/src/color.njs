@@ -1,5 +1,5 @@
 import interval from "./interval.njs"
-import math     from "./math.njs"
+import vec3     from "./vec3.njs"
 import ppm      from "./ppm.njs"
 
 type color = vec3
@@ -17,9 +17,9 @@ export function write_color(&img: image_t, x1: u32, x2: u32, const &pixel_color:
     const fg = linear_to_gamma(pixel_color[1])
     const fb = linear_to_gamma(pixel_color[2])
 
-    const ir: i32 = (256 * interval.clamp(interval.intensity, fr))
-    const ig: i32 = (256 * interval.clamp(interval.intensity, fg))
-    const ib: i32 = (256 * interval.clamp(interval.intensity, fb))
+    const ir: i32 = (256 * interval.intensity.clamp(fr))
+    const ig: i32 = (256 * interval.intensity.clamp(fg))
+    const ib: i32 = (256 * interval.intensity.clamp(fb))
 
-    ppm.put(img, x1, x2, ir, ig, ib)
+    img.put(x1, x2, ir, ig, ib)
 }

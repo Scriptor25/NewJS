@@ -4,28 +4,42 @@ extern function sqrt(x: f64): f64
 extern function fabs(x: f64): f64
 extern function fmin(a: f64, b: f64): f64
 
-type vec3 = f64[3]
+type vec3 = {
+    near_zero: (const &vec3) => u1,
+    length: (const &vec3) => f64,
+
+    e: f64[3],
+}
+
 type point3 = vec3
+
+export function operator[(&self: vec3, index: i64): &f64 {
+    return self.e[index]
+}
+
+export function operator[(const &self: vec3, index: i64): const &f64 {
+    return self.e[index]
+}
 
 export function operator-(const &self: vec3): vec3 {
     return [
-        -self[0],
-        -self[1],
-        -self[2],
+        -self.e[0],
+        -self.e[1],
+        -self.e[2],
     ]
 }
 
-export function operator+=(&self: vec3, other: vec3): &vec3 {
-    self[0] += other[0]
-    self[1] += other[1]
-    self[2] += other[2]
+export function operator+=(&self: vec3, const &other: vec3): &vec3 {
+    self.e[0] += other.e[0]
+    self.e[1] += other.e[1]
+    self.e[2] += other.e[2]
     return self
 }
 
 export function operator*=(&self: vec3, other: f64): &vec3 {
-    self[0] *= other
-    self[1] *= other
-    self[2] *= other
+    self.e[0] *= other
+    self.e[1] *= other
+    self.e[2] *= other
     return self
 }
 
@@ -33,50 +47,35 @@ export function operator/=(&self: vec3, other: f64): &vec3 {
     return self *= 1.0 / other
 }
 
-export function length_squared(const &v: vec3): f64 {
-    return v[0] * v[0] + v[1] * v[1] + v[2] * v[2]
-}
-
-export function length(const &v: vec3): f64 {
-    return sqrt(length_squared(v))
-}
-
-export function near_zero(const &v: vec3): u1 {
-    const s = 1e-8
-    return (fabs(v[0]) < s)
-        && (fabs(v[1]) < s)
-        && (fabs(v[2]) < s)
-}
-
 export function operator+(const &a: vec3, const &b: vec3): vec3 {
     return [
-        a[0] + b[0],
-        a[1] + b[1],
-        a[2] + b[2],
+        a.e[0] + b.e[0],
+        a.e[1] + b.e[1],
+        a.e[2] + b.e[2],
     ]
 }
 
 export function operator-(const &a: vec3, const &b: vec3): vec3 {
     return [
-        a[0] - b[0],
-        a[1] - b[1],
-        a[2] - b[2],
+        a.e[0] - b.e[0],
+        a.e[1] - b.e[1],
+        a.e[2] - b.e[2],
     ]
 }
 
 export function operator*(const &a: vec3, const &b: vec3): vec3 {
     return [
-        a[0] * b[0],
-        a[1] * b[1],
-        a[2] * b[2],
+        a.e[0] * b.e[0],
+        a.e[1] * b.e[1],
+        a.e[2] * b.e[2],
     ]
 }
 
 export function operator*(a: f64, const &b: vec3): vec3 {
     return [
-        a * b[0],
-        a * b[1],
-        a * b[2],
+        a * b.e[0],
+        a * b.e[1],
+        a * b.e[2],
     ]
 }
 
@@ -88,17 +87,32 @@ export function operator/(const &a: vec3, b: f64): vec3 {
     return (1 / b) * a
 }
 
+function length_squared(const &self: vec3): f64 {
+    return self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
+}
+
+function length(const &self: vec3): f64 {
+    return sqrt(self.length_squared())
+}
+
+function near_zero(const &self: vec3): u1 {
+    const s = 1e-8
+    return (fabs(self.e[0]) < s)
+        && (fabs(self.e[1]) < s)
+        && (fabs(self.e[2]) < s)
+}
+
 export function dot(const &a: vec3, const &b: vec3): f64 {
-    return a[0] * b[0]
-         + a[1] * b[1]
-         + a[2] * b[2]
+    return a.e[0] * b.e[0]
+         + a.e[1] * b.e[1]
+         + a.e[2] * b.e[2]
 }
 
 export function cross(const &a: vec3, const &b: vec3): vec3 {
     return [
-        a[1] * b[2] - a[2] * b[1],
-        a[2] * b[0] - a[0] * b[2],
-        a[0] * b[1] - a[1] * b[0],
+        a.e[1] * b.e[2] - a.e[2] * b.e[1],
+        a.e[2] * b.e[0] - a.e[0] * b.e[2],
+        a.e[0] * b.e[1] - a.e[1] * b.e[0],
     ]
 }
 
@@ -125,7 +139,7 @@ export function random_range_vector(min: f64, max: f64): vec3 {
 export function random_unit_vector(): vec3 {
     for (;;) {
         const p = random_range_vector(-1, 1)
-        const len_sq = length_squared(p)
+        const len_sq = p.length_squared()
         if (1e-160 < len_sq && len_sq <= 1)
             return p / sqrt(len_sq)
     }
@@ -145,7 +159,7 @@ export function random_in_unit_disk(): vec3 {
             common.random_range(-1, 1),
             0.0,
         ]:vec3
-        if (length_squared(p) < 1.0)
+        if (p.length_squared() < 1.0)
             return p
     }
 }
@@ -157,6 +171,22 @@ export function reflect(const &v: vec3, const &n: vec3): vec3 {
 export function refract(const &v: vec3, const &n: vec3, eta: f64): vec3 {
     const cos_theta = fmin(dot(-v, n), 1.0)
     const r_out_perp = eta * (v + cos_theta * n)
-    const r_out_para = -sqrt(fabs(1.0 - length_squared(r_out_perp))) * n
+    const r_out_para = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * n
     return r_out_perp + r_out_para
+}
+
+export function create(e0: f64, e1: f64, e2: f64): vec3 {
+    return {
+        near_zero,
+        length,
+
+        e: [e0, e1, e2],
+    }
+}
+
+export function empty(): vec3 {
+    return {
+        near_zero,
+        length,
+    }
 }

@@ -111,6 +111,9 @@ namespace NJS
     std::ostream &Spacing(std::ostream &stream);
 
     std::string TypeString(const TypePtr &type);
+
+    bool operator==(TypePtr a, TypePtr b);
+    bool operator!=(const TypePtr &a, const TypePtr &b);
 }
 
 template<>

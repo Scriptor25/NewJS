@@ -11,7 +11,7 @@ namespace NJS
     class TypeContext
     {
     public:
-        [[nodiscard]] const TypePtr &GetType(const SourceLocation &where, const std::string &string) const;
+        [[nodiscard]] const TypePtr &GetType(const std::string &string) const;
         TypePtr &DefType(const std::string &string);
 
         IncompleteTypePtr GetIncompleteType(const std::string &name = {});

@@ -32,11 +32,16 @@ void NJS::Parser::ParseTypeAlias()
     if (m_IsTemplate)
         ResetBuffer();
 
+    auto &ref = m_IsTemplate
+                    ? *static_cast<TypePtr *>(nullptr)
+                    : m_TypeContext.DefType(name);
+
+    if (!m_IsTemplate && !ref)
+        ref = m_TypeContext.GetIncompleteType(name);
+
     TypePtr type;
     if ((m_IsTemplate && (Expect("="), true)) || NextAt("="))
         type = ParseType();
-    else
-        type = m_TypeContext.GetIncompleteType(name);
 
     if (m_IsTemplate)
     {
@@ -46,6 +51,6 @@ void NJS::Parser::ParseTypeAlias()
         return;
     }
 
-    if (auto &ref = m_TypeContext.DefType(name); !ref || ref->IsIncomplete())
+    if (type && ref->IsIncomplete())
         ref = type;
 }

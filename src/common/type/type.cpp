@@ -51,12 +51,43 @@ NJS::TypePtr NJS::GetHigherOrderOf(
     Error("cannot determine higher order type of {} and {}", type_a, type_b);
 }
 
+bool NJS::operator==(TypePtr a, TypePtr b)
+{
+    if (a.get() == b.get())
+        return true;
+    if (!a || !b)
+        return false;
+    if (a->IsIncomplete() && b->IsIncomplete())
+        return false;
+    if (a->IsIncomplete())
+    {
+        a = a->GetContext().GetType(a->GetString());
+        return a == b;
+    }
+    if (b->IsIncomplete())
+    {
+        b = b->GetContext().GetType(b->GetString());
+        return a == b;
+    }
+    return false;
+}
+
+bool NJS::operator!=(const TypePtr &a, const TypePtr &b)
+{
+    return !(a == b);
+}
+
 std::ostream &NJS::Type::Print(std::ostream &stream) const
 {
     return stream << m_String;
 }
 
-std::string NJS::Type::GetString() const
+NJS::TypeContext &NJS::Type::GetContext() const
+{
+    return m_TypeContext;
+}
+
+const std::string &NJS::Type::GetString() const
 {
     return m_String;
 }

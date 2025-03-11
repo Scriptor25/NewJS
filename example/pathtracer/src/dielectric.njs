@@ -1,16 +1,15 @@
 import color  from "./color.njs"
 import common from "./common.njs"
-import math   from "./math.njs"
+import vec3   from "./vec3.njs"
 import ray    from "./ray.njs"
 import record from "./record.njs"
 
 extern function sqrt(x: f64): f64
 extern function fmin(a: f64, b: f64): f64
 
-type dielectric
-
 type dielectric = {
     scatter: (const &dielectric, const &ray, const &record, &color, &ray) => u1,
+
     albedo: color,
     refraction_index: f64,
 }
@@ -24,17 +23,17 @@ function reflectance(cosine: f64, refraction_index: f64): f64 {
 function scatter(const &self: dielectric, const &r_in: ray, const &rec: record, &attenuation: color, &scattered: ray): u1 {
     const ri = rec.front_face ? 1.0 / self.refraction_index : self.refraction_index
 
-    const unit_direction = math.unit_vector(r_in.direction)
-    const cos_theta = fmin(math.dot(-unit_direction, rec.normal), 1.0)
+    const unit_direction = vec3.unit_vector(r_in.direction)
+    const cos_theta = fmin(vec3.dot(-unit_direction, rec.normal), 1.0)
     const sin_theta = sqrt(1.0 - cos_theta * cos_theta)
 
     const cannot_refract = ri * sin_theta > 1.0
     let direction: vec3
 
     if (cannot_refract || reflectance(cos_theta, ri) > common.random())
-        direction = math.reflect(unit_direction, rec.normal)
+        direction = vec3.reflect(unit_direction, rec.normal)
     else
-        direction = math.refract(unit_direction, rec.normal, ri)
+        direction = vec3.refract(unit_direction, rec.normal, ri)
 
     scattered = { origin: rec.p, direction }
     attenuation = self.albedo
@@ -44,6 +43,7 @@ function scatter(const &self: dielectric, const &r_in: ray, const &rec: record, 
 export function create(const &albedo: color, refraction_index: f64): dielectric {
     return {
         scatter,
+        
         albedo,
         refraction_index,
     }

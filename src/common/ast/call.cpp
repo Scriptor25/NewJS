@@ -23,14 +23,43 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
     const auto function_type = Type::As<FunctionType>(callee->GetType());
     const auto parameter_count = function_type->GetParameterCount();
 
-    if (Arguments.size() < parameter_count)
-        Error(Where, "not enough arguments, {} < {}", Arguments.size(), parameter_count);
+    llvm::Value *first_argument{};
+    if (const auto member_expression = std::dynamic_pointer_cast<MemberExpression>(Callee);
+        member_expression && Arguments.size() == parameter_count - 1)
+    {
+        auto object = member_expression->Object->GenLLVM(builder, {});
+        if (member_expression->Dereference)
+        {
+            const auto pointer_type = Type::As<PointerType>(object->GetType());
+            object = LValue::Create(builder, pointer_type->GetElement(), object->Load(), pointer_type->IsConst());
+        }
 
-    if (Arguments.size() > parameter_count && !function_type->IsVarArg())
-        Error(Where, "too many arguments, {} > {}", Arguments.size(), parameter_count);
+        auto [
+            type_,
+            is_const_,
+            is_reference_
+        ] = function_type->GetParameter(0);
 
-    std::vector<llvm::Value *> arguments(Arguments.size());
-    for (unsigned i = 0; i < Arguments.size(); ++i)
+        if (type_ == object->GetType())
+            first_argument = is_reference_ ? object->GetPointer() : object->Load();
+    }
+
+    if (!first_argument)
+    {
+        if (Arguments.size() < parameter_count)
+            Error(Where, "not enough arguments, {} < {}", Arguments.size(), parameter_count);
+        if (Arguments.size() > parameter_count && !function_type->IsVarArg())
+            Error(Where, "too many arguments, {} > {}", Arguments.size(), parameter_count);
+    }
+
+    const auto has_first = !!first_argument;
+
+    std::vector<llvm::Value *> arguments(Arguments.size() + has_first);
+
+    if (has_first)
+        arguments[0] = first_argument;
+
+    for (unsigned i = has_first; i < arguments.size(); ++i)
     {
         auto [
             type_,
@@ -40,7 +69,7 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
                 ? function_type->GetParameter(i)
                 : ReferenceInfo();
 
-        auto &argument = Arguments[i];
+        auto &argument = Arguments[i - has_first];
         auto argument_value = argument->GenLLVM(builder, type_);
 
         if (!is_reference_)

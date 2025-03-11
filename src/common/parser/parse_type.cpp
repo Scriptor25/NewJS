@@ -68,7 +68,7 @@ NJS::TypePtr NJS::Parser::ParseType()
         else if (sym == "f64")
             type = m_TypeContext.GetFloatingPointType(64);
         else
-            type = m_TypeContext.GetType(where, sym);
+            type = m_TypeContext.GetType(sym);
     }
 
     while (true)
