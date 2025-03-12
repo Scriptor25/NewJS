@@ -27,6 +27,10 @@ namespace NJS
             const ReferenceInfo &result,
             const std::vector<ReferenceInfo> &parameters,
             bool is_var_arg);
+        FunctionTypePtr GetFunctionType(
+            const ReferenceInfo &result,
+            const std::vector<ParameterPtr> &parameters,
+            bool is_var_arg);
 
         IntegerTypePtr GetBooleanType();
         IntegerTypePtr GetCharType();

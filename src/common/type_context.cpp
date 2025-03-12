@@ -1,4 +1,5 @@
 #include <newjs/error.hpp>
+#include <newjs/parameter.hpp>
 #include <newjs/type.hpp>
 #include <newjs/type_context.hpp>
 
@@ -74,9 +75,20 @@ NJS::TupleTypePtr NJS::TypeContext::GetTupleType(const std::vector<TypePtr> &ele
 NJS::FunctionTypePtr NJS::TypeContext::GetFunctionType(
     const ReferenceInfo &result,
     const std::vector<ReferenceInfo> &parameters,
-    bool is_var_arg)
+    const bool is_var_arg)
 {
     return GetType<FunctionType>(result, parameters, is_var_arg);
+}
+
+NJS::FunctionTypePtr NJS::TypeContext::GetFunctionType(
+    const ReferenceInfo &result,
+    const std::vector<ParameterPtr> &parameters,
+    const bool is_var_arg)
+{
+    std::vector<ReferenceInfo> parameter_infos(parameters.size());
+    for (unsigned i = 0; i < parameters.size(); ++i)
+        parameter_infos[i] = parameters[i]->Info;
+    return GetFunctionType(result, parameter_infos, is_var_arg);
 }
 
 NJS::IntegerTypePtr NJS::TypeContext::GetBooleanType()

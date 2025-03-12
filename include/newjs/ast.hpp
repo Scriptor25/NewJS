@@ -37,6 +37,18 @@ namespace NJS
         void PGenLLVM(Builder &builder) const override;
     };
 
+    struct ClassStatement final : Statement
+    {
+        ClassStatement(SourceLocation where, std::string name);
+
+        std::ostream &Print(std::ostream &stream) const override;
+
+        std::string Name;
+
+    protected:
+        void PGenLLVM(Builder &builder) const override;
+    };
+
     struct ContinueStatement final : Statement
     {
         explicit ContinueStatement(SourceLocation where);

@@ -47,6 +47,8 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
         return ParseSwitchStatement();
     if (At("while"))
         return ParseWhileStatement();
+    if (At("class"))
+        return ParseClassStatement();
 
     return ParseExpression();
 }
