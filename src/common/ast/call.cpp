@@ -34,29 +34,8 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
             object = LValue::Create(builder, pointer_type->GetElement(), object->Load(), pointer_type->IsConst());
         }
 
-        auto [
-            type_,
-            is_const_,
-            is_reference_
-        ] = function_type->GetParameter(0);
-
-        if (type_ == object->GetType())
-        {
-            if (is_reference_)
-            {
-                if (!is_const_ && object->IsConst())
-                    Error(
-                        Where,
-                        "cannot call optional-self style function requiring non-constant operand with constant caller");
-                if (!object->IsLValue())
-                {
-                    const auto value = builder.CreateAlloca(object->GetType(), true);
-                    value->StoreNoError(object);
-                    object = value;
-                }
-            }
-            first_argument = is_reference_ ? object->GetPointer() : object->Load();
-        }
+        if (const auto info = function_type->GetParameter(0); info.Type == object->GetType())
+            first_argument = info.SolveFor(builder, object);
     }
 
     if (!first_argument)
@@ -76,39 +55,14 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
 
     for (unsigned i = has_first; i < arguments.size(); ++i)
     {
-        auto [
-            type_,
-            is_const_,
-            is_reference_
-        ] = i < parameter_count
-                ? function_type->GetParameter(i)
-                : ReferenceInfo();
+        auto info = i < parameter_count
+                        ? function_type->GetParameter(i)
+                        : ReferenceInfo();
 
         auto &argument = Arguments[i - has_first];
-        auto argument_value = argument->GenLLVM(builder, type_);
+        const auto argument_value = argument->GenLLVM(builder, info.Type);
 
-        if (!is_reference_)
-        {
-            if (type_)
-                argument_value = builder.CreateCast(argument_value, type_);
-            arguments[i] = argument_value->Load();
-            continue;
-        }
-
-        if (argument_value->GetType() != type_)
-            Error(Where, "type mismatch, {} != {}", argument_value->GetType(), type_);
-
-        if (argument_value->IsConst() && !is_const_)
-            Error(Where, "cannot pass constant value as mutable");
-
-        if (!argument_value->IsLValue())
-        {
-            const auto value = builder.CreateAlloca(argument_value->GetType(), true);
-            value->StoreNoError(argument_value);
-            argument_value = value;
-        }
-
-        arguments[i] = argument_value->GetPointer();
+        arguments[i] = info.SolveFor(builder, argument_value);
     }
 
     const auto result_value = builder.GetBuilder().CreateCall(

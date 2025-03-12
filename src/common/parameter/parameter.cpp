@@ -66,8 +66,7 @@ void NJS::Parameter::CreateVars(
     if (is_const)
     {
         value = builder.CreateCast(value, type);
-        const auto loaded = value->Load();
-        variable = RValue::Create(builder, type, loaded);
+        variable = RValue::Create(builder, type, value->Load());
         return;
     }
 

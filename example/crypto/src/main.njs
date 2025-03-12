@@ -1,34 +1,39 @@
-import { random_key, mix_keys, base64 } from "./key.njs"
+import { random, discrete_log, base64 } from "./key.njs"
 import { create_user } from "./user.njs"
 import { xor } from "./xor.njs"
 
-extern function println(str: i8[])
+extern function println(x: string)
 
-let global: i8[16]
-random_key(global, 4)
+const g = random()
+const p = 18446744073709551557:u64
 
-let user1 = create_user()
-let user2 = create_user()
+println(f"g = {g}, p = {p}")
 
-mix_keys(user1.pub, user1.pvt, global, 4)
-mix_keys(user2.pub, user2.pvt, global, 4)
+let user1: user_t = { pvt: random() }
+let user2: user_t = { pvt: random() }
 
-mix_keys(user1.key, user1.pvt, user2.pub, 4)
-mix_keys(user2.key, user2.pvt, user1.pub, 4)
+user1.pub = discrete_log(g, p, user1.pvt)
+user2.pub = discrete_log(g, p, user2.pvt)
+
+user1.key = discrete_log(user2.pub, p, user1.pvt)
+user2.key = discrete_log(user1.pub, p, user2.pvt)
+
+println(f"user1 = {user1}")
+println(f"user2 = {user2}")
 
 let dst: i8[1024]
 
-base64(dst, user1.key, 4)
-println(f"user 1: {dst}")
+base64(dst, &user1.key, 2)
+println(f"user1 key = {dst}")
 
-base64(dst, user2.key, 4)
-println(f"user 2: {dst}")
+base64(dst, &user2.key, 2)
+println(f"user2 key = {dst}")
 
 let src = "Hello World!"
 println(f"original: {src}")
 
-xor(dst, src, user1.key, 16)
+xor(dst, src, &user1.key, 8)
 println(f"encoded: {dst}")
 
-xor(dst, dst, user2.key, 16)
+xor(dst, dst, &user2.key, 8)
 println(f"decoded: {dst}")

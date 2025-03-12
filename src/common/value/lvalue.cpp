@@ -2,7 +2,11 @@
 #include <newjs/type.hpp>
 #include <newjs/value.hpp>
 
-NJS::ValuePtr NJS::LValue::Create(Builder &builder, const TypePtr &type, llvm::Value *pointer, const bool is_const)
+NJS::ValuePtr NJS::LValue::Create(
+    const Builder &builder,
+    const TypePtr &type,
+    llvm::Value *pointer,
+    const bool is_const)
 {
     return std::shared_ptr<LValue>(new LValue(builder, type, pointer, is_const));
 }
@@ -53,7 +57,7 @@ void NJS::LValue::StoreNoError(ValuePtr value) const
     GetBuilder().GetBuilder().CreateStore(value->Load(), m_Pointer);
 }
 
-NJS::LValue::LValue(Builder &builder, TypePtr type, llvm::Value *pointer, const bool is_const)
+NJS::LValue::LValue(const Builder &builder, TypePtr type, llvm::Value *pointer, const bool is_const)
     : Value(builder, std::move(type)),
       m_Pointer(pointer),
       m_IsConst(is_const)

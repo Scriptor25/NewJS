@@ -43,23 +43,13 @@ NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &e
     llvm::Value *struct_value = llvm::ConstantStruct::getNullValue(struct_type);
     for (auto &[element_name_, element_value_]: element_values)
     {
-        auto [
-            index_,
-            name_,
-            info_
-        ] = result_type->GetMember(element_name_);
-        auto [
-            type_,
-            is_const_,
-            is_reference_
-        ] = info_;
+        auto [index_, name_, info_] = result_type->GetMember(element_name_);
 
-        // TODO: check reference validity
+        const auto value_ = info_.SolveFor(builder, element_value_);
 
-        element_value_ = builder.CreateCast(element_value_, type_);
         struct_value = builder.GetBuilder().CreateInsertValue(
             struct_value,
-            is_reference_ ? element_value_->GetPointer() : element_value_->Load(),
+            value_,
             index_);
     }
 

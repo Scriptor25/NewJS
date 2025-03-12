@@ -11,7 +11,7 @@ llvm::Value *NJS::Builder::CreateAlloca(llvm::Type *type, const unsigned count) 
     return ptr;
 }
 
-NJS::ValuePtr NJS::Builder::CreateAlloca(const TypePtr &type, const bool is_const, const unsigned count)
+NJS::ValuePtr NJS::Builder::CreateAlloca(const TypePtr &type, const bool is_const, const unsigned count) const
 {
     return LValue::Create(*this, type, CreateAlloca(type->GetLLVM(*this), count), is_const);
 }

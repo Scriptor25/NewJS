@@ -13,37 +13,21 @@ NJS::ReturnStatement::ReturnStatement(SourceLocation where, ExpressionPtr value)
 
 void NJS::ReturnStatement::PGenLLVM(Builder &builder) const
 {
-    auto &[
-        type_,
-        is_const_,
-        is_reference_
-    ] = builder.CurrentFunctionResult();
+    auto &info = builder.CurrentFunctionResult();
 
     if (!Value)
     {
-        if (!type_->IsVoid())
-            Error(Where, "cannot return void for non-void return type {}", type_);
+        if (!info.Type->IsVoid())
+            Error(Where, "cannot return void for non-void return type {}", info.Type);
 
         builder.GetBuilder().CreateRetVoid();
         return;
     }
 
-    auto value = Value->GenLLVM(builder, type_);
+    const auto value = Value->GenLLVM(builder, info.Type);
+    const auto result = info.SolveFor(builder, value);
 
-    if (is_reference_)
-    {
-        if (value->GetType() != type_)
-            Error(Where, "type mismatch, {} != {}", value->GetType(), type_);
-
-        if (value->IsConst() && !is_const_)
-            Error(Where, "cannot pass constant value as mutable");
-
-        builder.GetBuilder().CreateRet(value->GetPointer());
-        return;
-    }
-
-    value = builder.CreateCast(value, type_);
-    builder.GetBuilder().CreateRet(value->Load());
+    builder.GetBuilder().CreateRet(result);
 }
 
 std::ostream &NJS::ReturnStatement::Print(std::ostream &stream) const

@@ -63,9 +63,9 @@ NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
                 continue;
             }
 
-            const auto const_ref = builder.CreateAlloca(value->GetType(), true);
-            const_ref->StoreNoError(value);
-            arguments.emplace_back(const_ref->GetPointer());
+            const auto alloc = builder.CreateAlloca(value->GetType(), true);
+            alloc->StoreNoError(value);
+            arguments.emplace_back(alloc->GetPointer());
             continue;
         }
 

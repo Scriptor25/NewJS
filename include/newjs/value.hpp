@@ -9,7 +9,7 @@ namespace NJS
     public:
         virtual ~Value() = default;
 
-        [[nodiscard]] Builder &GetBuilder() const;
+        [[nodiscard]] const Builder &GetBuilder() const;
         [[nodiscard]] TypePtr GetType() const;
 
         [[nodiscard]] virtual bool IsLValue() const = 0;
@@ -22,17 +22,17 @@ namespace NJS
         virtual void StoreNoError(ValuePtr value) const = 0;
 
     protected:
-        Value(Builder &builder, TypePtr type);
+        Value(const Builder &builder, TypePtr type);
 
     private:
-        Builder &m_Builder;
+        const Builder &m_Builder;
         TypePtr m_Type;
     };
 
     class RValue final : public Value
     {
     public:
-        static ValuePtr Create(Builder &builder, const TypePtr &type, llvm::Value *value);
+        static ValuePtr Create(const Builder &builder, const TypePtr &type, llvm::Value *value);
 
         [[nodiscard]] bool IsLValue() const override;
         [[nodiscard]] bool IsConst() const override;
@@ -44,7 +44,7 @@ namespace NJS
         void StoreNoError(ValuePtr value) const override;
 
     private:
-        RValue(Builder &builder, TypePtr type, llvm::Value *value);
+        RValue(const Builder &builder, TypePtr type, llvm::Value *value);
 
         llvm::Value *m_Value;
     };
@@ -52,7 +52,7 @@ namespace NJS
     class LValue final : public Value
     {
     public:
-        static ValuePtr Create(Builder &builder, const TypePtr &type, llvm::Value *pointer, bool is_const);
+        static ValuePtr Create(const Builder &builder, const TypePtr &type, llvm::Value *pointer, bool is_const);
 
         [[nodiscard]] bool IsLValue() const override;
         [[nodiscard]] bool IsConst() const override;
@@ -64,7 +64,7 @@ namespace NJS
         void StoreNoError(ValuePtr value) const override;
 
     private:
-        LValue(Builder &builder, TypePtr type, llvm::Value *pointer, bool is_const);
+        LValue(const Builder &builder, TypePtr type, llvm::Value *pointer, bool is_const);
 
         llvm::Value *m_Pointer;
         bool m_IsConst;

@@ -3,7 +3,7 @@
 #include <newjs/type_context.hpp>
 #include <newjs/value.hpp>
 
-NJS::ValuePtr NJS::Builder::CreateSubscript(ValuePtr array, ValuePtr index)
+NJS::ValuePtr NJS::Builder::CreateSubscript(ValuePtr array, const ValuePtr &index) const
 {
     if (auto [
             result_,
@@ -18,31 +18,13 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(ValuePtr array, ValuePtr index)
             {left_.GetLLVM(*this), right_.GetLLVM(*this)},
             false);
 
-        if (left_.IsReference && !array->IsLValue())
-        {
-            const auto value = CreateAlloca(array->GetType(), true);
-            value->StoreNoError(array);
-            array = value;
-        }
-
-        if (right_.IsReference && !index->IsLValue())
-        {
-            const auto value = CreateAlloca(index->GetType(), true);
-            value->StoreNoError(index);
-            index = value;
-        }
+        const auto array_value = left_.SolveFor(*this, array);
+        const auto index_value = right_.SolveFor(*this, index);
 
         const auto result_value = GetBuilder().CreateCall(
             function_type,
             callee_,
-            {
-                left_.IsReference
-                    ? array->GetPointer()
-                    : array->Load(),
-                right_.IsReference
-                    ? index->GetPointer()
-                    : index->Load()
-            });
+            {array_value, index_value});
         if (result_.IsReference)
             return LValue::Create(*this, result_.Type, result_value, result_.IsConst);
         return RValue::Create(*this, result_.Type, result_value);
@@ -110,7 +92,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(ValuePtr array, ValuePtr index)
     return RValue::Create(*this, element_type, element_value);
 }
 
-NJS::ValuePtr NJS::Builder::CreateSubscript(const ValuePtr &array, const unsigned index)
+NJS::ValuePtr NJS::Builder::CreateSubscript(const ValuePtr &array, const unsigned index) const
 {
     return CreateSubscript(
         array,

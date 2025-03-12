@@ -92,10 +92,10 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
         }
         else
         {
-            auto &reference = builder.GetOrDefineVariable(Name, true);
-            if (reference && reference->GetType() != value->GetType())
-                Error(Where, "function declaration mismatch, {} != {}", reference->GetType(), value->GetType());
-            reference = std::move(value);
+            auto &other = builder.GetOrDefineVariable(Name, true);
+            if (other && other->GetType() != value->GetType())
+                Error(Where, "function declaration mismatch, {} != {}", other->GetType(), value->GetType());
+            other = std::move(value);
         }
     }
 

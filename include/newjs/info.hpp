@@ -30,6 +30,8 @@ namespace NJS
         [[nodiscard]] std::string GetString() const;
         [[nodiscard]] llvm::Type *GetLLVM(const Builder &builder) const;
 
+        llvm::Value *SolveFor(const Builder &builder, ValuePtr value) const;
+
         std::ostream &Print(std::ostream &stream) const;
 
         TypePtr Type;

@@ -2,7 +2,7 @@
 #include <newjs/type.hpp>
 #include <newjs/value.hpp>
 
-NJS::ValuePtr NJS::Builder::CreateCast(const ValuePtr &value, const TypePtr &type)
+NJS::ValuePtr NJS::Builder::CreateCast(const ValuePtr &value, const TypePtr &type) const
 {
     if (value->GetType() == type)
         return value;

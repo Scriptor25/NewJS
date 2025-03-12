@@ -53,16 +53,7 @@ NJS::ValuePtr NJS::UnaryExpression::PGenLLVM(Builder &builder, const TypePtr &ex
 
         const auto function_type = llvm::FunctionType::get(result_type, {value_type}, false);
 
-        if (value_.IsReference && !operand->IsLValue())
-        {
-            const auto value = builder.CreateAlloca(operand->GetType(), true);
-            value->StoreNoError(operand);
-            operand = value;
-        }
-
-        const auto value_arg = value_.IsReference
-                                   ? operand->GetPointer()
-                                   : operand->Load();
+        const auto value_arg = value_.SolveFor(builder, operand);
 
         const auto result_value = builder.GetBuilder().CreateCall(function_type, callee_, {value_arg});
         if (result_.IsReference)
