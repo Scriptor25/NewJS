@@ -56,6 +56,11 @@ NJS::TypePtr NJS::GetBase(const TypePtr &type)
     return Type::As<IncompleteType>(type)->GetBase();
 }
 
+unsigned NJS::CombineHashes(const unsigned h1, const unsigned h2)
+{
+    return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
+}
+
 bool NJS::operator==(TypePtr a, TypePtr b)
 {
     if (a.get() == b.get())

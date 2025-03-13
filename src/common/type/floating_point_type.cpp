@@ -7,6 +7,11 @@ std::string NJS::FloatingPointType::GenString(const unsigned bits)
     return 'f' + std::to_string(bits);
 }
 
+size_t NJS::FloatingPointType::GetHash() const
+{
+    return std::hash<unsigned>()(m_Bits) ^ 0x03;
+}
+
 bool NJS::FloatingPointType::IsPrimitive() const
 {
     return true;

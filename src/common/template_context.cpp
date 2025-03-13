@@ -41,7 +41,7 @@ bool NJS::TemplateContext::HasType(const std::string &name) const
 }
 
 std::string NJS::TemplateContext::InflateFunction(
-    Parser &parent,
+    const Parser &parent,
     const std::string &template_name,
     const std::vector<TypePtr> &arguments)
 {
@@ -58,7 +58,7 @@ std::string NJS::TemplateContext::InflateFunction(
 }
 
 NJS::TypePtr NJS::TemplateContext::InflateType(
-    Parser &parent,
+    const Parser &parent,
     const std::string &template_name,
     const std::vector<TypePtr> &arguments)
 {

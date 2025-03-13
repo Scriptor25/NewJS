@@ -71,7 +71,7 @@ class camera {
         if (!depth)
             return {}
 
-        let rec = record.create()
+        let rec: record
 
         if (hittable.hit(world, r, { min: 0.001, max: infinity }, rec)) {
             let attenuation: color
@@ -96,7 +96,7 @@ class camera {
     },
 
     get_ray(const &self: camera, i: u32, j: u32): ray {
-        const offset = sample_square()
+        const offset = self.sample_square()
         const pixel_sample = self.pixel00_loc
                            + ((i + offset[0]) * self.pixel_delta_u)
                            + ((j + offset[1]) * self.pixel_delta_v)
@@ -127,7 +127,8 @@ class camera {
     render(&self: camera, world: hittable[const]) {
         self.initialize()
 
-        let img = ppm.create("./out.ppm", self.image_width, self.image_height)
+        let img: image
+        img.open("./out.ppm", self.image_width, self.image_height)
 
         const THREAD_COUNT: u32 = 10
         const ts: pair_t<pthread_t, scanline_t>[] = malloc(THREAD_COUNT * sizeof<pair_t<pthread_t, scanline_t> >)

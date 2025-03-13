@@ -40,10 +40,12 @@ namespace NJS
     struct ClassStatement final : Statement
     {
         ClassStatement(SourceLocation where, std::string name);
+        ClassStatement(SourceLocation where, std::string name, std::vector<ExpressionPtr> functions);
 
         std::ostream &Print(std::ostream &stream) const override;
 
         std::string Name;
+        std::vector<ExpressionPtr> Functions;
 
     protected:
         void PGenLLVM(Builder &builder) override;

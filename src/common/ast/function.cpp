@@ -37,12 +37,14 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder)
             function_name = builder.GetName(
                 Flags & FunctionFlags_Absolute,
                 (IsVarArg ? std::string() : Name)
-                + Parameters[0]->Info.GetString()
+                + std::to_string(Parameters[0]->Info.GetHash())
                 + (IsVarArg ? Name : std::string()));
         else if (Parameters.size() == 2)
             function_name = builder.GetName(
                 Flags & FunctionFlags_Absolute,
-                Parameters[0]->Info.GetString() + Name + Parameters[1]->Info.GetString());
+                std::to_string(Parameters[0]->Info.GetHash())
+                + Name
+                + std::to_string(Parameters[1]->Info.GetHash()));
     }
     else
         function_name = builder.GetName(Flags & FunctionFlags_Absolute, Name);

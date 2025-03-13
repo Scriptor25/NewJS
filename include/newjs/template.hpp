@@ -13,7 +13,7 @@ namespace NJS
         [[nodiscard]] std::string GetName(const std::vector<TypePtr> &arguments) const;
 
         FunctionStatement InflateFunction(const Parser &parent, const std::vector<TypePtr> &arguments) const;
-        TypePtr InflateType(Parser &parent, const std::vector<TypePtr> &arguments) const;
+        TypePtr InflateType(const Parser &parent, const std::vector<TypePtr> &arguments) const;
 
         SourceLocation Where;
         std::string Name;

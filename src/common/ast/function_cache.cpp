@@ -32,19 +32,19 @@ NJS::ValuePtr NJS::FunctionCacheExpression::PGenLLVM(Builder &builder, const Typ
     if (Cache)
         return Cache;
 
-    const auto function_name = builder.GetName(false, Name);
-
     std::vector<ReferenceInfo> parameters;
     for (const auto &parameter: Parameters)
         parameters.emplace_back(parameter->Info);
     const auto type = builder.GetTypeContext().GetFunctionType(Result, parameters, IsVarArg);
-    auto function = builder.GetOrCreateFunction(
+    const auto function = builder.GetOrCreateFunction(
         type->GenFnLLVM(builder),
         llvm::GlobalValue::ExternalLinkage,
-        function_name);
+        Name);
+
+    Cache = RValue::Create(builder, type, function);
 
     if (!Body)
-        return Cache = RValue::Create(builder, type, function);
+        return Cache;
 
     const auto insert_block = builder.GetBuilder().GetInsertBlock();
     const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", function);
@@ -116,5 +116,5 @@ NJS::ValuePtr NJS::FunctionCacheExpression::PGenLLVM(Builder &builder, const Typ
 
     builder.GetBuilder().SetInsertPoint(insert_block);
 
-    return Cache = RValue::Create(builder, type, function);
+    return Cache;
 }

@@ -13,6 +13,7 @@ NJS::StatementPtr NJS::Parser::ParseClassStatement()
         return std::make_shared<ClassStatement>(where, class_name);
 
     std::vector<StructElement> elements;
+    std::vector<ExpressionPtr> functions;
 
     while (!At("}"))
     {
@@ -42,11 +43,12 @@ NJS::StatementPtr NJS::Parser::ParseClassStatement()
             member_type = GetTypeContext().GetFunctionType(result, parameters, is_var_arg);
             default_value = std::make_shared<FunctionCacheExpression>(
                 function_where,
-                class_name + '.' + member_name,
+                "class." + class_name + '.' + member_name,
                 parameters,
                 is_var_arg,
                 result,
                 m_IsImport ? nullptr : body);
+            functions.emplace_back(default_value);
         }
         else
         {
@@ -68,5 +70,5 @@ NJS::StatementPtr NJS::Parser::ParseClassStatement()
     if (auto &dest = GetTypeContext().GetTypeReference(class_name); !dest || dest->IsIncomplete())
         dest = GetTypeContext().GetStructType(elements);
 
-    return std::make_shared<ClassStatement>(where, class_name);
+    return std::make_shared<ClassStatement>(where, class_name, functions);
 }

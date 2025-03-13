@@ -7,6 +7,13 @@ std::string NJS::IntegerType::GenString(const unsigned bits, const bool is_signe
     return (is_signed ? 'i' : 'u') + std::to_string(bits);
 }
 
+size_t NJS::IntegerType::GetHash() const
+{
+    const auto sign_hash = std::hash<bool>()(m_IsSigned);
+    const auto bits_hash = std::hash<unsigned>()(m_Bits);
+    return CombineHashes(sign_hash, bits_hash) ^ 0x02;
+}
+
 bool NJS::IntegerType::IsPrimitive() const
 {
     return true;

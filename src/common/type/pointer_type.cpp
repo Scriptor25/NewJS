@@ -7,6 +7,11 @@ std::string NJS::PointerType::GenString(const TypePtr &element_type, const bool 
     return element_type->GetString() + '[' + (is_const ? "const" : "") + ']';
 }
 
+size_t NJS::PointerType::GetHash() const
+{
+    return CombineHashes(CombineHashes(m_ElementType->GetHash(), std::hash<bool>()(m_IsConst)), 0x04);
+}
+
 bool NJS::PointerType::IsPrimitive() const
 {
     return true;

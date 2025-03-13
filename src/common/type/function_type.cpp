@@ -23,6 +23,14 @@ std::string NJS::FunctionType::GenString(
     return dst += ") => " + result.GetString();
 }
 
+size_t NJS::FunctionType::GetHash() const
+{
+    auto hash = CombineHashes(m_Result.GetHash(), 0x08);
+    for (unsigned i = 0; i < m_Parameters.size(); ++i)
+        hash = CombineHashes(hash, m_Parameters[i].GetHash());
+    return CombineHashes(hash, std::hash<bool>()(m_IsVarArg));
+}
+
 bool NJS::FunctionType::IsPrimitive() const
 {
     return true;

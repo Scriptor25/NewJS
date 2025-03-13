@@ -7,6 +7,11 @@ std::string NJS::VoidType::GenString()
     return "void";
 }
 
+size_t NJS::VoidType::GetHash() const
+{
+    return 0x01;
+}
+
 bool NJS::VoidType::IsPrimitive() const
 {
     return true;

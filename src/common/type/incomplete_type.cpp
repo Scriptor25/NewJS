@@ -14,6 +14,11 @@ NJS::TypePtr NJS::IncompleteType::GetBase() const
     return GetContext().HasType(m_Name) ? GetContext().GetType(m_Name) : nullptr;
 }
 
+size_t NJS::IncompleteType::GetHash() const
+{
+    return GetContext().HasType(m_Name) ? GetContext().GetType(m_Name)->GetHash() : 0;
+}
+
 bool NJS::IncompleteType::IsIncomplete() const
 {
     return true;

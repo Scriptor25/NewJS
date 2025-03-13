@@ -14,6 +14,14 @@ std::string NJS::TupleType::GenString(const std::vector<TypePtr> &element_types)
     return dst += " ]";
 }
 
+size_t NJS::TupleType::GetHash() const
+{
+    unsigned hash = 0x07;
+    for (auto &element: m_ElementTypes)
+        hash = CombineHashes(hash, element->GetHash());
+    return hash;
+}
+
 bool NJS::TupleType::IsTuple() const
 {
     return true;

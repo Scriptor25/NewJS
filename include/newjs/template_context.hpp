@@ -30,11 +30,11 @@ namespace NJS
         [[nodiscard]] bool HasType(const std::string &name) const;
 
         std::string InflateFunction(
-            Parser &parent,
+            const Parser &parent,
             const std::string &template_name,
             const std::vector<TypePtr> &arguments);
         TypePtr InflateType(
-            Parser &parent,
+            const Parser &parent,
             const std::string &template_name,
             const std::vector<TypePtr> &arguments);
 

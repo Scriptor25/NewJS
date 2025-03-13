@@ -18,6 +18,8 @@ namespace NJS
 
     TypePtr GetBase(const TypePtr &type);
 
+    unsigned CombineHashes(unsigned h1, unsigned h2);
+
     class Type
     {
     public:
@@ -54,6 +56,8 @@ namespace NJS
         unsigned GetSize(const Builder &builder);
         [[nodiscard]] bool IsIntegerLike() const;
         [[nodiscard]] bool IsBoolean() const;
+
+        [[nodiscard]] virtual size_t GetHash() const = 0;
 
         [[nodiscard]] virtual bool IsPrimitive() const;
         [[nodiscard]] virtual bool IsIncomplete() const;
@@ -92,6 +96,8 @@ namespace NJS
 
         [[nodiscard]] TypePtr GetBase() const;
 
+        [[nodiscard]] size_t GetHash() const override;
+
         [[nodiscard]] bool IsIncomplete() const override;
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsVoid() const override;
@@ -124,6 +130,8 @@ namespace NJS
 
         static std::string GenString();
 
+        [[nodiscard]] size_t GetHash() const override;
+
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsVoid() const override;
 
@@ -145,6 +153,8 @@ namespace NJS
         static constexpr auto INFO = "IntegerType";
 
         static std::string GenString(unsigned bits, bool is_signed);
+
+        [[nodiscard]] size_t GetHash() const override;
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsInteger() const override;
@@ -173,6 +183,8 @@ namespace NJS
 
         static std::string GenString(unsigned bits);
 
+        [[nodiscard]] size_t GetHash() const override;
+
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsFloatingPoint() const override;
         [[nodiscard]] unsigned GetBits() const;
@@ -197,6 +209,8 @@ namespace NJS
         static constexpr auto INFO = "PointerType";
 
         static std::string GenString(const TypePtr &element_type, bool is_const);
+
+        [[nodiscard]] size_t GetHash() const override;
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsPointer() const override;
@@ -224,6 +238,8 @@ namespace NJS
         static constexpr auto INFO = "ArrayType";
 
         static std::string GenString(const TypePtr &element_type, unsigned count);
+
+        [[nodiscard]] size_t GetHash() const override;
 
         [[nodiscard]] bool IsArray() const override;
         [[nodiscard]] TypePtr GetElement() const;
@@ -258,6 +274,8 @@ namespace NJS
 
         static std::string GenString(const std::vector<StructElement> &elements);
 
+        [[nodiscard]] size_t GetHash() const override;
+
         [[nodiscard]] bool IsStruct() const override;
         [[nodiscard]] unsigned GetElementCount() const;
         [[nodiscard]] MemberInfo GetMember(const std::string &name) const;
@@ -288,6 +306,8 @@ namespace NJS
 
         static std::string GenString(const std::vector<TypePtr> &element_types);
 
+        [[nodiscard]] size_t GetHash() const override;
+
         [[nodiscard]] bool IsTuple() const override;
         [[nodiscard]] TypePtr GetElement(unsigned index) const;
         [[nodiscard]] unsigned GetElementCount() const;
@@ -316,6 +336,8 @@ namespace NJS
             const ReferenceInfo &result,
             const std::vector<ReferenceInfo> &parameters,
             bool is_var_arg);
+
+        [[nodiscard]] size_t GetHash() const override;
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsFunction() const override;

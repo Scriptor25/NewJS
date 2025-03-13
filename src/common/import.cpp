@@ -137,14 +137,14 @@ void NJS::ImportMapping::MapFunction(
             function_name = module_id
                             + '.'
                             + (function.IsVarArg ? std::string() : function.Name)
-                            + function.Parameters[0]->Info.GetString()
+                            + std::to_string(function.Parameters[0]->Info.GetHash())
                             + (function.IsVarArg ? function.Name : std::string());
         else if (function.Parameters.size() == 2)
             function_name = module_id
                             + '.'
-                            + function.Parameters[0]->Info.GetString()
+                            + std::to_string(function.Parameters[0]->Info.GetHash())
                             + function.Name
-                            + function.Parameters[1]->Info.GetString();
+                            + std::to_string(function.Parameters[1]->Info.GetHash());
     }
     else
     {

@@ -11,7 +11,7 @@ std::string NJS::Template::GetName(const std::vector<TypePtr> &arguments) const
     {
         if (i > 0)
             arguments_string += '.';
-        arguments_string += arguments[i]->GetString();
+        arguments_string += std::to_string(arguments[i]->GetHash());
     }
     return Name + '.' + arguments_string;
 }
@@ -43,7 +43,7 @@ NJS::FunctionStatement NJS::Template::InflateFunction(const Parser &parent, cons
     };
 }
 
-NJS::TypePtr NJS::Template::InflateType(Parser &parent, const std::vector<TypePtr> &arguments) const
+NJS::TypePtr NJS::Template::InflateType(const Parser &parent, const std::vector<TypePtr> &arguments) const
 {
     parent.GetTypeContext().PushTemplate(Parameters, arguments);
 

@@ -34,6 +34,11 @@ std::string NJS::ReferenceInfo::GetString() const
     return (IsReference ? IsConst ? "const &" : "&" : "") + Type->GetString();
 }
 
+size_t NJS::ReferenceInfo::GetHash() const
+{
+    return CombineHashes(CombineHashes(std::hash<bool>()(IsReference), std::hash<bool>()(IsConst)), Type->GetHash());
+}
+
 llvm::Type *NJS::ReferenceInfo::GetLLVM(const Builder &builder) const
 {
     if (IsReference)
@@ -58,7 +63,9 @@ llvm::Value *NJS::ReferenceInfo::SolveFor(const Builder &builder, ValuePtr value
         return value->GetPointer();
     }
 
-    value = builder.CreateCast(value, Type);
+    if (Type)
+        value = builder.CreateCast(value, Type);
+
     return value->Load();
 }
 

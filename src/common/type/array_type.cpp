@@ -7,6 +7,11 @@ std::string NJS::ArrayType::GenString(const TypePtr &element_type, const unsigne
     return element_type->GetString() + '[' + std::to_string(count) + ']';
 }
 
+size_t NJS::ArrayType::GetHash() const
+{
+    return CombineHashes(CombineHashes(m_ElementType->GetHash(), std::hash<unsigned>()(m_Count)), 0x05);
+}
+
 bool NJS::ArrayType::IsArray() const
 {
     return true;

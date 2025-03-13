@@ -23,6 +23,14 @@ std::string NJS::StructType::GenString(const std::vector<StructElement> &element
     return dst += " }";
 }
 
+size_t NJS::StructType::GetHash() const
+{
+    unsigned hash = 0x06;
+    for (auto &element: m_Elements)
+        hash = CombineHashes(hash, element.Info.GetHash());
+    return hash;
+}
+
 bool NJS::StructType::IsStruct() const
 {
     return true;
