@@ -9,7 +9,7 @@ NJS::CastExpression::CastExpression(SourceLocation where, TypePtr type, Expressi
 {
 }
 
-NJS::ValuePtr NJS::CastExpression::PGenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::CastExpression::PGenLLVM(Builder &builder, const TypePtr &)
 {
     return builder.CreateCast(Operand->GenLLVM(builder, Type), Type);
 }

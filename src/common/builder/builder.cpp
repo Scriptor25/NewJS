@@ -370,7 +370,7 @@ const NJS::ValuePtr &NJS::Builder::GetVariable(const std::string &name) const
     Error("undefined symbol {}", name);
 }
 
-NJS::ValuePtr &NJS::Builder::GetOrDefineVariable(const std::string &name, bool is_global)
+NJS::ValuePtr &NJS::Builder::GetOrDefineVariable(const std::string &name, const bool is_global)
 {
     auto only_is_global = false;
     for (auto &stack: std::ranges::reverse_view(m_Stack))

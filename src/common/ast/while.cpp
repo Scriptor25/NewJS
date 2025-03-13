@@ -11,7 +11,7 @@ NJS::WhileStatement::WhileStatement(SourceLocation where, ExpressionPtr conditio
 {
 }
 
-void NJS::WhileStatement::PGenLLVM(Builder &builder) const
+void NJS::WhileStatement::PGenLLVM(Builder &builder)
 {
     const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
     const auto head_block = llvm::BasicBlock::Create(builder.GetContext(), "head", parent_function);

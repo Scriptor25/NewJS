@@ -6,7 +6,7 @@ NJS::BreakStatement::BreakStatement(SourceLocation where)
 {
 }
 
-void NJS::BreakStatement::PGenLLVM(Builder &builder) const
+void NJS::BreakStatement::PGenLLVM(Builder &builder)
 {
     const auto dest = builder.CurrentTailBlock();
     if (!dest)

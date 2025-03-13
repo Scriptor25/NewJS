@@ -17,7 +17,7 @@ NJS::VariableStatement::VariableStatement(
 {
 }
 
-void NJS::VariableStatement::PGenLLVM(Builder &builder) const
+void NJS::VariableStatement::PGenLLVM(Builder &builder)
 {
     const auto value = Value
                            ? Value->GenLLVM(builder, Parameter->Info.Type)

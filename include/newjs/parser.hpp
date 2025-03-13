@@ -9,6 +9,7 @@
 #include <newjs/macro.hpp>
 #include <newjs/newjs.hpp>
 #include <newjs/token.hpp>
+#include <newjs/type.hpp>
 
 namespace NJS
 {
@@ -65,9 +66,6 @@ namespace NJS
         bool ParseTypeList(std::vector<TypePtr> &types, const std::string &delimiter);
         void ParseTypeMap(std::vector<std::pair<std::string, TypePtr>> &types, const std::string &delimiter);
         bool ParseReferenceInfoList(std::vector<ReferenceInfo> &infos, const std::string &delimiter);
-        void ParseReferenceInfoMap(
-            std::vector<std::pair<std::string, ReferenceInfo>> &infos,
-            const std::string &delimiter);
 
         ParameterPtr ParseParameter(bool is_const, bool is_reference);
         bool ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string &delimiter);
@@ -84,6 +82,7 @@ namespace NJS
 
         StatementPtr ParseStatement();
         StatementPtr ParseBreakStatement();
+        StatementPtr ParseClassStatement();
         StatementPtr ParseContinueStatement();
         StatementPtr ParseForStatement();
         StatementPtr ParseFunctionStatement(bool is_export, bool is_extern);
@@ -93,7 +92,6 @@ namespace NJS
         StatementPtr ParseSwitchStatement();
         StatementPtr ParseVariableStatement(bool is_export, bool is_extern);
         StatementPtr ParseWhileStatement();
-        StatementPtr ParseClassStatement();
 
         ExpressionPtr ParseExpression();
         ExpressionPtr ParseAsmExpression();

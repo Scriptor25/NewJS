@@ -18,7 +18,7 @@ NJS::TernaryExpression::TernaryExpression(
 {
 }
 
-NJS::ValuePtr NJS::TernaryExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::TernaryExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent);

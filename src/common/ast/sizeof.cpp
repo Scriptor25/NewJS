@@ -12,7 +12,7 @@ NJS::SizeOfExpression::SizeOfExpression(SourceLocation where, ExpressionPtr oper
 {
 }
 
-NJS::ValuePtr NJS::SizeOfExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::SizeOfExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
     const auto operand = Operand->GenLLVM(builder, {});
 

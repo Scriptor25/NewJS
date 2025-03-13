@@ -26,7 +26,7 @@ NJS::FunctionStatement::FunctionStatement(
 {
 }
 
-void NJS::FunctionStatement::PGenLLVM(Builder &builder) const
+void NJS::FunctionStatement::PGenLLVM(Builder &builder)
 {
     std::string function_name;
     if (Flags & FunctionFlags_Extern)
@@ -219,7 +219,7 @@ NJS::FunctionExpression::FunctionExpression(
 {
 }
 
-NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr &)
 {
     std::vector<ReferenceInfo> parameters;
     for (const auto &parameter: Parameters)

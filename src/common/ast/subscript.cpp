@@ -9,7 +9,7 @@ NJS::SubscriptExpression::SubscriptExpression(SourceLocation where, ExpressionPt
 {
 }
 
-NJS::ValuePtr NJS::SubscriptExpression::PGenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::SubscriptExpression::PGenLLVM(Builder &builder, const TypePtr &)
 {
     const auto array = Array->GenLLVM(builder, {});
     const auto index = Index->GenLLVM(builder, {});

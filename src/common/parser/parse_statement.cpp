@@ -5,10 +5,8 @@
 NJS::StatementPtr NJS::Parser::ParseStatement()
 {
     while (NextAt(";"))
-    {
         if (AtEof())
             return nullptr;
-    }
 
     if (At("#"))
     {
@@ -27,10 +25,10 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
 
     if (At("break"))
         return ParseBreakStatement();
+    if (At("class"))
+        return ParseClassStatement();
     if (At("continue"))
         return ParseContinueStatement();
-    if (At("{"))
-        return ParseScopeStatement();
     if (At("for"))
         return ParseForStatement();
     if (At("function"))
@@ -39,16 +37,16 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
         return ParseIfStatement();
     if (At("import"))
         return ParseImportStatement();
-    if (At("let") || At("const"))
-        return ParseVariableStatement(is_export, is_extern);
     if (At("return"))
         return ParseReturnStatement();
+    if (At("{"))
+        return ParseScopeStatement();
     if (At("switch"))
         return ParseSwitchStatement();
+    if (At("let") || At("const"))
+        return ParseVariableStatement(is_export, is_extern);
     if (At("while"))
         return ParseWhileStatement();
-    if (At("class"))
-        return ParseClassStatement();
 
     return ParseExpression();
 }

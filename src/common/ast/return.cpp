@@ -3,7 +3,6 @@
 #include <newjs/builder.hpp>
 #include <newjs/error.hpp>
 #include <newjs/type.hpp>
-#include <newjs/value.hpp>
 
 NJS::ReturnStatement::ReturnStatement(SourceLocation where, ExpressionPtr value)
     : Statement(std::move(where)),
@@ -11,9 +10,9 @@ NJS::ReturnStatement::ReturnStatement(SourceLocation where, ExpressionPtr value)
 {
 }
 
-void NJS::ReturnStatement::PGenLLVM(Builder &builder) const
+void NJS::ReturnStatement::PGenLLVM(Builder &builder)
 {
-    auto &info = builder.CurrentFunctionResult();
+    auto info = builder.CurrentFunctionResult();
 
     if (!Value)
     {

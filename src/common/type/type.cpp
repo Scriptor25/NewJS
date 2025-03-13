@@ -51,25 +51,24 @@ NJS::TypePtr NJS::GetHigherOrderOf(
     Error("cannot determine higher order type of {} and {}", type_a, type_b);
 }
 
+NJS::TypePtr NJS::GetBase(const TypePtr &type)
+{
+    return Type::As<IncompleteType>(type)->GetBase();
+}
+
 bool NJS::operator==(TypePtr a, TypePtr b)
 {
     if (a.get() == b.get())
         return true;
     if (!a || !b)
         return false;
-    if (a->IsIncomplete() && b->IsIncomplete())
+    if (!a->IsIncomplete() && !b->IsIncomplete())
         return false;
     if (a->IsIncomplete())
-    {
-        a = a->GetContext().GetType(a->GetString());
-        return a == b;
-    }
+        a = Type::As<IncompleteType>(a)->GetBase();
     if (b->IsIncomplete())
-    {
-        b = b->GetContext().GetType(b->GetString());
-        return a == b;
-    }
-    return false;
+        b = Type::As<IncompleteType>(b)->GetBase();
+    return a == b;
 }
 
 bool NJS::operator!=(const TypePtr &a, const TypePtr &b)

@@ -16,11 +16,17 @@ const NJS::TypePtr &NJS::TypeContext::GetType(const std::string &string) const
     Error("no type {}", string);
 }
 
-NJS::TypePtr &NJS::TypeContext::DefType(const std::string &string)
+NJS::TypePtr &NJS::TypeContext::GetTypeReference(const std::string &string)
 {
     if (!m_TemplateStack.empty())
         return m_TemplateStack.back()[string];
     return m_Types[string];
+}
+
+bool NJS::TypeContext::HasType(const std::string &string) const
+{
+    return ((!m_TemplateStack.empty() && m_TemplateStack.back().contains(string)) || m_Types.contains(string))
+           && !GetType(string)->IsIncomplete();
 }
 
 NJS::IncompleteTypePtr NJS::TypeContext::GetIncompleteType(const std::string &name)
@@ -56,13 +62,13 @@ NJS::ArrayTypePtr NJS::TypeContext::GetArrayType(const TypePtr &element_type, un
 NJS::StructTypePtr NJS::TypeContext::GetUnsafeStructType(
     const std::vector<std::pair<std::string, TypePtr>> &element_types)
 {
-    std::vector<std::pair<std::string, ReferenceInfo>> elements(element_types.size());
+    std::vector<StructElement> elements(element_types.size());
     for (unsigned i = 0; i < element_types.size(); ++i)
-        elements[i] = {element_types[i].first, ReferenceInfo(element_types[i].second)};
+        elements[i] = {element_types[i].first, ReferenceInfo(element_types[i].second), nullptr};
     return GetStructType(elements);
 }
 
-NJS::StructTypePtr NJS::TypeContext::GetStructType(const std::vector<std::pair<std::string, ReferenceInfo>> &elements)
+NJS::StructTypePtr NJS::TypeContext::GetStructType(const std::vector<StructElement> &elements)
 {
     return GetType<StructType>(elements);
 }

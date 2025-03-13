@@ -6,7 +6,7 @@ NJS::Statement::Statement(SourceLocation where)
 {
 }
 
-void NJS::Statement::GenLLVM(Builder &builder) const try
+void NJS::Statement::GenLLVM(Builder &builder) try
 {
     PGenLLVM(builder);
 }
@@ -20,7 +20,7 @@ NJS::Expression::Expression(SourceLocation where)
 {
 }
 
-NJS::ValuePtr NJS::Expression::GenLLVM(Builder &builder, const TypePtr &expected_type) const try
+NJS::ValuePtr NJS::Expression::GenLLVM(Builder &builder, const TypePtr &expected_type) try
 {
     return PGenLLVM(builder, expected_type);
 }
@@ -29,7 +29,7 @@ catch (const RTError &error)
     Error(error, Where, {});
 }
 
-void NJS::Expression::PGenLLVM(Builder &builder) const try
+void NJS::Expression::PGenLLVM(Builder &builder) try
 {
     (void) GenLLVM(builder, {});
 }

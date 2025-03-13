@@ -95,6 +95,7 @@ namespace NJS
         unsigned Index;
         std::string Name;
         ReferenceInfo Info;
+        ExpressionPtr Default;
     };
 
     template<>

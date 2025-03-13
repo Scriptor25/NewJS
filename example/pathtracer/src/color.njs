@@ -1,6 +1,6 @@
+import image    from "./image.njs"
 import interval from "./interval.njs"
 import vec3     from "./vec3.njs"
-import ppm      from "./ppm.njs"
 
 type color = vec3
 
@@ -12,7 +12,7 @@ function linear_to_gamma(component: f64): f64 {
     return 0.0
 }
 
-export function write_color(&img: image_t, x1: u32, x2: u32, const &pixel_color: color) {
+export function write_color(&img: image, x1: u32, x2: u32, const &pixel_color: color) {
     const fr = linear_to_gamma(pixel_color[0])
     const fg = linear_to_gamma(pixel_color[1])
     const fb = linear_to_gamma(pixel_color[2])

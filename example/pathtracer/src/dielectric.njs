@@ -7,44 +7,33 @@ import record from "./record.njs"
 extern function sqrt(x: f64): f64
 extern function fmin(a: f64, b: f64): f64
 
-type dielectric = {
-    scatter: (const &dielectric, const &ray, const &record, &color, &ray) => u1,
-
-    albedo: color,
-    refraction_index: f64,
-}
-
 function reflectance(cosine: f64, refraction_index: f64): f64 {
     const r0 = (1 - refraction_index) / (1 + refraction_index)
     const r0s = r0 * r0
     return r0s + (1 - r0s) * ((1 - cosine) ** 5)
 }
 
-function scatter(const &self: dielectric, const &r_in: ray, const &rec: record, &attenuation: color, &scattered: ray): u1 {
-    const ri = rec.front_face ? 1.0 / self.refraction_index : self.refraction_index
+class dielectric {
+    scatter(const &self: dielectric, const &r_in: ray, const &rec: record, &attenuation: color, &scattered: ray): u1 {
+        const ri = rec.front_face ? 1.0 / self.refraction_index : self.refraction_index
 
-    const unit_direction = vec3.unit_vector(r_in.direction)
-    const cos_theta = fmin(vec3.dot(-unit_direction, rec.normal), 1.0)
-    const sin_theta = sqrt(1.0 - cos_theta * cos_theta)
+        const unit_direction = vec3.unit_vector(r_in.direction)
+        const cos_theta = fmin(vec3.dot(-unit_direction, rec.normal), 1.0)
+        const sin_theta = sqrt(1.0 - cos_theta * cos_theta)
 
-    const cannot_refract = ri * sin_theta > 1.0
-    let direction: vec3
+        const cannot_refract = ri * sin_theta > 1.0
+        let direction: vec3
 
-    if (cannot_refract || reflectance(cos_theta, ri) > common.random())
-        direction = vec3.reflect(unit_direction, rec.normal)
-    else
-        direction = vec3.refract(unit_direction, rec.normal, ri)
+        if (cannot_refract || reflectance(cos_theta, ri) > common.random())
+            direction = vec3.reflect(unit_direction, rec.normal)
+        else
+            direction = vec3.refract(unit_direction, rec.normal, ri)
 
-    scattered = ray.create(rec.p, direction, 0)
-    attenuation = self.albedo
-    return true
-}
+        scattered = { origin: rec.p, direction }
+        attenuation = self.albedo
+        return true
+    },
 
-export function create(const &albedo: color, refraction_index: f64): dielectric {
-    return {
-        scatter,
-        
-        albedo,
-        refraction_index,
-    }
+    albedo: color,
+    refraction_index: f64,
 }

@@ -1,6 +1,6 @@
 #include <newjs/builder.hpp>
 
-llvm::FunctionCallee NJS::Builder::GetOrCreateFunction(
+llvm::Function *NJS::Builder::GetOrCreateFunction(
     llvm::FunctionType *type,
     const llvm::GlobalValue::LinkageTypes linkage,
     const std::string &name) const
@@ -12,5 +12,5 @@ llvm::FunctionCallee NJS::Builder::GetOrCreateFunction(
             linkage,
             name,
             GetModule());
-    return {type, function};
+    return function;
 }

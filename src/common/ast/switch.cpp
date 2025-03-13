@@ -16,7 +16,7 @@ NJS::SwitchStatement::SwitchStatement(
 {
 }
 
-void NJS::SwitchStatement::PGenLLVM(Builder &builder) const
+void NJS::SwitchStatement::PGenLLVM(Builder &builder)
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     const auto tail_block = llvm::BasicBlock::Create(builder.GetContext(), "tail", parent);
@@ -98,7 +98,7 @@ NJS::SwitchExpression::SwitchExpression(
 {
 }
 
-NJS::ValuePtr NJS::SwitchExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::SwitchExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto default_dest = llvm::BasicBlock::Create(builder.GetContext(), "default", parent);

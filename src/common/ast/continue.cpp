@@ -6,7 +6,7 @@ NJS::ContinueStatement::ContinueStatement(SourceLocation where)
 {
 }
 
-void NJS::ContinueStatement::PGenLLVM(Builder &builder) const
+void NJS::ContinueStatement::PGenLLVM(Builder &builder)
 {
     const auto dest = builder.CurrentHeadBlock();
     if (!dest)

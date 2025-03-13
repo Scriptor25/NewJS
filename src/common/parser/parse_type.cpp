@@ -4,6 +4,129 @@
 
 NJS::TypePtr NJS::Parser::ParseType()
 {
+    static const std::map<std::string, std::function<TypePtr(TypeContext &)>> get_type_map
+    {
+        {
+            "void",
+            [](TypeContext &context)
+            {
+                return context.GetVoidType();
+            }
+        },
+        {
+            "boolean",
+            [](TypeContext &context)
+            {
+                return context.GetBooleanType();
+            },
+        },
+        {
+            "char",
+            [](TypeContext &context)
+            {
+                return context.GetCharType();
+            },
+        },
+        {
+            "string",
+            [](TypeContext &context)
+            {
+                return context.GetStringType();
+            },
+        },
+        {
+            "i1",
+            [](TypeContext &context)
+            {
+                return context.GetIntegerType(1, true);
+            },
+        },
+        {
+            "i8",
+            [](TypeContext &context)
+            {
+                return context.GetIntegerType(8, true);
+            },
+        },
+        {
+            "i16",
+            [](TypeContext &context)
+            {
+                return context.GetIntegerType(16, true);
+            },
+        },
+        {
+            "i32",
+            [](TypeContext &context)
+            {
+                return context.GetIntegerType(32, true);
+            },
+        },
+        {
+            "i64",
+            [](TypeContext &context)
+            {
+                return context.GetIntegerType(64, true);
+            },
+        },
+        {
+            "u1",
+            [](TypeContext &context)
+            {
+                return context.GetIntegerType(1, false);
+            },
+        },
+        {
+            "u8",
+            [](TypeContext &context)
+            {
+                return context.GetIntegerType(8, false);
+            },
+        },
+        {
+            "u16",
+            [](TypeContext &context)
+            {
+                return context.GetIntegerType(16, false);
+            },
+        },
+        {
+            "u32",
+            [](TypeContext &context)
+            {
+                return context.GetIntegerType(32, false);
+            },
+        },
+        {
+            "u64",
+            [](TypeContext &context)
+            {
+                return context.GetIntegerType(64, false);
+            },
+        },
+        {
+            "f16",
+            [](TypeContext &context)
+            {
+                return context.GetFloatingPointType(16);
+            },
+        },
+        {
+            "f32",
+            [](TypeContext &context)
+            {
+                return context.GetFloatingPointType(32);
+            },
+        },
+        {
+            "f64",
+            [](TypeContext &context)
+            {
+                return context.GetFloatingPointType(64);
+            },
+        },
+    };
+
     const auto where = CurrentLocation();
 
     TypePtr type;
@@ -13,7 +136,7 @@ NJS::TypePtr NJS::Parser::ParseType()
         type = ParseStructType();
     else if (At("("))
         type = ParseFunctionType();
-    else if (const auto sym = Expect(TokenType_Symbol).String; m_TemplateContext.HasType(sym))
+    else if (const auto name = Expect(TokenType_Symbol).String; GetTemplateContext().HasType(name))
     {
         std::vector<TypePtr> arguments;
 
@@ -27,48 +150,23 @@ NJS::TypePtr NJS::Parser::ParseType()
         Expect(">");
 
         if (!m_IsTemplate)
-            type = m_TemplateContext.InflateType(*this, sym, arguments);
+            type = GetTemplateContext().InflateType(*this, name, arguments);
         else
-            type = m_TypeContext.GetIncompleteType(sym);
+            type = GetTypeContext().GetIncompleteType(name);
     }
     else
     {
-        if (sym == "void")
-            type = m_TypeContext.GetVoidType();
-        else if (sym == "boolean")
-            type = m_TypeContext.GetBooleanType();
-        else if (sym == "char")
-            type = m_TypeContext.GetCharType();
-        else if (sym == "string")
-            type = m_TypeContext.GetStringType();
-        else if (sym == "i1")
-            type = m_TypeContext.GetIntegerType(1, true);
-        else if (sym == "i8")
-            type = m_TypeContext.GetIntegerType(8, true);
-        else if (sym == "i16")
-            type = m_TypeContext.GetIntegerType(16, true);
-        else if (sym == "i32")
-            type = m_TypeContext.GetIntegerType(32, true);
-        else if (sym == "i64")
-            type = m_TypeContext.GetIntegerType(64, true);
-        else if (sym == "u1")
-            type = m_TypeContext.GetIntegerType(1, false);
-        else if (sym == "u8")
-            type = m_TypeContext.GetIntegerType(8, false);
-        else if (sym == "u16")
-            type = m_TypeContext.GetIntegerType(16, false);
-        else if (sym == "u32")
-            type = m_TypeContext.GetIntegerType(32, false);
-        else if (sym == "u64")
-            type = m_TypeContext.GetIntegerType(64, false);
-        else if (sym == "f16")
-            type = m_TypeContext.GetFloatingPointType(16);
-        else if (sym == "f32")
-            type = m_TypeContext.GetFloatingPointType(32);
-        else if (sym == "f64")
-            type = m_TypeContext.GetFloatingPointType(64);
+        if (get_type_map.contains(name))
+            type = get_type_map.at(name)(GetTypeContext());
         else
-            type = m_TypeContext.GetType(sym);
+            try
+            {
+                type = GetTypeContext().GetType(name);
+            }
+            catch (const RTError &error)
+            {
+                Error(error, where, {});
+            }
     }
 
     while (true)
@@ -78,12 +176,12 @@ NJS::TypePtr NJS::Parser::ParseType()
             if (At(TokenType_Int))
             {
                 const auto count = Skip().Int;
-                type = m_TypeContext.GetArrayType(type, count);
+                type = GetTypeContext().GetArrayType(type, count);
             }
             else
             {
                 const auto is_const = NextAt("const");
-                type = m_TypeContext.GetPointerType(type, is_const);
+                type = GetTypeContext().GetPointerType(type, is_const);
             }
             Expect("]");
             continue;
@@ -99,15 +197,36 @@ NJS::TypePtr NJS::Parser::ParseTupleType()
     Expect("[");
     std::vector<TypePtr> element_types;
     ParseTypeList(element_types, "]");
-    return m_TypeContext.GetTupleType(element_types);
+    return GetTypeContext().GetTupleType(element_types);
 }
 
 NJS::TypePtr NJS::Parser::ParseStructType()
 {
+    std::vector<StructElement> elements;
+
     Expect("{");
-    std::vector<std::pair<std::string, ReferenceInfo>> elements;
-    ParseReferenceInfoMap(elements, "}");
-    return m_TypeContext.GetStructType(elements);
+    while (!At("}"))
+    {
+        const auto is_const = NextAt("const");
+        const auto is_reference = NextAt("&");
+        const auto name = Expect(TokenType_Symbol).String;
+        Expect(":");
+        const auto type = ParseType();
+
+        ExpressionPtr default_value;
+        if ((!is_reference && is_const && (Expect("="), true)) || NextAt("="))
+            default_value = ParseExpression();
+        if (!is_reference && is_const)
+            default_value = std::make_shared<CacheExpression>(default_value->Where, default_value);
+
+        elements.emplace_back(name, ReferenceInfo(type, is_const, is_reference), default_value);
+
+        if (!At("}"))
+            Expect(",");
+    }
+    Expect("}");
+
+    return GetTypeContext().GetStructType(elements);
 }
 
 NJS::TypePtr NJS::Parser::ParseFunctionType()
@@ -119,8 +238,8 @@ NJS::TypePtr NJS::Parser::ParseFunctionType()
     if (NextAt("=>"))
         result = ParseReferenceInfo();
     else
-        result.Type = m_TypeContext.GetVoidType();
-    return m_TypeContext.GetFunctionType(result, parameters, is_var_arg);
+        result.Type = GetTypeContext().GetVoidType();
+    return GetTypeContext().GetFunctionType(result, parameters, is_var_arg);
 }
 
 NJS::ReferenceInfo NJS::Parser::ParseReferenceInfo()
@@ -178,23 +297,4 @@ bool NJS::Parser::ParseReferenceInfoList(std::vector<ReferenceInfo> &infos, cons
     }
     Expect(delimiter);
     return false;
-}
-
-void NJS::Parser::ParseReferenceInfoMap(
-    std::vector<std::pair<std::string, ReferenceInfo>> &infos,
-    const std::string &delimiter)
-{
-    while (!At(delimiter))
-    {
-        const auto is_const = NextAt("const");
-        const auto is_reference = NextAt("&");
-        const auto name = Expect(TokenType_Symbol).String;
-        Expect(":");
-
-        infos.emplace_back(name, ReferenceInfo(ParseType(), is_const, is_reference));
-
-        if (!At(delimiter))
-            Expect(",");
-    }
-    Expect(delimiter);
 }

@@ -80,7 +80,7 @@ namespace NJS
 
         void CreateModuleCall(const std::string &module_id);
 
-        llvm::FunctionCallee GetOrCreateFunction(
+        llvm::Function *GetOrCreateFunction(
             llvm::FunctionType *type,
             llvm::GlobalValue::LinkageTypes linkage,
             const std::string &name) const;
@@ -129,7 +129,7 @@ namespace NJS
             const ValuePtr &right) const;
 
         ValuePtr &DefineVariable(const std::string &name, bool is_global);
-        [[nodiscard]] const NJS::ValuePtr &GetVariable(const std::string &name) const;
+        [[nodiscard]] const ValuePtr &GetVariable(const std::string &name) const;
         ValuePtr &GetOrDefineVariable(const std::string &name, bool is_global);
 
         ReferenceInfo &CurrentFunctionResult();

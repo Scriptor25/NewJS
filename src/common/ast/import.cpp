@@ -18,7 +18,7 @@ NJS::ImportStatement::ImportStatement(
 {
 }
 
-void NJS::ImportStatement::PGenLLVM(Builder &builder) const
+void NJS::ImportStatement::PGenLLVM(Builder &builder)
 {
     for (auto &sub_module_id: SubModuleIDs)
         builder.CreateModuleCall(sub_module_id);

@@ -15,7 +15,7 @@ NJS::StructExpression::StructExpression(
 {
 }
 
-NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
     StructTypePtr result_type;
     if (Type)
@@ -23,8 +23,8 @@ NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &e
     else if (expected_type)
         result_type = Type::As<StructType>(expected_type);
 
-    std::vector<std::pair<std::string, ValuePtr>> element_values;
     std::vector<std::pair<std::string, TypePtr>> element_types;
+    std::map<std::string, ValuePtr> element_values;
 
     for (const auto &[name_, element_]: Elements)
     {
@@ -32,8 +32,8 @@ NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &e
                         ? result_type->GetMember(name_).Info.Type
                         : nullptr;
         auto value = element_->GenLLVM(builder, type);
-        element_values.emplace_back(name_, value);
         element_types.emplace_back(name_, value->GetType());
+        element_values[name_] = std::move(value);
     }
 
     if (!result_type)
@@ -41,15 +41,24 @@ NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &e
 
     const auto struct_type = result_type->GetLLVM<llvm::StructType>(builder);
     llvm::Value *struct_value = llvm::ConstantStruct::getNullValue(struct_type);
-    for (auto &[element_name_, element_value_]: element_values)
-    {
-        auto [index_, name_, info_] = result_type->GetMember(element_name_);
 
-        const auto value_ = info_.SolveFor(builder, element_value_);
+    for (unsigned i = 0; i < result_type->GetElementCount(); ++i)
+    {
+        auto [index_, name_, info_, default_] = result_type->GetMember(i);
+
+        ValuePtr element_value;
+        if (element_values.contains(name_))
+            element_value = element_values[name_];
+        else if (default_)
+            element_value = default_->GenLLVM(builder, info_.Type);
+        else
+            continue;
+
+        const auto value = info_.SolveFor(builder, element_value);
 
         struct_value = builder.GetBuilder().CreateInsertValue(
             struct_value,
-            value_,
+            value,
             index_);
     }
 

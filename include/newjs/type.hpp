@@ -16,13 +16,24 @@ namespace NJS
         const TypePtr &type_a,
         const TypePtr &type_b);
 
+    TypePtr GetBase(const TypePtr &type);
+
     class Type
     {
     public:
-        template<typename T, typename V>
-        static std::shared_ptr<T> As(std::shared_ptr<V> v)
+        static constexpr auto INFO = "Type";
+
+        template<typename T>
+        static std::shared_ptr<T> As(TypePtr v)
         {
-            return std::dynamic_pointer_cast<T>(v);
+            if (auto p = std::dynamic_pointer_cast<T>(v))
+                return p;
+
+            if (v->IsIncomplete())
+                if (const auto base = GetBase(v))
+                    return As<T>(base);
+
+            Error("cannot get type {} as {}", v, T::INFO);
         }
 
         virtual ~Type() = default;
@@ -75,9 +86,22 @@ namespace NJS
         friend TypeContext;
 
     public:
+        static constexpr auto INFO = "IncompleteType";
+
         static std::string GenString(const std::string &name);
 
+        [[nodiscard]] TypePtr GetBase() const;
+
         [[nodiscard]] bool IsIncomplete() const override;
+        [[nodiscard]] bool IsPrimitive() const override;
+        [[nodiscard]] bool IsVoid() const override;
+        [[nodiscard]] bool IsInteger() const override;
+        [[nodiscard]] bool IsFloatingPoint() const override;
+        [[nodiscard]] bool IsPointer() const override;
+        [[nodiscard]] bool IsArray() const override;
+        [[nodiscard]] bool IsStruct() const override;
+        [[nodiscard]] bool IsTuple() const override;
+        [[nodiscard]] bool IsFunction() const override;
 
         bool TypeInfo(
             Builder &builder,
@@ -96,6 +120,8 @@ namespace NJS
         friend TypeContext;
 
     public:
+        static constexpr auto INFO = "VoidType";
+
         static std::string GenString();
 
         [[nodiscard]] bool IsPrimitive() const override;
@@ -116,6 +142,8 @@ namespace NJS
         friend TypeContext;
 
     public:
+        static constexpr auto INFO = "IntegerType";
+
         static std::string GenString(unsigned bits, bool is_signed);
 
         [[nodiscard]] bool IsPrimitive() const override;
@@ -141,6 +169,8 @@ namespace NJS
         friend TypeContext;
 
     public:
+        static constexpr auto INFO = "FloatingPointType";
+
         static std::string GenString(unsigned bits);
 
         [[nodiscard]] bool IsPrimitive() const override;
@@ -164,6 +194,8 @@ namespace NJS
         friend TypeContext;
 
     public:
+        static constexpr auto INFO = "PointerType";
+
         static std::string GenString(const TypePtr &element_type, bool is_const);
 
         [[nodiscard]] bool IsPrimitive() const override;
@@ -189,6 +221,8 @@ namespace NJS
         friend TypeContext;
 
     public:
+        static constexpr auto INFO = "ArrayType";
+
         static std::string GenString(const TypePtr &element_type, unsigned count);
 
         [[nodiscard]] bool IsArray() const override;
@@ -208,12 +242,21 @@ namespace NJS
         unsigned m_Count;
     };
 
+    struct StructElement
+    {
+        std::string Name;
+        ReferenceInfo Info;
+        ExpressionPtr Default;
+    };
+
     class StructType final : public Type
     {
         friend TypeContext;
 
     public:
-        static std::string GenString(const std::vector<std::pair<std::string, ReferenceInfo>> &elements);
+        static constexpr auto INFO = "StructType";
+
+        static std::string GenString(const std::vector<StructElement> &elements);
 
         [[nodiscard]] bool IsStruct() const override;
         [[nodiscard]] unsigned GetElementCount() const;
@@ -228,11 +271,11 @@ namespace NJS
         StructType(
             TypeContext &type_context,
             std::string string,
-            std::vector<std::pair<std::string, ReferenceInfo>> elements);
+            std::vector<StructElement> elements);
 
         [[nodiscard]] llvm::Type *GenLLVM(const Builder &builder) const override;
 
-        std::vector<std::pair<std::string, ReferenceInfo>> m_Elements;
+        std::vector<StructElement> m_Elements;
         unsigned m_Index;
     };
 
@@ -241,6 +284,8 @@ namespace NJS
         friend TypeContext;
 
     public:
+        static constexpr auto INFO = "TupleType";
+
         static std::string GenString(const std::vector<TypePtr> &element_types);
 
         [[nodiscard]] bool IsTuple() const override;
@@ -265,6 +310,8 @@ namespace NJS
         friend TypeContext;
 
     public:
+        static constexpr auto INFO = "FunctionType";
+
         static std::string GenString(
             const ReferenceInfo &result,
             const std::vector<ReferenceInfo> &parameters,

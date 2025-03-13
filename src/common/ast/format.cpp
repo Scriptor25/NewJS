@@ -18,7 +18,7 @@ NJS::FormatExpression::FormatExpression(
 {
 }
 
-NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
 {
     std::vector<llvm::Value *> arguments;
     arguments.emplace_back(builder.GetBuilder().getInt32(OperandCount));

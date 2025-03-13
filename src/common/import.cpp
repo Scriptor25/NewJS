@@ -54,7 +54,7 @@ void NJS::ImportMapping::MapValues(
     const std::string &module_id,
     const std::vector<StatementPtr> &values) const
 {
-    std::vector<std::pair<std::string, ReferenceInfo>> element_infos;
+    std::vector<StructElement> elements;
     std::vector<std::pair<std::string, ValuePtr>> element_values;
 
     std::set<std::string> name_set;
@@ -89,7 +89,7 @@ void NJS::ImportMapping::MapValues(
         }
 
         element_values.emplace_back(name, value);
-        element_infos.emplace_back(name, info);
+        elements.emplace_back(name, info, nullptr);
     }
 
     if (!name_set.empty())
@@ -98,14 +98,14 @@ void NJS::ImportMapping::MapValues(
     if (Name.empty())
         return;
 
-    const auto struct_type = builder.GetTypeContext().GetStructType(element_infos);
+    const auto struct_type = builder.GetTypeContext().GetStructType(elements);
     const auto type = struct_type->GetLLVM(builder);
 
     llvm::Value *value = llvm::Constant::getNullValue(type);
     for (unsigned i = 0; i < element_values.size(); ++i)
     {
         const auto &element_value = element_values[i].second;
-        const auto &[type_, is_const_, is_reference_] = element_infos[i].second;
+        const auto &[type_, is_const_, is_reference_] = elements[i].Info;
         value = builder.GetBuilder().CreateInsertValue(
             value,
             is_reference_ ? element_value->GetPointer() : element_value->Load(),
@@ -159,7 +159,7 @@ void NJS::ImportMapping::MapFunction(
     const auto fn = builder.GetOrCreateFunction(
         type->GenFnLLVM(builder),
         llvm::GlobalValue::ExternalLinkage,
-        function_name).getCallee();
+        function_name);
 
     if (is_operator)
     {

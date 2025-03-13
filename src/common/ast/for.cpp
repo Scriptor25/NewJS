@@ -20,7 +20,7 @@ NJS::ForStatement::ForStatement(
 {
 }
 
-void NJS::ForStatement::PGenLLVM(Builder &builder) const
+void NJS::ForStatement::PGenLLVM(Builder &builder)
 {
     const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
     const auto head_block = llvm::BasicBlock::Create(builder.GetContext(), "head", parent_function);

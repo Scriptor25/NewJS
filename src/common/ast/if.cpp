@@ -17,7 +17,7 @@ NJS::IfStatement::IfStatement(
 {
 }
 
-void NJS::IfStatement::PGenLLVM(Builder &builder) const
+void NJS::IfStatement::PGenLLVM(Builder &builder)
 {
     const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent_function);

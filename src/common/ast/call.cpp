@@ -13,7 +13,7 @@ NJS::CallExpression::CallExpression(SourceLocation where, ExpressionPtr callee, 
 {
 }
 
-NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
     const auto callee = Callee->GenLLVM(builder, {});
 

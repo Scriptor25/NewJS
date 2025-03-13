@@ -16,7 +16,7 @@ NJS::MemberExpression::MemberExpression(
 {
 }
 
-NJS::ValuePtr NJS::MemberExpression::PGenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::MemberExpression::PGenLLVM(Builder &builder, const TypePtr &)
 {
     auto object = Object->GenLLVM(builder, {});
     if (Dereference)

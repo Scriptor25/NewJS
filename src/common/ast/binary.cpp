@@ -21,7 +21,7 @@ NJS::BinaryExpression::BinaryExpression(
 {
 }
 
-NJS::ValuePtr NJS::BinaryExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::BinaryExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
     static const std::map<std::string_view, BinaryOperator> operators
     {

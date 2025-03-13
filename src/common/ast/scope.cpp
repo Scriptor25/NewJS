@@ -8,7 +8,7 @@ NJS::ScopeStatement::ScopeStatement(SourceLocation where, std::vector<StatementP
 {
 }
 
-void NJS::ScopeStatement::PGenLLVM(Builder &builder) const
+void NJS::ScopeStatement::PGenLLVM(Builder &builder)
 {
     builder.StackPush();
     for (const auto &child: Children)
@@ -36,7 +36,7 @@ NJS::ScopeExpression::ScopeExpression(SourceLocation where, std::vector<Statemen
 {
 }
 
-NJS::ValuePtr NJS::ScopeExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::ScopeExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
     builder.StackPush();
     for (const auto &child: Children)

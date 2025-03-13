@@ -9,7 +9,7 @@ bool NJS::operator==(const ReferenceInfo &a, const ReferenceInfo &b)
 {
     return a.Type == b.Type
            && a.IsReference == b.IsReference
-           && (a.IsReference ? a.IsConst == b.IsConst : true);
+           && (!a.IsReference || a.IsConst == b.IsConst);
 }
 
 bool NJS::operator!=(const ReferenceInfo &a, const ReferenceInfo &b)

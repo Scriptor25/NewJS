@@ -12,7 +12,9 @@ namespace NJS
     {
     public:
         [[nodiscard]] const TypePtr &GetType(const std::string &string) const;
-        TypePtr &DefType(const std::string &string);
+        TypePtr &GetTypeReference(const std::string &string);
+
+        [[nodiscard]] bool HasType(const std::string &string) const;
 
         IncompleteTypePtr GetIncompleteType(const std::string &name = {});
         VoidTypePtr GetVoidType();
@@ -21,7 +23,7 @@ namespace NJS
         PointerTypePtr GetPointerType(const TypePtr &element_type, bool is_const);
         ArrayTypePtr GetArrayType(const TypePtr &element_type, unsigned count);
         StructTypePtr GetUnsafeStructType(const std::vector<std::pair<std::string, TypePtr>> &element_types);
-        StructTypePtr GetStructType(const std::vector<std::pair<std::string, ReferenceInfo>> &elements);
+        StructTypePtr GetStructType(const std::vector<StructElement> &elements);
         TupleTypePtr GetTupleType(const std::vector<TypePtr> &element_types);
         FunctionTypePtr GetFunctionType(
             const ReferenceInfo &result,
@@ -44,13 +46,13 @@ namespace NJS
         std::shared_ptr<T> GetType(Args &&... args)
         {
             auto string = T::GenString(args...);
-            auto &ref = DefType(string);
+            auto &ref = GetTypeReference(string);
             if (!ref)
             {
                 const auto ptr = new T(*this, string, std::forward<Args>(args)...);
                 ref = std::shared_ptr<T>(ptr);
             }
-            return std::dynamic_pointer_cast<T>(ref);
+            return Type::As<T>(ref);
         }
 
         std::map<std::string, TypePtr> m_Types;

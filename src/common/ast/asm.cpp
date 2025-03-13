@@ -32,7 +32,7 @@ std::ostream &NJS::AsmExpression::Print(std::ostream &stream) const
     return stream << "asm(" << Source << ")";
 }
 
-NJS::ValuePtr NJS::AsmExpression::PGenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::AsmExpression::PGenLLVM(Builder &builder, const TypePtr &)
 {
     std::vector<llvm::Type *> operand_types;
     std::vector<llvm::Value *> operands;

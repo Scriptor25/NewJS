@@ -1,3 +1,4 @@
+#include <newjs/ast.hpp>
 #include <newjs/builder.hpp>
 #include <newjs/type.hpp>
 #include <newjs/value.hpp>
@@ -11,7 +12,8 @@ NJS::MemberValue NJS::Builder::CreateMember(const ValuePtr &value, const std::st
     const auto [
         index_,
         name_,
-        info_
+        info_,
+        default_
     ] = struct_type->GetMember(name);
     const auto [
         type_,
@@ -30,7 +32,9 @@ NJS::MemberValue NJS::Builder::CreateMember(const ValuePtr &value, const std::st
                 LValue::Create(*this, type_, GetBuilder().CreateLoad(GetBuilder().getPtrTy(), gep), is_const_),
                 true
             };
-        return {LValue::Create(*this, type_, gep, value->IsConst()), false};
+        if (is_const_)
+            return {CreateCast(default_->GenLLVM(*this, type_), type_), false};
+        return {LValue::Create(*this, type_, gep, value->IsConst() || is_const_), false};
     }
 
     const auto member_value = GetBuilder().CreateExtractValue(value->Load(), index_);

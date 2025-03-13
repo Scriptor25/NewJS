@@ -12,7 +12,7 @@ NJS::IntegerExpression::IntegerExpression(SourceLocation where, TypePtr type, co
 {
 }
 
-NJS::ValuePtr NJS::IntegerExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type) const
+NJS::ValuePtr NJS::IntegerExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
     const auto type = Type
                           ? Type

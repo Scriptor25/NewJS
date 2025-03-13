@@ -11,6 +11,6 @@ std::ostream &NJS::ClassStatement::Print(std::ostream &stream) const
     return stream << "class " << Name;
 }
 
-void NJS::ClassStatement::PGenLLVM(Builder &builder) const
+void NJS::ClassStatement::PGenLLVM(Builder &builder)
 {
 }

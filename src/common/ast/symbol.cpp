@@ -8,7 +8,7 @@ NJS::SymbolExpression::SymbolExpression(SourceLocation where, std::string name)
 {
 }
 
-NJS::ValuePtr NJS::SymbolExpression::PGenLLVM(Builder &builder, const TypePtr &) const
+NJS::ValuePtr NJS::SymbolExpression::PGenLLVM(Builder &builder, const TypePtr &)
 {
     return builder.GetVariable(Name);
 }
