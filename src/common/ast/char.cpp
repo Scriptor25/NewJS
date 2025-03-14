@@ -11,14 +11,14 @@ NJS::CharExpression::CharExpression(SourceLocation where, const char value)
 {
 }
 
+std::ostream &NJS::CharExpression::Print(std::ostream &stream) const
+{
+    return stream << '\'' << Value << '\'';
+}
+
 NJS::ValuePtr NJS::CharExpression::PGenLLVM(Builder &builder, const TypePtr &)
 {
     const auto result_type = builder.GetTypeContext().GetCharType();
     const auto result_value = builder.GetBuilder().getInt8(Value);
     return RValue::Create(builder, result_type, result_value);
-}
-
-std::ostream &NJS::CharExpression::Print(std::ostream &stream) const
-{
-    return stream << '\'' << Value << '\'';
 }

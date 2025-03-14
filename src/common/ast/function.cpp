@@ -26,28 +26,56 @@ NJS::FunctionStatement::FunctionStatement(
 {
 }
 
-void NJS::FunctionStatement::PGenLLVM(Builder &builder)
+std::ostream &NJS::FunctionStatement::Print(std::ostream &stream) const
 {
-    std::string function_name;
     if (Flags & FunctionFlags_Extern)
-        function_name = Name;
-    else if (Flags & FunctionFlags_Operator)
+        stream << "extern ";
+
+    stream << "function ";
+
+    if (Flags & FunctionFlags_Operator)
+        stream << "operator";
+
+    stream << Name << "(";
+    for (unsigned i = 0; i < Parameters.size(); ++i)
     {
-        if (Parameters.size() == 1)
-            function_name = builder.GetName(
-                Flags & FunctionFlags_Absolute,
-                (IsVarArg ? std::string() : Name)
-                + std::to_string(Parameters[0]->Info.GetHash())
-                + (IsVarArg ? Name : std::string()));
-        else if (Parameters.size() == 2)
-            function_name = builder.GetName(
-                Flags & FunctionFlags_Absolute,
-                std::to_string(Parameters[0]->Info.GetHash())
-                + Name
-                + std::to_string(Parameters[1]->Info.GetHash()));
+        if (i > 0)
+            stream << ", ";
+        Parameters[i]->Print(stream, true);
+    }
+    if (IsVarArg)
+    {
+        if (!Parameters.empty())
+            stream << ", ";
+        stream << "...";
+    }
+    Result.Print(stream << "): ");
+    if (Body)
+        Body->Print(stream << ' ');
+    return stream;
+}
+
+void NJS::FunctionStatement::PGenLLVM(Builder &builder, bool is_export)
+{
+    const bool is_extern = Flags & FunctionFlags_Extern;
+    const bool is_operator = Flags & FunctionFlags_Operator;
+    const bool is_absolute = Flags & FunctionFlags_Absolute;
+
+    std::string function_name;
+    if (is_extern)
+    {
+        function_name = Name;
+    }
+    else if (is_operator)
+    {
+        function_name = builder.GetName(
+            is_absolute,
+            Builder::GetFunctionName({}, Name, Parameters, IsVarArg, is_extern, is_operator));
     }
     else
-        function_name = builder.GetName(Flags & FunctionFlags_Absolute, Name);
+    {
+        function_name = builder.GetName(is_absolute, Name);
+    }
 
     std::vector<ReferenceInfo> parameters;
     for (const auto &parameter: Parameters)
@@ -61,14 +89,14 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder)
     {
         function = llvm::Function::Create(
             type->GenFnLLVM(builder),
-            Flags & (FunctionFlags_Export | FunctionFlags_Extern)
+            is_export || is_extern
                 ? llvm::GlobalValue::ExternalLinkage
                 : llvm::GlobalValue::InternalLinkage,
             function_name,
             builder.GetModule());
     }
 
-    if (Flags & FunctionFlags_Operator)
+    if (is_operator)
     {
         if (Parameters.size() == 1)
             builder.DefineOperator(
@@ -137,7 +165,7 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder)
             parameter->Info.IsReference);
     }
 
-    Body->GenLLVM(builder);
+    Body->GenLLVM(builder, false);
 
     builder.StackPop();
 
@@ -178,33 +206,62 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder)
     builder.GetBuilder().SetInsertPoint(insert_block);
 }
 
-std::ostream &NJS::FunctionStatement::Print(std::ostream &stream) const
+void NJS::FunctionStatement::PGenImport(
+    Builder &builder,
+    const std::string &module_id,
+    ValuePtr &dest_value,
+    ReferenceInfo &dest_info,
+    std::string &dest_name)
 {
-    if (Flags & FunctionFlags_Extern)
-        stream << "extern ";
+    const bool is_extern = Flags & FunctionFlags_Extern;
+    const bool is_operator = Flags & FunctionFlags_Operator;
 
-    stream << "function ";
+    const auto function_name = Builder::GetFunctionName(
+        module_id,
+        Name,
+        Parameters,
+        IsVarArg,
+        is_extern,
+        is_operator);
 
-    if (Flags & FunctionFlags_Operator)
-        stream << "operator";
+    std::vector<ReferenceInfo> parameters;
+    for (const auto &parameter: Parameters)
+        parameters.emplace_back(parameter->Info);
+    const auto type = builder.GetTypeContext().GetFunctionType(Result, parameters, IsVarArg);
 
-    stream << Name << "(";
-    for (unsigned i = 0; i < Parameters.size(); ++i)
+    const auto fn = builder.GetOrCreateFunction(
+        type->GenFnLLVM(builder),
+        llvm::GlobalValue::ExternalLinkage,
+        function_name);
+
+    if (is_operator)
     {
-        if (i > 0)
-            stream << ", ";
-        Parameters[i]->Print(stream, true);
+        if (Parameters.size() == 1)
+        {
+            builder.DefineOperator(
+                Name,
+                !IsVarArg,
+                Parameters[0]->Info,
+                Result,
+                fn);
+            return;
+        }
+        if (Parameters.size() == 2)
+        {
+            builder.DefineOperator(
+                Name,
+                Parameters[0]->Info,
+                Parameters[1]->Info,
+                Result,
+                fn);
+            return;
+        }
+        Error("TODO");
     }
-    if (IsVarArg)
-    {
-        if (!Parameters.empty())
-            stream << ", ";
-        stream << "...";
-    }
-    Result.Print(stream << "): ");
-    if (Body)
-        Body->Print(stream << ' ');
-    return stream;
+
+    dest_value = RValue::Create(builder, type, fn);
+    dest_info = {type, false, false};
+    dest_name = Name;
 }
 
 NJS::FunctionExpression::FunctionExpression(
@@ -219,6 +276,29 @@ NJS::FunctionExpression::FunctionExpression(
       Result(std::move(result)),
       Body(std::move(body))
 {
+}
+
+std::ostream &NJS::FunctionExpression::Print(std::ostream &stream) const
+{
+    stream << '$';
+    if (!Parameters.empty())
+    {
+        stream << '(';
+        for (unsigned i = 0; i < Parameters.size(); ++i)
+        {
+            if (i > 0)
+                stream << ", ";
+            Parameters[i]->Print(stream, true);
+        }
+        if (IsVarArg)
+        {
+            if (!Parameters.empty())
+                stream << ", ";
+            stream << "...";
+        }
+        Result.Print(stream << "): ") << ' ';
+    }
+    return Body->Print(stream);
 }
 
 NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr &)
@@ -263,7 +343,7 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
             parameter->Info.IsReference);
     }
 
-    Body->GenLLVM(builder);
+    Body->GenLLVM(builder, false);
 
     builder.StackPop();
 
@@ -303,27 +383,4 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
 
     builder.GetBuilder().SetInsertPoint(insert_block);
     return RValue::Create(builder, type, function);
-}
-
-std::ostream &NJS::FunctionExpression::Print(std::ostream &stream) const
-{
-    stream << '$';
-    if (!Parameters.empty())
-    {
-        stream << '(';
-        for (unsigned i = 0; i < Parameters.size(); ++i)
-        {
-            if (i > 0)
-                stream << ", ";
-            Parameters[i]->Print(stream, true);
-        }
-        if (IsVarArg)
-        {
-            if (!Parameters.empty())
-                stream << ", ";
-            stream << "...";
-        }
-        Result.Print(stream << "): ") << ' ';
-    }
-    return Body->Print(stream);
 }

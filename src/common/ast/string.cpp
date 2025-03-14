@@ -11,14 +11,14 @@ NJS::StringExpression::StringExpression(SourceLocation where, std::string value)
 {
 }
 
+std::ostream &NJS::StringExpression::Print(std::ostream &stream) const
+{
+    return stream << '"' << Value << '"';
+}
+
 NJS::ValuePtr NJS::StringExpression::PGenLLVM(Builder &builder, const TypePtr &)
 {
     const auto type = builder.GetTypeContext().GetStringType();
     const auto value = builder.GetString(Value);
     return RValue::Create(builder, type, value);
-}
-
-std::ostream &NJS::StringExpression::Print(std::ostream &stream) const
-{
-    return stream << '"' << Value << '"';
 }

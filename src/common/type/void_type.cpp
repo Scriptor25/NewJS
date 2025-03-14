@@ -7,7 +7,7 @@ std::string NJS::VoidType::GenString()
     return "void";
 }
 
-size_t NJS::VoidType::GetHash() const
+unsigned NJS::VoidType::GenHash()
 {
     return 0x01;
 }
@@ -28,8 +28,13 @@ bool NJS::VoidType::TypeInfo(Builder &builder, std::vector<llvm::Value *> &argum
     return false;
 }
 
-NJS::VoidType::VoidType(TypeContext &type_context, std::string string)
-    : Type(type_context, std::move(string))
+std::ostream &NJS::VoidType::Print(std::ostream &stream) const
+{
+    return stream << "void";
+}
+
+NJS::VoidType::VoidType(TypeContext &type_context, const unsigned hash, std::string string)
+    : Type(type_context, hash, std::move(string))
 {
 }
 

@@ -6,7 +6,6 @@
 namespace NJS
 {
     class TypeContext;
-    class TemplateContext;
 
     class Parser;
     class Builder;
@@ -50,6 +49,7 @@ namespace NJS
     using ValuePtr = std::shared_ptr<Value>;
 
     struct Statement;
+    struct ExportStatement;
     struct ForStatement;
     struct FunctionStatement;
     struct IfStatement;
@@ -61,6 +61,7 @@ namespace NJS
     struct WhileStatement;
 
     using StatementPtr = std::shared_ptr<Statement>;
+    using ExportStatementPtr = std::shared_ptr<ExportStatement>;
     using FunctionStatementPtr = std::shared_ptr<FunctionStatement>;
 
     struct Expression;
@@ -92,10 +93,9 @@ namespace NJS
     {
         FunctionFlags_None = 0,
         FunctionFlags_Extern = 1 << 0,
-        FunctionFlags_Export = 1 << 1,
-        FunctionFlags_Operator = 1 << 2,
-        FunctionFlags_Template = 1 << 3,
-        FunctionFlags_Absolute = 1 << 4,
+        FunctionFlags_Operator = 1 << 1,
+        FunctionFlags_Template = 1 << 2,
+        FunctionFlags_Absolute = 1 << 3,
     };
 
     struct ValueInfo;
@@ -112,7 +112,7 @@ namespace NJS
 
     std::string TypeString(const TypePtr &type);
 
-    bool operator==(TypePtr a, TypePtr b);
+    bool operator==(const TypePtr &a, const TypePtr &b);
     bool operator!=(const TypePtr &a, const TypePtr &b);
 }
 

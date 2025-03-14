@@ -20,7 +20,21 @@ NJS::ForStatement::ForStatement(
 {
 }
 
-void NJS::ForStatement::PGenLLVM(Builder &builder)
+std::ostream &NJS::ForStatement::Print(std::ostream &stream) const
+{
+    stream << "for (";
+    if (Initializer)
+        Initializer->Print(stream);
+    stream << ';';
+    if (Condition)
+        Condition->Print(stream << ' ');
+    stream << ';';
+    if (Loop)
+        Loop->Print(stream << ' ');
+    return Body->Print(stream << ") ");
+}
+
+void NJS::ForStatement::PGenLLVM(Builder &builder, bool)
 {
     const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
     const auto head_block = llvm::BasicBlock::Create(builder.GetContext(), "head", parent_function);
@@ -33,7 +47,7 @@ void NJS::ForStatement::PGenLLVM(Builder &builder)
     builder.StackPush({}, {}, post_loop_block, tail_block);
 
     if (Initializer)
-        Initializer->GenLLVM(builder);
+        Initializer->GenLLVM(builder, false);
 
     builder.GetBuilder().CreateBr(head_block);
 
@@ -58,30 +72,16 @@ void NJS::ForStatement::PGenLLVM(Builder &builder)
     }
 
     builder.GetBuilder().SetInsertPoint(loop_block);
-    Body->GenLLVM(builder);
+    Body->GenLLVM(builder, false);
     builder.GetBuilder().CreateBr(post_loop_block);
 
     if (Loop)
     {
         builder.GetBuilder().SetInsertPoint(post_loop_block);
-        Loop->GenLLVM(builder);
+        Loop->GenLLVM(builder, false);
         builder.GetBuilder().CreateBr(head_block);
     }
 
     builder.GetBuilder().SetInsertPoint(tail_block);
     builder.StackPop();
-}
-
-std::ostream &NJS::ForStatement::Print(std::ostream &stream) const
-{
-    stream << "for (";
-    if (Initializer)
-        Initializer->Print(stream);
-    stream << ';';
-    if (Condition)
-        Condition->Print(stream << ' ');
-    stream << ';';
-    if (Loop)
-        Loop->Print(stream << ' ');
-    return Body->Print(stream << ") ");
 }

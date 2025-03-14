@@ -37,7 +37,7 @@ NJS::ExpressionPtr NJS::Parser::ParseFormatExpression()
         std::stringstream stream(source.substr(i + 1));
         Parser parser(
             m_TypeContext,
-            m_TemplateContext,
+            m_Builder,
             stream,
             SourceLocation(where.Filename, where.Row, where.Column + i + 1),
             m_MacroMap,

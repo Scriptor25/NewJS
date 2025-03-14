@@ -4,29 +4,35 @@
 #include <newjs/std.hpp>
 #include <newjs/type.hpp>
 
-std::string NJS::StructType::GenString(const std::vector<StructElement> &elements)
+std::string NJS::StructType::GenString(const std::vector<StructElement> &elements, const std::string &name)
 {
-    std::map<std::string, ReferenceInfo> element_map;
-    for (auto &[name_, info_, default_]: elements)
-        element_map[name_] = info_;
+    if (elements.empty())
+        return "{}" + (name.empty() ? "" : '.' + name);
 
     std::string dst = "{ ";
-    auto first = true;
-    for (auto &[name_, info_]: element_map)
+    for (unsigned i = 0; i < elements.size(); ++i)
     {
-        if (first)
-            first = false;
-        else
+        if (i > 0)
             dst += ", ";
-        dst += name_ + ": " + info_.GetString();
+
+        auto &[name_, info_, default_] = elements[i];
+
+        if (info_.IsConst)
+            dst += "const ";
+        if (info_.IsReference)
+            dst += "&";
+
+        dst += name_ + ": " + info_.Type->GetString();
     }
-    return dst += " }";
+    return dst + " }" + (name.empty() ? "" : '.' + name);
 }
 
-size_t NJS::StructType::GetHash() const
+unsigned NJS::StructType::GenHash(const std::vector<StructElement> &elements, const std::string &name)
 {
     unsigned hash = 0x06;
-    for (auto &element: m_Elements)
+    if (!name.empty())
+        return CombineHashes(hash, std::hash<std::string>()(name));
+    for (auto &element: elements)
         hash = CombineHashes(hash, element.Info.GetHash());
     return hash;
 }
@@ -54,6 +60,11 @@ NJS::MemberInfo NJS::StructType::GetMember(const unsigned index) const
     return {index, m_Elements[index].Name, m_Elements[index].Info, m_Elements[index].Default};
 }
 
+void NJS::StructType::SetElements(const std::vector<StructElement> &elements)
+{
+    m_Elements = elements;
+}
+
 bool NJS::StructType::TypeInfo(Builder &builder, std::vector<llvm::Value *> &arguments) const
 {
     arguments.emplace_back(builder.GetBuilder().getInt32(ID_STRUCT));
@@ -67,21 +78,26 @@ bool NJS::StructType::TypeInfo(Builder &builder, std::vector<llvm::Value *> &arg
     return any_incomplete;
 }
 
-static unsigned struct_count = 0;
+std::ostream &NJS::StructType::Print(std::ostream &stream) const
+{
+    return stream << "{}." << m_Name;
+}
 
 NJS::StructType::StructType(
     TypeContext &type_context,
+    const unsigned hash,
     std::string string,
-    std::vector<StructElement> elements)
-    : Type(type_context, std::move(string)),
+    std::vector<StructElement> elements,
+    std::string name)
+    : Type(type_context, hash, std::move(string)),
       m_Elements(std::move(elements)),
-      m_Index(struct_count++)
+      m_Name(std::move(name))
 {
 }
 
 llvm::Type *NJS::StructType::GenLLVM(const Builder &builder) const
 {
-    const auto struct_name = "struct." + std::to_string(m_Index);
+    const auto struct_name = "struct." + m_Name;
     if (const auto struct_type = llvm::StructType::getTypeByName(builder.GetContext(), struct_name))
         return struct_type;
 

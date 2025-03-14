@@ -18,7 +18,7 @@ std::ostream &NJS::ClassStatement::Print(std::ostream &stream) const
     return stream << "class " << Name;
 }
 
-void NJS::ClassStatement::PGenLLVM(Builder &builder)
+void NJS::ClassStatement::PGenLLVM(Builder &builder, bool is_export)
 {
     for (const auto &function: Functions)
         (void) function->GenLLVM(builder, nullptr);

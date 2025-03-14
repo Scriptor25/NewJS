@@ -27,23 +27,48 @@ static std::string escape(std::string src)
     return src;
 }
 
-NJS::ExpressionPtr NJS::Macro::Inflate(Parser &parent) const try
+std::pair<NJS::SourceLocation, std::string> NJS::Macro::PrepareSource(Parser &parent) const
 {
     auto source = Source;
     auto where = parent.CurrentLocation();
+
     if (!Parameters.empty())
     {
         parent.Expect("(");
-        for (const auto &parameter: Parameters)
+        for (const auto &[name_, type_]: Parameters)
         {
-            auto argument = parent.ParseStatement();
-            std::stringstream stream;
-            argument->Print(stream);
-            auto argument_string = stream.str();
+            std::string argument_string;
+            switch (type_)
+            {
+                case MacroParameterType_Statement:
+                {
+                    auto argument = parent.ParseStatement();
+                    std::stringstream stream;
+                    argument->Print(stream);
+                    argument_string = stream.str();
+                    break;
+                }
+                case MacroParameterType_Expression:
+                {
+                    auto argument = parent.ParseExpression();
+                    std::stringstream stream;
+                    argument->Print(stream);
+                    argument_string = stream.str();
+                    break;
+                }
+                case MacroParameterType_Type:
+                {
+                    auto argument = parent.ParseType();
+                    std::stringstream stream;
+                    argument->Print(stream);
+                    argument_string = stream.str();
+                    break;
+                }
+            }
 
-            replace_all(source, "##" + parameter, to_upper(escape(argument_string)));
-            replace_all(source, "#" + parameter, escape(argument_string));
-            replace_all(source, "%" + parameter, argument_string);
+            replace_all(source, "##" + name_, to_upper(escape(argument_string)));
+            replace_all(source, "#" + name_, escape(argument_string));
+            replace_all(source, "%" + name_, argument_string);
 
             if (!parent.At(")"))
                 parent.Expect(",");
@@ -51,17 +76,29 @@ NJS::ExpressionPtr NJS::Macro::Inflate(Parser &parent) const try
         parent.Expect(")");
     }
 
+    return {where, source};
+}
+
+NJS::ExpressionPtr NJS::Macro::Inflate(Parser &parent) const try
+{
+    auto [where, source] = PrepareSource(parent);
     std::stringstream stream(source);
-    Parser parser(
-        parent.GetTypeContext(),
-        parent.GetTemplateContext(),
-        stream,
-        where,
-        parent.GetMacroMap(),
-        parent.IsMain());
+    Parser parser(parent, stream, where);
     return parser.ParseExpression();
 }
 catch (const RTError &error)
 {
-    Error(error, Where, "in macro '{}'", Source);
+    Error(error, Where, "failed to inflate macro '{}'", Source);
+}
+
+NJS::TypePtr NJS::Macro::InflateType(Parser &parent) const try
+{
+    auto [where, source] = PrepareSource(parent);
+    std::stringstream stream(source);
+    Parser parser(parent, stream, where);
+    return parser.ParseType();
+}
+catch (const RTError &error)
+{
+    Error(error, Where, "failed to inflate type macro '{}'", Source);
 }

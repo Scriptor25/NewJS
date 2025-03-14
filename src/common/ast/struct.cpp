@@ -15,6 +15,19 @@ NJS::StructExpression::StructExpression(
 {
 }
 
+std::ostream &NJS::StructExpression::Print(std::ostream &stream) const
+{
+    if (Elements.empty())
+        return stream << "{}";
+
+    stream << '{' << std::endl;
+    Indent();
+    for (const auto &[name_, value_]: Elements)
+        value_->Print(Spacing(stream) << name_ << ": ") << ',' << std::endl;
+    Exdent();
+    return Spacing(stream) << '}';
+}
+
 NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
     StructTypePtr result_type;
@@ -37,7 +50,7 @@ NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &e
     }
 
     if (!result_type)
-        result_type = builder.GetTypeContext().GetUnsafeStructType(element_types);
+        result_type = builder.GetTypeContext().GetStructType(element_types, {});
 
     const auto struct_type = result_type->GetLLVM<llvm::StructType>(builder);
     llvm::Value *struct_value = llvm::ConstantStruct::getNullValue(struct_type);
@@ -63,17 +76,4 @@ NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &e
     }
 
     return RValue::Create(builder, result_type, struct_value);
-}
-
-std::ostream &NJS::StructExpression::Print(std::ostream &stream) const
-{
-    if (Elements.empty())
-        return stream << "{}";
-
-    stream << '{' << std::endl;
-    Indent();
-    for (const auto &[name, value]: Elements)
-        value->Print(Spacing(stream) << name << ": ") << ',' << std::endl;
-    Exdent();
-    return Spacing(stream) << '}';
 }

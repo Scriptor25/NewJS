@@ -7,9 +7,9 @@ std::string NJS::FloatingPointType::GenString(const unsigned bits)
     return 'f' + std::to_string(bits);
 }
 
-size_t NJS::FloatingPointType::GetHash() const
+unsigned NJS::FloatingPointType::GenHash(const unsigned bits)
 {
-    return std::hash<unsigned>()(m_Bits) ^ 0x03;
+    return std::hash<unsigned>()(bits) ^ 0x03;
 }
 
 bool NJS::FloatingPointType::IsPrimitive() const
@@ -36,8 +36,17 @@ bool NJS::FloatingPointType::TypeInfo(
     return false;
 }
 
-NJS::FloatingPointType::FloatingPointType(TypeContext &type_context, std::string string, const unsigned bits)
-    : Type(type_context, std::move(string)),
+std::ostream &NJS::FloatingPointType::Print(std::ostream &stream) const
+{
+    return stream << m_String;
+}
+
+NJS::FloatingPointType::FloatingPointType(
+    TypeContext &type_context,
+    const unsigned hash,
+    std::string string,
+    const unsigned bits)
+    : Type(type_context, hash, std::move(string)),
       m_Bits(bits)
 {
 }

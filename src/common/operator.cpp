@@ -5,7 +5,7 @@
 #include <newjs/value.hpp>
 
 NJS::ValuePtr NJS::OperatorEQ(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -33,7 +33,7 @@ NJS::ValuePtr NJS::OperatorEQ(
 }
 
 NJS::ValuePtr NJS::OperatorNE(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -61,7 +61,7 @@ NJS::ValuePtr NJS::OperatorNE(
 }
 
 NJS::ValuePtr NJS::OperatorLT(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -97,7 +97,7 @@ NJS::ValuePtr NJS::OperatorLT(
 }
 
 NJS::ValuePtr NJS::OperatorLE(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -133,7 +133,7 @@ NJS::ValuePtr NJS::OperatorLE(
 }
 
 NJS::ValuePtr NJS::OperatorGT(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -169,7 +169,7 @@ NJS::ValuePtr NJS::OperatorGT(
 }
 
 NJS::ValuePtr NJS::OperatorGE(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -205,7 +205,7 @@ NJS::ValuePtr NJS::OperatorGE(
 }
 
 NJS::ValuePtr NJS::OperatorLOr(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -237,7 +237,7 @@ NJS::ValuePtr NJS::OperatorLOr(
 }
 
 NJS::ValuePtr NJS::OperatorLXor(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -269,7 +269,7 @@ NJS::ValuePtr NJS::OperatorLXor(
 }
 
 NJS::ValuePtr NJS::OperatorLAnd(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -301,7 +301,7 @@ NJS::ValuePtr NJS::OperatorLAnd(
 }
 
 NJS::ValuePtr NJS::OperatorOr(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -323,7 +323,7 @@ NJS::ValuePtr NJS::OperatorOr(
 }
 
 NJS::ValuePtr NJS::OperatorXor(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -345,7 +345,7 @@ NJS::ValuePtr NJS::OperatorXor(
 }
 
 NJS::ValuePtr NJS::OperatorAnd(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -367,7 +367,7 @@ NJS::ValuePtr NJS::OperatorAnd(
 }
 
 NJS::ValuePtr NJS::OperatorAdd(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -401,7 +401,7 @@ NJS::ValuePtr NJS::OperatorAdd(
 }
 
 NJS::ValuePtr NJS::OperatorSub(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -444,7 +444,7 @@ NJS::ValuePtr NJS::OperatorSub(
 }
 
 NJS::ValuePtr NJS::OperatorMul(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -472,7 +472,7 @@ NJS::ValuePtr NJS::OperatorMul(
 }
 
 NJS::ValuePtr NJS::OperatorDiv(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -502,7 +502,7 @@ NJS::ValuePtr NJS::OperatorDiv(
 }
 
 NJS::ValuePtr NJS::OperatorRem(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -532,7 +532,7 @@ NJS::ValuePtr NJS::OperatorRem(
 }
 
 NJS::ValuePtr NJS::OperatorPow(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -561,7 +561,7 @@ NJS::ValuePtr NJS::OperatorPow(
     {
         if (left_type != right_type)
         {
-            const auto type = GetHigherOrderOf(builder.GetTypeContext(), left_type, right_type);
+            const auto type = CombineTypes(builder.GetTypeContext(), left_type, right_type);
             const auto left_cast = builder.CreateCast(left, type);
             const auto right_cast = builder.CreateCast(right, type);
             return OperatorPow(builder, left_cast, right_cast);
@@ -577,7 +577,7 @@ NJS::ValuePtr NJS::OperatorPow(
 }
 
 NJS::ValuePtr NJS::OperatorShL(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -599,7 +599,7 @@ NJS::ValuePtr NJS::OperatorShL(
 }
 
 NJS::ValuePtr NJS::OperatorShR(
-    Builder &builder,
+    const Builder &builder,
     const ValuePtr &left,
     const ValuePtr &right)
 {
@@ -622,7 +622,7 @@ NJS::ValuePtr NJS::OperatorShR(
     return nullptr;
 }
 
-NJS::ValuePtr NJS::OperatorInc(Builder &builder, const ValuePtr &operand)
+NJS::ValuePtr NJS::OperatorInc(const Builder &builder, const ValuePtr &operand)
 {
     const auto value = operand->Load();
     const auto type = operand->GetType();
@@ -653,7 +653,7 @@ NJS::ValuePtr NJS::OperatorInc(Builder &builder, const ValuePtr &operand)
     return nullptr;
 }
 
-NJS::ValuePtr NJS::OperatorDec(Builder &builder, const ValuePtr &operand)
+NJS::ValuePtr NJS::OperatorDec(const Builder &builder, const ValuePtr &operand)
 {
     const auto value = operand->Load();
     const auto type = operand->GetType();
@@ -684,7 +684,7 @@ NJS::ValuePtr NJS::OperatorDec(Builder &builder, const ValuePtr &operand)
     return nullptr;
 }
 
-NJS::ValuePtr NJS::OperatorNeg(Builder &builder, const ValuePtr &operand)
+NJS::ValuePtr NJS::OperatorNeg(const Builder &builder, const ValuePtr &operand)
 {
     const auto value = operand->Load();
     const auto type = operand->GetType();
@@ -704,7 +704,7 @@ NJS::ValuePtr NJS::OperatorNeg(Builder &builder, const ValuePtr &operand)
     return nullptr;
 }
 
-NJS::ValuePtr NJS::OperatorLNot(Builder &builder, const ValuePtr &operand)
+NJS::ValuePtr NJS::OperatorLNot(const Builder &builder, const ValuePtr &operand)
 {
     const auto value = operand->Load();
     const auto type = operand->GetType();
@@ -718,7 +718,7 @@ NJS::ValuePtr NJS::OperatorLNot(Builder &builder, const ValuePtr &operand)
     return nullptr;
 }
 
-NJS::ValuePtr NJS::OperatorNot(Builder &builder, const ValuePtr &operand)
+NJS::ValuePtr NJS::OperatorNot(const Builder &builder, const ValuePtr &operand)
 {
     const auto value = operand->Load();
     const auto type = operand->GetType();
@@ -732,7 +732,7 @@ NJS::ValuePtr NJS::OperatorNot(Builder &builder, const ValuePtr &operand)
     return nullptr;
 }
 
-NJS::ValuePtr NJS::OperatorRef(Builder &builder, const ValuePtr &operand)
+NJS::ValuePtr NJS::OperatorRef(const Builder &builder, const ValuePtr &operand)
 {
     const auto pointer = operand->GetPointer();
     const auto type = operand->GetType();
@@ -743,7 +743,7 @@ NJS::ValuePtr NJS::OperatorRef(Builder &builder, const ValuePtr &operand)
         pointer);
 }
 
-NJS::ValuePtr NJS::OperatorDeref(Builder &builder, const ValuePtr &operand)
+NJS::ValuePtr NJS::OperatorDeref(const Builder &builder, const ValuePtr &operand)
 {
     const auto value = operand->Load();
     const auto type = operand->GetType();

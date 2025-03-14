@@ -20,7 +20,7 @@ extern function tan(x: f64): f64
 extern function malloc(count: u64): void[]
 extern function free(block: void[]): void
 
-type camera
+type camera = {}.camera
 
 type scanline_t = {
     const &self: camera,
@@ -29,16 +29,11 @@ type scanline_t = {
     j: u32,
 }
 
-type<F, S> pair_t = {
-    fst: F,
-    snd: S,
-}
-
 class camera {
 
     initialize(&self: camera) {
         self.image_height = self.image_width / self.aspect_ratio
-        self.image_height = max_of<u32>(self.image_height, 1)
+        self.image_height = MAX(self.image_height, 1)
 
         self.pixel_sample_scale = 1.0 / self.samples_per_pixel
 
@@ -131,7 +126,7 @@ class camera {
         img.open("./out.ppm", self.image_width, self.image_height)
 
         const THREAD_COUNT: u32 = 10
-        const ts: pair_t<pthread_t, scanline_t>[] = malloc(THREAD_COUNT * sizeof<pair_t<pthread_t, scanline_t> >)
+        const ts: PAIR(pthread_t, scanline_t)[] = malloc(THREAD_COUNT * sizeof<PAIR(pthread_t, scanline_t)>)
         for (let j: u32; j < self.image_height; j += THREAD_COUNT) {
             for (let x: u32; x < THREAD_COUNT && j + x < self.image_height; ++x) {
                 ts[x].snd = {

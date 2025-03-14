@@ -7,21 +7,17 @@ import metal         from "./metal.njs"
 import sphere        from "./sphere.njs"
 import vec3          from "./vec3.njs"
 
+#NEW(T: type, V: expr) "(&(*(malloc(sizeof<%T>) as %T[]) = %V))"
+
 extern function malloc(count: u64): void[]
 extern function free(block: void[])
 
 extern function println(msg: i8[])
 
-function<T> make(const &value: T): T[] {
-    const ptr: T[] = malloc(sizeof<T>);
-    (*ptr) = value;
-    return ptr
-}
+const world = NEW(hittable_list, {})
 
-const world = make<hittable_list>({})
-
-const ground_material = make<lambertian>({ albedo: { e: [0.5, 0.5, 0.5] } })
-const ground_sphere = make<sphere>(sphere.stationary({ e: [0, -1000, 0] }, 1000, ground_material))
+const ground_material = NEW(lambertian, { albedo: { e: [0.5, 0.5, 0.5] } })
+const ground_sphere = NEW(sphere, sphere.stationary({ e: [0, -1000, 0] }, 1000, ground_material))
 world*.add(ground_sphere)
 
 for (let a = -11; a < 11; ++a) {
@@ -38,33 +34,33 @@ for (let a = -11; a < 11; ++a) {
             if (choose_mat < 0.8) {
                 // diffuse
                 const albedo = vec3.random_vector() * vec3.random_vector()
-                sphere_material = make<lambertian>({ albedo })
+                sphere_material = NEW(lambertian, { albedo })
             } else if (choose_mat < 0.95) {
                 // metal
                 const albedo = vec3.random_range_vector(0.5, 1)
                 const fuzz = common.random_range(0, 0.5)
-                sphere_material = make<metal>({ albedo, fuzz })
+                sphere_material = NEW(metal, { albedo, fuzz })
             } else {
                 // glass
-                sphere_material = make<dielectric>({ albedo: { e: [1, 1, 1] }, refraction_index: 1.5 })
+                sphere_material = NEW(dielectric, { albedo: { e: [1, 1, 1] }, refraction_index: 1.5 })
             }
 
-            const sphere = make<sphere>(sphere.stationary(center, 0.2, sphere_material))
+            const sphere = NEW(sphere, sphere.stationary(center, 0.2, sphere_material))
             world*.add(sphere)
         }
     }
 }
 
-const material1 = make<dielectric>({ albedo: { e: [1, 1, 1] }, refraction_index: 1.5 })
-const sphere1 = make<sphere>(sphere.stationary({ e: [0, 1, 0] }, 1.0, material1))
+const material1 = NEW(dielectric, { albedo: { e: [1, 1, 1] }, refraction_index: 1.5 })
+const sphere1 = NEW(sphere, sphere.stationary({ e: [0, 1, 0] }, 1.0, material1))
 world*.add(sphere1)
 
-const material2 = make<lambertian>({ albedo: { e: [0.4, 0.2, 0.1] } })
-const sphere2 = make<sphere>(sphere.stationary({ e: [-4, 1, 0] }, 1.0, material2))
+const material2 = NEW(lambertian, { albedo: { e: [0.4, 0.2, 0.1] } })
+const sphere2 = NEW(sphere, sphere.stationary({ e: [-4, 1, 0] }, 1.0, material2))
 world*.add(sphere2)
 
-const material3 = make<metal>({ albedo: { e: [0.7, 0.6, 0.5] }, fuzz: 0.0 })
-const sphere3 = make<sphere>(sphere.stationary({ e: [4, 1, 0] }, 1.0, material3))
+const material3 = NEW(metal, { albedo: { e: [0.7, 0.6, 0.5] }, fuzz: 0.0 })
+const sphere3 = NEW(sphere, sphere.stationary({ e: [4, 1, 0] }, 1.0, material3))
 world*.add(sphere3)
 
 let cam: camera

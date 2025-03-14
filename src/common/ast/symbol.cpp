@@ -8,12 +8,12 @@ NJS::SymbolExpression::SymbolExpression(SourceLocation where, std::string name)
 {
 }
 
-NJS::ValuePtr NJS::SymbolExpression::PGenLLVM(Builder &builder, const TypePtr &)
-{
-    return builder.GetVariable(Name);
-}
-
 std::ostream &NJS::SymbolExpression::Print(std::ostream &stream) const
 {
     return stream << Name;
+}
+
+NJS::ValuePtr NJS::SymbolExpression::PGenLLVM(Builder &builder, const TypePtr &)
+{
+    return builder.GetVariable(Name);
 }

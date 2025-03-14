@@ -9,13 +9,26 @@
 NJS::FormatExpression::FormatExpression(
     SourceLocation where,
     const unsigned operand_count,
-    std::map<unsigned, std::string> static_expressions,
+    std::map<unsigned, std::string> static_operands,
     std::map<unsigned, ExpressionPtr> dynamic_operands)
     : Expression(std::move(where)),
       OperandCount(operand_count),
-      StaticOperands(std::move(static_expressions)),
+      StaticOperands(std::move(static_operands)),
       DynamicOperands(std::move(dynamic_operands))
 {
+}
+
+std::ostream &NJS::FormatExpression::Print(std::ostream &stream) const
+{
+    stream << "f\"";
+    for (unsigned i = 0; i < OperandCount; ++i)
+    {
+        if (StaticOperands.contains(i))
+            stream << StaticOperands.at(i);
+        else if (DynamicOperands.contains(i))
+            DynamicOperands.at(i)->Print(stream << '{') << '}';
+    }
+    return stream << '"';
 }
 
 NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
@@ -40,9 +53,9 @@ NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
 
         if (DynamicOperands.contains(i))
         {
-            auto &dynamic = DynamicOperands.at(i);
+            const auto &dynamic = DynamicOperands.at(i);
 
-            const auto value = dynamic->GenLLVM(builder, {});
+            const auto value = dynamic->GenLLVM(builder, nullptr);
             const auto size = arguments.size();
 
             if (value->GetType()->TypeInfo(builder, arguments))
@@ -79,17 +92,4 @@ NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
     const auto buffer = builder.GetBuilder().CreateCall(format_callee, arguments);
 
     return RValue::Create(builder, builder.GetTypeContext().GetStringType(), buffer);
-}
-
-std::ostream &NJS::FormatExpression::Print(std::ostream &stream) const
-{
-    stream << "f\"";
-    for (unsigned i = 0; i < OperandCount; ++i)
-    {
-        if (StaticOperands.contains(i))
-            stream << StaticOperands.at(i);
-        else if (DynamicOperands.contains(i))
-            DynamicOperands.at(i)->Print(stream << '{') << '}';
-    }
-    return stream << '"';
 }

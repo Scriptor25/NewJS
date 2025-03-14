@@ -23,12 +23,15 @@ std::string NJS::FunctionType::GenString(
     return dst += ") => " + result.GetString();
 }
 
-size_t NJS::FunctionType::GetHash() const
+unsigned NJS::FunctionType::GenHash(
+    const ReferenceInfo &result,
+    const std::vector<ReferenceInfo> &parameters,
+    const bool is_var_arg)
 {
-    auto hash = CombineHashes(m_Result.GetHash(), 0x08);
-    for (unsigned i = 0; i < m_Parameters.size(); ++i)
-        hash = CombineHashes(hash, m_Parameters[i].GetHash());
-    return CombineHashes(hash, std::hash<bool>()(m_IsVarArg));
+    auto hash = CombineHashes(result.GetHash(), 0x08);
+    for (unsigned i = 0; i < parameters.size(); ++i)
+        hash = CombineHashes(hash, parameters[i].GetHash());
+    return CombineHashes(hash, std::hash<bool>()(is_var_arg));
 }
 
 bool NJS::FunctionType::IsPrimitive() const
@@ -67,6 +70,24 @@ bool NJS::FunctionType::TypeInfo(Builder &builder, std::vector<llvm::Value *> &a
     return false;
 }
 
+std::ostream &NJS::FunctionType::Print(std::ostream &stream) const
+{
+    stream << "(";
+    for (unsigned i = 0; i < m_Parameters.size(); ++i)
+    {
+        if (i > 0)
+            stream << ", ";
+        m_Parameters[i].Print(stream);
+    }
+    if (m_IsVarArg)
+    {
+        if (!m_Parameters.empty())
+            stream << ", ";
+        stream << "...";
+    }
+    return m_Result.Print(stream << ") => ");
+}
+
 llvm::FunctionType *NJS::FunctionType::GenFnLLVM(const Builder &builder) const
 {
     std::vector<llvm::Type *> types;
@@ -77,11 +98,12 @@ llvm::FunctionType *NJS::FunctionType::GenFnLLVM(const Builder &builder) const
 
 NJS::FunctionType::FunctionType(
     TypeContext &type_context,
+    const unsigned hash,
     std::string string,
     ReferenceInfo result,
     std::vector<ReferenceInfo> parameters,
     const bool is_var_arg)
-    : Type(type_context, std::move(string)),
+    : Type(type_context, hash, std::move(string)),
       m_Result(std::move(result)),
       m_Parameters(std::move(parameters)),
       m_IsVarArg(is_var_arg)

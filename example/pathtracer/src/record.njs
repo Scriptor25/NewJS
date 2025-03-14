@@ -1,7 +1,7 @@
 import vec3     from "./vec3.njs"
 import ray      from "./ray.njs"
 
-type material
+type material = {}.material
 
 class record {
     set_face_normal(&self: record, const &r: ray, const &outward_normal: vec3) {

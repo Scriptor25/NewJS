@@ -13,9 +13,21 @@ NJS::CallExpression::CallExpression(SourceLocation where, ExpressionPtr callee, 
 {
 }
 
+std::ostream &NJS::CallExpression::Print(std::ostream &stream) const
+{
+    Callee->Print(stream) << '(';
+    for (unsigned i = 0; i < Arguments.size(); ++i)
+    {
+        if (i > 0)
+            stream << ", ";
+        Arguments[i]->Print(stream);
+    }
+    return stream << ')';
+}
+
 NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
-    const auto callee = Callee->GenLLVM(builder, {});
+    const auto callee = Callee->GenLLVM(builder, nullptr);
 
     if (!callee->GetType()->IsFunction())
         Error(Where, "cannot call non-function callee of type {}", callee->GetType());
@@ -23,11 +35,11 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
     const auto function_type = Type::As<FunctionType>(callee->GetType());
     const auto parameter_count = function_type->GetParameterCount();
 
-    llvm::Value *first_argument{};
+    llvm::Value *first_argument = nullptr;
     if (const auto member_expression = std::dynamic_pointer_cast<MemberExpression>(Callee);
         member_expression && Arguments.size() == parameter_count - 1)
     {
-        auto object = member_expression->Object->GenLLVM(builder, {});
+        auto object = member_expression->Object->GenLLVM(builder, nullptr);
         if (member_expression->Dereference)
         {
             const auto pointer_type = Type::As<PointerType>(object->GetType());
@@ -59,7 +71,7 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
                         ? function_type->GetParameter(i)
                         : ReferenceInfo();
 
-        auto &argument = Arguments[i - has_first];
+        const auto &argument = Arguments[i - has_first];
         const auto argument_value = argument->GenLLVM(builder, info.Type);
 
         arguments[i] = info.SolveFor(builder, argument_value);
@@ -78,16 +90,4 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
     if (is_reference_)
         return LValue::Create(builder, type_, result_value, is_const_);
     return RValue::Create(builder, type_, result_value);
-}
-
-std::ostream &NJS::CallExpression::Print(std::ostream &stream) const
-{
-    Callee->Print(stream) << '(';
-    for (unsigned i = 0; i < Arguments.size(); ++i)
-    {
-        if (i > 0)
-            stream << ", ";
-        Arguments[i]->Print(stream);
-    }
-    return stream << ')';
 }

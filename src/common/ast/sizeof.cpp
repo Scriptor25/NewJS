@@ -12,9 +12,14 @@ NJS::SizeOfExpression::SizeOfExpression(SourceLocation where, ExpressionPtr oper
 {
 }
 
+std::ostream &NJS::SizeOfExpression::Print(std::ostream &stream) const
+{
+    return Operand->Print(stream << "sizeof(") << ")";
+}
+
 NJS::ValuePtr NJS::SizeOfExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
-    const auto operand = Operand->GenLLVM(builder, {});
+    const auto operand = Operand->GenLLVM(builder, nullptr);
 
     const auto type = expected_type && expected_type->IsInteger()
                           ? expected_type
@@ -25,9 +30,4 @@ NJS::ValuePtr NJS::SizeOfExpression::PGenLLVM(Builder &builder, const TypePtr &e
         operand->GetType()->GetSize(builder),
         Type::As<IntegerType>(type)->IsSigned());
     return RValue::Create(builder, type, size_value);
-}
-
-std::ostream &NJS::SizeOfExpression::Print(std::ostream &stream) const
-{
-    return Operand->Print(stream << "sizeof(") << ")";
 }

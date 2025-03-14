@@ -12,6 +12,11 @@ NJS::IntegerExpression::IntegerExpression(SourceLocation where, TypePtr type, co
 {
 }
 
+std::ostream &NJS::IntegerExpression::Print(std::ostream &stream) const
+{
+    return stream << Value;
+}
+
 NJS::ValuePtr NJS::IntegerExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
     const auto type = Type
@@ -24,9 +29,4 @@ NJS::ValuePtr NJS::IntegerExpression::PGenLLVM(Builder &builder, const TypePtr &
         builder,
         type,
         llvm::ConstantInt::get(type->GetLLVM(builder), Value, Type::As<IntegerType>(type)->IsSigned()));
-}
-
-std::ostream &NJS::IntegerExpression::Print(std::ostream &stream) const
-{
-    return stream << Value;
 }

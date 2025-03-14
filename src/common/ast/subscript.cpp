@@ -9,15 +9,15 @@ NJS::SubscriptExpression::SubscriptExpression(SourceLocation where, ExpressionPt
 {
 }
 
-NJS::ValuePtr NJS::SubscriptExpression::PGenLLVM(Builder &builder, const TypePtr &)
-{
-    const auto array = Array->GenLLVM(builder, {});
-    const auto index = Index->GenLLVM(builder, {});
-
-    return builder.CreateSubscript(array, index);
-}
-
 std::ostream &NJS::SubscriptExpression::Print(std::ostream &stream) const
 {
     return Index->Print(Array->Print(stream) << '[') << ']';
+}
+
+NJS::ValuePtr NJS::SubscriptExpression::PGenLLVM(Builder &builder, const TypePtr &)
+{
+    const auto array = Array->GenLLVM(builder, nullptr);
+    const auto index = Index->GenLLVM(builder, nullptr);
+
+    return builder.CreateSubscript(array, index);
 }

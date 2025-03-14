@@ -8,14 +8,6 @@ NJS::ScopeStatement::ScopeStatement(SourceLocation where, std::vector<StatementP
 {
 }
 
-void NJS::ScopeStatement::PGenLLVM(Builder &builder)
-{
-    builder.StackPush();
-    for (const auto &child: Children)
-        child->GenLLVM(builder);
-    builder.StackPop();
-}
-
 std::ostream &NJS::ScopeStatement::Print(std::ostream &stream) const
 {
     if (Children.empty())
@@ -29,21 +21,19 @@ std::ostream &NJS::ScopeStatement::Print(std::ostream &stream) const
     return Spacing(stream) << '}';
 }
 
+void NJS::ScopeStatement::PGenLLVM(Builder &builder, bool)
+{
+    builder.StackPush();
+    for (const auto &child: Children)
+        child->GenLLVM(builder, false);
+    builder.StackPop();
+}
+
 NJS::ScopeExpression::ScopeExpression(SourceLocation where, std::vector<StatementPtr> children, ExpressionPtr last)
     : Expression(std::move(where)),
       Children(std::move(children)),
       Last(std::move(last))
 {
-}
-
-NJS::ValuePtr NJS::ScopeExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
-{
-    builder.StackPush();
-    for (const auto &child: Children)
-        child->GenLLVM(builder);
-    auto result = Last->GenLLVM(builder, expected_type);
-    builder.StackPop();
-    return result;
 }
 
 std::ostream &NJS::ScopeExpression::Print(std::ostream &stream) const
@@ -58,4 +48,14 @@ std::ostream &NJS::ScopeExpression::Print(std::ostream &stream) const
     Last->Print(Spacing(stream)) << std::endl;
     Exdent();
     return Spacing(stream) << '}';
+}
+
+NJS::ValuePtr NJS::ScopeExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+{
+    builder.StackPush();
+    for (const auto &child: Children)
+        child->GenLLVM(builder, false);
+    auto result = Last->GenLLVM(builder, expected_type);
+    builder.StackPop();
+    return result;
 }

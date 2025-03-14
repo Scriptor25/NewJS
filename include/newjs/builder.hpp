@@ -138,6 +138,14 @@ namespace NJS
 
         llvm::Constant *GetString(const std::string &value);
 
+        static std::string GetFunctionName(
+            const std::string &module_id,
+            const std::string &name,
+            const std::vector<ParameterPtr> &parameters,
+            bool is_var_arg,
+            bool is_extern,
+            bool is_operator);
+
     private:
         std::string m_ModuleID;
         bool m_IsMain;

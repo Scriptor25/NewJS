@@ -34,7 +34,10 @@ void NJS::Linker::Link(std::unique_ptr<llvm::Module> &&module) const
     const auto source_name = module->getSourceFileName();
 
     if (verifyModule(*module, &llvm::errs()))
+    {
+        module->print(llvm::errs(), nullptr);
         Error("failed to verify module '{}' (from '{}')", module_id, source_name);
+    }
 
     if (llvm::Linker::linkModules(LLVMModule(), std::move(module)))
         Error("failed to link module '{}' (from '{}')", module_id, source_name);
@@ -59,7 +62,7 @@ void NJS::Linker::Emit(
 
     if (output_type == llvm::CodeGenFileType::Null)
     {
-        LLVMModule().print(output_stream, {});
+        LLVMModule().print(output_stream, nullptr);
         return;
     }
 

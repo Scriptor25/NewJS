@@ -7,11 +7,11 @@ std::string NJS::IntegerType::GenString(const unsigned bits, const bool is_signe
     return (is_signed ? 'i' : 'u') + std::to_string(bits);
 }
 
-size_t NJS::IntegerType::GetHash() const
+unsigned NJS::IntegerType::GenHash(const unsigned bits, const bool is_signed)
 {
-    const auto sign_hash = std::hash<bool>()(m_IsSigned);
-    const auto bits_hash = std::hash<unsigned>()(m_Bits);
-    return CombineHashes(sign_hash, bits_hash) ^ 0x02;
+    const auto bits_hash = std::hash<unsigned>()(bits);
+    const auto sign_hash = std::hash<bool>()(is_signed);
+    return CombineHashes(bits_hash, sign_hash) ^ 0x02;
 }
 
 bool NJS::IntegerType::IsPrimitive() const
@@ -42,12 +42,18 @@ bool NJS::IntegerType::TypeInfo(Builder &builder, std::vector<llvm::Value *> &ar
     return false;
 }
 
+std::ostream &NJS::IntegerType::Print(std::ostream &stream) const
+{
+    return stream << m_String;
+}
+
 NJS::IntegerType::IntegerType(
     TypeContext &type_context,
+    const unsigned hash,
     std::string string,
     const unsigned bits,
     const bool is_signed)
-    : Type(type_context, std::move(string)),
+    : Type(type_context, hash, std::move(string)),
       m_Bits(bits),
       m_IsSigned(is_signed)
 {

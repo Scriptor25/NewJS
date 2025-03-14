@@ -1,4 +1,6 @@
+#include <map>
 #include <set>
+#include <string_view>
 #include <utility>
 #include <newjs/ast.hpp>
 #include <newjs/builder.hpp>
@@ -21,30 +23,35 @@ NJS::BinaryExpression::BinaryExpression(
 {
 }
 
+std::ostream &NJS::BinaryExpression::Print(std::ostream &stream) const
+{
+    return RightOperand->Print(LeftOperand->Print(stream) << ' ' << Operator << ' ');
+}
+
 NJS::ValuePtr NJS::BinaryExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
     static const std::map<std::string_view, BinaryOperator> operators
     {
-        {"=="sv, {OperatorEQ}},
-        {"!="sv, {OperatorNE}},
-        {"<"sv, {OperatorLT}},
+        {"=="sv, OperatorEQ},
+        {"!="sv, OperatorNE},
+        {"<"sv, OperatorLT},
         {"<="sv, OperatorLE},
-        {">"sv, {OperatorGT}},
-        {">="sv, {OperatorGE}},
-        {"||"sv, {OperatorLOr}},
-        {"^^"sv, {OperatorLXor}},
-        {"&&"sv, {OperatorLAnd}},
-        {"|"sv, {OperatorOr}},
-        {"^"sv, {OperatorXor}},
-        {"&"sv, {OperatorAnd}},
+        {">"sv, OperatorGT},
+        {">="sv, OperatorGE},
+        {"||"sv, OperatorLOr},
+        {"^^"sv, OperatorLXor},
+        {"&&"sv, OperatorLAnd},
+        {"|"sv, OperatorOr},
+        {"^"sv, OperatorXor},
+        {"&"sv, OperatorAnd},
         {"+"sv, OperatorAdd},
         {"-"sv, OperatorSub},
-        {"*"sv, {OperatorMul}},
-        {"/"sv, {OperatorDiv}},
-        {"%"sv, {OperatorRem}},
-        {"**"sv, {OperatorPow}},
-        {"<<"sv, {OperatorShL}},
-        {">>"sv, {OperatorShR}},
+        {"*"sv, OperatorMul},
+        {"/"sv, OperatorDiv},
+        {"%"sv, OperatorRem},
+        {"**"sv, OperatorPow},
+        {"<<"sv, OperatorShL},
+        {">>"sv, OperatorShR},
     };
 
     static const std::set comparator_operators
@@ -140,7 +147,7 @@ NJS::ValuePtr NJS::BinaryExpression::PGenLLVM(Builder &builder, const TypePtr &e
 
     const auto left_type = left_operand->GetType();
     const auto right_type = right_operand->GetType();
-    const auto operand_type = GetHigherOrderOf(builder.GetTypeContext(), left_type, right_type);
+    const auto operand_type = CombineTypes(builder.GetTypeContext(), left_type, right_type);
 
     left_operand = builder.CreateCast(left_operand, operand_type);
     right_operand = builder.CreateCast(right_operand, operand_type);
@@ -156,9 +163,4 @@ NJS::ValuePtr NJS::BinaryExpression::PGenLLVM(Builder &builder, const TypePtr &e
         }
 
     Error(Where, "undefined binary operator {} {} {}", left_type, Operator, right_type);
-}
-
-std::ostream &NJS::BinaryExpression::Print(std::ostream &stream) const
-{
-    return RightOperand->Print(LeftOperand->Print(stream) << ' ' << Operator << ' ');
 }

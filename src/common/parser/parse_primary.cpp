@@ -1,7 +1,6 @@
 #include <newjs/ast.hpp>
 #include <newjs/error.hpp>
 #include <newjs/parser.hpp>
-#include <newjs/template_context.hpp>
 #include <newjs/type.hpp>
 #include <newjs/type_context.hpp>
 
@@ -82,7 +81,7 @@ NJS::ExpressionPtr NJS::Parser::ParsePrimaryExpression()
         return std::make_shared<IntegerExpression>(
             where,
             m_TypeContext.GetIntegerType(64, false),
-            type->GetSize(m_TemplateContext.GetBuilder()));
+            type->GetSize(m_Builder));
     }
 
     if (NextAt("typeof"))

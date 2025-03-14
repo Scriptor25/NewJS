@@ -5,19 +5,19 @@ extern function malloc(n: u64): void[]
 extern function realloc(block: void[], n: u64): void[]
 extern function free(block: void[])
 
-#PRINT(X)  "println(f\"#X = {#X}\")"
-#ASSERT(X) "assert(%X, \"#X\")"
+#PRINT(X: expr)  "println(f\"#X = {#X}\")"
+#ASSERT(X: expr) "assert(%X, \"#X\")"
 
 function assert(x: u1, string: i8[const]) { if (!x) println(f"assertion '{string}' failed") }
 
-type User = {
+type user_t = {
     name: i8[],
     surname: i8[],
     age: u32,
     job: i8[],
 }
 
-const user1: User = {
+const user1: user_t = {
     name: "Max",
     surname: "Mustermann",
     age: 18,
@@ -27,7 +27,7 @@ const user1: User = {
 PRINT(user1)
 PRINT(println)
 
-function printUser(const &{ name: n, surname: s, age: a, job: t }: User) {
+function printUser(const &{ name: n, surname: s, age: a, job: t }: user_t) {
     println(f" - {n} {s} ({a}), {t}")
 }
 
@@ -72,97 +72,6 @@ const [name1, {name, surname, age, job}] = ["Max", user1]
 
 println(f"{name1} {name} {surname} {age} {job} {[4:u32, 5:u32, 6:u32]}")
 println(f"t1 = {t1}")
-
-type<T> vec = {
-    beg: T[],
-    end: T[],
-}
-
-function<T> vec_new(n: u64): vec<T> {
-    const ptr: T[] = malloc(n * sizeof<T>)
-    return {
-        beg: ptr,
-        end: ptr + n,
-    }
-}
-
-function<T> vec_free(&self: vec<T>) {
-    free(self.beg)
-    self.beg = self.end = 0
-}
-
-function<T> vec_size(const &self: vec<T>): u64 {
-    return self.end - self.beg
-}
-
-function<T> vec_front(&self: vec<T>): &T {
-    return *self.beg
-}
-
-function<T> vec_back(&self: vec<T>): &T {
-    if (self.beg == self.end)
-        return *(0 as T[])
-    return self.end[-1]
-}
-
-function<T> vec_at(&self: vec<T>, pos: u64): &T {
-    if (pos >= vec_size<T>(self))
-        return *(0 as T[])
-    return self.beg[pos]
-}
-
-function<T> vec_push(&self: vec<T>, const &element: T) {
-    const size = vec_size<T>(self) + 1
-    self.beg = realloc(self.beg, size * sizeof<T>)
-    self.end = self.beg + size
-    vec_back<T>(self) = element
-}
-
-function<T> vec_pop(&self: vec<T>): T {
-    const element = vec_back<T>(self)
-    const size = vec_size<T>(self) - 1
-    self.beg = realloc(self.beg, size * sizeof<T>)
-    self.end = self.beg + size
-    return element
-}
-
-let v = vec_new<i8>(0xC)
-vec_at<i8>(v, 0x0) = 'H'
-vec_at<i8>(v, 0x1) = 'e'
-vec_at<i8>(v, 0x2) = 'l'
-vec_at<i8>(v, 0x3) = 'l'
-vec_at<i8>(v, 0x4) = 'o'
-vec_at<i8>(v, 0x5) = ' '
-vec_at<i8>(v, 0x6) = 'W'
-vec_at<i8>(v, 0x7) = 'o'
-vec_at<i8>(v, 0x8) = 'r'
-vec_at<i8>(v, 0x9) = 'l'
-vec_at<i8>(v, 0xA) = 'd'
-vec_at<i8>(v, 0xB) = '!'
-vec_push<i8>(v, 0)
-
-println(f"v = {v.beg}")
-vec_free<i8>(v)
-
-type<T> promise = {
-    result: T,
-    done: u1,
-}
-
-function<T> await(p: promise<T>): T {
-    while (!p.done) {}
-    return p.result
-}
-
-function add(a: i32, b: i32): promise<i32> {
-    return {
-        result: a + b,
-        done: true,
-    }
-}
-
-const result = await<i32>(add(123, 456))
-PRINT(result)
 
 for (let i = 0; i < 64; ++i)
     println(f"i = {(2 ** i) as u64}")

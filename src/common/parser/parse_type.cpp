@@ -1,5 +1,4 @@
 #include <newjs/parser.hpp>
-#include <newjs/template_context.hpp>
 #include <newjs/type_context.hpp>
 
 NJS::TypePtr NJS::Parser::ParseType()
@@ -136,38 +135,19 @@ NJS::TypePtr NJS::Parser::ParseType()
         type = ParseStructType();
     else if (At("("))
         type = ParseFunctionType();
-    else if (const auto name = Expect(TokenType_Symbol).String; GetTemplateContext().HasType(name))
-    {
-        std::vector<TypePtr> arguments;
-
-        Expect("<");
-        while (!At(">"))
-        {
-            arguments.emplace_back(ParseType());
-            if (!At(">"))
-                Expect(",");
-        }
-        Expect(">");
-
-        if (!m_IsTemplate)
-            type = GetTemplateContext().InflateType(*this, name, arguments);
-        else
-            type = GetTypeContext().GetIncompleteType(name);
-    }
+    else if (const auto name = Expect(TokenType_Symbol).String; get_type_map.contains(name))
+        type = get_type_map.at(name)(m_TypeContext);
+    else if (m_MacroMap.contains(name))
+        type = m_MacroMap.at(name).InflateType(*this);
     else
-    {
-        if (get_type_map.contains(name))
-            type = get_type_map.at(name)(GetTypeContext());
-        else
-            try
-            {
-                type = GetTypeContext().GetType(name);
-            }
-            catch (const RTError &error)
-            {
-                Error(error, where, {});
-            }
-    }
+        try
+        {
+            type = m_TypeContext.GetNamedType(name);
+        }
+        catch (const RTError &error)
+        {
+            Error(error, where, {});
+        }
 
     while (true)
     {
@@ -176,12 +156,12 @@ NJS::TypePtr NJS::Parser::ParseType()
             if (At(TokenType_Int))
             {
                 const auto count = Skip().Int;
-                type = GetTypeContext().GetArrayType(type, count);
+                type = m_TypeContext.GetArrayType(type, count);
             }
             else
             {
                 const auto is_const = NextAt("const");
-                type = GetTypeContext().GetPointerType(type, is_const);
+                type = m_TypeContext.GetPointerType(type, is_const);
             }
             Expect("]");
             continue;
@@ -197,12 +177,12 @@ NJS::TypePtr NJS::Parser::ParseTupleType()
     Expect("[");
     std::vector<TypePtr> element_types;
     ParseTypeList(element_types, "]");
-    return GetTypeContext().GetTupleType(element_types);
+    return m_TypeContext.GetTupleType(element_types);
 }
 
 NJS::TypePtr NJS::Parser::ParseStructType()
 {
-    std::vector<StructElement> elements;
+    std::vector<StructElement> struct_elements;
 
     Expect("{");
     while (!At("}"))
@@ -214,19 +194,25 @@ NJS::TypePtr NJS::Parser::ParseStructType()
         const auto type = ParseType();
 
         ExpressionPtr default_value;
-        if ((!is_reference && is_const && (Expect("="), true)) || NextAt("="))
+        if (NextAt("="))
+        {
             default_value = ParseExpression();
-        if (!is_reference && is_const)
-            default_value = std::make_shared<CacheExpression>(default_value->Where, default_value);
+            if (!is_reference && is_const)
+                default_value = std::make_shared<CacheExpression>(default_value->Where, default_value);
+        }
 
-        elements.emplace_back(name, ReferenceInfo(type, is_const, is_reference), default_value);
+        struct_elements.emplace_back(name, ReferenceInfo(type, is_const, is_reference), default_value);
 
         if (!At("}"))
             Expect(",");
     }
     Expect("}");
 
-    return GetTypeContext().GetStructType(elements);
+    std::string struct_name;
+    if (NextAt("."))
+        struct_name = Expect(TokenType_Symbol).String;
+
+    return m_TypeContext.GetStructType(struct_elements, struct_name);
 }
 
 NJS::TypePtr NJS::Parser::ParseFunctionType()
@@ -238,8 +224,8 @@ NJS::TypePtr NJS::Parser::ParseFunctionType()
     if (NextAt("=>"))
         result = ParseReferenceInfo();
     else
-        result.Type = GetTypeContext().GetVoidType();
-    return GetTypeContext().GetFunctionType(result, parameters, is_var_arg);
+        result.Type = m_TypeContext.GetVoidType();
+    return m_TypeContext.GetFunctionType(result, parameters, is_var_arg);
 }
 
 NJS::ReferenceInfo NJS::Parser::ParseReferenceInfo()

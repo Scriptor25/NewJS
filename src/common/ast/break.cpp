@@ -6,15 +6,15 @@ NJS::BreakStatement::BreakStatement(SourceLocation where)
 {
 }
 
-void NJS::BreakStatement::PGenLLVM(Builder &builder)
+std::ostream &NJS::BreakStatement::Print(std::ostream &stream) const
+{
+    return stream << "break";
+}
+
+void NJS::BreakStatement::PGenLLVM(Builder &builder, bool)
 {
     const auto dest = builder.CurrentTailBlock();
     if (!dest)
         Error(Where, "no control flow block to break to");
     builder.GetBuilder().CreateBr(dest);
-}
-
-std::ostream &NJS::BreakStatement::Print(std::ostream &stream) const
-{
-    return stream << "break";
 }

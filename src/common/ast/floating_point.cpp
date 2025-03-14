@@ -12,6 +12,11 @@ NJS::FloatingPointExpression::FloatingPointExpression(SourceLocation where, Type
 {
 }
 
+std::ostream &NJS::FloatingPointExpression::Print(std::ostream &stream) const
+{
+    return stream << Value;
+}
+
 NJS::ValuePtr NJS::FloatingPointExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
     const auto type = Type
@@ -21,9 +26,4 @@ NJS::ValuePtr NJS::FloatingPointExpression::PGenLLVM(Builder &builder, const Typ
                                 : builder.GetTypeContext().GetFloatingPointType(64);
 
     return RValue::Create(builder, type, llvm::ConstantFP::get(type->GetLLVM(builder), Value));
-}
-
-std::ostream &NJS::FloatingPointExpression::Print(std::ostream &stream) const
-{
-    return stream << Value;
 }

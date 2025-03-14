@@ -7,7 +7,6 @@
 #include <newjs/error.hpp>
 #include <newjs/linker.hpp>
 #include <newjs/parser.hpp>
-#include <newjs/template_context.hpp>
 #include <newjs/type_context.hpp>
 
 using namespace std::string_view_literals;
@@ -44,17 +43,16 @@ static void parse(
 {
     const auto input_filename = input_path.string();
 
-    NJS::TypeContext type_ctx;
-    NJS::Builder builder(type_ctx, linker.LLVMContext(), module_id, input_filename, is_main);
+    NJS::TypeContext type_context;
+    NJS::Builder builder(type_context, linker.LLVMContext(), module_id, input_filename, is_main);
 
-    NJS::TemplateContext template_ctx(builder);
-    std::map<std::string, NJS::Macro> macros;
-    NJS::Parser parser(type_ctx, template_ctx, input_stream, NJS::SourceLocation(input_filename), macros, is_main);
+    std::map<std::string, NJS::Macro> macro_map;
+    NJS::Parser parser(type_context, builder, input_stream, NJS::SourceLocation(input_filename), macro_map, is_main);
 
     parser.Parse(
         [&](const NJS::StatementPtr &statement)
         {
-            statement->GenLLVM(builder);
+            statement->GenLLVM(builder, false);
         });
 
     builder.Close();

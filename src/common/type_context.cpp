@@ -3,35 +3,33 @@
 #include <newjs/type.hpp>
 #include <newjs/type_context.hpp>
 
-const NJS::TypePtr &NJS::TypeContext::GetType(const std::string &string) const
+bool NJS::TypeContext::HasNamedType(const std::string &string) const
 {
-    if (!m_TemplateStack.empty())
-    {
-        if (m_TemplateStack.back().contains(string))
-            return m_TemplateStack.back().at(string);
-        Error("no type {}", string);
-    }
-    if (m_Types.contains(string))
-        return m_Types.at(string);
-    Error("no type {}", string);
+    return m_NamedTypes.contains(string);
 }
 
-NJS::TypePtr &NJS::TypeContext::GetTypeReference(const std::string &string)
+NJS::TypePtr NJS::TypeContext::GetNamedType(const std::string &string) const
 {
-    if (!m_TemplateStack.empty())
-        return m_TemplateStack.back()[string];
-    return m_Types[string];
+    if (m_NamedTypes.contains(string))
+        return m_NamedTypes.at(string);
+    Error("no type '{}'", string);
 }
 
-bool NJS::TypeContext::HasType(const std::string &string) const
+NJS::TypePtr &NJS::TypeContext::GetNamedTypeReference(const std::string &string)
 {
-    return ((!m_TemplateStack.empty() && m_TemplateStack.back().contains(string)) || m_Types.contains(string))
-           && !GetType(string)->IsIncomplete();
+    return m_NamedTypes[string];
 }
 
-NJS::IncompleteTypePtr NJS::TypeContext::GetIncompleteType(const std::string &name)
+NJS::TypePtr NJS::TypeContext::GetType(const unsigned hash) const
 {
-    return GetType<IncompleteType>(name);
+    if (m_Types.contains(hash))
+        return m_Types.at(hash);
+    Error("no type with hash {}", hash);
+}
+
+NJS::TypePtr &NJS::TypeContext::GetTypeReference(const unsigned hash)
+{
+    return m_Types[hash];
 }
 
 NJS::VoidTypePtr NJS::TypeContext::GetVoidType()
@@ -59,18 +57,29 @@ NJS::ArrayTypePtr NJS::TypeContext::GetArrayType(const TypePtr &element_type, un
     return GetType<ArrayType>(element_type, count);
 }
 
-NJS::StructTypePtr NJS::TypeContext::GetUnsafeStructType(
-    const std::vector<std::pair<std::string, TypePtr>> &element_types)
+NJS::StructTypePtr NJS::TypeContext::GetStructType(const std::string &name)
+{
+    return GetStructType(std::vector<StructElement>(), name);
+}
+
+NJS::StructTypePtr NJS::TypeContext::GetStructType(
+    const std::vector<std::pair<std::string, TypePtr>> &element_types,
+    const std::string &name)
 {
     std::vector<StructElement> elements(element_types.size());
     for (unsigned i = 0; i < element_types.size(); ++i)
         elements[i] = {element_types[i].first, ReferenceInfo(element_types[i].second), nullptr};
-    return GetStructType(elements);
+    return GetStructType(elements, name);
 }
 
-NJS::StructTypePtr NJS::TypeContext::GetStructType(const std::vector<StructElement> &elements)
+NJS::StructTypePtr NJS::TypeContext::GetStructType(const std::vector<StructElement> &elements, std::string name)
 {
-    return GetType<StructType>(elements);
+    if (name.empty())
+        name = "S" + std::to_string(StructType::GenHash(elements, {}));
+    auto type = GetType<StructType>(elements, name);
+    if (type->GetElementCount() == 0 && !elements.empty())
+        type->SetElements(elements);
+    return type;
 }
 
 NJS::TupleTypePtr NJS::TypeContext::GetTupleType(const std::vector<TypePtr> &element_types)
@@ -110,17 +119,4 @@ NJS::IntegerTypePtr NJS::TypeContext::GetCharType()
 NJS::PointerTypePtr NJS::TypeContext::GetStringType()
 {
     return GetPointerType(GetIntegerType(8, true), true);
-}
-
-void NJS::TypeContext::PushTemplate(const std::vector<std::string> &names, const std::vector<TypePtr> &types)
-{
-    auto copy = m_TemplateStack.empty() ? m_Types : m_TemplateStack.back();
-    auto &map = m_TemplateStack.emplace_back(copy);
-    for (unsigned i = 0; i < names.size(); ++i)
-        map[names[i]] = types[i];
-}
-
-void NJS::TypeContext::PopTemplate()
-{
-    m_TemplateStack.pop_back();
 }

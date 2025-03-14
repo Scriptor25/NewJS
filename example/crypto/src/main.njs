@@ -1,5 +1,5 @@
 import { random, discrete_log, base64 } from "./key.njs"
-import { create_user } from "./user.njs"
+import { } from "./user.njs"
 import { xor } from "./xor.njs"
 
 extern function println(x: string)

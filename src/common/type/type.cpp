@@ -3,7 +3,7 @@
 #include <newjs/type.hpp>
 #include <newjs/type_context.hpp>
 
-NJS::TypePtr NJS::GetHigherOrderOf(
+NJS::TypePtr NJS::CombineTypes(
     TypeContext &type_context,
     const TypePtr &type_a,
     const TypePtr &type_b)
@@ -51,29 +51,20 @@ NJS::TypePtr NJS::GetHigherOrderOf(
     Error("cannot determine higher order type of {} and {}", type_a, type_b);
 }
 
-NJS::TypePtr NJS::GetBase(const TypePtr &type)
-{
-    return Type::As<IncompleteType>(type)->GetBase();
-}
-
 unsigned NJS::CombineHashes(const unsigned h1, const unsigned h2)
 {
     return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
 }
 
-bool NJS::operator==(TypePtr a, TypePtr b)
+bool NJS::operator==(const TypePtr &a, const TypePtr &b)
 {
     if (a.get() == b.get())
         return true;
     if (!a || !b)
         return false;
-    if (!a->IsIncomplete() && !b->IsIncomplete())
-        return false;
-    if (a->IsIncomplete())
-        a = Type::As<IncompleteType>(a)->GetBase();
-    if (b->IsIncomplete())
-        b = Type::As<IncompleteType>(b)->GetBase();
-    return a == b;
+    if (a->GetHash() == b->GetHash())
+        return true;
+    return false;
 }
 
 bool NJS::operator!=(const TypePtr &a, const TypePtr &b)
@@ -81,17 +72,17 @@ bool NJS::operator!=(const TypePtr &a, const TypePtr &b)
     return !(a == b);
 }
 
-std::ostream &NJS::Type::Print(std::ostream &stream) const
-{
-    return stream << m_String;
-}
-
 NJS::TypeContext &NJS::Type::GetContext() const
 {
     return m_TypeContext;
 }
 
-const std::string &NJS::Type::GetString() const
+unsigned NJS::Type::GetHash() const
+{
+    return m_Hash;
+}
+
+std::string NJS::Type::GetString() const
 {
     return m_String;
 }
@@ -100,8 +91,6 @@ unsigned NJS::Type::GetSize(const Builder &builder)
 {
     if (m_Size != ~0u)
         return m_Size;
-    if (IsIncomplete())
-        return m_Size = 0;
     const auto type = GetLLVM(builder);
     return m_Size = builder.GetModule().getDataLayout().getTypeAllocSize(type);
 }
@@ -117,11 +106,6 @@ bool NJS::Type::IsBoolean() const
 }
 
 bool NJS::Type::IsPrimitive() const
-{
-    return false;
-}
-
-bool NJS::Type::IsIncomplete() const
 {
     return false;
 }
@@ -166,8 +150,9 @@ bool NJS::Type::IsFunction() const
     return false;
 }
 
-NJS::Type::Type(TypeContext &type_context, std::string string)
+NJS::Type::Type(TypeContext &type_context, const unsigned hash, std::string string)
     : m_TypeContext(type_context),
+      m_Hash(hash),
       m_String(std::move(string)),
       m_LLVM(nullptr),
       m_Size(~0u)

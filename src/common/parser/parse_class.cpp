@@ -6,8 +6,8 @@ NJS::StatementPtr NJS::Parser::ParseClassStatement()
     auto where = Expect("class").Where;
     auto class_name = Expect(TokenType_Symbol).String;
 
-    if (auto &dest = GetTypeContext().GetTypeReference(class_name); !dest)
-        dest = GetTypeContext().GetIncompleteType(class_name);
+    const auto class_type = m_TypeContext.GetStructType(class_name);
+    m_TypeContext.GetNamedTypeReference(class_name) = class_type;
 
     if (!NextAt("{"))
         return std::make_shared<ClassStatement>(where, class_name);
@@ -35,12 +35,12 @@ NJS::StatementPtr NJS::Parser::ParseClassStatement()
             if (NextAt(":"))
                 result = ParseReferenceInfo();
             else
-                result.Type = GetTypeContext().GetVoidType();
+                result.Type = m_TypeContext.GetVoidType();
 
             auto body = ParseScopeStatement();
 
             is_const = true;
-            member_type = GetTypeContext().GetFunctionType(result, parameters, is_var_arg);
+            member_type = m_TypeContext.GetFunctionType(result, parameters, is_var_arg);
             default_value = std::make_shared<FunctionCacheExpression>(
                 function_where,
                 "class." + class_name + '.' + member_name,
@@ -67,8 +67,7 @@ NJS::StatementPtr NJS::Parser::ParseClassStatement()
     }
     Expect("}");
 
-    if (auto &dest = GetTypeContext().GetTypeReference(class_name); !dest || dest->IsIncomplete())
-        dest = GetTypeContext().GetStructType(elements);
+    class_type->SetElements(elements);
 
     return std::make_shared<ClassStatement>(where, class_name, functions);
 }

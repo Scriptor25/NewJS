@@ -10,7 +10,14 @@ NJS::ReturnStatement::ReturnStatement(SourceLocation where, ExpressionPtr value)
 {
 }
 
-void NJS::ReturnStatement::PGenLLVM(Builder &builder)
+std::ostream &NJS::ReturnStatement::Print(std::ostream &stream) const
+{
+    if (Value)
+        return Value->Print(stream << "return ");
+    return stream << "return void";
+}
+
+void NJS::ReturnStatement::PGenLLVM(Builder &builder, bool)
 {
     auto info = builder.CurrentFunctionResult();
 
@@ -27,11 +34,4 @@ void NJS::ReturnStatement::PGenLLVM(Builder &builder)
     const auto result = info.SolveFor(builder, value);
 
     builder.GetBuilder().CreateRet(result);
-}
-
-std::ostream &NJS::ReturnStatement::Print(std::ostream &stream) const
-{
-    if (Value)
-        return Value->Print(stream << "return ");
-    return stream << "return void";
 }

@@ -16,48 +16,6 @@ NJS::SwitchStatement::SwitchStatement(
 {
 }
 
-void NJS::SwitchStatement::PGenLLVM(Builder &builder)
-{
-    const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
-    const auto tail_block = llvm::BasicBlock::Create(builder.GetContext(), "tail", parent);
-    auto default_dest = DefaultCase
-                            ? llvm::BasicBlock::Create(builder.GetContext(), "default", parent)
-                            : tail_block;
-
-    builder.StackPush({}, {}, {}, tail_block);
-
-    const auto condition = Condition->GenLLVM(builder, {});
-    const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(), default_dest);
-
-    if (DefaultCase)
-    {
-        builder.GetBuilder().SetInsertPoint(default_dest);
-        DefaultCase->GenLLVM(builder);
-        default_dest = builder.GetBuilder().GetInsertBlock();
-        if (!default_dest->getTerminator())
-            builder.GetBuilder().CreateBr(tail_block);
-    }
-
-    for (const auto &[case_, entries_]: Cases)
-    {
-        auto dest = llvm::BasicBlock::Create(builder.GetContext(), "case", parent);
-        for (const auto &entry: entries_)
-        {
-            const auto value = entry->GenLLVM(builder, condition->GetType());
-            const auto value_int = llvm::dyn_cast<llvm::ConstantInt>(value->Load());
-            switch_inst->addCase(value_int, dest);
-        }
-        builder.GetBuilder().SetInsertPoint(dest);
-        case_->GenLLVM(builder);
-        dest = builder.GetBuilder().GetInsertBlock();
-        if (!dest->getTerminator())
-            builder.GetBuilder().CreateBr(tail_block);
-    }
-
-    builder.GetBuilder().SetInsertPoint(tail_block);
-    builder.StackPop();
-}
-
 std::ostream &NJS::SwitchStatement::Print(std::ostream &stream) const
 {
     Condition->Print(stream << "switch (") << ") {" << std::endl;
@@ -86,6 +44,48 @@ std::ostream &NJS::SwitchStatement::Print(std::ostream &stream) const
     return Spacing(stream << std::endl) << '}';
 }
 
+void NJS::SwitchStatement::PGenLLVM(Builder &builder, bool)
+{
+    const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
+    const auto tail_block = llvm::BasicBlock::Create(builder.GetContext(), "tail", parent);
+    auto default_dest = DefaultCase
+                            ? llvm::BasicBlock::Create(builder.GetContext(), "default", parent)
+                            : tail_block;
+
+    builder.StackPush({}, {}, nullptr, tail_block);
+
+    const auto condition = Condition->GenLLVM(builder, nullptr);
+    const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(), default_dest);
+
+    if (DefaultCase)
+    {
+        builder.GetBuilder().SetInsertPoint(default_dest);
+        DefaultCase->GenLLVM(builder, false);
+        default_dest = builder.GetBuilder().GetInsertBlock();
+        if (!default_dest->getTerminator())
+            builder.GetBuilder().CreateBr(tail_block);
+    }
+
+    for (const auto &[case_, entries_]: Cases)
+    {
+        auto dest = llvm::BasicBlock::Create(builder.GetContext(), "case", parent);
+        for (const auto &entry: entries_)
+        {
+            const auto value = entry->GenLLVM(builder, condition->GetType());
+            const auto value_int = llvm::dyn_cast<llvm::ConstantInt>(value->Load());
+            switch_inst->addCase(value_int, dest);
+        }
+        builder.GetBuilder().SetInsertPoint(dest);
+        case_->GenLLVM(builder, false);
+        dest = builder.GetBuilder().GetInsertBlock();
+        if (!dest->getTerminator())
+            builder.GetBuilder().CreateBr(tail_block);
+    }
+
+    builder.GetBuilder().SetInsertPoint(tail_block);
+    builder.StackPop();
+}
+
 NJS::SwitchExpression::SwitchExpression(
     SourceLocation where,
     ExpressionPtr condition,
@@ -98,15 +98,43 @@ NJS::SwitchExpression::SwitchExpression(
 {
 }
 
+std::ostream &NJS::SwitchExpression::Print(std::ostream &stream) const
+{
+    Condition->Print(stream << "switch (") << ") {" << std::endl;
+    Indent();
+    for (const auto &[case_, entries_]: Cases)
+    {
+        Spacing(stream) << "case ";
+        for (unsigned i = 0; i < entries_.size(); ++i)
+        {
+            if (i > 0)
+                stream << ", ";
+            entries_[i]->Print(stream);
+        }
+        if (const auto p = std::dynamic_pointer_cast<ScopeExpression>(case_))
+            case_->Print(stream << ' ');
+        else
+            case_->Print(stream << " -> ");
+        stream << std::endl;
+    }
+    Spacing(stream) << "default";
+    if (const auto p = std::dynamic_pointer_cast<ScopeExpression>(DefaultCase))
+        DefaultCase->Print(stream << ' ');
+    else
+        DefaultCase->Print(stream << " -> ");
+    Exdent();
+    return Spacing(stream << std::endl) << '}';
+}
+
 NJS::ValuePtr NJS::SwitchExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto default_dest = llvm::BasicBlock::Create(builder.GetContext(), "default", parent);
     const auto tail_block = llvm::BasicBlock::Create(builder.GetContext(), "tail", parent);
 
-    builder.StackPush({}, {}, {}, tail_block);
+    builder.StackPush({}, {}, nullptr, tail_block);
 
-    const auto condition = Condition->GenLLVM(builder, {});
+    const auto condition = Condition->GenLLVM(builder, nullptr);
     const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(), default_dest);
 
     std::vector<std::pair<llvm::BasicBlock *, ValuePtr>> dest_blocks;
@@ -153,32 +181,4 @@ NJS::ValuePtr NJS::SwitchExpression::PGenLLVM(Builder &builder, const TypePtr &e
         phi_inst->addIncoming(value_->Load(), dest_);
 
     return RValue::Create(builder, result_type, phi_inst);
-}
-
-std::ostream &NJS::SwitchExpression::Print(std::ostream &stream) const
-{
-    Condition->Print(stream << "switch (") << ") {" << std::endl;
-    Indent();
-    for (const auto &[case_, entries_]: Cases)
-    {
-        Spacing(stream) << "case ";
-        for (unsigned i = 0; i < entries_.size(); ++i)
-        {
-            if (i > 0)
-                stream << ", ";
-            entries_[i]->Print(stream);
-        }
-        if (const auto p = std::dynamic_pointer_cast<ScopeExpression>(case_))
-            case_->Print(stream << ' ');
-        else
-            case_->Print(stream << " -> ");
-        stream << std::endl;
-    }
-    Spacing(stream) << "default";
-    if (const auto p = std::dynamic_pointer_cast<ScopeExpression>(DefaultCase))
-        DefaultCase->Print(stream << ' ');
-    else
-        DefaultCase->Print(stream << " -> ");
-    Exdent();
-    return Spacing(stream << std::endl) << '}';
 }

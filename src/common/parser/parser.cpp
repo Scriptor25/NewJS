@@ -6,7 +6,7 @@
 
 NJS::Parser::Parser(
     TypeContext &type_context,
-    TemplateContext &template_context,
+    Builder &builder,
     std::istream &stream,
     SourceLocation where,
     std::map<std::string, Macro> &macro_map,
@@ -14,7 +14,7 @@ NJS::Parser::Parser(
     const bool is_import,
     std::set<std::filesystem::path> parsed_set)
     : m_TypeContext(type_context),
-      m_TemplateContext(template_context),
+      m_Builder(builder),
       m_Stream(stream),
       m_MacroMap(macro_map),
       m_IsMain(is_main),
@@ -32,29 +32,17 @@ NJS::Parser::Parser(
     Next();
 }
 
-NJS::TypeContext &NJS::Parser::GetTypeContext() const
+NJS::Parser::Parser(const Parser &other, std::istream &stream, SourceLocation where)
+    : Parser(
+        other.m_TypeContext,
+        other.m_Builder,
+        stream,
+        std::move(where),
+        other.m_MacroMap,
+        other.m_IsMain,
+        other.m_IsImport,
+        other.m_ParsedSet)
 {
-    return m_TypeContext;
-}
-
-NJS::TemplateContext &NJS::Parser::GetTemplateContext() const
-{
-    return m_TemplateContext;
-}
-
-std::map<std::string, NJS::Macro> &NJS::Parser::GetMacroMap() const
-{
-    return m_MacroMap;
-}
-
-bool NJS::Parser::IsMain() const
-{
-    return m_IsMain;
-}
-
-bool NJS::Parser::IsImport() const
-{
-    return m_IsImport;
 }
 
 NJS::SourceLocation NJS::Parser::CurrentLocation() const
@@ -69,26 +57,16 @@ void NJS::Parser::Parse(const Consumer &consumer)
             consumer(statement);
 }
 
-void NJS::Parser::ResetBuffer()
-{
-    m_TemplateBuffer.clear();
-    m_TemplateWhere = m_Where;
-    --m_TemplateWhere.Column;
-}
-
 int NJS::Parser::Get()
 {
     m_Where.Column++;
-    const auto c = m_Stream.get();
-    m_TemplateBuffer.push_back(static_cast<char>(c));
-    return c;
+    return m_Stream.get();
 }
 
 void NJS::Parser::UnGet()
 {
     m_Where.Column--;
     m_Stream.unget();
-    m_TemplateBuffer.pop_back();
 }
 
 void NJS::Parser::NewLine()

@@ -1,4 +1,4 @@
-type FILE
+type FILE = {}.FILE
 
 extern function fopen(filename: i8[], mode: i8[]): FILE[]
 extern function fclose(stream: FILE[]): i32

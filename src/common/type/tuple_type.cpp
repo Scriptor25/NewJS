@@ -14,10 +14,10 @@ std::string NJS::TupleType::GenString(const std::vector<TypePtr> &element_types)
     return dst += " ]";
 }
 
-size_t NJS::TupleType::GetHash() const
+unsigned NJS::TupleType::GenHash(const std::vector<TypePtr> &element_types)
 {
     unsigned hash = 0x07;
-    for (auto &element: m_ElementTypes)
+    for (auto &element: element_types)
         hash = CombineHashes(hash, element->GetHash());
     return hash;
 }
@@ -51,21 +51,31 @@ bool NJS::TupleType::TypeInfo(
     return any_incomplete;
 }
 
-static unsigned tuple_count = 0;
+std::ostream &NJS::TupleType::Print(std::ostream &stream) const
+{
+    stream << "[ ";
+    for (unsigned i = 0; i < m_ElementTypes.size(); ++i)
+    {
+        if (i > 0)
+            stream << ", ";
+        m_ElementTypes[i]->Print(stream);
+    }
+    return stream << " ]";
+}
 
 NJS::TupleType::TupleType(
     TypeContext &type_context,
+    const unsigned hash,
     std::string string,
     std::vector<TypePtr> element_types)
-    : Type(type_context, std::move(string)),
-      m_ElementTypes(std::move(element_types)),
-      m_Index(tuple_count++)
+    : Type(type_context, hash, std::move(string)),
+      m_ElementTypes(std::move(element_types))
 {
 }
 
 llvm::Type *NJS::TupleType::GenLLVM(const Builder &builder) const
 {
-    const auto tuple_name = "tuple." + std::to_string(m_Index);
+    const auto tuple_name = "tuple." + std::to_string(GetHash());
     if (const auto tuple_type = llvm::StructType::getTypeByName(builder.GetContext(), tuple_name))
         return tuple_type;
 

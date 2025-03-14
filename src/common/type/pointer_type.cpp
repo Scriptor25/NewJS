@@ -7,9 +7,9 @@ std::string NJS::PointerType::GenString(const TypePtr &element_type, const bool 
     return element_type->GetString() + '[' + (is_const ? "const" : "") + ']';
 }
 
-size_t NJS::PointerType::GetHash() const
+unsigned NJS::PointerType::GenHash(const TypePtr &element_type, const bool is_const)
 {
-    return CombineHashes(CombineHashes(m_ElementType->GetHash(), std::hash<bool>()(m_IsConst)), 0x04);
+    return CombineHashes(CombineHashes(element_type->GetHash(), std::hash<bool>()(is_const)), 0x04);
 }
 
 bool NJS::PointerType::IsPrimitive() const
@@ -41,8 +41,18 @@ bool NJS::PointerType::TypeInfo(
     return false;
 }
 
-NJS::PointerType::PointerType(TypeContext &type_context, std::string string, TypePtr element_type, const bool is_const)
-    : Type(type_context, std::move(string)),
+std::ostream &NJS::PointerType::Print(std::ostream &stream) const
+{
+    return m_ElementType->Print(stream) << '[' << (m_IsConst ? "const" : "") << ']';
+}
+
+NJS::PointerType::PointerType(
+    TypeContext &type_context,
+    const unsigned hash,
+    std::string string,
+    TypePtr element_type,
+    const bool is_const)
+    : Type(type_context, hash, std::move(string)),
       m_ElementType(std::move(element_type)),
       m_IsConst(is_const)
 {

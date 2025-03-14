@@ -7,9 +7,9 @@ std::string NJS::ArrayType::GenString(const TypePtr &element_type, const unsigne
     return element_type->GetString() + '[' + std::to_string(count) + ']';
 }
 
-size_t NJS::ArrayType::GetHash() const
+unsigned NJS::ArrayType::GenHash(const TypePtr &element_type, const unsigned count)
 {
-    return CombineHashes(CombineHashes(m_ElementType->GetHash(), std::hash<unsigned>()(m_Count)), 0x05);
+    return CombineHashes(CombineHashes(element_type->GetHash(), std::hash<unsigned>()(count)), 0x05);
 }
 
 bool NJS::ArrayType::IsArray() const
@@ -36,12 +36,18 @@ bool NJS::ArrayType::TypeInfo(
     return m_ElementType->TypeInfo(builder, arguments);
 }
 
+std::ostream &NJS::ArrayType::Print(std::ostream &stream) const
+{
+    return m_ElementType->Print(stream) << '[' << m_Count << ']';
+}
+
 NJS::ArrayType::ArrayType(
     TypeContext &type_context,
+    const unsigned hash,
     std::string string,
     TypePtr element_type,
     const unsigned count)
-    : Type(type_context, std::move(string)),
+    : Type(type_context, hash, std::move(string)),
       m_ElementType(std::move(element_type)),
       m_Count(count)
 {

@@ -19,7 +19,7 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
     filepath = canonical(filepath);
 
     if (m_ParsedSet.contains(filepath))
-        return {};
+        return nullptr;
 
     std::ifstream stream(filepath);
     if (!stream)
@@ -27,7 +27,7 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
 
     Parser parser(
         m_TypeContext,
-        m_TemplateContext,
+        m_Builder,
         stream,
         SourceLocation(filepath.string()),
         m_MacroMap,
@@ -35,7 +35,7 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
         true,
         m_ParsedSet);
 
-    std::vector<StatementPtr> values;
+    std::vector<ExportStatementPtr> values;
     std::set<std::string> sub_module_ids;
 
     try
@@ -52,26 +52,13 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
                     return;
                 }
 
-                if (auto value = std::dynamic_pointer_cast<FunctionStatement>(statement);
-                    value && value->Flags & FunctionFlags_Export)
-                {
-                    value->Body = {};
+                if (auto value = std::dynamic_pointer_cast<ExportStatement>(statement))
                     values.emplace_back(value);
-                    return;
-                }
-
-                if (auto value = std::dynamic_pointer_cast<VariableStatement>(statement);
-                    value && value->IsExport)
-                {
-                    value->Value = {};
-                    values.emplace_back(value);
-                    return;
-                }
             });
     }
     catch (const RTError &error)
     {
-        Error(error, where, {});
+        Error(error, where, "failed to parse import for file '{}'", filename);
     }
 
     stream.close();

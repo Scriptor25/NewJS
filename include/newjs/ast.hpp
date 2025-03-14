@@ -16,7 +16,13 @@ namespace NJS
     {
         explicit Statement(SourceLocation where);
 
-        void GenLLVM(Builder &builder);
+        void GenLLVM(Builder &builder, bool is_export);
+        void GenImport(
+            Builder &builder,
+            const std::string &module_id,
+            ValuePtr &dest_value,
+            ReferenceInfo &dest_info,
+            std::string &dest_name);
 
         virtual ~Statement() = default;
         virtual std::ostream &Print(std::ostream &stream) const = 0;
@@ -24,7 +30,13 @@ namespace NJS
         SourceLocation Where;
 
     protected:
-        virtual void PGenLLVM(Builder &builder) = 0;
+        virtual void PGenLLVM(Builder &builder, bool is_export) = 0;
+        virtual void PGenImport(
+            Builder &builder,
+            const std::string &module_id,
+            ValuePtr &dest_value,
+            ReferenceInfo &dest_info,
+            std::string &dest_name);
     };
 
     struct BreakStatement final : Statement
@@ -34,7 +46,7 @@ namespace NJS
         std::ostream &Print(std::ostream &stream) const override;
 
     protected:
-        void PGenLLVM(Builder &builder) override;
+        void PGenLLVM(Builder &builder, bool is_export) override;
     };
 
     struct ClassStatement final : Statement
@@ -48,7 +60,7 @@ namespace NJS
         std::vector<ExpressionPtr> Functions;
 
     protected:
-        void PGenLLVM(Builder &builder) override;
+        void PGenLLVM(Builder &builder, bool is_export) override;
     };
 
     struct ContinueStatement final : Statement
@@ -58,7 +70,19 @@ namespace NJS
         std::ostream &Print(std::ostream &stream) const override;
 
     protected:
-        void PGenLLVM(Builder &builder) override;
+        void PGenLLVM(Builder &builder, bool is_export) override;
+    };
+
+    struct ExportStatement final : Statement
+    {
+        ExportStatement(SourceLocation where, StatementPtr value);
+
+        std::ostream &Print(std::ostream &stream) const override;
+
+        StatementPtr Value;
+
+    protected:
+        void PGenLLVM(Builder &builder, bool is_export) override;
     };
 
     struct ForStatement final : Statement
@@ -78,7 +102,7 @@ namespace NJS
         StatementPtr Body;
 
     protected:
-        void PGenLLVM(Builder &builder) override;
+        void PGenLLVM(Builder &builder, bool is_export) override;
     };
 
     struct FunctionStatement final : Statement
@@ -102,7 +126,13 @@ namespace NJS
         StatementPtr Body;
 
     protected:
-        void PGenLLVM(Builder &builder) override;
+        void PGenLLVM(Builder &builder, bool is_export) override;
+        void PGenImport(
+            Builder &builder,
+            const std::string &module_id,
+            ValuePtr &dest_value,
+            ReferenceInfo &dest_info,
+            std::string &dest_name) override;
     };
 
     struct IfStatement final : Statement
@@ -116,7 +146,7 @@ namespace NJS
         StatementPtr ElseBody;
 
     protected:
-        void PGenLLVM(Builder &builder) override;
+        void PGenLLVM(Builder &builder, bool is_export) override;
     };
 
     struct ImportStatement final : Statement
@@ -125,7 +155,7 @@ namespace NJS
             SourceLocation where,
             ImportMapping mapping,
             std::filesystem::path filepath,
-            std::vector<StatementPtr> values,
+            std::vector<ExportStatementPtr> exports,
             std::string module_id,
             std::set<std::string> sub_module_ids);
 
@@ -133,12 +163,12 @@ namespace NJS
 
         ImportMapping Mapping;
         std::filesystem::path Filepath;
-        std::vector<StatementPtr> Values;
+        std::vector<ExportStatementPtr> Exports;
         std::string ModuleID;
         std::set<std::string> SubModuleIDs;
 
     protected:
-        void PGenLLVM(Builder &builder) override;
+        void PGenLLVM(Builder &builder, bool is_export) override;
     };
 
     struct ReturnStatement final : Statement
@@ -150,7 +180,7 @@ namespace NJS
         ExpressionPtr Value;
 
     protected:
-        void PGenLLVM(Builder &builder) override;
+        void PGenLLVM(Builder &builder, bool is_export) override;
     };
 
     struct ScopeStatement final : Statement
@@ -162,7 +192,7 @@ namespace NJS
         std::vector<StatementPtr> Children;
 
     protected:
-        void PGenLLVM(Builder &builder) override;
+        void PGenLLVM(Builder &builder, bool is_export) override;
     };
 
     struct SwitchStatement final : Statement
@@ -180,27 +210,31 @@ namespace NJS
         StatementPtr DefaultCase;
 
     protected:
-        void PGenLLVM(Builder &builder) override;
+        void PGenLLVM(Builder &builder, bool is_export) override;
     };
 
     struct VariableStatement final : Statement
     {
         VariableStatement(
             SourceLocation where,
-            bool is_export,
             bool is_extern,
             ParameterPtr parameter,
             ExpressionPtr value);
 
         std::ostream &Print(std::ostream &stream) const override;
 
-        bool IsExport;
         bool IsExtern;
         ParameterPtr Parameter;
         ExpressionPtr Value;
 
     protected:
-        void PGenLLVM(Builder &builder) override;
+        void PGenLLVM(Builder &builder, bool is_export) override;
+        void PGenImport(
+            Builder &builder,
+            const std::string &module_id,
+            ValuePtr &dest_value,
+            ReferenceInfo &dest_info,
+            std::string &dest_name) override;
     };
 
     struct WhileStatement final : Statement
@@ -213,7 +247,7 @@ namespace NJS
         StatementPtr Body;
 
     protected:
-        void PGenLLVM(Builder &builder) override;
+        void PGenLLVM(Builder &builder, bool is_export) override;
     };
 
     struct Expression : Statement
@@ -223,7 +257,7 @@ namespace NJS
         [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type);
 
     protected:
-        void PGenLLVM(Builder &builder) override;
+        void PGenLLVM(Builder &builder, bool is_export) override;
 
         [[nodiscard]] virtual ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) = 0;
     };

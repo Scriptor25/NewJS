@@ -11,20 +11,31 @@ namespace NJS
     class TypeContext
     {
     public:
-        [[nodiscard]] const TypePtr &GetType(const std::string &string) const;
-        TypePtr &GetTypeReference(const std::string &string);
+        [[nodiscard]] bool HasNamedType(const std::string &string) const;
+        [[nodiscard]] TypePtr GetNamedType(const std::string &string) const;
+        TypePtr &GetNamedTypeReference(const std::string &string);
 
-        [[nodiscard]] bool HasType(const std::string &string) const;
+        [[nodiscard]] TypePtr GetType(unsigned hash) const;
+        TypePtr &GetTypeReference(unsigned hash);
 
-        IncompleteTypePtr GetIncompleteType(const std::string &name = {});
         VoidTypePtr GetVoidType();
+
         IntegerTypePtr GetIntegerType(unsigned bits, bool is_signed);
+
         FloatingPointTypePtr GetFloatingPointType(unsigned bits);
+
         PointerTypePtr GetPointerType(const TypePtr &element_type, bool is_const);
+
         ArrayTypePtr GetArrayType(const TypePtr &element_type, unsigned count);
-        StructTypePtr GetUnsafeStructType(const std::vector<std::pair<std::string, TypePtr>> &element_types);
-        StructTypePtr GetStructType(const std::vector<StructElement> &elements);
+
+        StructTypePtr GetStructType(const std::string &name);
+        StructTypePtr GetStructType(
+            const std::vector<std::pair<std::string, TypePtr>> &element_types,
+            const std::string &name);
+        StructTypePtr GetStructType(const std::vector<StructElement> &elements, std::string name);
+
         TupleTypePtr GetTupleType(const std::vector<TypePtr> &element_types);
+
         FunctionTypePtr GetFunctionType(
             const ReferenceInfo &result,
             const std::vector<ReferenceInfo> &parameters,
@@ -38,24 +49,22 @@ namespace NJS
         IntegerTypePtr GetCharType();
         PointerTypePtr GetStringType();
 
-        void PushTemplate(const std::vector<std::string> &names, const std::vector<TypePtr> &types);
-        void PopTemplate();
-
     private:
         template<typename T, typename... Args>
         std::shared_ptr<T> GetType(Args &&... args)
         {
-            auto string = T::GenString(args...);
-            auto &ref = GetTypeReference(string);
-            if (!ref)
+            auto hash = T::GenHash(args...);
+            auto &dest = GetTypeReference(hash);
+            if (!dest)
             {
-                const auto ptr = new T(*this, string, std::forward<Args>(args)...);
-                ref = std::shared_ptr<T>(ptr);
+                auto string = T::GenString(args...);
+                auto type_pointer = new T(*this, hash, string, std::forward<Args>(args)...);
+                dest = std::shared_ptr<T>(type_pointer);
             }
-            return Type::As<T>(ref);
+            return Type::As<T>(dest);
         }
 
-        std::map<std::string, TypePtr> m_Types;
-        std::vector<std::map<std::string, TypePtr>> m_TemplateStack;
+        std::map<unsigned, TypePtr> m_Types;
+        std::map<std::string, TypePtr> m_NamedTypes;
     };
 }

@@ -20,25 +20,18 @@ namespace NJS
     public:
         Parser(
             TypeContext &type_context,
-            TemplateContext &template_context,
+            Builder &builder,
             std::istream &stream,
             SourceLocation where,
             std::map<std::string, Macro> &macro_map,
             bool is_main,
             bool is_import = false,
             std::set<std::filesystem::path> parsed_set = {});
-
-        [[nodiscard]] TypeContext &GetTypeContext() const;
-        [[nodiscard]] TemplateContext &GetTemplateContext() const;
-        [[nodiscard]] std::map<std::string, Macro> &GetMacroMap() const;
-        [[nodiscard]] bool IsMain() const;
-        [[nodiscard]] bool IsImport() const;
+        Parser(const Parser &other, std::istream &stream, SourceLocation where);
 
         [[nodiscard]] SourceLocation CurrentLocation() const;
 
         void Parse(const Consumer &consumer);
-
-        void ResetBuffer();
 
         int Get();
         void UnGet();
@@ -84,13 +77,14 @@ namespace NJS
         StatementPtr ParseBreakStatement();
         StatementPtr ParseClassStatement();
         StatementPtr ParseContinueStatement();
+        StatementPtr ParseExportStatement();
         StatementPtr ParseForStatement();
-        StatementPtr ParseFunctionStatement(bool is_export, bool is_extern);
+        StatementPtr ParseFunctionStatement(bool is_extern);
         StatementPtr ParseIfStatement();
         StatementPtr ParseReturnStatement();
         StatementPtr ParseScopeStatement();
         StatementPtr ParseSwitchStatement();
-        StatementPtr ParseVariableStatement(bool is_export, bool is_extern);
+        StatementPtr ParseVariableStatement(bool is_extern);
         StatementPtr ParseWhileStatement();
 
         ExpressionPtr ParseExpression();
@@ -109,7 +103,7 @@ namespace NJS
 
     private:
         TypeContext &m_TypeContext;
-        TemplateContext &m_TemplateContext;
+        Builder &m_Builder;
 
         std::istream &m_Stream;
         std::map<std::string, Macro> &m_MacroMap;
@@ -119,9 +113,5 @@ namespace NJS
 
         SourceLocation m_Where;
         Token m_Token;
-
-        bool m_IsTemplate = false;
-        SourceLocation m_TemplateWhere;
-        std::string m_TemplateBuffer;
     };
 }

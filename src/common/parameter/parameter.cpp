@@ -28,25 +28,18 @@ void NJS::Parameter::CreateVars(
     const bool is_const,
     const bool is_reference)
 {
-    const auto type = Info.Type
-                          ? Info.Type
-                          : value->GetType();
-
-    auto &variable = builder.DefineVariable(Name, is_export || is_extern);
+    const auto type = Info.Type ? Info.Type : value->GetType();
+    auto &variable = builder.DefineVariable(Name, is_extern);
 
     if (is_export || is_extern)
     {
-        const auto const_value = value
-                                     ? llvm::dyn_cast<llvm::Constant>(value->Load())
-                                     : nullptr;
-
-        std::string name;
-        if (is_extern)
-            name = Name;
-        else
-            name = builder.GetName(true, Name);
-
-        variable = builder.CreateGlobal(name, type, is_const, value != nullptr, const_value);
+        const auto const_value = value ? llvm::dyn_cast<llvm::Constant>(value->Load()) : nullptr;
+        variable = builder.CreateGlobal(
+            is_extern ? Name : builder.GetName(true, Name),
+            type,
+            is_const,
+            value != nullptr,
+            const_value);
         if (value && !const_value)
             variable->StoreNoError(value);
         return;

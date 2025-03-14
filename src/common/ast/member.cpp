@@ -16,9 +16,14 @@ NJS::MemberExpression::MemberExpression(
 {
 }
 
+std::ostream &NJS::MemberExpression::Print(std::ostream &stream) const
+{
+    return Object->Print(stream) << '.' << Member;
+}
+
 NJS::ValuePtr NJS::MemberExpression::PGenLLVM(Builder &builder, const TypePtr &)
 {
-    auto object = Object->GenLLVM(builder, {});
+    auto object = Object->GenLLVM(builder, nullptr);
     if (Dereference)
     {
         if (!object->GetType()->IsPointer())
@@ -27,9 +32,4 @@ NJS::ValuePtr NJS::MemberExpression::PGenLLVM(Builder &builder, const TypePtr &)
         object = LValue::Create(builder, pointer_type->GetElement(), object->Load(), pointer_type->IsConst());
     }
     return builder.CreateMember(object, Member).Value;
-}
-
-std::ostream &NJS::MemberExpression::Print(std::ostream &stream) const
-{
-    return Object->Print(stream) << '.' << Member;
 }

@@ -11,12 +11,10 @@
 
 namespace NJS
 {
-    TypePtr GetHigherOrderOf(
+    TypePtr CombineTypes(
         TypeContext &type_context,
         const TypePtr &type_a,
         const TypePtr &type_b);
-
-    TypePtr GetBase(const TypePtr &type);
 
     unsigned CombineHashes(unsigned h1, unsigned h2);
 
@@ -30,20 +28,14 @@ namespace NJS
         {
             if (auto p = std::dynamic_pointer_cast<T>(v))
                 return p;
-
-            if (v->IsIncomplete())
-                if (const auto base = GetBase(v))
-                    return As<T>(base);
-
             Error("cannot get type {} as {}", v, T::INFO);
         }
 
         virtual ~Type() = default;
 
-        std::ostream &Print(std::ostream &stream) const;
-
         [[nodiscard]] TypeContext &GetContext() const;
-        [[nodiscard]] const std::string &GetString() const;
+        [[nodiscard]] unsigned GetHash() const;
+        [[nodiscard]] std::string GetString() const;
 
         template<typename T = llvm::Type>
         T *GetLLVM(const Builder &builder)
@@ -57,10 +49,7 @@ namespace NJS
         [[nodiscard]] bool IsIntegerLike() const;
         [[nodiscard]] bool IsBoolean() const;
 
-        [[nodiscard]] virtual size_t GetHash() const = 0;
-
         [[nodiscard]] virtual bool IsPrimitive() const;
-        [[nodiscard]] virtual bool IsIncomplete() const;
         [[nodiscard]] virtual bool IsVoid() const;
         [[nodiscard]] virtual bool IsInteger() const;
         [[nodiscard]] virtual bool IsFloatingPoint() const;
@@ -73,52 +62,18 @@ namespace NJS
         virtual bool TypeInfo(
             Builder &builder,
             std::vector<llvm::Value *> &arguments) const = 0;
+        virtual std::ostream &Print(std::ostream &stream) const =0;
 
     protected:
-        Type(TypeContext &type_context, std::string string);
+        Type(TypeContext &type_context, unsigned hash, std::string string);
 
         [[nodiscard]] virtual llvm::Type *GenLLVM(const Builder &builder) const = 0;
 
         TypeContext &m_TypeContext;
+        unsigned m_Hash;
         std::string m_String;
         llvm::Type *m_LLVM;
         unsigned m_Size;
-    };
-
-    class IncompleteType final : public Type
-    {
-        friend TypeContext;
-
-    public:
-        static constexpr auto INFO = "IncompleteType";
-
-        static std::string GenString(const std::string &name);
-
-        [[nodiscard]] TypePtr GetBase() const;
-
-        [[nodiscard]] size_t GetHash() const override;
-
-        [[nodiscard]] bool IsIncomplete() const override;
-        [[nodiscard]] bool IsPrimitive() const override;
-        [[nodiscard]] bool IsVoid() const override;
-        [[nodiscard]] bool IsInteger() const override;
-        [[nodiscard]] bool IsFloatingPoint() const override;
-        [[nodiscard]] bool IsPointer() const override;
-        [[nodiscard]] bool IsArray() const override;
-        [[nodiscard]] bool IsStruct() const override;
-        [[nodiscard]] bool IsTuple() const override;
-        [[nodiscard]] bool IsFunction() const override;
-
-        bool TypeInfo(
-            Builder &builder,
-            std::vector<llvm::Value *> &arguments) const override;
-
-    private:
-        IncompleteType(TypeContext &type_context, std::string string, std::string name);
-
-        [[nodiscard]] llvm::Type *GenLLVM(const Builder &builder) const override;
-
-        std::string m_Name;
     };
 
     class VoidType final : public Type
@@ -129,8 +84,7 @@ namespace NJS
         static constexpr auto INFO = "VoidType";
 
         static std::string GenString();
-
-        [[nodiscard]] size_t GetHash() const override;
+        static unsigned GenHash();
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsVoid() const override;
@@ -138,9 +92,10 @@ namespace NJS
         bool TypeInfo(
             Builder &builder,
             std::vector<llvm::Value *> &arguments) const override;
+        std::ostream &Print(std::ostream &stream) const override;
 
     private:
-        VoidType(TypeContext &type_context, std::string string);
+        VoidType(TypeContext &type_context, unsigned hash, std::string string);
 
         [[nodiscard]] llvm::Type *GenLLVM(const Builder &builder) const override;
     };
@@ -153,8 +108,7 @@ namespace NJS
         static constexpr auto INFO = "IntegerType";
 
         static std::string GenString(unsigned bits, bool is_signed);
-
-        [[nodiscard]] size_t GetHash() const override;
+        static unsigned GenHash(unsigned bits, bool is_signed);
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsInteger() const override;
@@ -164,9 +118,10 @@ namespace NJS
         bool TypeInfo(
             Builder &builder,
             std::vector<llvm::Value *> &arguments) const override;
+        std::ostream &Print(std::ostream &stream) const override;
 
     private:
-        IntegerType(TypeContext &type_context, std::string string, unsigned bits, bool is_signed);
+        IntegerType(TypeContext &type_context, unsigned hash, std::string string, unsigned bits, bool is_signed);
 
         [[nodiscard]] llvm::Type *GenLLVM(const Builder &builder) const override;
 
@@ -182,8 +137,7 @@ namespace NJS
         static constexpr auto INFO = "FloatingPointType";
 
         static std::string GenString(unsigned bits);
-
-        [[nodiscard]] size_t GetHash() const override;
+        static unsigned GenHash(unsigned bits);
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsFloatingPoint() const override;
@@ -192,9 +146,10 @@ namespace NJS
         bool TypeInfo(
             Builder &builder,
             std::vector<llvm::Value *> &arguments) const override;
+        std::ostream &Print(std::ostream &stream) const override;
 
     private:
-        FloatingPointType(TypeContext &type_context, std::string string, unsigned bits);
+        FloatingPointType(TypeContext &type_context, unsigned hash, std::string string, unsigned bits);
 
         [[nodiscard]] llvm::Type *GenLLVM(const Builder &builder) const override;
 
@@ -209,8 +164,7 @@ namespace NJS
         static constexpr auto INFO = "PointerType";
 
         static std::string GenString(const TypePtr &element_type, bool is_const);
-
-        [[nodiscard]] size_t GetHash() const override;
+        static unsigned GenHash(const TypePtr &element_type, bool is_const);
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsPointer() const override;
@@ -220,9 +174,10 @@ namespace NJS
         bool TypeInfo(
             Builder &builder,
             std::vector<llvm::Value *> &arguments) const override;
+        std::ostream &Print(std::ostream &stream) const override;
 
     private:
-        PointerType(TypeContext &type_context, std::string string, TypePtr element_type, bool is_const);
+        PointerType(TypeContext &type_context, unsigned hash, std::string string, TypePtr element_type, bool is_const);
 
         [[nodiscard]] llvm::Type *GenLLVM(const Builder &builder) const override;
 
@@ -238,8 +193,7 @@ namespace NJS
         static constexpr auto INFO = "ArrayType";
 
         static std::string GenString(const TypePtr &element_type, unsigned count);
-
-        [[nodiscard]] size_t GetHash() const override;
+        static unsigned GenHash(const TypePtr &element_type, unsigned count);
 
         [[nodiscard]] bool IsArray() const override;
         [[nodiscard]] TypePtr GetElement() const;
@@ -248,9 +202,10 @@ namespace NJS
         bool TypeInfo(
             Builder &builder,
             std::vector<llvm::Value *> &arguments) const override;
+        std::ostream &Print(std::ostream &stream) const override;
 
     private:
-        ArrayType(TypeContext &type_context, std::string string, TypePtr element_type, unsigned count);
+        ArrayType(TypeContext &type_context, unsigned hash, std::string string, TypePtr element_type, unsigned count);
 
         [[nodiscard]] llvm::Type *GenLLVM(const Builder &builder) const override;
 
@@ -272,29 +227,34 @@ namespace NJS
     public:
         static constexpr auto INFO = "StructType";
 
-        static std::string GenString(const std::vector<StructElement> &elements);
-
-        [[nodiscard]] size_t GetHash() const override;
+        static std::string GenString(const std::vector<StructElement> &elements, const std::string &name);
+        static unsigned GenHash(const std::vector<StructElement> &elements, const std::string &name);
 
         [[nodiscard]] bool IsStruct() const override;
+
         [[nodiscard]] unsigned GetElementCount() const;
         [[nodiscard]] MemberInfo GetMember(const std::string &name) const;
         [[nodiscard]] MemberInfo GetMember(unsigned index) const;
 
+        void SetElements(const std::vector<StructElement> &elements);
+
         bool TypeInfo(
             Builder &builder,
             std::vector<llvm::Value *> &arguments) const override;
+        std::ostream &Print(std::ostream &stream) const override;
 
     private:
         StructType(
             TypeContext &type_context,
+            unsigned hash,
             std::string string,
-            std::vector<StructElement> elements);
+            std::vector<StructElement> elements,
+            std::string name);
 
         [[nodiscard]] llvm::Type *GenLLVM(const Builder &builder) const override;
 
         std::vector<StructElement> m_Elements;
-        unsigned m_Index;
+        std::string m_Name;
     };
 
     class TupleType final : public Type
@@ -305,8 +265,7 @@ namespace NJS
         static constexpr auto INFO = "TupleType";
 
         static std::string GenString(const std::vector<TypePtr> &element_types);
-
-        [[nodiscard]] size_t GetHash() const override;
+        static unsigned GenHash(const std::vector<TypePtr> &element_types);
 
         [[nodiscard]] bool IsTuple() const override;
         [[nodiscard]] TypePtr GetElement(unsigned index) const;
@@ -315,14 +274,14 @@ namespace NJS
         bool TypeInfo(
             Builder &builder,
             std::vector<llvm::Value *> &arguments) const override;
+        std::ostream &Print(std::ostream &stream) const override;
 
     private:
-        TupleType(TypeContext &type_context, std::string string, std::vector<TypePtr> element_types);
+        TupleType(TypeContext &type_context, unsigned hash, std::string string, std::vector<TypePtr> element_types);
 
         [[nodiscard]] llvm::Type *GenLLVM(const Builder &builder) const override;
 
         std::vector<TypePtr> m_ElementTypes;
-        unsigned m_Index;
     };
 
     class FunctionType final : public Type
@@ -336,8 +295,10 @@ namespace NJS
             const ReferenceInfo &result,
             const std::vector<ReferenceInfo> &parameters,
             bool is_var_arg);
-
-        [[nodiscard]] size_t GetHash() const override;
+        static unsigned GenHash(
+            const ReferenceInfo &result,
+            const std::vector<ReferenceInfo> &parameters,
+            bool is_var_arg);
 
         [[nodiscard]] bool IsPrimitive() const override;
         [[nodiscard]] bool IsFunction() const override;
@@ -350,12 +311,14 @@ namespace NJS
         bool TypeInfo(
             Builder &builder,
             std::vector<llvm::Value *> &arguments) const override;
+        std::ostream &Print(std::ostream &stream) const override;
 
         [[nodiscard]] llvm::FunctionType *GenFnLLVM(const Builder &builder) const;
 
     private:
         FunctionType(
             TypeContext &type_context,
+            unsigned hash,
             std::string string,
             ReferenceInfo result,
             std::vector<ReferenceInfo> parameters,

@@ -8,7 +8,7 @@ NJS::CacheExpression::CacheExpression(SourceLocation where, ExpressionPtr value)
 
 std::ostream &NJS::CacheExpression::Print(std::ostream &stream) const
 {
-    return Value->Print(stream << "cache ");
+    return Value->Print(stream);
 }
 
 NJS::ValuePtr NJS::CacheExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)

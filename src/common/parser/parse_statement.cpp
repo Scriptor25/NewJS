@@ -20,7 +20,6 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
         return nullptr;
     }
 
-    const auto is_export = NextAt("export");
     const auto is_extern = NextAt("extern");
 
     if (At("break"))
@@ -29,10 +28,12 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
         return ParseClassStatement();
     if (At("continue"))
         return ParseContinueStatement();
+    if (At("export"))
+        return ParseExportStatement();
     if (At("for"))
         return ParseForStatement();
     if (At("function"))
-        return ParseFunctionStatement(is_export, is_extern);
+        return ParseFunctionStatement(is_extern);
     if (At("if"))
         return ParseIfStatement();
     if (At("import"))
@@ -44,7 +45,7 @@ NJS::StatementPtr NJS::Parser::ParseStatement()
     if (At("switch"))
         return ParseSwitchStatement();
     if (At("let") || At("const"))
-        return ParseVariableStatement(is_export, is_extern);
+        return ParseVariableStatement(is_extern);
     if (At("while"))
         return ParseWhileStatement();
 

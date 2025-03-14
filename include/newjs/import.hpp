@@ -16,27 +16,12 @@ namespace NJS
          *
          * @param builder current builder instance
          * @param module_id id of the module
-         * @param values a list of functions
+         * @param exports a list of functions
          */
         void MapValues(
             Builder &builder,
             const std::string &module_id,
-            const std::vector<StatementPtr> &values) const;
-
-        static void MapFunction(
-            Builder &builder,
-            const FunctionStatement &function,
-            const std::string &module_id,
-            ValuePtr &value,
-            std::string &name,
-            ReferenceInfo &info);
-        static void MapVariable(
-            Builder &builder,
-            const VariableStatement &variable,
-            const std::string &module_id,
-            ValuePtr &value,
-            std::string &name,
-            ReferenceInfo &info);
+            const std::vector<ExportStatementPtr> &exports) const;
 
         bool All{};
         std::string Name;
