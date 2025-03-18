@@ -75,13 +75,8 @@ NJS::TupleType::TupleType(
 
 llvm::Type *NJS::TupleType::GenLLVM(const Builder &builder) const
 {
-    const auto tuple_name = "tuple." + std::to_string(GetHash());
-    if (const auto tuple_type = llvm::StructType::getTypeByName(builder.GetContext(), tuple_name))
-        return tuple_type;
-
     std::vector<llvm::Type *> types;
     for (const auto &element_type: m_ElementTypes)
         types.emplace_back(element_type->GetLLVM(builder));
-
-    return llvm::StructType::create(builder.GetContext(), types, tuple_name, true);
+    return llvm::StructType::get(builder.GetContext(), types, true);
 }

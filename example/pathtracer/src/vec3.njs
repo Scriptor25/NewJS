@@ -25,11 +25,11 @@ class vec3 {
 
 type point3 = vec3
 
-export function operator[(&self: vec3, index: i64): &f64 {
+export function operator[](&self: vec3, index: i64): &f64 {
     return self.e[index]
 }
 
-export function operator[(const &self: vec3, index: i64): const &f64 {
+export function operator[](const &self: vec3, index: i64): const &f64 {
     return self.e[index]
 }
 

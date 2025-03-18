@@ -99,7 +99,7 @@ void NJS::Builder::Close()
         }
 
         m_Function->print(llvm::errs());
-        return;
+        Error("not all code paths return in module main function (module {})", m_ModuleID);
     }
 
     for (const auto block: deletable)
@@ -107,8 +107,8 @@ void NJS::Builder::Close()
 
     if (verifyFunction(*m_Function, &llvm::errs()))
     {
-        m_Function->print(llvm::errs());
-        return;
+        m_LLVMModule->print(llvm::errs(), nullptr);
+        Error("failed to verify module main function (module {})", m_ModuleID);
     }
 
     Optimize(m_Function);
@@ -227,6 +227,16 @@ std::string NJS::Builder::GetName(const bool absolute, const std::string &name) 
 }
 
 void NJS::Builder::DefineOperator(
+    const ReferenceInfo &callee_info,
+    const std::vector<ReferenceInfo> &parameter_infos,
+    const bool is_var_arg,
+    const ReferenceInfo &result_info,
+    llvm::Value *callee)
+{
+    m_CallOperatorMap[callee_info] = {callee_info, parameter_infos, is_var_arg, result_info, callee};
+}
+
+void NJS::Builder::DefineOperator(
     const std::string &name,
     const bool prefix,
     const ReferenceInfo &value,
@@ -244,6 +254,11 @@ void NJS::Builder::DefineOperator(
     llvm::Value *callee)
 {
     m_BinaryOperatorMap[name][left][right] = {result, left, right, callee};
+}
+
+NJS::CallOperatorInfo NJS::Builder::GetOperator(const ReferenceInfo &callee_info)
+{
+    return m_CallOperatorMap[callee_info];
 }
 
 NJS::OperatorInfo<1> NJS::Builder::GetOperator(
@@ -278,16 +293,34 @@ NJS::OperatorInfo<2> NJS::Builder::GetOperator(
     return for_left.at(right);
 }
 
+NJS::CallOperatorInfo NJS::Builder::FindOperator(const ValuePtr &callee)
+{
+    const auto v_ty = callee->GetType();
+    const auto v_const = callee->IsConst();
+    const auto v_ref = callee->IsLValue();
+
+    if (auto o = GetOperator({v_ty, v_const, v_ref}); o.Callee)
+        return o;
+    if (auto o = GetOperator({v_ty, true, v_ref}); o.Callee)
+        return o;
+    if (auto o = GetOperator({v_ty, true, true}); o.Callee)
+        return o;
+    if (auto o = GetOperator({v_ty, false, false}); o.Callee)
+        return o;
+
+    return {};
+}
+
 NJS::OperatorInfo<1> NJS::Builder::FindOperator(
     const std::string &name,
     const bool prefix,
     const ValuePtr &value) const
 {
     const auto v_ty = value->GetType();
-    const auto v_cnst = value->IsConst();
+    const auto v_const = value->IsConst();
     const auto v_ref = value->IsLValue();
 
-    if (auto o = GetOperator(name, prefix, {v_ty, v_cnst, v_ref}); o.Callee)
+    if (auto o = GetOperator(name, prefix, {v_ty, v_const, v_ref}); o.Callee)
         return o;
     if (auto o = GetOperator(name, prefix, {v_ty, true, v_ref}); o.Callee)
         return o;
@@ -306,20 +339,20 @@ NJS::OperatorInfo<2> NJS::Builder::FindOperator(
 {
     const auto l_ty = left->GetType();
     const auto r_ty = right->GetType();
-    const auto l_cnst = left->IsConst();
-    const auto r_cnst = right->IsConst();
+    const auto l_const = left->IsConst();
+    const auto r_const = right->IsConst();
     const auto l_ref = left->IsLValue();
     const auto r_ref = right->IsLValue();
 
-    if (auto o = GetOperator(name, {l_ty, l_cnst, l_ref}, {r_ty, r_cnst, r_ref}); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, l_const, l_ref}, {r_ty, r_const, r_ref}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, {l_ty, l_cnst, l_ref}, {r_ty, true, r_ref}); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, l_const, l_ref}, {r_ty, true, r_ref}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, {l_ty, l_cnst, l_ref}, {r_ty, true, true}); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, l_const, l_ref}, {r_ty, true, true}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, {l_ty, l_cnst, l_ref}, {r_ty, false, false}); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, l_const, l_ref}, {r_ty, false, false}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, {l_ty, true, l_ref}, {r_ty, r_cnst, r_ref}); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, true, l_ref}, {r_ty, r_const, r_ref}); o.Callee)
         return o;
     if (auto o = GetOperator(name, {l_ty, true, l_ref}, {r_ty, true, r_ref}); o.Callee)
         return o;
@@ -327,7 +360,7 @@ NJS::OperatorInfo<2> NJS::Builder::FindOperator(
         return o;
     if (auto o = GetOperator(name, {l_ty, true, l_ref}, {r_ty, false, false}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, {l_ty, true, true}, {r_ty, r_cnst, r_ref}); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, true, true}, {r_ty, r_const, r_ref}); o.Callee)
         return o;
     if (auto o = GetOperator(name, {l_ty, true, true}, {r_ty, true, r_ref}); o.Callee)
         return o;
@@ -335,7 +368,7 @@ NJS::OperatorInfo<2> NJS::Builder::FindOperator(
         return o;
     if (auto o = GetOperator(name, {l_ty, true, true}, {r_ty, false, false}); o.Callee)
         return o;
-    if (auto o = GetOperator(name, {l_ty, false, false}, {r_ty, r_cnst, r_ref}); o.Callee)
+    if (auto o = GetOperator(name, {l_ty, false, false}, {r_ty, r_const, r_ref}); o.Callee)
         return o;
     if (auto o = GetOperator(name, {l_ty, false, false}, {r_ty, true, r_ref}); o.Callee)
         return o;

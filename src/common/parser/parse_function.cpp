@@ -17,7 +17,21 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_extern)
         if (is_extern)
             Error(where, "operator cannot be extern");
         flags |= FunctionFlags_Operator;
-        name = Expect(TokenType_Operator).String;
+
+        if (NextAt("("))
+        {
+            Expect(")");
+            name = "()";
+        }
+        else if (NextAt("["))
+        {
+            Expect("]");
+            name = "[]";
+        }
+        else
+        {
+            name = Expect(TokenType_Operator).String;
+        }
     }
     else
         name = Expect(TokenType_Symbol).String;
@@ -42,6 +56,11 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_extern)
 NJS::ExpressionPtr NJS::Parser::ParseFunctionExpression()
 {
     const auto where = Expect("$").Where;
+
+    if (NextAt("["))
+    {
+        Expect("]");
+    }
 
     std::vector<ParameterPtr> parameters;
     auto is_var_arg = false;

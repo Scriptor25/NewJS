@@ -55,7 +55,7 @@ std::ostream &NJS::FunctionStatement::Print(std::ostream &stream) const
     return stream;
 }
 
-void NJS::FunctionStatement::PGenLLVM(Builder &builder, bool is_export)
+void NJS::FunctionStatement::PGenLLVM(Builder &builder, const bool is_export)
 {
     const bool is_extern = Flags & FunctionFlags_Extern;
     const bool is_operator = Flags & FunctionFlags_Operator;
@@ -98,7 +98,14 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder, bool is_export)
 
     if (is_operator)
     {
-        if (Parameters.size() == 1)
+        if (Name == "()")
+            builder.DefineOperator(
+                parameters[0],
+                {parameters.begin() + 1, parameters.end()},
+                IsVarArg,
+                Result,
+                function);
+        else if (Parameters.size() == 1)
             builder.DefineOperator(
                 Name,
                 !IsVarArg,
@@ -112,6 +119,8 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder, bool is_export)
                 Parameters[1]->Info,
                 Result,
                 function);
+        else
+            Error("TODO");
     }
     else
     {
@@ -236,6 +245,16 @@ void NJS::FunctionStatement::PGenImport(
 
     if (is_operator)
     {
+        if (Name == "()")
+        {
+            builder.DefineOperator(
+                parameters[0],
+                {parameters.begin() + 1, parameters.end()},
+                IsVarArg,
+                Result,
+                fn);
+            return;
+        }
         if (Parameters.size() == 1)
         {
             builder.DefineOperator(

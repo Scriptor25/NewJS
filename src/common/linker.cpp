@@ -34,13 +34,10 @@ void NJS::Linker::Link(std::unique_ptr<llvm::Module> &&module) const
     const auto source_name = module->getSourceFileName();
 
     if (verifyModule(*module, &llvm::errs()))
-    {
-        module->print(llvm::errs(), nullptr);
-        Error("failed to verify module '{}' (from '{}')", module_id, source_name);
-    }
+        Error("failed to verify module {} (from '{}')", module_id, source_name);
 
     if (llvm::Linker::linkModules(LLVMModule(), std::move(module)))
-        Error("failed to link module '{}' (from '{}')", module_id, source_name);
+        Error("failed to link module {} (from '{}')", module_id, source_name);
 
     if (m_AppendNames)
     {

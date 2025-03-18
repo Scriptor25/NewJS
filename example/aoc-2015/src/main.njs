@@ -9,7 +9,7 @@ extern function println(message: i8[const])
 extern function parse_int(str: i8[const]): i64
 extern function parse_float(str: i8[const]): u64
 
-type FILE
+type FILE = {}.FILE
 
 extern function fopen(filename: i8[const], mode: i8[const]): FILE[]
 extern function fclose(stream: FILE[])

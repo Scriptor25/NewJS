@@ -10,7 +10,7 @@ NJS::ValuePtr NJS::Builder::CreateSubscript(ValuePtr array, const ValuePtr &inde
             left_,
             right_,
             callee_
-        ] = FindOperator("[", array, index);
+        ] = FindOperator("[]", array, index);
         callee_)
     {
         const auto function_type = llvm::FunctionType::get(

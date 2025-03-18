@@ -105,6 +105,8 @@ namespace NJS
     template<unsigned N>
     struct OperatorInfo;
 
+    struct CallOperatorInfo;
+
     void Indent();
     void Exdent();
 

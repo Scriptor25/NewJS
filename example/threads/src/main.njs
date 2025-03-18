@@ -4,7 +4,7 @@ extern function sleep(seconds: u32): u32
 extern function println(line: string)
 
 type pthread_t = u64
-type pthread_attr_t
+type pthread_attr_t = {}.pthread_attr_t
 
 extern function pthread_create(thread: pthread_t[], attr: pthread_attr_t[const], start_routine: (void[]) => void[], arg: void[]): i32
 extern function pthread_join(thread: pthread_t, value_ptr: void[][]): i32

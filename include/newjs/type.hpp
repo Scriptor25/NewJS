@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include <llvm/IR/DerivedTypes.h>
-#include <llvm/IR/Type.h>
 #include <llvm/IR/Value.h>
 #include <newjs/info.hpp>
 #include <newjs/newjs.hpp>
@@ -37,15 +36,18 @@ namespace NJS
         [[nodiscard]] unsigned GetHash() const;
         [[nodiscard]] std::string GetString() const;
 
-        template<typename T = llvm::Type>
-        T *GetLLVM(const Builder &builder)
+        template<typename T>
+        [[nodiscard]] T *GetLLVM(const Builder &builder) const
         {
-            if (m_LLVM)
-                return llvm::dyn_cast<T>(m_LLVM);
-            return llvm::dyn_cast<T>(m_LLVM = GenLLVM(builder));
+            return llvm::dyn_cast<T>(GenLLVM(builder));
         }
 
-        unsigned GetSize(const Builder &builder);
+        [[nodiscard]] llvm::Type *GetLLVM(const Builder &builder) const
+        {
+            return GenLLVM(builder);
+        }
+
+        unsigned GetSize(const Builder &builder) const;
         [[nodiscard]] bool IsIntegerLike() const;
         [[nodiscard]] bool IsBoolean() const;
 
@@ -72,8 +74,6 @@ namespace NJS
         TypeContext &m_TypeContext;
         unsigned m_Hash;
         std::string m_String;
-        llvm::Type *m_LLVM;
-        unsigned m_Size;
     };
 
     class VoidType final : public Type

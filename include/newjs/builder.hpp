@@ -98,6 +98,12 @@ namespace NJS
         [[nodiscard]] std::string GetName(bool absolute, const std::string &name) const;
 
         void DefineOperator(
+            const ReferenceInfo &callee_info,
+            const std::vector<ReferenceInfo> &parameter_infos,
+            bool is_var_arg,
+            const ReferenceInfo &result_info,
+            llvm::Value *callee);
+        void DefineOperator(
             const std::string &name,
             bool prefix,
             const ReferenceInfo &value,
@@ -110,6 +116,7 @@ namespace NJS
             const ReferenceInfo &result,
             llvm::Value *callee);
 
+        [[nodiscard]] CallOperatorInfo GetOperator(const ReferenceInfo &callee_info);
         [[nodiscard]] OperatorInfo<1> GetOperator(
             const std::string &name,
             bool prefix,
@@ -119,6 +126,7 @@ namespace NJS
             const ReferenceInfo &left,
             const ReferenceInfo &right) const;
 
+        [[nodiscard]] CallOperatorInfo FindOperator(const ValuePtr &callee);
         [[nodiscard]] OperatorInfo<1> FindOperator(
             const std::string &name,
             bool prefix,
@@ -138,6 +146,8 @@ namespace NJS
 
         llvm::Constant *GetString(const std::string &value);
 
+        static std::string GetBinaryOperatorName(const std::string &name);
+        static std::string GetUnaryOperatorName(const std::string &name);
         static std::string GetFunctionName(
             const std::string &module_id,
             const std::string &name,
@@ -162,6 +172,7 @@ namespace NJS
 
         llvm::Function *m_Function;
 
+        ReferenceInfoMap<CallOperatorInfo> m_CallOperatorMap;
         std::map<std::string, std::map<bool, ReferenceInfoMap<OperatorInfo<1>>>> m_UnaryOperatorMap;
         std::map<std::string, ReferenceInfoMap<ReferenceInfoMap<OperatorInfo<2>>>> m_BinaryOperatorMap;
 

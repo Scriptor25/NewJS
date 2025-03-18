@@ -31,6 +31,22 @@ function printUser(const &{ name: n, surname: s, age: a, job: t }: user_t) {
     println(f" - {n} {s} ({a}), {t}")
 }
 
+class adder {
+    call(const &self: adder): u32 {
+        return self.a + self.b
+    },
+
+    a: u32,
+    b: u32,
+}
+
+function operator()(const &self: adder): u32 {
+    return self.call()
+}
+
+const add: adder = { a: 123, b: 321 }
+println(f"add() = {add.a} + {add.b} = {add.a + add.b} = {add()}")
+
 println("IT WORKS!")
 printUser(user1)
 
@@ -58,15 +74,18 @@ printArray(a1)
 for (let i = 0; i < 3; ++i)
     println(f"a1[{i}] = {a1[i]}")
 
-function foo(): () => u32 {
-    function bar(): u32 {
-        return 123
-    }
-    return bar
-}
-
-println(f"foo() = {typeof(foo())}")
-println(f"foo()() = {foo()()}")
+// function foo(a: u32, b: u32, &c: u32): () => u32 {
+//     const bar = ${ x: a, y: b, &z: c }: u32 {
+//         return z = x + y
+//     }
+//     return bar
+// }
+//
+// let foo_res: u32
+// const foo_123 = foo(123, 321, foo_res)
+// println(f"foo(123, 321, foo_res) = {typeof(foo_123)}")
+// println(f"foo(123, 321, foo_res)() = {foo_123()}")
+// println(f"foo_res = {foo_res}")
 
 const [name1, {name, surname, age, job}] = ["Max", user1]
 
@@ -80,13 +99,13 @@ for (let j: u64; j < 5; ++j)
     for (let i: u64; i < 5; ++i) {
         if (i == j)
             continue
-        ASSERT(i != j && "i should not be equal to j")
+        ASSERT(i != j && "i must not be equal to j")
     }
 
 for (let x: u64; x < 10; ++x) {
     if (x > 5)
         break
-    ASSERT(x <= 5 && "x should not be greater than 5")
+    ASSERT(x <= 5 && "x must not be greater than 5")
 }
 
 switch (0) {

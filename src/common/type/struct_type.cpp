@@ -97,13 +97,8 @@ NJS::StructType::StructType(
 
 llvm::Type *NJS::StructType::GenLLVM(const Builder &builder) const
 {
-    const auto struct_name = "struct." + m_Name;
-    if (const auto struct_type = llvm::StructType::getTypeByName(builder.GetContext(), struct_name))
-        return struct_type;
-
     std::vector<llvm::Type *> types;
     for (auto &[name_, info_, default_]: m_Elements)
         types.emplace_back(info_.GetLLVM(builder));
-
-    return llvm::StructType::create(builder.GetContext(), types, struct_name, true);
+    return llvm::StructType::get(builder.GetContext(), types, true);
 }

@@ -87,12 +87,12 @@ std::string NJS::Type::GetString() const
     return m_String;
 }
 
-unsigned NJS::Type::GetSize(const Builder &builder)
+unsigned NJS::Type::GetSize(const Builder &builder) const
 {
-    if (m_Size != ~0u)
-        return m_Size;
-    const auto type = GetLLVM(builder);
-    return m_Size = builder.GetModule().getDataLayout().getTypeAllocSize(type);
+    return builder
+            .GetModule()
+            .getDataLayout()
+            .getTypeAllocSize(GetLLVM(builder));
 }
 
 bool NJS::Type::IsIntegerLike() const
@@ -153,8 +153,6 @@ bool NJS::Type::IsFunction() const
 NJS::Type::Type(TypeContext &type_context, const unsigned hash, std::string string)
     : m_TypeContext(type_context),
       m_Hash(hash),
-      m_String(std::move(string)),
-      m_LLVM(nullptr),
-      m_Size(~0u)
+      m_String(std::move(string))
 {
 }

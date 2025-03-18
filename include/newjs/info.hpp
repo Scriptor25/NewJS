@@ -115,4 +115,13 @@ namespace NJS
         ReferenceInfo Right;
         llvm::Value *Callee{};
     };
+
+    struct CallOperatorInfo
+    {
+        ReferenceInfo CalleeInfo;
+        std::vector<ReferenceInfo> ParameterInfos;
+        bool IsVarArg;
+        ReferenceInfo ResultInfo;
+        llvm::Value *Callee{};
+    };
 }

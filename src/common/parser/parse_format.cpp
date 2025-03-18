@@ -39,7 +39,7 @@ NJS::ExpressionPtr NJS::Parser::ParseFormatExpression()
             m_TypeContext,
             m_Builder,
             stream,
-            SourceLocation(where.Filename, where.Row, where.Column + i + 1),
+            SourceLocation(where.Filename, where.Row, where.Column + i + 2),
             m_MacroMap,
             m_IsMain);
         dynamic_operands[operand_index++] = parser.ParseExpression();
