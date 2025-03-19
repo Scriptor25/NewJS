@@ -39,6 +39,7 @@ namespace NJS
         DestructureStruct(
             SourceLocation where,
             std::map<std::string, ParameterPtr> elements,
+            bool all,
             ReferenceInfo info);
 
         bool RequireValue() override;
@@ -53,6 +54,7 @@ namespace NJS
         std::ostream &Print(std::ostream &stream, bool with_info) override;
 
         std::map<std::string, ParameterPtr> Elements;
+        bool All;
     };
 
     struct DestructureTuple final : Parameter

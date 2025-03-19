@@ -12,10 +12,10 @@ function linear_to_gamma(component: f64): f64 {
     return 0.0
 }
 
-export function write_color(&img: image, x1: u32, x2: u32, const &pixel_color: color) {
-    const fr = linear_to_gamma(pixel_color[0])
-    const fg = linear_to_gamma(pixel_color[1])
-    const fb = linear_to_gamma(pixel_color[2])
+export function write_color(&img: image, x1: u32, x2: u32, const &{ e: [r, g, b] }: color) {
+    const fr = linear_to_gamma(r)
+    const fg = linear_to_gamma(g)
+    const fb = linear_to_gamma(b)
 
     const ir: i32 = (256 * interval.intensity.clamp(fr))
     const ig: i32 = (256 * interval.intensity.clamp(fg))

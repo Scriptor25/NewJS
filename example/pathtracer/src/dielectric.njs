@@ -14,8 +14,8 @@ function reflectance(cosine: f64, refraction_index: f64): f64 {
 }
 
 class dielectric {
-    scatter(const &self: dielectric, const &r_in: ray, const &rec: record, &attenuation: color, &scattered: ray): u1 {
-        const ri = rec.front_face ? 1.0 / self.refraction_index : self.refraction_index
+    scatter(const &{ albedo, refraction_index }: dielectric, const &r_in: ray, const &rec: record, &attenuation: color, &scattered: ray): u1 {
+        const ri = rec.front_face ? 1.0 / refraction_index : refraction_index
 
         const unit_direction = vec3.unit_vector(r_in.direction)
         const cos_theta = fmin(vec3.dot(-unit_direction, rec.normal), 1.0)
@@ -29,8 +29,8 @@ class dielectric {
         else
             direction = vec3.refract(unit_direction, rec.normal, ri)
 
-        scattered = { origin: rec.p, direction }
-        attenuation = self.albedo
+        scattered = { origin: rec.p, direction, time: r_in.time }
+        attenuation = albedo
         return true
     },
 

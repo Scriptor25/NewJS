@@ -1,3 +1,4 @@
+import aabb     from "./aabb.njs"
 import interval from "./interval.njs"
 import ray      from "./ray.njs"
 import record   from "./record.njs"
@@ -7,12 +8,12 @@ import vec3     from "./vec3.njs"
 extern function sqrt(x: f64): f64
 
 class sphere {
-    hit(const &self: sphere, const &r: ray, ray_t: interval, &rec: record): u1 {
-        const center = self.center.at(r.time)
-    	const oc = center - r.origin
+    hit(const &{ center, radius, mat }: sphere, const &r: ray, ray_t: interval, &rec: record): u1 {
+        const current_center = center.at(r.time)
+    	const oc = current_center - r.origin
         const a = r.direction.length_squared()
         const b = vec3.dot(r.direction, oc)
-        const c = oc.length_squared() - self.radius * self.radius
+        const c = oc.length_squared() - radius * radius
 
         const discriminant = b * b - a * c
         if (discriminant < 0)
@@ -29,23 +30,42 @@ class sphere {
 
         rec.t = root
         rec.p = r.at(rec.t)
-        rec.mat = self.mat
+        rec.mat = mat
 
-        const outward_normal = (rec.p - center) / self.radius
+        const outward_normal = (rec.p - current_center) / radius
         rec.set_face_normal(r, outward_normal)
 
         return true
     },
 
+    bounding_box(const &{ bbox }: sphere): aabb {
+        return bbox
+    },
+
     center: time3,
     radius: f64,
     mat: material[const],
+    bbox: aabb,
 }
 
 export function stationary(const &center: point3, radius: f64, mat: material[const]): sphere {
+    const rvec = { e: [radius, radius, radius] }:vec3
     return {
         center: { beg: center, end: center },
         radius,
         mat,
+        bbox: aabb.points(center - rvec, center + rvec),
+    }
+}
+
+export function moving(const &center1: point3, const &center2: point3, radius: f64, mat: material[const]): sphere {
+    const rvec = { e: [radius, radius, radius] }:vec3
+    const box1 = aabb.points(center1 - rvec, center1 + rvec)
+    const box2 = aabb.points(center2 - rvec, center2 + rvec)
+    return {
+        center: { beg: center1, end: center2 },
+        radius,
+        mat,
+        bbox: aabb.combine(box1, box2),
     }
 }

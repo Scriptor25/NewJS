@@ -1,3 +1,4 @@
+import bvh           from "./bvh.njs"
 import camera        from "./camera.njs"
 import common        from "./common.njs"
 import dielectric    from "./dielectric.njs"
@@ -6,8 +7,6 @@ import lambertian    from "./lambertian.njs"
 import metal         from "./metal.njs"
 import sphere        from "./sphere.njs"
 import vec3          from "./vec3.njs"
-
-#NEW(T: type, V: expr) "(&(*(malloc(sizeof<%T>) as %T[]) = %V))"
 
 extern function malloc(count: u64): void[]
 extern function free(block: void[])
@@ -30,23 +29,25 @@ for (let a = -11; a < 11; ++a) {
         ] }:point3
 
         if ((center - { e: [4, 0.2, 0] }:point3).length() > 0.9) {
-            let sphere_material: material[const]
+            let sp: sphere
+
             if (choose_mat < 0.8) {
-                // diffuse
                 const albedo = vec3.random_vector() * vec3.random_vector()
-                sphere_material = NEW(lambertian, { albedo })
+                const mat = NEW(lambertian, { albedo })
+                const center2 = center + { e: [0, common.random_range(0, 0.5), 0] }:vec3
+                sp = sphere.moving(center, center2, 0.2, mat)
             } else if (choose_mat < 0.95) {
-                // metal
                 const albedo = vec3.random_range_vector(0.5, 1)
                 const fuzz = common.random_range(0, 0.5)
-                sphere_material = NEW(metal, { albedo, fuzz })
+                const mat = NEW(metal, { albedo, fuzz })
+                sp = sphere.stationary(center, 0.2, mat)
             } else {
-                // glass
-                sphere_material = NEW(dielectric, { albedo: { e: [1, 1, 1] }, refraction_index: 1.5 })
+                const mat = NEW(dielectric, { albedo: { e: [1, 1, 1] }, refraction_index: 1.5 })
+                sp = sphere.stationary(center, 0.2, mat)
             }
 
-            const sphere = NEW(sphere, sphere.stationary(center, 0.2, sphere_material))
-            world*.add(sphere)
+            const sp_ptr = NEW(sphere, sp)
+            world*.add(sp_ptr)
         }
     }
 }
@@ -63,10 +64,12 @@ const material3 = NEW(metal, { albedo: { e: [0.7, 0.6, 0.5] }, fuzz: 0.0 })
 const sphere3 = NEW(sphere, sphere.stationary({ e: [4, 1, 0] }, 1.0, material3))
 world*.add(sphere3)
 
+const world_bvh = NEW(bvh_node, bvh.create(world*.objects, world*.size))
+
 let cam: camera
 
 cam.aspect_ratio      = 16.0 / 9.0
-cam.image_width       = 1200
+cam.image_width       = 400
 cam.samples_per_pixel = 100
 cam.max_depth         = 50
 
@@ -78,4 +81,4 @@ cam.vup      = { e: [ 0, 1, 0] }
 cam.defocus_angle =  0.6
 cam.focus_dist    = 10.0
 
-cam.render(world)
+cam.render(world_bvh)

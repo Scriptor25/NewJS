@@ -1,8 +1,8 @@
 import vec3 from "./vec3.njs"
 
 class ray {
-    at(const &self: ray, t: f64): point3 {
-        return self.origin + t * self.direction
+    at(const &{ origin, direction }: ray, t: f64): point3 {
+        return origin + t * direction
     },
 
     origin: point3,

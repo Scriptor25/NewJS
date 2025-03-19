@@ -28,6 +28,8 @@ std::ostream &NJS::CallExpression::Print(std::ostream &stream) const
 
 NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
+    builder.ClearLastObject();
+
     const auto callee_value = Callee->GenLLVM(builder, nullptr);
     const auto callee_type = callee_value->GetType();
 
@@ -92,17 +94,10 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
     const auto argument_count = Arguments.size();
 
     llvm::Value *first_argument = nullptr;
-    if (const auto member_expression = std::dynamic_pointer_cast<MemberExpression>(Callee);
-        member_expression &&
+    if (auto object = builder.GetLastObject();
+        object &&
         (argument_count == parameter_count - 1 || (function_type->IsVarArg() && argument_count > parameter_count - 1)))
     {
-        auto object = member_expression->Object->GenLLVM(builder, nullptr);
-        if (member_expression->Dereference)
-        {
-            const auto pointer_type = Type::As<PointerType>(object->GetType());
-            object = LValue::Create(builder, pointer_type->GetElement(), object->Load(), pointer_type->IsConst());
-        }
-
         if (const auto info = function_type->GetParameter(0); info.Type == object->GetType())
             first_argument = info.SolveFor(builder, object);
     }

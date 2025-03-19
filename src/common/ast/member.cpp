@@ -18,7 +18,7 @@ NJS::MemberExpression::MemberExpression(
 
 std::ostream &NJS::MemberExpression::Print(std::ostream &stream) const
 {
-    return Object->Print(stream) << '.' << Member;
+    return Object->Print(stream) << (Dereference ? "*." : ".") << Member;
 }
 
 NJS::ValuePtr NJS::MemberExpression::PGenLLVM(Builder &builder, const TypePtr &)
@@ -31,5 +31,6 @@ NJS::ValuePtr NJS::MemberExpression::PGenLLVM(Builder &builder, const TypePtr &)
         const auto pointer_type = Type::As<PointerType>(object->GetType());
         object = LValue::Create(builder, pointer_type->GetElement(), object->Load(), pointer_type->IsConst());
     }
+    builder.SetLastObject(object);
     return builder.CreateMember(object, Member).Value;
 }

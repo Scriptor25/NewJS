@@ -5,19 +5,19 @@ extern function fabs(x: f64): f64
 extern function fmin(a: f64, b: f64): f64
 
 class vec3 {
-    length_squared(const &self: vec3): f64 {
-        return self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
+    length_squared(const &{ e: [e0, e1, e2] }: vec3): f64 {
+        return e0 * e0 + e1 * e1 + e2 * e2
     },
 
     length(const &self: vec3): f64 {
         return sqrt(self.length_squared())
     },
 
-    near_zero(const &self: vec3): u1 {
+    near_zero(const &{ e: [e0, e1, e2] }: vec3): u1 {
         const s = 1e-8
-        return (fabs(self.e[0]) < s)
-            && (fabs(self.e[1]) < s)
-            && (fabs(self.e[2]) < s)
+        return (fabs(e0) < s)
+            && (fabs(e1) < s)
+            && (fabs(e2) < s)
     },
 
     e: f64[3],

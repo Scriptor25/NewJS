@@ -68,6 +68,7 @@ namespace NJS
             llvm::Constant *initializer = {}) const;
 
         MemberValue CreateMember(const ValuePtr &value, const std::string &name);
+        MemberValue CreateMember(const ValuePtr &value, unsigned index);
 
         [[nodiscard]] ValuePtr CreateSubscript(ValuePtr array, const ValuePtr &index) const;
         [[nodiscard]] ValuePtr CreateSubscript(const ValuePtr &array, unsigned index) const;
@@ -146,6 +147,10 @@ namespace NJS
 
         llvm::Constant *GetString(const std::string &value);
 
+        void ClearLastObject();
+        void SetLastObject(const ValuePtr &object);
+        ValuePtr GetLastObject() const;
+
         static std::string GetBinaryOperatorName(const std::string &name);
         static std::string GetUnaryOperatorName(const std::string &name);
         static std::string GetFunctionName(
@@ -179,5 +184,7 @@ namespace NJS
         std::vector<StackFrame> m_Stack;
 
         std::map<std::string, llvm::Constant *> m_StringTable;
+
+        ValuePtr m_LastObject;
     };
 }

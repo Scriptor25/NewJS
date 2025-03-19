@@ -7,9 +7,11 @@
 NJS::DestructureStruct::DestructureStruct(
     SourceLocation where,
     std::map<std::string, ParameterPtr> elements,
+    const bool all,
     ReferenceInfo info)
     : Parameter(std::move(where), {}, std::move(info)),
-      Elements(std::move(elements))
+      Elements(std::move(elements)),
+      All(all)
 {
 }
 
@@ -36,6 +38,26 @@ void NJS::DestructureStruct::CreateVars(
     else if (Info.Type)
     {
         value = builder.CreateCast(value, Info.Type);
+    }
+
+    if (All)
+    {
+        const auto struct_type = Type::As<StructType>(value->GetType());
+        for (unsigned i = 0; i < struct_type->GetElementCount(); ++i)
+        {
+            const auto [index_, name_, info_, default_] = struct_type->GetMember(i);
+            if (info_.IsConst && !info_.IsReference)
+                continue;
+            const auto [value_, is_reference_] = builder.CreateMember(value, i);
+            Parameter(Where, name_, info_).CreateVars(
+                builder,
+                value_,
+                is_export,
+                is_extern,
+                is_reference_ ? value_->IsConst() : is_const,
+                is_reference_ || is_reference);
+        }
+        return;
     }
 
     for (const auto &[name_, element_]: Elements)

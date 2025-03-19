@@ -15,6 +15,22 @@ NJS::MemberValue NJS::Builder::CreateMember(const ValuePtr &value, const std::st
         info_,
         default_
     ] = struct_type->GetMember(name);
+
+    return CreateMember(value, index_);
+}
+
+NJS::MemberValue NJS::Builder::CreateMember(const ValuePtr &value, const unsigned index)
+{
+    if (!value->GetType()->IsStruct())
+        Error("cannot access member of non-struct value of type {}", value->GetType());
+    const auto struct_type = Type::As<StructType>(value->GetType());
+
+    const auto [
+        index_,
+        name_,
+        info_,
+        default_
+    ] = struct_type->GetMember(index);
     const auto [
         type_,
         is_const_,

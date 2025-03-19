@@ -8,11 +8,19 @@ NJS::ParameterPtr NJS::Parser::ParseParameter(const bool is_const, const bool is
     if (NextAt("{"))
     {
         std::map<std::string, ParameterPtr> parameters;
-        ParseParameterMap(parameters, "}");
+
+        const auto all = NextAt("*");
+        if (all)
+            Expect("}");
+        else
+            ParseParameterMap(parameters, "}");
+
         auto type = NextAt(":") ? ParseType() : nullptr;
+
         return std::make_shared<DestructureStruct>(
             where,
             parameters,
+            all,
             ReferenceInfo(std::move(type), is_const, is_reference));
     }
 

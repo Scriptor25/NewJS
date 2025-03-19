@@ -9,34 +9,34 @@ extern function malloc(count: u64): void[]
 extern function free(block: void[]): void
 
 class image {
-    open(&self: image, filename: i8[], width: u32, height: u32) {
-        self.stream = fopen(filename, "wb")
-        self.buffer = malloc(width * height * 3)
-        self.width = width
-        self.height = height
+    open(&{*}: image, f: i8[], w: u32, h: u32) {
+        stream = fopen(f, "wb")
+        buffer = malloc(w * h * 3)
+        width = w
+        height = h
     },
 
-    put(&self: image, x1: u32, x2: u32, r: i32, g: i32, b: i32) {
-        self.buffer[(x1 + x2 * self.width) * 3 + 0] = r
-        self.buffer[(x1 + x2 * self.width) * 3 + 1] = g
-        self.buffer[(x1 + x2 * self.width) * 3 + 2] = b
+    put(&{ buffer, width }: image, x1: u32, x2: u32, r: i32, g: i32, b: i32) {
+        buffer[(x1 + x2 * width) * 3 + 0] = r
+        buffer[(x1 + x2 * width) * 3 + 1] = g
+        buffer[(x1 + x2 * width) * 3 + 2] = b
     },
 
-    flush(&self: image) {
-        fseek(self.stream, 0, 0)
-        fprintf(self.stream, "P6 %d %d 255 ", self.width, self.height)
-        for (let i: u64; i < self.width * self.height * 3; ++i)
-            fprintf(self.stream, "%c", self.buffer[i])
-        fflush(self.stream)
+    flush(&{*}: image) {
+        fseek(stream, 0, 0)
+        fprintf(stream, "P6 %d %d 255 ", width, height)
+        for (let i: u64; i < width * height * 3; ++i)
+            fprintf(stream, "%c", buffer[i])
+        fflush(stream)
     },
 
-    close(&self: image) {
-        fclose(self.stream)
-        free(self.buffer)
-        self.stream = 0
-        self.buffer = 0
-        self.width = 0
-        self.height = 0
+    close(&{*}: image) {
+        fclose(stream)
+        free(buffer)
+        stream = 0
+        buffer = 0
+        width = 0
+        height = 0
     },
 
     stream: FILE[],

@@ -31,35 +31,35 @@ type scanline_t = {
 
 class camera {
 
-    initialize(&self: camera) {
-        self.image_height = self.image_width / self.aspect_ratio
-        self.image_height = MAX(self.image_height, 1)
+    initialize(&{*}: camera) {
+        image_height = image_width / aspect_ratio
+        image_height = MAX(image_height, 1)
 
-        self.pixel_sample_scale = 1.0 / self.samples_per_pixel
+        pixel_sample_scale = 1.0 / samples_per_pixel
 
-        self.center = self.lookfrom
+        center = lookfrom
 
-        const theta = common.to_radians(self.vfov)
+        const theta = common.to_radians(vfov)
         const h = tan(theta / 2)
-        const viewport_height = 2 * h * self.focus_dist
-        const viewport_width = viewport_height * ((self.image_width as f64) / (self.image_height as f64))
+        const viewport_height = 2 * h * focus_dist
+        const viewport_width = viewport_height * ((image_width as f64) / (image_height as f64))
 
-        self.w = vec3.unit_vector(self.lookfrom - self.lookat)
-        self.u = vec3.unit_vector(vec3.cross(self.vup, self.w))
-        self.v = vec3.cross(self.w, self.u)
+        w = vec3.unit_vector(lookfrom - lookat)
+        u = vec3.unit_vector(vec3.cross(vup, w))
+        v = vec3.cross(w, u)
 
-        const viewport_u = viewport_width * self.u
-        const viewport_v = -viewport_height * self.v
+        const viewport_u = viewport_width * u
+        const viewport_v = -viewport_height * v
 
-        self.pixel_delta_u = viewport_u / (self.image_width as f64)
-        self.pixel_delta_v = viewport_v / (self.image_height as f64)
+        pixel_delta_u = viewport_u / (image_width as f64)
+        pixel_delta_v = viewport_v / (image_height as f64)
 
-        const viewport_upper_left = self.center - (self.focus_dist * self.w) - viewport_u / 2.0 - viewport_v / 2.0
-        self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v)
+        const viewport_upper_left = center - (focus_dist * w) - viewport_u / 2.0 - viewport_v / 2.0
+        pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v)
 
-        const defocus_radius = self.focus_dist * tan(common.to_radians(self.defocus_angle / 2))
-        self.defocus_disk_u = self.u * defocus_radius
-        self.defocus_disk_v = self.v * defocus_radius
+        const defocus_radius = focus_dist * tan(common.to_radians(defocus_angle / 2))
+        defocus_disk_u = u * defocus_radius
+        defocus_disk_v = v * defocus_radius
     },
 
     ray_color(const &self: camera, r: ray, depth: u32, world: hittable[const]): color {
@@ -85,9 +85,9 @@ class camera {
         return { e: [common.random() - 0.5, common.random() - 0.5, 0] }
     },
 
-    defocus_disk_sample(const &self: camera): point3 {
+    defocus_disk_sample(const &{ center, defocus_disk_u, defocus_disk_v }: camera): point3 {
         const p = vec3.random_in_unit_disk()
-        return self.center + (p[0] * self.defocus_disk_u) + (p[1] * self.defocus_disk_v)
+        return center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v)
     },
 
     get_ray(const &self: camera, i: u32, j: u32): ray {
@@ -141,7 +141,7 @@ class camera {
                     return 0
                 }, &ts[x].snd)
             }
-            for (let x: u32; x < THREAD_COUNT; ++x)
+            for (let x: u32; x < THREAD_COUNT && j + x < self.image_height; ++x)
                 pthread.join(ts[x].fst, 0)
             img.flush()
         }

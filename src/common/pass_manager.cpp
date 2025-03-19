@@ -36,7 +36,7 @@ NJS::PassManager::PassManager(llvm::LLVMContext &llvm_context)
     m_FPM->addPass(llvm::PromotePass());
     m_FPM->addPass(llvm::MemCpyOptPass());
 
-    m_FPM->addPass(llvm::InstCombinePass());
+    // m_FPM->addPass(llvm::InstCombinePass());
     m_FPM->addPass(llvm::ReassociatePass());
     m_FPM->addPass(llvm::InstSimplifyPass());
 

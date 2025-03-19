@@ -380,7 +380,10 @@ NJS::ValuePtr NJS::OperatorAdd(
         return RValue::Create(
             builder,
             left_type,
-            builder.GetBuilder().CreatePtrAdd(left_value, right_value));
+            builder.GetBuilder().CreateGEP(
+                Type::As<PointerType>(left_type)->GetElement()->GetLLVM(builder),
+                left_value,
+                right_value));
 
     if (left_type != right_type)
         return nullptr;
@@ -414,7 +417,10 @@ NJS::ValuePtr NJS::OperatorSub(
         return RValue::Create(
             builder,
             left_type,
-            builder.GetBuilder().CreatePtrAdd(left_value, builder.GetBuilder().CreateNeg(right_value)));
+            builder.GetBuilder().CreateGEP(
+                Type::As<PointerType>(left_type)->GetElement()->GetLLVM(builder),
+                left_value,
+                builder.GetBuilder().CreateNeg(right_value)));
 
     if (left_type != right_type)
         return nullptr;

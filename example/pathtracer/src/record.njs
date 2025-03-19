@@ -4,9 +4,9 @@ import ray      from "./ray.njs"
 type material = {}.material
 
 class record {
-    set_face_normal(&self: record, const &r: ray, const &outward_normal: vec3) {
-        self.front_face = vec3.dot(r.direction, outward_normal) < 0
-        self.normal = self.front_face ? outward_normal : -outward_normal
+    set_face_normal(&{ front_face, normal }: record, const &r: ray, const &outward_normal: vec3) {
+        front_face = vec3.dot(r.direction, outward_normal) < 0
+        normal = front_face ? outward_normal : -outward_normal
     },
 
     p: point3,
