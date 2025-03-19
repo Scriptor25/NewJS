@@ -93,7 +93,7 @@ std::string NJS::Builder::GetFunctionName(
     if (is_extern)
         return name;
 
-    const auto prefix = module_id.empty() ? "" : (module_id + '.');
+    const auto prefix = module_id.empty() ? "" : module_id + '.';
 
     if (is_operator)
     {
@@ -105,9 +105,9 @@ std::string NJS::Builder::GetFunctionName(
         {
             const auto operator_name = GetUnaryOperatorName(name);
             return prefix
-                   + (is_var_arg ? std::string() : (operator_name + '.'))
+                   + (is_var_arg ? std::string() : operator_name + '.')
                    + std::to_string(parameters[0]->Info.GetHash())
-                   + (is_var_arg ? ('.' + operator_name) : std::string());
+                   + (is_var_arg ? '.' + operator_name : std::string());
         }
         if (parameters.size() == 2)
         {

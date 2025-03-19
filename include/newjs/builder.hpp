@@ -59,20 +59,20 @@ namespace NJS
         void Optimize(llvm::Function *function) const;
 
         [[nodiscard]] llvm::Value *CreateAlloca(llvm::Type *type, unsigned count = 0) const;
-        ValuePtr CreateAlloca(const TypePtr &type, bool is_const, unsigned count = 0) const;
+        [[nodiscard]] ValuePtr CreateAlloca(const TypePtr &type, bool is_const, unsigned count = 0) const;
         ValuePtr CreateGlobal(
             const std::string &name,
             const TypePtr &type,
             bool is_const,
             bool initialize,
-            llvm::Constant *initializer = {});
+            llvm::Constant *initializer = {}) const;
 
         MemberValue CreateMember(const ValuePtr &value, const std::string &name);
 
-        ValuePtr CreateSubscript(ValuePtr array, const ValuePtr &index) const;
-        ValuePtr CreateSubscript(const ValuePtr &array, unsigned index) const;
+        [[nodiscard]] ValuePtr CreateSubscript(ValuePtr array, const ValuePtr &index) const;
+        [[nodiscard]] ValuePtr CreateSubscript(const ValuePtr &array, unsigned index) const;
 
-        ValuePtr CreateCast(const ValuePtr &value, const TypePtr &type) const;
+        [[nodiscard]] ValuePtr CreateCast(const ValuePtr &value, const TypePtr &type) const;
         [[nodiscard]] llvm::Value *CreateCast(
             const ValueInfo &ref,
             const TypePtr &src_type,

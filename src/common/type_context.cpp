@@ -106,6 +106,28 @@ NJS::FunctionTypePtr NJS::TypeContext::GetFunctionType(
     return GetFunctionType(result, parameter_infos, is_var_arg);
 }
 
+NJS::TypePtr NJS::TypeContext::GetLambdaType(
+    const std::vector<StructElement> &elements,
+    const FunctionTypePtr &function_type)
+{
+    const auto hash = CombineHashes(CombineHashes(StructType::GenHash(elements, {}), function_type->GetHash()), 0x10);
+    auto struct_type = GetStructType("lambda." + std::to_string(hash));
+
+    std::vector<ReferenceInfo> parameters;
+    parameters.emplace_back(struct_type);
+    for (unsigned i = 0; i < function_type->GetParameterCount(); ++i)
+        parameters.emplace_back(function_type->GetParameter(i));
+    const auto call_type = GetFunctionType(function_type->GetResult(), parameters, function_type->IsVarArg());
+
+    std::vector<StructElement> struct_elements;
+    struct_elements.emplace_back("call", ReferenceInfo(call_type, false, false), nullptr);
+    for (auto &element: elements)
+        struct_elements.emplace_back(element);
+
+    struct_type->SetElements(struct_elements);
+    return struct_type;
+}
+
 NJS::IntegerTypePtr NJS::TypeContext::GetBooleanType()
 {
     return GetIntegerType(1, false);

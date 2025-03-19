@@ -1,3 +1,4 @@
+#include <newjs/parameter.hpp>
 #include <newjs/parser.hpp>
 #include <newjs/type_context.hpp>
 
@@ -135,6 +136,8 @@ NJS::TypePtr NJS::Parser::ParseType()
         type = ParseStructType();
     else if (At("("))
         type = ParseFunctionType();
+    else if (At("lambda"))
+        type = ParseLambdaType();
     else if (const auto name = Expect(TokenType_Symbol).String; get_type_map.contains(name))
         type = get_type_map.at(name)(m_TypeContext);
     else if (m_MacroMap.contains(name))
@@ -226,6 +229,32 @@ NJS::TypePtr NJS::Parser::ParseFunctionType()
     else
         result.Type = m_TypeContext.GetVoidType();
     return m_TypeContext.GetFunctionType(result, parameters, is_var_arg);
+}
+
+NJS::TypePtr NJS::Parser::ParseLambdaType()
+{
+    Expect("lambda");
+    Expect("[");
+    std::vector<StructElement> elements;
+    while (!At("]"))
+    {
+        const auto is_const = NextAt("const");
+        const auto is_reference = NextAt("&");
+        const auto name = Expect(TokenType_Symbol).String;
+        Expect(":");
+        const auto type = ParseType();
+
+        elements.emplace_back(name, ReferenceInfo(type, is_const, is_reference), nullptr);
+
+        if (!At("]"))
+            Expect(",");
+    }
+    Expect("]");
+    Expect("<");
+    const auto function_type = Type::As<FunctionType>(ParseFunctionType());
+    Expect(">");
+
+    return m_TypeContext.GetLambdaType(elements, function_type);
 }
 
 NJS::ReferenceInfo NJS::Parser::ParseReferenceInfo()

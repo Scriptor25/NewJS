@@ -47,7 +47,7 @@ namespace NJS
             return GenLLVM(builder);
         }
 
-        unsigned GetSize(const Builder &builder) const;
+        [[nodiscard]] unsigned GetSize(const Builder &builder) const;
         [[nodiscard]] bool IsIntegerLike() const;
         [[nodiscard]] bool IsBoolean() const;
 

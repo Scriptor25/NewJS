@@ -29,8 +29,8 @@ unsigned NJS::FunctionType::GenHash(
     const bool is_var_arg)
 {
     auto hash = CombineHashes(result.GetHash(), 0x08);
-    for (unsigned i = 0; i < parameters.size(); ++i)
-        hash = CombineHashes(hash, parameters[i].GetHash());
+    for (const auto &parameter: parameters)
+        hash = CombineHashes(hash, parameter.GetHash());
     return CombineHashes(hash, std::hash<bool>()(is_var_arg));
 }
 

@@ -62,7 +62,7 @@ NJS::RTError NJS::operator+(const RTError &lhs, const ErrorFrame &rhs)
     return {lhs, rhs};
 }
 
-void NJS::Error(const RTError &cause, SourceLocation where, std::string message)
+void NJS::Error(const RTError &cause, SourceLocation where, std::string message) noexcept(false)
 {
     throw cause + ErrorFrame(std::move(where), std::move(message));
 }

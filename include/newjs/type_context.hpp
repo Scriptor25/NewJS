@@ -45,6 +45,8 @@ namespace NJS
             const std::vector<ParameterPtr> &parameters,
             bool is_var_arg);
 
+        TypePtr GetLambdaType(const std::vector<StructElement> &elements, const FunctionTypePtr &function_type);
+
         IntegerTypePtr GetBooleanType();
         IntegerTypePtr GetCharType();
         PointerTypePtr GetStringType();

@@ -53,7 +53,7 @@ NJS::TypePtr NJS::CombineTypes(
 
 unsigned NJS::CombineHashes(const unsigned h1, const unsigned h2)
 {
-    return h1 ^ (h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
+    return h1 ^ h2 + 0x9e3779b9 + (h1 << 6) + (h1 >> 2);
 }
 
 bool NJS::operator==(const TypePtr &a, const TypePtr &b)

@@ -57,8 +57,31 @@ NJS::ExpressionPtr NJS::Parser::ParseFunctionExpression()
 {
     const auto where = Expect("$").Where;
 
+    std::vector<std::pair<ParameterPtr, ExpressionPtr>> capture_parameters;
     if (NextAt("["))
     {
+        while (!At("]"))
+        {
+            const auto capture_is_const = NextAt("const");
+            const auto capture_is_reference = NextAt("&");
+            auto capture_where = CurrentLocation();
+            auto capture_name = Expect(TokenType_Symbol).String;
+
+            auto capture_value = NextAt(":")
+                                     ? ParseExpression()
+                                     : std::make_shared<SymbolExpression>(capture_where, capture_name);
+
+            capture_parameters.emplace_back(
+                std::make_shared<Parameter>(
+                    capture_where,
+                    capture_name,
+                    ReferenceInfo(nullptr, capture_is_const, capture_is_reference)),
+                capture_value);
+
+            if (!At("]"))
+                Expect(",");
+        }
+
         Expect("]");
     }
 
@@ -75,5 +98,5 @@ NJS::ExpressionPtr NJS::Parser::ParseFunctionExpression()
 
     const auto body = ParseScopeStatement();
 
-    return std::make_shared<FunctionExpression>(where, parameters, is_var_arg, result, body);
+    return std::make_shared<FunctionExpression>(where, capture_parameters, parameters, is_var_arg, result, body);
 }

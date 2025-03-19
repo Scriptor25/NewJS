@@ -32,7 +32,7 @@ namespace NJS
     RTError operator+(const RTError &lhs, const ErrorFrame &rhs);
 
 
-    [[noreturn]] void Error(const RTError &cause, SourceLocation where, std::string message);
+    [[noreturn]] void Error(const RTError &cause, SourceLocation where, std::string message) noexcept(false);
 
     template<typename... Args>
     [[noreturn]] void Error(const std::string_view &format, Args &&... args)

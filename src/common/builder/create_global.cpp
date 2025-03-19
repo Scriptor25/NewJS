@@ -7,7 +7,7 @@ NJS::ValuePtr NJS::Builder::CreateGlobal(
     const TypePtr &type,
     const bool is_const,
     const bool initialize,
-    llvm::Constant *initializer)
+    llvm::Constant *initializer) const
 {
     const auto value_type = type->GetLLVM(*this);
     const auto global = new llvm::GlobalVariable(

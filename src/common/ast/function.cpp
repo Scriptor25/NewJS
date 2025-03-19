@@ -285,11 +285,13 @@ void NJS::FunctionStatement::PGenImport(
 
 NJS::FunctionExpression::FunctionExpression(
     SourceLocation where,
+    std::vector<std::pair<ParameterPtr, ExpressionPtr>> capture_parameters,
     std::vector<ParameterPtr> parameters,
     const bool is_var_arg,
     ReferenceInfo result,
     StatementPtr body)
     : Expression(std::move(where)),
+      CaptureParameters(std::move(capture_parameters)),
       Parameters(std::move(parameters)),
       IsVarArg(is_var_arg),
       Result(std::move(result)),
@@ -300,6 +302,22 @@ NJS::FunctionExpression::FunctionExpression(
 std::ostream &NJS::FunctionExpression::Print(std::ostream &stream) const
 {
     stream << '$';
+    if (!CaptureParameters.empty())
+    {
+        stream << '[';
+        for (unsigned i = 0; i < CaptureParameters.size(); ++i)
+        {
+            auto &[parameter, value] = CaptureParameters[i];
+            if (i > 0)
+                stream << ", ";
+            parameter->Print(stream, true);
+            stream << ": ";
+            value->Print(stream);
+        }
+        stream << ']';
+        if (Parameters.empty())
+            stream << ' ';
+    }
     if (!Parameters.empty())
     {
         stream << '(';

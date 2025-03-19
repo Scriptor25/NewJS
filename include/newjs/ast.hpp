@@ -406,6 +406,7 @@ namespace NJS
     {
         FunctionExpression(
             SourceLocation where,
+            std::vector<std::pair<ParameterPtr, ExpressionPtr>> capture_parameters,
             std::vector<ParameterPtr> parameters,
             bool is_var_arg,
             ReferenceInfo result,
@@ -413,6 +414,7 @@ namespace NJS
 
         std::ostream &Print(std::ostream &stream) const override;
 
+        std::vector<std::pair<ParameterPtr, ExpressionPtr>> CaptureParameters;
         std::vector<ParameterPtr> Parameters;
         bool IsVarArg;
         ReferenceInfo Result;

@@ -11,19 +11,19 @@ public:
     static T *malloc(const size_t count)
     {
         // fprintf(stderr, "malloc(%llu)\n", count * sizeof(T));
-        return (T *) ::malloc(count * sizeof(T));
+        return static_cast<T *>(::malloc(count * sizeof(T)));
     }
 
     static T *calloc(const size_t count)
     {
         // fprintf(stderr, "calloc(%llu, %llu)\n", count, sizeof(T));
-        return (T *) ::calloc(count, sizeof(T));
+        return static_cast<T *>(::calloc(count, sizeof(T)));
     }
 
     static T *realloc(T *memory, const size_t new_count)
     {
         // fprintf(stderr, "realloc(%p, %llu)\n", memory, new_count * sizeof(T));
-        return (T *) ::realloc(memory, new_count * sizeof(T));
+        return static_cast<T *>(::realloc(memory, new_count * sizeof(T)));
     }
 
     static void free(T *memory)

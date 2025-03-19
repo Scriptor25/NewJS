@@ -37,7 +37,7 @@ NJS::ValuePtr NJS::AsmExpression::PGenLLVM(Builder &builder, const TypePtr &)
     std::vector<llvm::Type *> operand_types;
     std::vector<llvm::Value *> operands;
 
-    for (auto &argument: Operands)
+    for (const auto &argument: Operands)
     {
         const auto value = argument->GenLLVM(builder, nullptr);
         operand_types.emplace_back(value->GetType()->GetLLVM(builder));
