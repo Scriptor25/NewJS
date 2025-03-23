@@ -28,7 +28,7 @@ std::ostream &NJS::CallExpression::Print(std::ostream &stream) const
 
 NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
 {
-    builder.ClearLastObject();
+    builder.PushLastObjectContext();
 
     const auto callee_value = Callee->GenLLVM(builder, nullptr);
     const auto callee_type = callee_value->GetType();
@@ -102,6 +102,8 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
             first_argument = info.SolveFor(builder, object);
     }
 
+    builder.PopLastObjectContext();
+
     if (!first_argument)
     {
         if (argument_count < parameter_count)
@@ -111,7 +113,6 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
     }
 
     const auto has_first = !!first_argument;
-
     std::vector<llvm::Value *> arguments(argument_count + has_first);
 
     if (has_first)

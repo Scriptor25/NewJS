@@ -147,7 +147,8 @@ namespace NJS
 
         llvm::Constant *GetString(const std::string &value);
 
-        void ClearLastObject();
+        void PushLastObjectContext();
+        void PopLastObjectContext();
         void SetLastObject(const ValuePtr &object);
         ValuePtr GetLastObject() const;
 
@@ -185,6 +186,6 @@ namespace NJS
 
         std::map<std::string, llvm::Constant *> m_StringTable;
 
-        ValuePtr m_LastObject;
+        std::vector<ValuePtr> m_LastObject;
     };
 }

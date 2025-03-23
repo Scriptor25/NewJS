@@ -23,7 +23,9 @@ std::ostream &NJS::MemberExpression::Print(std::ostream &stream) const
 
 NJS::ValuePtr NJS::MemberExpression::PGenLLVM(Builder &builder, const TypePtr &)
 {
+    builder.PushLastObjectContext();
     auto object = Object->GenLLVM(builder, nullptr);
+    builder.PopLastObjectContext();
     if (Dereference)
     {
         if (!object->GetType()->IsPointer())

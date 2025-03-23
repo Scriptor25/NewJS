@@ -58,18 +58,12 @@ unsigned NJS::CombineHashes(const unsigned h1, const unsigned h2)
 
 bool NJS::operator==(const TypePtr &a, const TypePtr &b)
 {
-    if (a.get() == b.get())
-        return true;
-    if (!a || !b)
-        return false;
-    if (a->GetHash() == b->GetHash())
-        return true;
-    return false;
+    return a.get() == b.get() || (a.get() && b.get() && a->GetHash() == b->GetHash());
 }
 
 bool NJS::operator!=(const TypePtr &a, const TypePtr &b)
 {
-    return !(a == b);
+    return a.get() != b.get() || !a.get() || !b.get() || a->GetHash() != b->GetHash();
 }
 
 NJS::TypeContext &NJS::Type::GetContext() const
