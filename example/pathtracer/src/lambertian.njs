@@ -19,6 +19,10 @@ class lambertian {
         return true
     },
 
+    emitted(const &self: lambertian, u: f64, v: f64, const &p: point3): color {
+        return {}
+    },
+
     tex: texture[const],
 }
 

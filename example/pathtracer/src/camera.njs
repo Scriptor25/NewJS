@@ -30,7 +30,6 @@ type scanline_t = {
 }
 
 class camera {
-
     initialize(&{ * }: camera) {
         image_height = image_width / aspect_ratio
         image_height = MAX(image_height, 1)
@@ -67,19 +66,22 @@ class camera {
         if (!depth)
             return {}
 
-        let rec: hit_record
+        let rec: hit_record = {}
 
-        if (hittable.hit(world, r, { min: 0.001, max: infinity }, rec)) {
-            let attenuation: color
-            let scattered: ray
-            if (material.scatter(rec.mat, r, rec, attenuation, scattered))
-                return attenuation * self.ray_color(scattered, depth - 1, world)
-            return {}
-        }
+        if (!hittable.hit(world, r, { min: 0.001, max: infinity }, rec))
+            return self.background
+        
+        let attenuation: color
+        let scattered: ray
 
-        const unit_direction = vec3.unit_vector(r.direction)
-        const a = 0.5 * (unit_direction[1] + 1)
-        return (1 - a) * { e: [1, 1, 1] } + a * { e: [0.5, 0.7, 1] }
+        const emitted_color = material.emitted(rec.mat, rec.u, rec.v, rec.p)
+
+        if (!material.scatter(rec.mat, r, rec, attenuation, scattered))
+            return emitted_color
+    
+        const scattered_color = attenuation * self.ray_color(scattered, depth - 1, world)
+
+        return emitted_color + scattered_color
     },
 
     sample_square(): vec3 {
@@ -164,6 +166,7 @@ class camera {
     pixel_sample_scale: f64,
 
     max_depth: u32,
+    background: color,
 
     vfov: f64,
     lookfrom: point3,

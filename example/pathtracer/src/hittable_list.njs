@@ -25,6 +25,10 @@ class hittable_list {
         return hit_anything
     },
 
+    bounding_box(const &{ bbox }: hittable_list): aabb {
+        return bbox
+    },
+
     add(&{ objects, size, bbox }: hittable_list, object: hittable[const]) {
         objects = realloc(objects, (size + 1) * sizeof<hittable[const]>)
         objects[size++] = object

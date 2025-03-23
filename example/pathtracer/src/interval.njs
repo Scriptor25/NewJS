@@ -39,6 +39,14 @@ export function combine(const &a: interval, const &b: interval): interval {
     return { min, max }
 }
 
+export function operator+(const &{ min, max }: interval, offset: f64): interval {
+    return { min: min + offset, max: max + offset }
+}
+
+export function operator+(offset: f64, const &i: interval): interval {
+    return i + offset
+}
+
 export const empty: interval     = { min:  infinity, max: -infinity }
 export const universe: interval  = { min: -infinity, max:  infinity }
 export const intensity: interval = { min:     0.000, max:     0.999 }

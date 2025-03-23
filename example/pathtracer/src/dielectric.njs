@@ -34,6 +34,10 @@ class dielectric {
         return true
     },
 
+    emitted(const &self: dielectric, u: f64, v: f64, const &p: point3): color {
+        return {}
+    },
+
     albedo: color,
     refraction_index: f64,
 }

@@ -12,6 +12,10 @@ class metal {
         return vec3.dot(scattered.direction, rec.normal) > 0
     },
 
+    emitted(const &self: metal, u: f64, v: f64, const &p: point3): color {
+        return {}
+    },
+
     albedo: color,
     fuzz: f64,
 }

@@ -70,5 +70,13 @@ export function combine(const &a: aabb, const &b: aabb): aabb {
     return create(x, y, z)
 }
 
+export function operator+(const &{ x, y, z }: aabb, const &{ e: [ox, oy, oz] }: vec3): aabb {
+    return create(x + ox, y + oy, z + oz)
+}
+
+export function operator+(const &offset: vec3, const &bbox: aabb): aabb {
+    return bbox + offset
+}
+
 export const empty: aabb = create(interval.empty, interval.empty, interval.empty)
 export const universe: aabb = create(interval.universe, interval.universe, interval.universe)
