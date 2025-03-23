@@ -21,8 +21,8 @@ NJS::TernaryExpression::TernaryExpression(
 std::ostream &NJS::TernaryExpression::Print(std::ostream &stream) const
 {
     if (Condition == ThenBody)
-        return ElseBody->Print(ThenBody->Print(stream) << " ?? ");
-    return ElseBody->Print(ThenBody->Print(Condition->Print(stream) << " ? ") << " : ");
+        return ElseBody->Print(ThenBody->Print(stream << '(') << " ?? ") << ')';
+    return ElseBody->Print(ThenBody->Print(Condition->Print(stream << '(') << " ? ") << " : ") << ')';
 }
 
 NJS::ValuePtr NJS::TernaryExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)

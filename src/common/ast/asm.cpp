@@ -29,7 +29,48 @@ NJS::AsmExpression::AsmExpression(
 
 std::ostream &NJS::AsmExpression::Print(std::ostream &stream) const
 {
-    return stream << "asm(" << Source << ")";
+    stream << "asm";
+    if (IsVolatile)
+        stream << " volatile";
+    if (IsAlign)
+        stream << " align";
+    if (IsThrow)
+        stream << " throw";
+    if (IsIntel)
+        stream << " intel";
+    stream << '(' << Source;
+    auto constraints = Constraints;
+    if (OutputType)
+    {
+        const auto pos = constraints.find(',');
+        const auto constraint = constraints.substr(0, pos);
+        constraints = constraints.substr(pos + 1);
+
+        stream << " : ";
+        stream << '"' << constraint << '"';
+        stream << '<';
+        OutputType->Print(stream);
+        stream << '>';
+    }
+    if (!Operands.empty())
+    {
+        stream << " : ";
+        for (unsigned i = 0; i < Operands.size(); ++i)
+        {
+            const auto pos = constraints.find(',');
+            const auto constraint = constraints.substr(0, pos);
+            constraints = constraints.substr(pos + 1);
+
+            if (i > 0)
+                stream << ", ";
+
+            stream << '"' << constraint << '"';
+            stream << '(';
+            Operands[i]->Print(stream);
+            stream << ')';
+        }
+    }
+    return stream << ')';
 }
 
 NJS::ValuePtr NJS::AsmExpression::PGenLLVM(Builder &builder, const TypePtr &)

@@ -8,6 +8,10 @@ extern function free(block: void[])
 #PRINT(X: expr)  "println(f\"#X = {#X}\")"
 #ASSERT(X: expr) "assert(%X, \"#X\")"
 
+#TEST(X: expr, Y: expr) "(%X + %Y)"
+
+PRINT(TEST(TEST(1, 2), TEST(3, 4)))
+
 function assert(x: u1, string: i8[const]) { if (!x) println(f"assertion '{string}' failed") }
 
 type user_t = {

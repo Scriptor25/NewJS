@@ -25,7 +25,7 @@ NJS::BinaryExpression::BinaryExpression(
 
 std::ostream &NJS::BinaryExpression::Print(std::ostream &stream) const
 {
-    return RightOperand->Print(LeftOperand->Print(stream) << ' ' << Operator << ' ');
+    return RightOperand->Print(LeftOperand->Print(stream << '(') << ' ' << Operator << ' ') << ')';
 }
 
 NJS::ValuePtr NJS::BinaryExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)

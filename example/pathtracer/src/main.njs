@@ -59,14 +59,9 @@ function bouncing_spheres() {
         }
     }
 
-    const material1 = NEW(dielectric, { albedo: { e: [1, 1, 1] }, refraction_index: 1.5 })
-    world*.add(NEW(sphere, sphere.stationary({ e: [0, 1, 0] }, 1.0, material1)))
-
-    const material2 = NEW(lambertian, lambertian.solid({ e: [0.4, 0.2, 0.1] }))
-    world*.add(NEW(sphere, sphere.stationary({ e: [-4, 1, 0] }, 1.0, material2)))
-
-    const material3 = NEW(metal, { albedo: { e: [0.7, 0.6, 0.5] }, fuzz: 0.0 })
-    world*.add(NEW(sphere, sphere.stationary({ e: [4, 1, 0] }, 1.0, material3)))
+    world*.add(NEW(sphere, sphere.stationary({ e: [ 0, 1, 0] }, 1.0, NEW(dielectric, { albedo: { e: [1, 1, 1] }, refraction_index: 1.5 }))))
+    world*.add(NEW(sphere, sphere.stationary({ e: [-4, 1, 0] }, 1.0, NEW(lambertian, lambertian.solid({ e: [0.4, 0.2, 0.1] })))))
+    world*.add(NEW(sphere, sphere.stationary({ e: [ 4, 1, 0] }, 1.0, NEW(metal, { albedo: { e: [0.7, 0.6, 0.5] }, fuzz: 0.0 }))))
 
     const world_bvh = NEW(bvh_node, bvh.create(world*.objects, world*.size))
 
@@ -113,9 +108,7 @@ function earth_sphere() {
 function perlin_spheres() {
     const world = NEW(hittable_list, {})
 
-    const tex = NEW(noise_texture, noise_texture.create(4))
-    const mat = NEW(lambertian, { tex })
-
+    const mat = NEW(lambertian, { tex: NEW(noise_texture, noise_texture.create(4)) })
     world*.add(NEW(sphere, sphere.stationary({ e: [0, -1000, 0] }, 1000, mat)))
     world*.add(NEW(sphere, sphere.stationary({ e: [0,     2, 0] },    2, mat)))
 
@@ -169,9 +162,7 @@ function quads() {
 function simple_light() {
     const world = NEW(hittable_list, {})
 
-    const tex = NEW(noise_texture, noise_texture.create(4))
-    const mat1 = NEW(lambertian, { tex })
-
+    const mat1 = NEW(lambertian, { tex: NEW(noise_texture, noise_texture.create(4)) })
     world*.add(NEW(sphere, sphere.stationary({ e: [0, -1000, 0] }, 1000, mat1)))
     world*.add(NEW(sphere, sphere.stationary({ e: [0,     2, 0] },    2, mat1)))
 

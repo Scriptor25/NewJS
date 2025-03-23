@@ -15,14 +15,23 @@ NJS::TupleExpression::TupleExpression(SourceLocation where, TypePtr type, std::v
 std::ostream &NJS::TupleExpression::Print(std::ostream &stream) const
 {
     if (Elements.empty())
-        return stream << "[]";
+    {
+        if (!Type)
+            return stream << "([])";
+        return Type->Print(stream << "[]:");
+    }
 
+    if (!Type)
+        stream << '(';
     stream << '[' << std::endl;
     Indent();
     for (const auto &entry: Elements)
         entry->Print(Spacing(stream)) << ',' << std::endl;
     Exdent();
-    return Spacing(stream) << ']';
+    Spacing(stream) << ']';
+    if (!Type)
+        return stream << ')';
+    return Type->Print(stream << ':');
 }
 
 NJS::ValuePtr NJS::TupleExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)

@@ -18,14 +18,23 @@ NJS::StructExpression::StructExpression(
 std::ostream &NJS::StructExpression::Print(std::ostream &stream) const
 {
     if (Elements.empty())
-        return stream << "{}";
+    {
+        if (!Type)
+            return stream << "({})";
+        return Type->Print(stream << "{}:");
+    }
 
+    if (!Type)
+        stream << '(';
     stream << '{' << std::endl;
     Indent();
     for (const auto &[name_, value_]: Elements)
         value_->Print(Spacing(stream) << name_ << ": ") << ',' << std::endl;
     Exdent();
-    return Spacing(stream) << '}';
+    Spacing(stream) << '}';
+    if (!Type)
+        return stream << ')';
+    return Type->Print(stream << ':');
 }
 
 NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)

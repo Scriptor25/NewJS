@@ -14,7 +14,9 @@ NJS::IntegerExpression::IntegerExpression(SourceLocation where, TypePtr type, co
 
 std::ostream &NJS::IntegerExpression::Print(std::ostream &stream) const
 {
-    return stream << Value;
+    if (Type)
+        return Type->Print(stream << Value << ':');
+    return stream << '(' << Value << ')';
 }
 
 NJS::ValuePtr NJS::IntegerExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)

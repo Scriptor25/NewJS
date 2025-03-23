@@ -13,12 +13,13 @@ using namespace std::string_view_literals;
 
 enum ARG_ID
 {
+    ARG_ID_HELP,
     ARG_ID_MAIN,
     ARG_ID_OUTPUT,
-    ARG_ID_TYPE,
-    ARG_ID_HELP,
-    ARG_ID_VERSION,
+    ARG_ID_PRINT,
     ARG_ID_TARGET,
+    ARG_ID_TYPE,
+    ARG_ID_VERSION,
 };
 
 static llvm::CodeGenFileType to_type(const std::string_view &str)
@@ -35,6 +36,7 @@ static llvm::CodeGenFileType to_type(const std::string_view &str)
 }
 
 static void parse(
+    const bool print,
     const NJS::Linker &linker,
     const std::string &module_id,
     const bool is_main,
@@ -52,6 +54,8 @@ static void parse(
     parser.Parse(
         [&](const NJS::StatementPtr &statement)
         {
+            if (print)
+                statement->Print(std::cerr) << std::endl;
             statement->GenLLVM(builder, false);
         });
 
@@ -74,6 +78,7 @@ int main(const int argc, const char **argv) try
             },
             {ARG_ID_MAIN, "Specify which module name is the main module.", {"--main", "-m"}, false},
             {ARG_ID_TARGET, "Specify output target triple, defaults to host target.", {"--triple", "-T"}, false},
+            {ARG_ID_PRINT, "Print out the program AST", {"--print", "-p"}, true},
         });
     arg_parser.Parse(argc, argv);
 
@@ -106,11 +111,13 @@ int main(const int argc, const char **argv) try
         output_type = to_type(type_str);
     }
 
+    const auto print = arg_parser.Flag(ARG_ID_PRINT);
+
     const auto output_module_id = std::filesystem::path(output_filename).filename().replace_extension().string();
     const NJS::Linker linker(output_module_id, output_filename);
 
     if (input_filenames.empty())
-        parse(linker, "main", true, std::cin, {});
+        parse(print, linker, "main", true, std::cin, {});
 
     for (const auto &input_filename: input_filenames)
     {
@@ -124,7 +131,7 @@ int main(const int argc, const char **argv) try
         if (!input_stream)
             NJS::Error("failed to open input file '{}'", input_filename);
 
-        parse(linker, module_id, module_id == module_main, input_stream, input_path);
+        parse(print, linker, module_id, module_id == module_main, input_stream, input_path);
         input_stream.close();
     }
 

@@ -56,17 +56,17 @@ export function create(const &x: interval, const &y: interval, const &z: interva
     return bbox
 }
 
-export function points(const &a: point3, const &b: point3): aabb {
-    const x = (a[0] <= b[0]) ? ({ min: a[0], max: b[0] }:interval) : ({ min: b[0], max: a[0] }:interval)
-    const y = (a[1] <= b[1]) ? ({ min: a[1], max: b[1] }:interval) : ({ min: b[1], max: a[1] }:interval)
-    const z = (a[2] <= b[2]) ? ({ min: a[2], max: b[2] }:interval) : ({ min: b[2], max: a[2] }:interval)
+export function points(const &{ e: [ax, ay, az] }: point3, const &{ e: [bx, by, bz] }: point3): aabb {
+    const x = (ax <= bx) ? { min: ax, max: bx }:interval : { min: bx, max: ax }:interval
+    const y = (ay <= by) ? { min: ay, max: by }:interval : { min: by, max: ay }:interval
+    const z = (az <= bz) ? { min: az, max: bz }:interval : { min: bz, max: az }:interval
     return create(x, y, z)
 }
 
-export function combine(const &a: aabb, const &b: aabb): aabb {
-    const x = interval.combine(a.x, b.x)
-    const y = interval.combine(a.y, b.y)
-    const z = interval.combine(a.z, b.z)
+export function combine(const &{ x: ax, y: ay, z: az }: aabb, const &{ x: bx, y: by, z: bz }: aabb): aabb {
+    const x = interval.combine(ax, bx)
+    const y = interval.combine(ay, by)
+    const z = interval.combine(az, bz)
     return create(x, y, z)
 }
 

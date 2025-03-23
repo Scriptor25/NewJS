@@ -17,11 +17,11 @@ NJS::ExpressionPtr NJS::Parser::ParseAsmExpression()
 
     auto source = Expect(TokenType_String).String;
 
-    std::string output_constraint;
+    std::string constraints;
     TypePtr output_type;
     if (NextAt(":") && !At(":"))
     {
-        output_constraint = Expect(TokenType_String).String;
+        constraints = Expect(TokenType_String).String;
         Expect("<");
         output_type = ParseType();
         Expect(">");
@@ -43,18 +43,10 @@ NJS::ExpressionPtr NJS::Parser::ParseAsmExpression()
 
     Expect(")");
 
-    std::string constraints;
-    if (!output_constraint.empty())
-    {
-        constraints += output_constraint;
-        if (!inputs.empty())
-            constraints += ',';
-    }
-
     std::vector<ExpressionPtr> operands;
     for (unsigned i = 0; i < inputs.size(); ++i)
     {
-        if (i > 0)
+        if (i > 0 || !constraints.empty())
             constraints += ',';
         constraints += inputs[i].first;
         operands.emplace_back(inputs[i].second);
