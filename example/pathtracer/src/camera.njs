@@ -6,7 +6,7 @@ import interval from "./interval.njs"
 import material from "./material.njs"
 import pthread  from "./pthread.njs"
 import ray      from "./ray.njs"
-import record   from "./record.njs"
+import hit_record   from "./hit_record.njs"
 import vec3     from "./vec3.njs"
 
 extern let std_in:  FILE[]
@@ -31,9 +31,10 @@ type scanline_t = {
 
 class camera {
 
-    initialize(&{*}: camera) {
+    initialize(&{ * }: camera) {
         image_height = image_width / aspect_ratio
         image_height = MAX(image_height, 1)
+        focus_dist = MAX(focus_dist, 1.0)
 
         pixel_sample_scale = 1.0 / samples_per_pixel
 
@@ -66,7 +67,7 @@ class camera {
         if (!depth)
             return {}
 
-        let rec: record
+        let rec: hit_record
 
         if (hittable.hit(world, r, { min: 0.001, max: infinity }, rec)) {
             let attenuation: color

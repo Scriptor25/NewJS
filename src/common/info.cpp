@@ -51,9 +51,9 @@ llvm::Value *NJS::ReferenceInfo::SolveFor(const Builder &builder, ValuePtr value
     if (IsReference)
     {
         if (Type != value->GetType())
-            Error("TODO");
+            Error("cannot create reference of type {} to value of type {}", Type, value->GetType());
         if (!IsConst && value->IsConst())
-            Error("TODO");
+            Error("cannot create mutable reference to constant value");
         if (!value->IsLValue())
         {
             const auto alloc = builder.CreateAlloca(Type, true);

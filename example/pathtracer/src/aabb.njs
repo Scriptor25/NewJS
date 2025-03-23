@@ -3,6 +3,13 @@ import ray      from "./ray.njs"
 import vec3     from "./vec3.njs"
 
 class aabb {
+    pad_to_minimums(&{ x, y, z }: aabb) {
+        const delta = 0.0001
+        if (x.size() < delta) x = x.expand(delta)
+        if (y.size() < delta) y = y.expand(delta)
+        if (z.size() < delta) z = z.expand(delta)
+    },
+
     axis_interval(const &{ x, y, z }: aabb, n: i64): const &interval {
         if (n == 1) return y
         if (n == 2) return z
@@ -43,19 +50,25 @@ class aabb {
     z: interval,
 }
 
+export function create(const &x: interval, const &y: interval, const &z: interval): aabb {
+    let bbox: aabb = { x, y, z }
+    bbox.pad_to_minimums()
+    return bbox
+}
+
 export function points(const &a: point3, const &b: point3): aabb {
     const x = (a[0] <= b[0]) ? ({ min: a[0], max: b[0] }:interval) : ({ min: b[0], max: a[0] }:interval)
     const y = (a[1] <= b[1]) ? ({ min: a[1], max: b[1] }:interval) : ({ min: b[1], max: a[1] }:interval)
     const z = (a[2] <= b[2]) ? ({ min: a[2], max: b[2] }:interval) : ({ min: b[2], max: a[2] }:interval)
-    return { x, y, z }
+    return create(x, y, z)
 }
 
 export function combine(const &a: aabb, const &b: aabb): aabb {
     const x = interval.combine(a.x, b.x)
     const y = interval.combine(a.y, b.y)
     const z = interval.combine(a.z, b.z)
-    return { x, y, z }
+    return create(x, y, z)
 }
 
-export const empty: aabb = { x: interval.empty, y: interval.empty, z: interval.empty }
-export const universe: aabb = { x: interval.universe, y: interval.universe, z: interval.universe }
+export const empty: aabb = create(interval.empty, interval.empty, interval.empty)
+export const universe: aabb = create(interval.universe, interval.universe, interval.universe)

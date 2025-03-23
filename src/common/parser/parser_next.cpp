@@ -61,6 +61,18 @@ NJS::Token &NJS::Parser::Next()
                         break;
 
                     case '.':
+                        where = m_Where;
+                        value += static_cast<char>(c);
+                        c = Get();
+                        if (isdigit(c))
+                        {
+                            state = State_Dec;
+                            is_float = true;
+                        }
+                        else
+                            state = State_Operator;
+                        break;
+
                     case '[':
                     case '?':
                     case '!':

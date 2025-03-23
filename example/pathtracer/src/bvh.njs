@@ -1,14 +1,14 @@
-import aabb     from "./aabb.njs"
-import common   from "./common.njs"
-import hittable from "./hittable.njs"
-import interval from "./interval.njs"
-import ray      from "./ray.njs"
-import record   from "./record.njs"
+import aabb       from "./aabb.njs"
+import common     from "./common.njs"
+import hit_record from "./hit_record.njs"
+import hittable   from "./hittable.njs"
+import interval   from "./interval.njs"
+import ray        from "./ray.njs"
 
 extern function malloc(count: u64): void[]
 
 class bvh_node {
-    hit(const &{ left, right, bbox }: bvh_node, const &r: ray, ray_t: interval, &rec: record): u1 {
+    hit(const &{ left, right, bbox }: bvh_node, const &r: ray, ray_t: interval, &rec: hit_record): u1 {
         if (!bbox.hit(r, ray_t))
             return false
         

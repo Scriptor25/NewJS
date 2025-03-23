@@ -9,7 +9,7 @@ extern function malloc(count: u64): void[]
 extern function free(block: void[]): void
 
 class image {
-    open(&{*}: image, f: i8[], w: u32, h: u32) {
+    open(&{ stream, buffer, width, height }: image, f: i8[], w: u32, h: u32) {
         stream = fopen(f, "wb")
         buffer = malloc(w * h * 3)
         width = w
@@ -22,7 +22,7 @@ class image {
         buffer[(x1 + x2 * width) * 3 + 2] = b
     },
 
-    flush(&{*}: image) {
+    flush(&{ stream, buffer, width, height }: image) {
         fseek(stream, 0, 0)
         fprintf(stream, "P6 %d %d 255 ", width, height)
         for (let i: u64; i < width * height * 3; ++i)
@@ -30,7 +30,7 @@ class image {
         fflush(stream)
     },
 
-    close(&{*}: image) {
+    close(&{ stream, buffer, width, height }: image) {
         fclose(stream)
         free(buffer)
         stream = 0

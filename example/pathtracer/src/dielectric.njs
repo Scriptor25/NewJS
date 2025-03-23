@@ -2,7 +2,7 @@ import color  from "./color.njs"
 import common from "./common.njs"
 import vec3   from "./vec3.njs"
 import ray    from "./ray.njs"
-import record from "./record.njs"
+import hit_record from "./hit_record.njs"
 
 extern function sqrt(x: f64): f64
 extern function fmin(a: f64, b: f64): f64
@@ -14,7 +14,7 @@ function reflectance(cosine: f64, refraction_index: f64): f64 {
 }
 
 class dielectric {
-    scatter(const &{ albedo, refraction_index }: dielectric, const &r_in: ray, const &rec: record, &attenuation: color, &scattered: ray): u1 {
+    scatter(const &{ albedo, refraction_index }: dielectric, const &r_in: ray, const &rec: hit_record, &attenuation: color, &scattered: ray): u1 {
         const ri = rec.front_face ? 1.0 / refraction_index : refraction_index
 
         const unit_direction = vec3.unit_vector(r_in.direction)

@@ -1,14 +1,24 @@
 import aabb     from "./aabb.njs"
 import interval from "./interval.njs"
 import ray      from "./ray.njs"
-import record   from "./record.njs"
+import hit_record   from "./hit_record.njs"
 import time3    from "./time3.njs"
 import vec3     from "./vec3.njs"
 
 extern function sqrt(x: f64): f64
+extern function acos(x: f64): f64
+extern function atan2(y: f64, x: f64): f64
+
+export function get_uv(const &{ e: [x, y, z] }: point3, &u: f64, &v: f64) {
+    const theta = acos(-y)
+    const phi = atan2(-z, x) + pi
+
+    u = phi / (2 * pi)
+    v = theta / pi
+}
 
 class sphere {
-    hit(const &{ center, radius, mat }: sphere, const &r: ray, ray_t: interval, &rec: record): u1 {
+    hit(const &{ center, radius, mat }: sphere, const &r: ray, ray_t: interval, &rec: hit_record): u1 {
         const current_center = center.at(r.time)
     	const oc = current_center - r.origin
         const a = r.direction.length_squared()
@@ -34,6 +44,8 @@ class sphere {
 
         const outward_normal = (rec.p - current_center) / radius
         rec.set_face_normal(r, outward_normal)
+
+        get_uv(outward_normal, rec.u, rec.v)
 
         return true
     },

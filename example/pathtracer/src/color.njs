@@ -12,6 +12,10 @@ function linear_to_gamma(component: f64): f64 {
     return 0.0
 }
 
+export function mix(const &c1: color, const &c2: color, t: f64): color {
+    return (1 - t) * c1 + t * c2
+}
+
 export function write_color(&img: image, x1: u32, x2: u32, const &{ e: [r, g, b] }: color) {
     const fr = linear_to_gamma(r)
     const fg = linear_to_gamma(g)

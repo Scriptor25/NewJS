@@ -5,19 +5,19 @@ extern function fabs(x: f64): f64
 extern function fmin(a: f64, b: f64): f64
 
 class vec3 {
-    length_squared(const &{ e: [e0, e1, e2] }: vec3): f64 {
-        return e0 * e0 + e1 * e1 + e2 * e2
+    length_squared(const &{ e: [x, y, z] }: vec3): f64 {
+        return x * x + y * y + z * z
     },
 
     length(const &self: vec3): f64 {
         return sqrt(self.length_squared())
     },
 
-    near_zero(const &{ e: [e0, e1, e2] }: vec3): u1 {
+    near_zero(const &{ e: [x, y, z] }: vec3): u1 {
         const s = 1e-8
-        return (fabs(e0) < s)
-            && (fabs(e1) < s)
-            && (fabs(e2) < s)
+        return (fabs(x) < s)
+            && (fabs(y) < s)
+            && (fabs(z) < s)
     },
 
     e: f64[3],
@@ -25,33 +25,33 @@ class vec3 {
 
 type point3 = vec3
 
-export function operator[](&self: vec3, index: i64): &f64 {
-    return self.e[index]
+export function operator[](&{ e }: vec3, index: i64): &f64 {
+    return e[index]
 }
 
-export function operator[](const &self: vec3, index: i64): const &f64 {
-    return self.e[index]
+export function operator[](const &{ e }: vec3, index: i64): const &f64 {
+    return e[index]
 }
 
-export function operator-(const &self: vec3): vec3 {
+export function operator-(const &{ e: [x, y, z] }: vec3): vec3 {
     return { e: [
-        -self.e[0],
-        -self.e[1],
-        -self.e[2],
+        -x,
+        -y,
+        -z,
     ] }
 }
 
-export function operator+=(&self: vec3, const &other: vec3): &vec3 {
-    self.e[0] += other.e[0]
-    self.e[1] += other.e[1]
-    self.e[2] += other.e[2]
+export function operator+=(&self: vec3, const &{ e: [vx, vy, vz] }: vec3): &vec3 {
+    self.e[0] += vx
+    self.e[1] += vy
+    self.e[2] += vz
     return self
 }
 
-export function operator*=(&self: vec3, other: f64): &vec3 {
-    self.e[0] *= other
-    self.e[1] *= other
-    self.e[2] *= other
+export function operator*=(&self: vec3, t: f64): &vec3 {
+    self.e[0] *= t
+    self.e[1] *= t
+    self.e[2] *= t
     return self
 }
 
@@ -59,35 +59,35 @@ export function operator/=(&self: vec3, other: f64): &vec3 {
     return self *= 1.0 / other
 }
 
-export function operator+(const &a: vec3, const &b: vec3): vec3 {
+export function operator+(const &{ e: [ax, ay, az] }: vec3, const &{ e: [bx, by, bz] }: vec3): vec3 {
     return { e: [
-        a.e[0] + b.e[0],
-        a.e[1] + b.e[1],
-        a.e[2] + b.e[2],
+        ax + bx,
+        ay + by,
+        az + bz,
     ] }
 }
 
-export function operator-(const &a: vec3, const &b: vec3): vec3 {
+export function operator-(const &{ e: [ax, ay, az] }: vec3, const &{ e: [bx, by, bz] }: vec3): vec3 {
     return { e: [
-        a.e[0] - b.e[0],
-        a.e[1] - b.e[1],
-        a.e[2] - b.e[2],
+        ax - bx,
+        ay - by,
+        az - bz,
     ] }
 }
 
-export function operator*(const &a: vec3, const &b: vec3): vec3 {
+export function operator*(const &{ e: [ax, ay, az] }: vec3, const &{ e: [bx, by, bz] }: vec3): vec3 {
     return { e: [
-        a.e[0] * b.e[0],
-        a.e[1] * b.e[1],
-        a.e[2] * b.e[2],
+        ax * bx,
+        ay * by,
+        az * bz,
     ] }
 }
 
-export function operator*(a: f64, const &b: vec3): vec3 {
+export function operator*(a: f64, const &{ e: [bx, by, bz] }: vec3): vec3 {
     return { e: [
-        a * b.e[0],
-        a * b.e[1],
-        a * b.e[2],
+        a * bx,
+        a * by,
+        a * bz,
     ] }
 }
 
@@ -99,22 +99,24 @@ export function operator/(const &a: vec3, b: f64): vec3 {
     return (1 / b) * a
 }
 
-export function dot(const &a: vec3, const &b: vec3): f64 {
-    return a.e[0] * b.e[0]
-         + a.e[1] * b.e[1]
-         + a.e[2] * b.e[2]
+export function dot(const &{ e: [ax, ay, az] }: vec3, const &{ e: [bx, by, bz] }: vec3): f64 {
+    return ax * bx + ay * by + az * bz
 }
 
-export function cross(const &a: vec3, const &b: vec3): vec3 {
+export function cross(const &{ e: [ax, ay, az] }: vec3, const &{ e: [bx, by, bz] }: vec3): vec3 {
     return { e: [
-        a.e[1] * b.e[2] - a.e[2] * b.e[1],
-        a.e[2] * b.e[0] - a.e[0] * b.e[2],
-        a.e[0] * b.e[1] - a.e[1] * b.e[0],
+        ay * bz - az * by,
+        az * bx - ax * bz,
+        ax * by - ay * bx,
     ] }
 }
 
-export function unit_vector(const &v: vec3): vec3 {
-    return v / v.length()
+export function unit_vector(const &self: vec3): vec3 {
+    return self / self.length()
+}
+
+export function part_vector(const &self: vec3): vec3 {
+    return self / self.length_squared()
 }
 
 export function random_vector(): vec3 {
