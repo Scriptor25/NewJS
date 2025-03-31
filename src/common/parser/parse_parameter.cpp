@@ -27,7 +27,7 @@ NJS::ParameterPtr NJS::Parser::ParseParameter(const bool is_const, const bool is
     if (NextAt("["))
     {
         std::vector<ParameterPtr> parameters;
-        ParseParameterList(parameters, "]");
+        ParseParameterList(parameters, "]", true);
         auto type = NextAt(":") ? ParseType() : nullptr;
         return std::make_shared<DestructureTuple>(
             where,
@@ -43,11 +43,14 @@ NJS::ParameterPtr NJS::Parser::ParseParameter(const bool is_const, const bool is
         ReferenceInfo(std::move(type), is_const, is_reference));
 }
 
-bool NJS::Parser::ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string &delimiter)
+bool NJS::Parser::ParseParameterList(
+    std::vector<ParameterPtr> &parameters,
+    const std::string &delimiter,
+    const bool allow_var_arg)
 {
     while (!At(delimiter) && !AtEof())
     {
-        if (NextAt("..."))
+        if (allow_var_arg && NextAt("..."))
         {
             Expect(delimiter);
             return true;
@@ -64,11 +67,12 @@ bool NJS::Parser::ParseParameterList(std::vector<ParameterPtr> &parameters, cons
 
 bool NJS::Parser::ParseReferenceParameterList(
     std::vector<ParameterPtr> &parameters,
-    const std::string &delimiter)
+    const std::string &delimiter,
+    const bool allow_var_arg)
 {
     while (!At(delimiter) && !AtEof())
     {
-        if (NextAt("..."))
+        if (allow_var_arg && NextAt("..."))
         {
             Expect(delimiter);
             return true;

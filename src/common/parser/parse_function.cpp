@@ -38,7 +38,7 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_extern)
 
     std::vector<ParameterPtr> parameters;
     Expect("(");
-    const auto is_var_arg = ParseReferenceParameterList(parameters, ")");
+    const auto is_var_arg = ParseReferenceParameterList(parameters, ")", true);
 
     ReferenceInfo result;
     if (NextAt(":"))
@@ -88,7 +88,7 @@ NJS::ExpressionPtr NJS::Parser::ParseFunctionExpression()
     std::vector<ParameterPtr> parameters;
     auto is_var_arg = false;
     if (NextAt("("))
-        is_var_arg = ParseReferenceParameterList(parameters, ")");
+        is_var_arg = ParseReferenceParameterList(parameters, ")", capture_parameters.empty());
 
     ReferenceInfo result;
     if (NextAt(":"))

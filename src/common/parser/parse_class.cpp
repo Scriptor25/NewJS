@@ -29,7 +29,7 @@ NJS::StatementPtr NJS::Parser::ParseClassStatement()
             auto function_where = Skip().Where;
 
             std::vector<ParameterPtr> parameters;
-            const auto is_var_arg = ParseReferenceParameterList(parameters, ")");
+            const auto is_var_arg = ParseReferenceParameterList(parameters, ")", true);
 
             ReferenceInfo result;
             if (NextAt(":"))

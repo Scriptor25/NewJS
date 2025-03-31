@@ -106,7 +106,7 @@ NJS::FunctionTypePtr NJS::TypeContext::GetFunctionType(
     return GetFunctionType(result, parameter_infos, is_var_arg);
 }
 
-NJS::TypePtr NJS::TypeContext::GetLambdaType(
+NJS::StructTypePtr NJS::TypeContext::GetLambdaType(
     const std::vector<StructElement> &elements,
     const FunctionTypePtr &function_type)
 {

@@ -338,12 +338,66 @@ std::ostream &NJS::FunctionExpression::Print(std::ostream &stream) const
     return Body->Print(stream);
 }
 
-NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr &)
+static void define_lambda_callee(
+    NJS::Builder &builder,
+    const NJS::ReferenceInfo &callee_info,
+    const std::vector<NJS::ReferenceInfo> &parameter_infos,
+    const bool is_var_arg,
+    const NJS::ReferenceInfo &result_info,
+    llvm::FunctionType *callee_type)
 {
-    std::vector<ReferenceInfo> parameters;
+    const auto callee = llvm::Function::Create(
+        callee_type,
+        llvm::Function::InternalLinkage,
+        "lambda.call",
+        builder.GetModule());
+
+    const auto insert_block = builder.GetBuilder().GetInsertBlock();
+    const auto entry_block = llvm::BasicBlock::Create(builder.GetContext(), "entry", callee);
+
+    builder.GetBuilder().SetInsertPoint(entry_block);
+
+    std::vector<llvm::Value *> parameters;
+    for (unsigned i = 0; i < callee->arg_size(); ++i)
+        parameters.emplace_back(callee->getArg(i));
+
+    const auto capture = callee->getArg(0);
+    const auto function = builder.GetBuilder().CreateExtractValue(capture, 0);
+    const auto result = builder.GetBuilder().CreateCall(callee_type, function, parameters);
+    builder.GetBuilder().CreateRet(result);
+
+    builder.GetBuilder().SetInsertPoint(insert_block);
+
+    builder.DefineOperator(
+        callee_info,
+        parameter_infos,
+        is_var_arg,
+        result_info,
+        callee);
+}
+
+NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+{
+    const auto offset = CaptureParameters.empty() ? 0u : 1u;
+
+    std::vector<StructElement> capture_elements;
+    std::vector<ValuePtr> capture_values;
+    for (auto &[parameter_, value_]: CaptureParameters)
+    {
+        auto value = value_->GenLLVM(builder, nullptr);
+        auto info = parameter_->Info;
+        info.Type = value->GetType();
+        capture_elements.emplace_back(parameter_->Name, info, nullptr);
+        capture_values.emplace_back(value);
+    }
+
+    std::vector<ReferenceInfo> parameter_infos;
     for (const auto &parameter: Parameters)
-        parameters.emplace_back(parameter->Info);
-    const auto type = builder.GetTypeContext().GetFunctionType(Result, parameters, IsVarArg);
+        parameter_infos.emplace_back(parameter->Info);
+    const auto function_type = builder.GetTypeContext().GetFunctionType(Result, parameter_infos, IsVarArg);
+    const auto lambda_type = builder.GetTypeContext().GetLambdaType(capture_elements, function_type);
+
+    const auto type = offset ? Type::As<FunctionType>(lambda_type->GetMember(0).Info.Type) : function_type;
 
     const auto function = llvm::Function::Create(
         type->GenFnLLVM(builder),
@@ -356,19 +410,25 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
     builder.GetBuilder().SetInsertPoint(entry_block);
 
     builder.StackPush("lambda", Result);
+    if (offset)
+    {
+        const auto argument = function->getArg(0);
+        argument->setName("capture");
+
+        const auto argument_value = RValue::Create(builder, lambda_type, argument);
+
+        DestructureStruct(Where, {}, true, {lambda_type, true, false})
+                .CreateVars(builder, argument_value, false, false, false, false);
+    }
     for (unsigned i = 0; i < Parameters.size(); ++i)
     {
         const auto parameter = Parameters[i];
-        const auto argument = function->getArg(i);
+        const auto argument = function->getArg(i + offset);
         argument->setName(parameter->Name);
 
         ValuePtr argument_value;
         if (parameter->Info.IsReference)
-            argument_value = LValue::Create(
-                builder,
-                parameter->Info.Type,
-                argument,
-                parameter->Info.IsConst);
+            argument_value = LValue::Create(builder, parameter->Info.Type, argument, parameter->Info.IsConst);
         else
             argument_value = RValue::Create(builder, parameter->Info.Type, argument);
         parameter->CreateVars(
@@ -417,7 +477,35 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
     }
 
     builder.Optimize(function);
-
     builder.GetBuilder().SetInsertPoint(insert_block);
-    return RValue::Create(builder, type, function);
+
+    ValuePtr result;
+    if (offset)
+    {
+        llvm::Value *value = llvm::Constant::getNullValue(lambda_type->GetLLVM(builder));
+        value = builder.GetBuilder().CreateInsertValue(value, function, 0);
+        for (unsigned i = 0; i < capture_values.size(); ++i)
+        {
+            const auto [index_, name_, info_, default_] = lambda_type->GetMember(i + 1);
+            const auto member = info_.SolveFor(builder, capture_values[i]);
+            value = builder.GetBuilder().CreateInsertValue(value, member, i + 1);
+        }
+
+        result = RValue::Create(builder, lambda_type, value);
+
+        if (!builder.FindOperator(result).Callee)
+            define_lambda_callee(
+                builder,
+                ReferenceInfo(lambda_type),
+                parameter_infos,
+                IsVarArg,
+                Result,
+                function->getFunctionType());
+    }
+    else
+    {
+        result = RValue::Create(builder, type, function);
+    }
+
+    return result;
 }

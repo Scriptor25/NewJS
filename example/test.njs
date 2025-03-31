@@ -78,20 +78,17 @@ printArray(a1)
 for (let i = 0; i < 3; ++i)
     println(f"a1[{i}] = {a1[i]}")
 
-/*
 function foo(a: u32, b: u32, &c: u32): lambda[a: u32, b: u32, &c: u32]<() => u32> {
-    const bar = $[ a, b, &r: c ]: u32 {
+    return $[ a, b, &r: c ]: u32 {
         return r = a + b
     }
-    return bar
 }
 
 let foo_res: u32
 const foo_123 = foo(123, 321, foo_res)
-println(f"foo(123, 321, foo_res) = {typeof(foo_123)}")
+println(f"type of foo(123, 321, foo_res) is {typeof(foo_123)}")
 println(f"foo(123, 321, foo_res)() = {foo_123()}")
 println(f"foo_res = {foo_res}")
-*/
 
 const [name1, {name, surname, age, job}] = ["Max", user1]
 
