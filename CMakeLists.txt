@@ -37,7 +37,7 @@ target_link_libraries(newjs PRIVATE common)
 file(GLOB_RECURSE standard_sources src/standard/*.cpp)
 add_library(stdnewjs ${standard_sources} ${includes})
 target_include_directories(stdnewjs PUBLIC include)
-target_compile_options(stdnewjs PRIVATE -fno-exceptions -nostdlib)
+target_compile_options(stdnewjs PRIVATE -fno-rtti -fno-exceptions -nostdlib)
 
 install(TARGETS newjs)
 install(TARGETS stdnewjs)
