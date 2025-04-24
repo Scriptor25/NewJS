@@ -25,12 +25,12 @@ type timespec_t = {
 extern function pthread_attr_destroy(attr: pthread_attr_t[]): i32
 extern function pthread_attr_getdetachstate(attr: pthread_attr_t[const], detachstate: i32[]): i32
 extern function pthread_attr_getschedparam(attr: pthread_attr_t[const], param: sched_param_t[]): i32
-extern function pthread_attr_getstackaddr(attr: pthread_attr_t[const], stackaddr: void[][]): i32
+extern function pthread_attr_getstack(attr: pthread_attr_t[const], stackaddr: void[][]): i32
 extern function pthread_attr_getstacksize(attr: pthread_attr_t[const], stacksize: u64[]): i32
 extern function pthread_attr_init(attr: pthread_attr_t[]): i32
 extern function pthread_attr_setdetachstate(attr: pthread_attr_t[], detachstate: i32): i32
 extern function pthread_attr_setschedparam(attr: pthread_attr_t[], param: sched_param_t[const]): i32
-extern function pthread_attr_setstackaddr(attr: pthread_attr_t[], stackaddr: void[]): i32
+extern function pthread_attr_setstack(attr: pthread_attr_t[], stackaddr: void[]): i32
 extern function pthread_attr_setstacksize(attr: pthread_attr_t[], stacksize: u64): i32
 extern function pthread_cancel(thread: pthread_t): i32
 extern function pthread_cond_broadcast(cond: pthread_cond_t[]): i32
@@ -71,12 +71,12 @@ extern function pthread_testcancel(): void
 export function attr_destroy(&attr: pthread_attr_t): i32 { return pthread_attr_destroy(&attr) }
 export function attr_getdetachstate(const &attr: pthread_attr_t, &detachstate: i32): i32 { return pthread_attr_getdetachstate(&attr, &detachstate) }
 export function attr_getschedparam(const &attr: pthread_attr_t, &param: sched_param_t): i32 { return pthread_attr_getschedparam(&attr, &param) }
-export function attr_getstackaddr(const &attr: pthread_attr_t, &stackaddr: void[]): i32 { return pthread_attr_getstackaddr(&attr, &stackaddr) }
+export function attr_getstack(const &attr: pthread_attr_t, &stackaddr: void[]): i32 { return pthread_attr_getstack(&attr, &stackaddr) }
 export function attr_getstacksize(const &attr: pthread_attr_t, &stacksize: u64): i32 { return pthread_attr_getstacksize(&attr, &stacksize) }
 export function attr_init(&attr: pthread_attr_t): i32 { return pthread_attr_init(&attr) }
 export function attr_setdetachstate(&attr: pthread_attr_t, detachstate: i32): i32 { return pthread_attr_setdetachstate(&attr, detachstate) }
 export function attr_setschedparam(&attr: pthread_attr_t, const &param: sched_param_t): i32 { return pthread_attr_setschedparam(&attr, &param) }
-export function attr_setstackaddr(&attr: pthread_attr_t, stackaddr: void[]): i32 { return pthread_attr_setstackaddr(&attr, stackaddr) }
+export function attr_setstack(&attr: pthread_attr_t, stackaddr: void[]): i32 { return pthread_attr_setstack(&attr, stackaddr) }
 export function attr_setstacksize(&attr: pthread_attr_t, stacksize: u64): i32 { return pthread_attr_setstacksize(&attr, stacksize) }
 export function cancel(thread: pthread_t): i32 { return pthread_cancel(thread) }
 export function cond_broadcast(&cond: pthread_cond_t): i32 { return pthread_cond_broadcast(&cond) }
