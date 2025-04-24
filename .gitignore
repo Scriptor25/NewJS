@@ -1,3 +1,6 @@
-/build/
-/build-vs/
+/build-debug/
+/build-rel-with-deb-info/
+/build-release/
+/build-min-size-rel/
+/build-visual-studio/
 /.idea/

@@ -111,7 +111,7 @@ public:
             return;
         auto new_reserved = reserved ? reserved : 1;
         while (new_reserved < new_length)
-            new_reserved += new_reserved;
+            new_reserved <<= 1;
         reserved = new_reserved;
         data = allocator<char>::realloc(data, reserved);
     }
