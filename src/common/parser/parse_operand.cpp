@@ -13,7 +13,7 @@ NJS::ExpressionPtr NJS::Parser::ParseOperandExpression()
             const auto dereference = NextAt("*.");
             if (!dereference)
                 Skip();
-            const auto name = Expect(TokenType_Symbol).String;
+            const auto name = Expect(TokenType_Symbol).Value;
             ptr = std::make_shared<MemberExpression>(where, ptr, name, dereference);
             continue;
         }

@@ -4,7 +4,7 @@
 NJS::StatementPtr NJS::Parser::ParseClassStatement()
 {
     auto where = Expect("class").Where;
-    auto class_name = Expect(TokenType_Symbol).String;
+    auto class_name = Expect(TokenType_Symbol).Value;
 
     const auto class_type = m_TypeContext.GetStructType(class_name);
     m_TypeContext.GetNamedTypeReference(class_name) = class_type;
@@ -19,7 +19,7 @@ NJS::StatementPtr NJS::Parser::ParseClassStatement()
     {
         auto is_const = NextAt("const");
         const auto is_reference = NextAt("&");
-        auto member_name = Expect(TokenType_Symbol).String;
+        auto member_name = Expect(TokenType_Symbol).Value;
 
         TypePtr member_type;
         ExpressionPtr default_value;

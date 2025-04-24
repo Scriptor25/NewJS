@@ -29,6 +29,7 @@ NJS::Parser::Parser(
         m_ParsedSet.insert(filepath);
     }
 
+    Get();
     Next();
 }
 
@@ -57,22 +58,18 @@ void NJS::Parser::Parse(const Consumer &consumer)
             consumer(statement);
 }
 
-int NJS::Parser::Get()
+void NJS::Parser::Get()
 {
-    m_Where.Column++;
-    return m_Stream.get();
-}
-
-void NJS::Parser::UnGet()
-{
-    m_Where.Column--;
-    m_Stream.unget();
-}
-
-void NJS::Parser::NewLine()
-{
-    m_Where.Column = 0;
-    ++m_Where.Row;
+    m_Buf = m_Stream.get();
+    if (m_Buf == '\n')
+    {
+        m_Where.Column = 0;
+        m_Where.Row++;
+    }
+    else
+    {
+        m_Where.Column++;
+    }
 }
 
 bool NJS::Parser::AtEof() const
@@ -87,7 +84,7 @@ bool NJS::Parser::At(const TokenType type) const
 
 bool NJS::Parser::At(const std::string &value) const
 {
-    return m_Token.String == value;
+    return m_Token.Value == value;
 }
 
 bool NJS::Parser::NextAt(const TokenType type)

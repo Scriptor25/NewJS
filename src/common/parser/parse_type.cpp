@@ -138,7 +138,7 @@ NJS::TypePtr NJS::Parser::ParseType()
         type = ParseFunctionType();
     else if (At("lambda"))
         type = ParseLambdaType();
-    else if (const auto name = Expect(TokenType_Symbol).String; get_type_map.contains(name))
+    else if (const auto name = Expect(TokenType_Symbol).Value; get_type_map.contains(name))
         type = get_type_map.at(name)(m_TypeContext);
     else if (m_MacroMap.contains(name))
         type = m_MacroMap.at(name).InflateType(*this);
@@ -192,7 +192,7 @@ NJS::TypePtr NJS::Parser::ParseStructType()
     {
         const auto is_const = NextAt("const");
         const auto is_reference = NextAt("&");
-        const auto name = Expect(TokenType_Symbol).String;
+        const auto name = Expect(TokenType_Symbol).Value;
         Expect(":");
         const auto type = ParseType();
 
@@ -213,7 +213,7 @@ NJS::TypePtr NJS::Parser::ParseStructType()
 
     std::string struct_name;
     if (NextAt("."))
-        struct_name = Expect(TokenType_Symbol).String;
+        struct_name = Expect(TokenType_Symbol).Value;
 
     return m_TypeContext.GetStructType(struct_elements, struct_name);
 }
@@ -240,7 +240,7 @@ NJS::TypePtr NJS::Parser::ParseLambdaType()
     {
         const auto is_const = NextAt("const");
         const auto is_reference = NextAt("&");
-        const auto name = Expect(TokenType_Symbol).String;
+        const auto name = Expect(TokenType_Symbol).Value;
         Expect(":");
         const auto type = ParseType();
 
@@ -287,7 +287,7 @@ void NJS::Parser::ParseTypeMap(std::vector<std::pair<std::string, TypePtr>> &typ
 {
     while (!At(delimiter))
     {
-        const auto name = Expect(TokenType_Symbol).String;
+        const auto name = Expect(TokenType_Symbol).Value;
         Expect(":");
         types.emplace_back(name, ParseType());
 

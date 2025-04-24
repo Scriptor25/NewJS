@@ -35,7 +35,7 @@ NJS::ParameterPtr NJS::Parser::ParseParameter(const bool is_const, const bool is
             ReferenceInfo(std::move(type), is_const, is_reference));
     }
 
-    auto name = Expect(TokenType_Symbol).String;
+    auto name = Expect(TokenType_Symbol).Value;
     auto type = NextAt(":") ? ParseType() : nullptr;
     return std::make_shared<Parameter>(
         where,
@@ -94,7 +94,7 @@ void NJS::Parser::ParseParameterMap(std::map<std::string, ParameterPtr> &paramet
     while (!At(delimiter) && !AtEof())
     {
         auto where = CurrentLocation();
-        auto name = Expect(TokenType_Symbol).String;
+        auto name = Expect(TokenType_Symbol).Value;
         parameters[name] = NextAt(":")
                                ? ParseParameter(false, false)
                                : std::make_shared<Parameter>(

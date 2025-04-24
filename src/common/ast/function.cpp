@@ -55,7 +55,7 @@ std::ostream &NJS::FunctionStatement::Print(std::ostream &stream) const
     return stream;
 }
 
-void NJS::FunctionStatement::PGenLLVM(Builder &builder, const bool is_export)
+void NJS::FunctionStatement::_GenIntermediate(Builder &builder, const bool is_export)
 {
     const bool is_extern = Flags & FunctionFlags_Extern;
     const bool is_operator = Flags & FunctionFlags_Operator;
@@ -174,7 +174,7 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder, const bool is_export)
             parameter->Info.IsReference);
     }
 
-    Body->GenLLVM(builder, false);
+    Body->GenIntermediate(builder, false);
 
     builder.StackPop();
 
@@ -215,7 +215,7 @@ void NJS::FunctionStatement::PGenLLVM(Builder &builder, const bool is_export)
     builder.GetBuilder().SetInsertPoint(insert_block);
 }
 
-void NJS::FunctionStatement::PGenImport(
+void NJS::FunctionStatement::_GenImport(
     Builder &builder,
     const std::string &module_id,
     ValuePtr &dest_value,
@@ -376,7 +376,7 @@ static void define_lambda_callee(
         callee);
 }
 
-NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+NJS::ValuePtr NJS::FunctionExpression::_GenIntermediate(Builder &builder, const TypePtr &expected_type)
 {
     const auto offset = CaptureParameters.empty() ? 0u : 1u;
 
@@ -384,7 +384,7 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
     std::vector<ValuePtr> capture_values;
     for (auto &[parameter_, value_]: CaptureParameters)
     {
-        auto value = value_->GenLLVM(builder, nullptr);
+        auto value = value_->GenIntermediate(builder, nullptr);
         auto info = parameter_->Info;
         info.Type = value->GetType();
         capture_elements.emplace_back(parameter_->Name, info, nullptr);
@@ -440,7 +440,7 @@ NJS::ValuePtr NJS::FunctionExpression::PGenLLVM(Builder &builder, const TypePtr 
             parameter->Info.IsReference);
     }
 
-    Body->GenLLVM(builder, false);
+    Body->GenIntermediate(builder, false);
 
     builder.StackPop();
 

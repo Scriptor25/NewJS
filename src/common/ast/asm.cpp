@@ -73,14 +73,14 @@ std::ostream &NJS::AsmExpression::Print(std::ostream &stream) const
     return stream << ')';
 }
 
-NJS::ValuePtr NJS::AsmExpression::PGenLLVM(Builder &builder, const TypePtr &)
+NJS::ValuePtr NJS::AsmExpression::_GenIntermediate(Builder &builder, const TypePtr &)
 {
     std::vector<llvm::Type *> operand_types;
     std::vector<llvm::Value *> operands;
 
     for (const auto &argument: Operands)
     {
-        const auto value = argument->GenLLVM(builder, nullptr);
+        const auto value = argument->GenIntermediate(builder, nullptr);
         operand_types.emplace_back(value->GetType()->GetLLVM(builder));
         operands.emplace_back(value->Load());
     }

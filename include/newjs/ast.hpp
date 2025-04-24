@@ -16,7 +16,7 @@ namespace NJS
     {
         explicit Statement(SourceLocation where);
 
-        void GenLLVM(Builder &builder, bool is_export);
+        void GenIntermediate(Builder &builder, bool is_export);
         void GenImport(
             Builder &builder,
             const std::string &module_id,
@@ -30,8 +30,8 @@ namespace NJS
         SourceLocation Where;
 
     protected:
-        virtual void PGenLLVM(Builder &builder, bool is_export) = 0;
-        virtual void PGenImport(
+        virtual void _GenIntermediate(Builder &builder, bool is_export) = 0;
+        virtual void _GenImport(
             Builder &builder,
             const std::string &module_id,
             ValuePtr &dest_value,
@@ -46,7 +46,7 @@ namespace NJS
         std::ostream &Print(std::ostream &stream) const override;
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
+        void _GenIntermediate(Builder &builder, bool is_export) override;
     };
 
     struct ClassStatement final : Statement
@@ -60,7 +60,7 @@ namespace NJS
         std::vector<ExpressionPtr> Functions;
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
+        void _GenIntermediate(Builder &builder, bool is_export) override;
     };
 
     struct ContinueStatement final : Statement
@@ -70,7 +70,7 @@ namespace NJS
         std::ostream &Print(std::ostream &stream) const override;
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
+        void _GenIntermediate(Builder &builder, bool is_export) override;
     };
 
     struct ExportStatement final : Statement
@@ -82,7 +82,7 @@ namespace NJS
         StatementPtr Value;
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
+        void _GenIntermediate(Builder &builder, bool is_export) override;
     };
 
     struct ForStatement final : Statement
@@ -102,7 +102,7 @@ namespace NJS
         StatementPtr Body;
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
+        void _GenIntermediate(Builder &builder, bool is_export) override;
     };
 
     struct FunctionStatement final : Statement
@@ -126,8 +126,8 @@ namespace NJS
         StatementPtr Body;
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
-        void PGenImport(
+        void _GenIntermediate(Builder &builder, bool is_export) override;
+        void _GenImport(
             Builder &builder,
             const std::string &module_id,
             ValuePtr &dest_value,
@@ -146,7 +146,7 @@ namespace NJS
         StatementPtr ElseBody;
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
+        void _GenIntermediate(Builder &builder, bool is_export) override;
     };
 
     struct ImportStatement final : Statement
@@ -168,7 +168,7 @@ namespace NJS
         std::set<std::string> SubModuleIDs;
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
+        void _GenIntermediate(Builder &builder, bool is_export) override;
     };
 
     struct ReturnStatement final : Statement
@@ -180,7 +180,7 @@ namespace NJS
         ExpressionPtr Value;
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
+        void _GenIntermediate(Builder &builder, bool is_export) override;
     };
 
     struct ScopeStatement final : Statement
@@ -192,7 +192,7 @@ namespace NJS
         std::vector<StatementPtr> Children;
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
+        void _GenIntermediate(Builder &builder, bool is_export) override;
     };
 
     struct SwitchStatement final : Statement
@@ -210,7 +210,7 @@ namespace NJS
         StatementPtr DefaultCase;
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
+        void _GenIntermediate(Builder &builder, bool is_export) override;
     };
 
     struct VariableStatement final : Statement
@@ -228,8 +228,8 @@ namespace NJS
         ExpressionPtr Value;
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
-        void PGenImport(
+        void _GenIntermediate(Builder &builder, bool is_export) override;
+        void _GenImport(
             Builder &builder,
             const std::string &module_id,
             ValuePtr &dest_value,
@@ -247,19 +247,19 @@ namespace NJS
         StatementPtr Body;
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
+        void _GenIntermediate(Builder &builder, bool is_export) override;
     };
 
     struct Expression : Statement
     {
         explicit Expression(SourceLocation where);
 
-        [[nodiscard]] ValuePtr GenLLVM(Builder &builder, const TypePtr &expected_type);
+        [[nodiscard]] ValuePtr GenIntermediate(Builder &builder, const TypePtr &expected_type);
 
     protected:
-        void PGenLLVM(Builder &builder, bool is_export) override;
+        void _GenIntermediate(Builder &builder, bool is_export) override;
 
-        [[nodiscard]] virtual ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) = 0;
+        [[nodiscard]] virtual ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) = 0;
     };
 
     struct AsmExpression final : Expression
@@ -287,7 +287,7 @@ namespace NJS
         TypePtr OutputType;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct BinaryExpression final : Expression
@@ -305,7 +305,7 @@ namespace NJS
         ExpressionPtr RightOperand;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct BooleanExpression final : Expression
@@ -317,7 +317,7 @@ namespace NJS
         bool Value;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct CacheExpression final : Expression
@@ -330,7 +330,7 @@ namespace NJS
         ValuePtr Cache;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct CallExpression final : Expression
@@ -343,7 +343,7 @@ namespace NJS
         std::vector<ExpressionPtr> Arguments;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct CastExpression final : Expression
@@ -356,7 +356,7 @@ namespace NJS
         ExpressionPtr Operand;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct CharExpression final : Expression
@@ -368,25 +368,49 @@ namespace NJS
         char Value;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
+    };
+
+    struct FormatNode
+    {
+        virtual ~FormatNode() = default;
+
+        virtual std::ostream &Print(std::ostream &stream) const = 0;
+        virtual void Generate(Builder &builder, std::vector<llvm::Value *> &arguments) const = 0;
+    };
+
+    using FormatNodePtr = std::unique_ptr<FormatNode>;
+
+    struct ConstantFormatNode final : FormatNode
+    {
+        explicit ConstantFormatNode(std::string value);
+
+        std::ostream &Print(std::ostream &stream) const override;
+        void Generate(Builder &builder, std::vector<llvm::Value *> &arguments) const override;
+
+        std::string Value;
+    };
+
+    struct ExpressionFormatNode final : FormatNode
+    {
+        explicit ExpressionFormatNode(ExpressionPtr value);
+
+        std::ostream &Print(std::ostream &stream) const override;
+        void Generate(Builder &builder, std::vector<llvm::Value *> &arguments) const override;
+
+        ExpressionPtr Value;
     };
 
     struct FormatExpression final : Expression
     {
-        FormatExpression(
-            SourceLocation where,
-            unsigned operand_count,
-            std::map<unsigned, std::string> static_operands,
-            std::map<unsigned, ExpressionPtr> dynamic_operands);
+        FormatExpression(SourceLocation where, std::vector<FormatNodePtr> nodes);
 
         std::ostream &Print(std::ostream &stream) const override;
 
-        unsigned OperandCount;
-        std::map<unsigned, std::string> StaticOperands;
-        std::map<unsigned, ExpressionPtr> DynamicOperands;
+        std::vector<FormatNodePtr> Nodes;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct FloatingPointExpression final : Expression
@@ -399,7 +423,7 @@ namespace NJS
         double Value;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct FunctionExpression final : Expression
@@ -421,7 +445,7 @@ namespace NJS
         StatementPtr Body;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct FunctionCacheExpression final : Expression
@@ -445,7 +469,7 @@ namespace NJS
         ValuePtr Cache;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct IntegerExpression final : Expression
@@ -458,7 +482,7 @@ namespace NJS
         uint64_t Value;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct MemberExpression final : Expression
@@ -472,7 +496,7 @@ namespace NJS
         bool Dereference;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct ScopeExpression final : Expression
@@ -485,7 +509,7 @@ namespace NJS
         ExpressionPtr Last;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct SizeOfExpression final : Expression
@@ -497,7 +521,7 @@ namespace NJS
         ExpressionPtr Operand;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct StringExpression final : Expression
@@ -509,7 +533,7 @@ namespace NJS
         std::string Value;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct StructExpression final : Expression
@@ -525,7 +549,7 @@ namespace NJS
         std::vector<std::pair<std::string, ExpressionPtr>> Elements;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct SubscriptExpression final : Expression
@@ -538,7 +562,7 @@ namespace NJS
         ExpressionPtr Index;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct SwitchExpression final : Expression
@@ -556,7 +580,7 @@ namespace NJS
         ExpressionPtr DefaultCase;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct SymbolExpression final : Expression
@@ -568,7 +592,7 @@ namespace NJS
         std::string Name;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct TernaryExpression final : Expression
@@ -586,7 +610,7 @@ namespace NJS
         ExpressionPtr ElseBody;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct TupleExpression final : Expression
@@ -599,7 +623,7 @@ namespace NJS
         std::vector<ExpressionPtr> Elements;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct TypeOfExpression final : Expression
@@ -611,7 +635,7 @@ namespace NJS
         ExpressionPtr Operand;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 
     struct UnaryExpression final : Expression
@@ -625,6 +649,6 @@ namespace NJS
         ExpressionPtr Operand;
 
     protected:
-        [[nodiscard]] ValuePtr PGenLLVM(Builder &builder, const TypePtr &expected_type) override;
+        [[nodiscard]] ValuePtr _GenIntermediate(Builder &builder, const TypePtr &expected_type) override;
     };
 }

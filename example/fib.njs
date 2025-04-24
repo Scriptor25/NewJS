@@ -13,4 +13,4 @@ export function fib(n: u32): u32 {
 
 const n: u32 = 10
 const f = fib(n)
-println(f"fib({n}) = {f}")
+println(`fib(${n}) = ${f}`)

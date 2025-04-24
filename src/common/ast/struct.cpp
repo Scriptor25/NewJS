@@ -37,7 +37,7 @@ std::ostream &NJS::StructExpression::Print(std::ostream &stream) const
     return Type->Print(stream << ':');
 }
 
-NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+NJS::ValuePtr NJS::StructExpression::_GenIntermediate(Builder &builder, const TypePtr &expected_type)
 {
     StructTypePtr result_type;
     if (Type)
@@ -53,7 +53,7 @@ NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &e
         auto type = result_type
                         ? result_type->GetMember(name_).Info.Type
                         : nullptr;
-        auto value = element_->GenLLVM(builder, type);
+        auto value = element_->GenIntermediate(builder, type);
         element_types.emplace_back(name_, value->GetType());
         element_values[name_] = std::move(value);
     }
@@ -72,7 +72,7 @@ NJS::ValuePtr NJS::StructExpression::PGenLLVM(Builder &builder, const TypePtr &e
         if (element_values.contains(name_))
             element_value = element_values[name_];
         else if (default_)
-            element_value = default_->GenLLVM(builder, info_.Type);
+            element_value = default_->GenIntermediate(builder, info_.Type);
         else
             continue;
 

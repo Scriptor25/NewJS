@@ -25,7 +25,7 @@ std::ostream &NJS::IfStatement::Print(std::ostream &stream) const
     return stream;
 }
 
-void NJS::IfStatement::PGenLLVM(Builder &builder, bool)
+void NJS::IfStatement::_GenIntermediate(Builder &builder, bool)
 {
     const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
     auto then_block = llvm::BasicBlock::Create(builder.GetContext(), "then", parent_function);
@@ -34,7 +34,7 @@ void NJS::IfStatement::PGenLLVM(Builder &builder, bool)
                           : nullptr;
     const auto tail_block = llvm::BasicBlock::Create(builder.GetContext(), "tail", parent_function);
 
-    auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
+    auto condition = Condition->GenIntermediate(builder, builder.GetTypeContext().GetBooleanType());
     if (!condition->GetType()->IsBoolean())
     {
         if (!condition->GetType()->IsIntegerLike())
@@ -53,7 +53,7 @@ void NJS::IfStatement::PGenLLVM(Builder &builder, bool)
     const llvm::Instruction *else_terminator = nullptr;
 
     builder.GetBuilder().SetInsertPoint(then_block);
-    ThenBody->GenLLVM(builder, false);
+    ThenBody->GenIntermediate(builder, false);
     then_block = builder.GetBuilder().GetInsertBlock();
     then_terminator = then_block->getTerminator();
     if (!then_terminator)
@@ -62,7 +62,7 @@ void NJS::IfStatement::PGenLLVM(Builder &builder, bool)
     if (ElseBody)
     {
         builder.GetBuilder().SetInsertPoint(else_block);
-        ElseBody->GenLLVM(builder, false);
+        ElseBody->GenIntermediate(builder, false);
         else_block = builder.GetBuilder().GetInsertBlock();
         else_terminator = else_block->getTerminator();
         if (!else_terminator)

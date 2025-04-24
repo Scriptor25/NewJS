@@ -19,7 +19,7 @@ std::ostream &NJS::IntegerExpression::Print(std::ostream &stream) const
     return stream << '(' << Value << ')';
 }
 
-NJS::ValuePtr NJS::IntegerExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+NJS::ValuePtr NJS::IntegerExpression::_GenIntermediate(Builder &builder, const TypePtr &expected_type)
 {
     const auto type = Type
                           ? Type

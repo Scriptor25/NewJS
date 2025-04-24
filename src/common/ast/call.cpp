@@ -26,11 +26,11 @@ std::ostream &NJS::CallExpression::Print(std::ostream &stream) const
     return stream << ')';
 }
 
-NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+NJS::ValuePtr NJS::CallExpression::_GenIntermediate(Builder &builder, const TypePtr &expected_type)
 {
     builder.PushLastObjectContext();
 
-    const auto callee_value = Callee->GenLLVM(builder, nullptr);
+    const auto callee_value = Callee->GenIntermediate(builder, nullptr);
     const auto callee_type = callee_value->GetType();
 
     if (auto [
@@ -66,7 +66,7 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
                             : ReferenceInfo();
 
             const auto &argument = Arguments[i];
-            const auto argument_value = argument->GenLLVM(builder, info.Type);
+            const auto argument_value = argument->GenIntermediate(builder, info.Type);
 
             arguments[i + 1] = info.SolveFor(builder, argument_value);
         }
@@ -125,7 +125,7 @@ NJS::ValuePtr NJS::CallExpression::PGenLLVM(Builder &builder, const TypePtr &exp
                         : ReferenceInfo();
 
         const auto &argument = Arguments[i - has_first];
-        const auto argument_value = argument->GenLLVM(builder, info.Type);
+        const auto argument_value = argument->GenIntermediate(builder, info.Type);
 
         arguments[i] = info.SolveFor(builder, argument_value);
     }

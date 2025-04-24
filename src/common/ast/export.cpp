@@ -11,7 +11,7 @@ std::ostream &NJS::ExportStatement::Print(std::ostream &stream) const
     return Value->Print(stream << "export ");
 }
 
-void NJS::ExportStatement::PGenLLVM(Builder &builder, bool)
+void NJS::ExportStatement::_GenIntermediate(Builder &builder, bool)
 {
-    Value->GenLLVM(builder, true);
+    Value->GenIntermediate(builder, true);
 }

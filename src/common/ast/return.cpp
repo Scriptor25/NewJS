@@ -17,7 +17,7 @@ std::ostream &NJS::ReturnStatement::Print(std::ostream &stream) const
     return stream << "return void";
 }
 
-void NJS::ReturnStatement::PGenLLVM(Builder &builder, bool)
+void NJS::ReturnStatement::_GenIntermediate(Builder &builder, bool)
 {
     auto info = builder.CurrentFunctionResult();
 
@@ -30,7 +30,7 @@ void NJS::ReturnStatement::PGenLLVM(Builder &builder, bool)
         return;
     }
 
-    const auto value = Value->GenLLVM(builder, info.Type);
+    const auto value = Value->GenIntermediate(builder, info.Type);
     const auto result = info.SolveFor(builder, value);
 
     builder.GetBuilder().CreateRet(result);

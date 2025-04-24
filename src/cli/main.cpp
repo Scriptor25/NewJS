@@ -30,9 +30,7 @@ static llvm::CodeGenFileType to_type(const std::string_view &str)
         {"obj"sv, llvm::CodeGenFileType::ObjectFile},
         {"asm"sv, llvm::CodeGenFileType::AssemblyFile},
     };
-    if (map.contains(str))
-        return map.at(str);
-    return {};
+    return map.contains(str) ? map.at(str) : llvm::CodeGenFileType::Null;
 }
 
 static void parse(
@@ -55,8 +53,11 @@ static void parse(
         [&](const NJS::StatementPtr &statement)
         {
             if (print)
+            {
                 statement->Print(std::cerr) << std::endl;
-            statement->GenLLVM(builder, false);
+            }
+
+            statement->GenIntermediate(builder, false);
         });
 
     builder.Close();
@@ -65,7 +66,7 @@ static void parse(
 
 int main(const int argc, const char **argv) try
 {
-    NJS::ArgParser arg_parser(
+    NJS::ArgParser args(
         {
             {ARG_ID_HELP, "Display this help text.", {"--help", "-h"}, true},
             {ARG_ID_VERSION, "Display the program version.", {"--version", "-v"}, true},
@@ -80,63 +81,69 @@ int main(const int argc, const char **argv) try
             {ARG_ID_TARGET, "Specify output target triple, defaults to host target.", {"--triple", "-T"}, false},
             {ARG_ID_PRINT, "Print out the program AST", {"--print", "-p"}, true},
         });
-    arg_parser.Parse(argc, argv);
+    args.Parse(argc, argv);
 
-    if (arg_parser.Flag(ARG_ID_VERSION))
+    if (args.Flag(ARG_ID_VERSION))
     {
         std::cerr << "NewJS [v1.0.0]" << std::endl;
         if (argc == 2)
             return 0;
     }
 
-    if (arg_parser.IsEmpty() || arg_parser.Flag(ARG_ID_HELP))
+    if (args.IsEmpty() || args.Flag(ARG_ID_HELP))
     {
-        arg_parser.Print();
+        args.Print();
         return 0;
     }
 
     std::vector<std::string> input_filenames;
-    arg_parser.Values(input_filenames);
+    args.Values(input_filenames);
 
     std::string output_filename;
-    arg_parser.Option(ARG_ID_OUTPUT, output_filename);
+    args.Option(ARG_ID_OUTPUT, output_filename);
 
     std::string module_main;
-    arg_parser.Option(ARG_ID_MAIN, module_main, "main");
+    args.Option(ARG_ID_MAIN, module_main, "main");
 
     llvm::CodeGenFileType output_type;
     {
         std::string type_str;
-        arg_parser.Option(ARG_ID_TYPE, type_str, "llvm");
+        args.Option(ARG_ID_TYPE, type_str, "llvm");
         output_type = to_type(type_str);
     }
 
-    const auto print = arg_parser.Flag(ARG_ID_PRINT);
+    const auto print = args.Flag(ARG_ID_PRINT);
 
     const auto output_module_id = std::filesystem::path(output_filename).filename().replace_extension().string();
     const NJS::Linker linker(output_module_id, output_filename);
 
     if (input_filenames.empty())
+    {
         parse(print, linker, "main", true, std::cin, {});
+    }
 
     for (const auto &input_filename: input_filenames)
     {
         if (!std::filesystem::exists(input_filename))
+        {
             NJS::Error("failed to open input file '{}': file does not exist", input_filename);
+        }
 
         const auto input_path = std::filesystem::canonical(input_filename);
         const auto module_id = input_path.filename().replace_extension().string();
 
         std::ifstream input_stream(input_path);
         if (!input_stream)
+        {
             NJS::Error("failed to open input file '{}'", input_filename);
+        }
 
         parse(print, linker, module_id, module_id == module_main, input_stream, input_path);
         input_stream.close();
     }
 
     std::string target_triple;
-    arg_parser.Option(ARG_ID_TARGET, target_triple);
+    args.Option(ARG_ID_TARGET, target_triple);
 
     if (!output_filename.empty())
     {
@@ -144,13 +151,17 @@ int main(const int argc, const char **argv) try
         llvm::raw_fd_ostream output_stream(output_filename, error_code);
 
         if (error_code)
+        {
             NJS::Error("failed to open output file '{}': {}", output_filename, error_code.message());
+        }
 
         linker.Emit(output_stream, output_type, target_triple);
         output_stream.close();
     }
     else
+    {
         linker.Emit(llvm::outs(), output_type, target_triple);
+    }
 }
 catch (const NJS::RTError &error)
 {

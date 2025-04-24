@@ -27,7 +27,7 @@ std::ostream &NJS::FunctionCacheExpression::Print(std::ostream &stream) const
     return stream << "TODO";
 }
 
-NJS::ValuePtr NJS::FunctionCacheExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+NJS::ValuePtr NJS::FunctionCacheExpression::_GenIntermediate(Builder &builder, const TypePtr &expected_type)
 {
     if (Cache)
         return Cache;
@@ -76,7 +76,7 @@ NJS::ValuePtr NJS::FunctionCacheExpression::PGenLLVM(Builder &builder, const Typ
             parameter->Info.IsReference);
     }
 
-    Body->GenLLVM(builder, false);
+    Body->GenIntermediate(builder, false);
 
     builder.StackPop();
 

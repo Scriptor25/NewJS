@@ -11,9 +11,9 @@ std::ostream &NJS::CacheExpression::Print(std::ostream &stream) const
     return Value->Print(stream);
 }
 
-NJS::ValuePtr NJS::CacheExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+NJS::ValuePtr NJS::CacheExpression::_GenIntermediate(Builder &builder, const TypePtr &expected_type)
 {
     if (Cache)
         return Cache;
-    return Cache = Value->GenLLVM(builder, expected_type);
+    return Cache = Value->GenIntermediate(builder, expected_type);
 }

@@ -19,7 +19,7 @@ std::ostream &NJS::FloatingPointExpression::Print(std::ostream &stream) const
     return stream << '(' << Value << ')';
 }
 
-NJS::ValuePtr NJS::FloatingPointExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+NJS::ValuePtr NJS::FloatingPointExpression::_GenIntermediate(Builder &builder, const TypePtr &expected_type)
 {
     const auto type = Type
                           ? Type

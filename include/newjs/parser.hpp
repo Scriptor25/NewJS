@@ -33,10 +33,8 @@ namespace NJS
 
         void Parse(const Consumer &consumer);
 
-        int Get();
-        void UnGet();
-        void NewLine();
-        int Escape(int c);
+        void Get();
+        void Escape();
         Token &Next();
 
         [[nodiscard]] bool AtEof() const;
@@ -62,7 +60,10 @@ namespace NJS
         bool ParseReferenceInfoList(std::vector<ReferenceInfo> &infos, const std::string &delimiter);
 
         ParameterPtr ParseParameter(bool is_const, bool is_reference);
-        bool ParseParameterList(std::vector<ParameterPtr> &parameters, const std::string &delimiter, bool allow_var_arg);
+        bool ParseParameterList(
+            std::vector<ParameterPtr> &parameters,
+            const std::string &delimiter,
+            bool allow_var_arg);
         bool ParseReferenceParameterList(
             std::vector<ParameterPtr> &parameters,
             const std::string &delimiter,
@@ -107,6 +108,7 @@ namespace NJS
         TypeContext &m_TypeContext;
         Builder &m_Builder;
 
+        int m_Buf = -1;
         std::istream &m_Stream;
         std::map<std::string, Macro> &m_MacroMap;
         bool m_IsMain;

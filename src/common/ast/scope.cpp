@@ -21,11 +21,11 @@ std::ostream &NJS::ScopeStatement::Print(std::ostream &stream) const
     return Spacing(stream) << '}';
 }
 
-void NJS::ScopeStatement::PGenLLVM(Builder &builder, bool)
+void NJS::ScopeStatement::_GenIntermediate(Builder &builder, bool)
 {
     builder.StackPush();
     for (const auto &child: Children)
-        child->GenLLVM(builder, false);
+        child->GenIntermediate(builder, false);
     builder.StackPop();
 }
 
@@ -50,12 +50,12 @@ std::ostream &NJS::ScopeExpression::Print(std::ostream &stream) const
     return Spacing(stream) << '}';
 }
 
-NJS::ValuePtr NJS::ScopeExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+NJS::ValuePtr NJS::ScopeExpression::_GenIntermediate(Builder &builder, const TypePtr &expected_type)
 {
     builder.StackPush();
     for (const auto &child: Children)
-        child->GenLLVM(builder, false);
-    auto result = Last->GenLLVM(builder, expected_type);
+        child->GenIntermediate(builder, false);
+    auto result = Last->GenIntermediate(builder, expected_type);
     builder.StackPop();
     return result;
 }

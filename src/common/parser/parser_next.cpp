@@ -44,33 +44,33 @@ NJS::Token &NJS::Parser::Next()
 
     auto state = State_Idle;
     SourceLocation where;
-    std::string value;
+    std::string raw, value;
     auto is_float = false;
+    auto is_format = false;
 
-    auto c = Get();
-    while (c >= 0 || state != State_Idle)
+    while (m_Buf >= 0 || state != State_Idle)
     {
         switch (state)
         {
             case State_Idle:
-                switch (c)
+                switch (m_Buf)
                 {
-                    case '\n':
-                        NewLine();
-                        c = Get();
-                        break;
-
                     case '.':
                         where = m_Where;
-                        value += static_cast<char>(c);
-                        c = Get();
-                        if (isdigit(c))
+                        raw += static_cast<char>(m_Buf);
+                        value += static_cast<char>(m_Buf);
+                        Get();
+
+                        if (isdigit(m_Buf))
                         {
                             state = State_Dec;
                             is_float = true;
                         }
                         else
+                        {
                             state = State_Operator;
+                        }
+
                         break;
 
                     case '[':
@@ -90,9 +90,10 @@ NJS::Token &NJS::Parser::Next()
                     case '=':
                     case '$':
                         where = m_Where;
-                        value += static_cast<char>(c);
+                        raw += static_cast<char>(m_Buf);
+                        value += static_cast<char>(m_Buf);
                         state = State_Operator;
-                        c = Get();
+                        Get();
                         break;
 
                     case '(':
@@ -106,204 +107,282 @@ NJS::Token &NJS::Parser::Next()
                     case ';':
                     case ':':
                         where = m_Where;
-                        value += static_cast<char>(c);
-                        return m_Token = {where, TokenType_Other, value, value};
+                        raw += static_cast<char>(m_Buf);
+                        value += static_cast<char>(m_Buf);
+                        Get();
+                        return m_Token = {where, TokenType_Other, raw, value};
 
                     case '0':
                         where = m_Where;
-                        c = Get();
-                        if (c == 'b' || c == 'B')
-                        {
-                            state = State_Bin;
-                            c = Get();
-                            break;
-                        }
-                        if (c == 'x' || c == 'X')
-                        {
-                            state = State_Hex;
-                            c = Get();
-                            break;
-                        }
-                        if ('0' <= c && c <= '7')
-                        {
-                            value += '0';
-                            state = State_Oct;
-                            break;
-                        }
+                        raw += static_cast<char>(m_Buf);
+                        Get();
 
-                        value += '0';
-                        state = State_Dec;
-                        continue;
+                        switch (m_Buf)
+                        {
+                            case 'b':
+                            case 'B':
+                                state = State_Bin;
+                                raw += static_cast<char>(m_Buf);
+                                Get();
+                                break;
 
+                            case 'x':
+                            case 'X':
+                                state = State_Hex;
+                                raw += static_cast<char>(m_Buf);
+                                Get();
+                                break;
+
+                            case '0':
+                            case '1':
+                            case '2':
+                            case '3':
+                            case '4':
+                            case '5':
+                            case '6':
+                            case '7':
+                                value += '0';
+                                state = State_Oct;
+                                break;
+
+                            default:
+                                value += '0';
+                                state = State_Dec;
+                                break;
+                        }
+                        break;
+
+                    case '`':
+                        is_format = true;
                     case '"':
                         where = m_Where;
                         state = State_String;
-                        c = Get();
+                        raw += static_cast<char>(m_Buf);
+                        Get();
                         break;
 
                     case '\'':
                         where = m_Where;
                         state = State_Char;
-                        c = Get();
+                        raw += static_cast<char>(m_Buf);
+                        Get();
                         break;
 
                     default:
                         where = m_Where;
-                        if (isdigit(c))
+                        if (isdigit(m_Buf))
                         {
                             state = State_Dec;
                             break;
                         }
-                        if (isalpha(c) || c == '_')
+
+                        if (isalpha(m_Buf) || m_Buf == '_')
                         {
                             state = State_Symbol;
                             break;
                         }
-                        c = Get();
+
+                        Get();
                         break;
                 }
                 break;
 
             case State_Comment_Line:
-                if (c == '\n')
+                if (m_Buf == '\n')
                 {
                     state = State_Idle;
-                    NewLine();
                 }
-                c = Get();
+
+                raw += static_cast<char>(m_Buf);
+                Get();
                 break;
 
             case State_Comment_Block:
-                if (c == '*')
+                if (m_Buf == '*')
                 {
-                    c = Get();
-                    if (c == '/')
+                    raw += static_cast<char>(m_Buf);
+                    Get();
+
+                    if (m_Buf == '/')
+                    {
                         state = State_Idle;
-                    else if (c == '\n')
-                        NewLine();
+                    }
                 }
-                else if (c == '\n')
-                    NewLine();
-                c = Get();
+
+                raw += static_cast<char>(m_Buf);
+                Get();
                 break;
 
             case State_Operator:
-                if (value == "/" && c == '/')
+                if (value == "/")
                 {
-                    state = State_Comment_Line;
-                    value.clear();
-                    c = Get();
+                    auto br = true;
+                    switch (m_Buf)
+                    {
+                        case '/':
+                            state = State_Comment_Line;
+                            raw += static_cast<char>(m_Buf);
+                            value.clear();
+                            Get();
+                            break;
+
+                        case '*':
+                            state = State_Comment_Block;
+                            raw += static_cast<char>(m_Buf);
+                            value.clear();
+                            Get();
+                            break;
+
+                        default:
+                            br = false;
+                            break;
+                    }
+
+                    if (br)
+                    {
+                        break;
+                    }
+                }
+
+                if (operator_append.contains(value) && operator_append.at(value).contains(m_Buf))
+                {
+                    raw += static_cast<char>(m_Buf);
+                    value += static_cast<char>(m_Buf);
+                    Get();
                     break;
                 }
-                if (value == "/" && c == '*')
-                {
-                    state = State_Comment_Block;
-                    value.clear();
-                    c = Get();
-                    break;
-                }
-                if (operator_append.contains(value) && operator_append.at(value).contains(c))
-                {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                UnGet();
-                return m_Token = {where, TokenType_Operator, value, value};
+
+                return m_Token = {where, TokenType_Operator, raw, value};
 
             case State_Bin:
-                if ('0' > c || c > '1')
+                if ('0' > m_Buf || m_Buf > '1')
                 {
-                    UnGet();
-                    return m_Token = {where, TokenType_Int, "0b" + value, value, (std::stoull(value, nullptr, 2))};
+                    return m_Token = {where, TokenType_Int, raw, value, (std::stoull(value, nullptr, 2))};
                 }
-                value += static_cast<char>(c);
-                c = Get();
+
+                raw += static_cast<char>(m_Buf);
+                value += static_cast<char>(m_Buf);
+                Get();
                 break;
 
             case State_Oct:
-                if ('0' > c || c > '7')
+                if ('0' > m_Buf || m_Buf > '7')
                 {
-                    UnGet();
-                    return m_Token = {where, TokenType_Int, "0" + value, value, (std::stoull(value, nullptr, 8))};
+                    return m_Token = {where, TokenType_Int, raw, value, (std::stoull(value, nullptr, 8))};
                 }
-                value += static_cast<char>(c);
-                c = Get();
+
+                raw += static_cast<char>(m_Buf);
+                value += static_cast<char>(m_Buf);
+                Get();
                 break;
 
             case State_Dec:
-                if (isdigit(c))
+                switch (m_Buf)
                 {
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
-                }
-                if (c == 'e' || c == 'E')
-                {
-                    if (is_float)
-                        Error(where, "token is marked as floating point multiple times");
+                    case 'e':
+                    case 'E':
+                        if (is_float)
+                        {
+                            Error(where, "token is marked as floating point multiple times");
+                        }
 
-                    is_float = true;
-                    value += static_cast<char>(c);
-                    c = Get();
-                    if (c == '+' || c == '-')
-                    {
-                        value += static_cast<char>(c);
-                        c = Get();
-                    }
-                    break;
-                }
-                if (c == '.')
-                {
-                    if (is_float)
-                        Error(where, "token is marked as floating point multiple times");
+                        is_float = true;
+                        value += static_cast<char>(m_Buf);
+                        Get();
 
-                    is_float = true;
-                    value += static_cast<char>(c);
-                    c = Get();
-                    break;
+                        if (m_Buf == '+' || m_Buf == '-')
+                        {
+                            value += static_cast<char>(m_Buf);
+                            Get();
+                        }
+
+                        break;
+
+                    case '.':
+                        if (is_float)
+                        {
+                            Error(where, "token is marked as floating point multiple times");
+                        }
+
+                        is_float = true;
+                        value += static_cast<char>(m_Buf);
+                        Get();
+                        break;
+
+                    default:
+                        if (isdigit(m_Buf))
+                        {
+                            raw += static_cast<char>(m_Buf);
+                            value += static_cast<char>(m_Buf);
+                            Get();
+                            break;
+                        }
+
+                        if (is_float)
+                            return m_Token = {where, TokenType_FP, raw, value, 0, std::stod(value)};
+
+                        return m_Token = {where, TokenType_Int, raw, value, std::stoull(value, nullptr, 10)};
                 }
-                UnGet();
-                if (is_float)
-                    return m_Token = {where, TokenType_FP, value, value, 0, std::stod(value)};
-                return m_Token = {where, TokenType_Int, value, value, std::stoull(value, nullptr, 10)};
+                break;
 
             case State_Hex:
-                if (!isxdigit(c))
+                if (!isxdigit(m_Buf))
                 {
-                    UnGet();
-                    return m_Token = {where, TokenType_Int, "0x" + value, value, (std::stoull(value, nullptr, 16))};
+                    return m_Token = {where, TokenType_Int, raw, value, (std::stoull(value, nullptr, 16))};
                 }
-                value += static_cast<char>(c);
-                c = Get();
+
+                raw += static_cast<char>(m_Buf);
+                value += static_cast<char>(m_Buf);
+                Get();
                 break;
 
             case State_Symbol:
-                if (!(isalnum(c) || c == '_'))
+                if (!isalnum(m_Buf) && m_Buf != '_')
                 {
-                    UnGet();
-                    return m_Token = {where, TokenType_Symbol, value, value};
+                    return m_Token = {where, TokenType_Symbol, raw, value};
                 }
-                value += static_cast<char>(c);
-                c = Get();
+
+                raw += static_cast<char>(m_Buf);
+                value += static_cast<char>(m_Buf);
+                Get();
                 break;
 
             case State_String:
-                if (c == '"' || c < 0)
-                    return m_Token = {where, TokenType_String, '"' + value + '"', value};
-                if (c == '\\')
-                    c = Escape(Get());
-                value += static_cast<char>(c);
-                c = Get();
+                if (m_Buf == (is_format ? '`' : '"') || m_Buf < 0)
+                {
+                    raw += static_cast<char>(m_Buf);
+                    Get();
+                    return m_Token = {where, is_format ? TokenType_Format : TokenType_String, raw, value};
+                }
+
+                if (m_Buf == '\\')
+                {
+                    Get();
+                    Escape();
+                }
+
+                raw += static_cast<char>(m_Buf);
+                value += static_cast<char>(m_Buf);
+                Get();
                 break;
 
             case State_Char:
-                if (c == '\'' || c < 0)
-                    return m_Token = {where, TokenType_Char, '\'' + value + '\'', value};
-                if (c == '\\')
-                    c = Escape(Get());
-                value += static_cast<char>(c);
-                c = Get();
+                if (m_Buf == '\'' || m_Buf < 0)
+                {
+                    raw += static_cast<char>(m_Buf);
+                    Get();
+                    return m_Token = {where, TokenType_Char, raw, value};
+                }
+
+                if (m_Buf == '\\')
+                {
+                    Get();
+                    Escape();
+                }
+
+                raw += static_cast<char>(m_Buf);
+                value += static_cast<char>(m_Buf);
+                Get();
                 break;
         }
     }

@@ -14,10 +14,10 @@ std::ostream &NJS::SubscriptExpression::Print(std::ostream &stream) const
     return Index->Print(Array->Print(stream) << '[') << ']';
 }
 
-NJS::ValuePtr NJS::SubscriptExpression::PGenLLVM(Builder &builder, const TypePtr &)
+NJS::ValuePtr NJS::SubscriptExpression::_GenIntermediate(Builder &builder, const TypePtr &)
 {
-    const auto array = Array->GenLLVM(builder, nullptr);
-    const auto index = Index->GenLLVM(builder, nullptr);
+    const auto array = Array->GenIntermediate(builder, nullptr);
+    const auto index = Index->GenIntermediate(builder, nullptr);
 
     return builder.CreateSubscript(array, index);
 }

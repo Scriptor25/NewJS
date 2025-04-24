@@ -6,7 +6,7 @@ NJS::ExpressionPtr NJS::Parser::ParseAsmExpression()
 
     std::set<std::string> attributes;
     while (!At("("))
-        attributes.insert(Expect(TokenType_Symbol).String);
+        attributes.insert(Expect(TokenType_Symbol).Value);
 
     auto is_volatile = attributes.contains("volatile");
     auto is_align = attributes.contains("align");
@@ -15,13 +15,13 @@ NJS::ExpressionPtr NJS::Parser::ParseAsmExpression()
 
     Expect("(");
 
-    auto source = Expect(TokenType_String).String;
+    auto source = Expect(TokenType_String).Value;
 
     std::string constraints;
     TypePtr output_type;
     if (NextAt(":") && !At(":"))
     {
-        constraints = Expect(TokenType_String).String;
+        constraints = Expect(TokenType_String).Value;
         Expect("<");
         output_type = ParseType();
         Expect(">");
@@ -32,7 +32,7 @@ NJS::ExpressionPtr NJS::Parser::ParseAsmExpression()
     {
         do
         {
-            auto input_constraint = Expect(TokenType_String).String;
+            auto input_constraint = Expect(TokenType_String).Value;
             Expect("(");
             auto input_operand = ParseExpression();
             Expect(")");

@@ -1,39 +1,55 @@
 #include <newjs/parser.hpp>
 
-int NJS::Parser::Escape(const int c)
+void NJS::Parser::Escape()
 {
     std::string value;
 
-    switch (c)
+    switch (m_Buf)
     {
         case 'a':
-            return '\a';
+            m_Buf = '\a';
+            break;
         case 'b':
-            return '\b';
+            m_Buf = '\b';
+            break;
         case 'e':
-            return '\x1B';
+            m_Buf = '\x1B';
+            break;
         case 'f':
-            return '\f';
+            m_Buf = '\f';
+            break;
         case 'n':
-            return '\n';
+            m_Buf = '\n';
+            break;
         case 'r':
-            return '\r';
+            m_Buf = '\r';
+            break;
         case 't':
-            return '\t';
+            m_Buf = '\t';
+            break;
         case 'v':
-            return '\v';
+            m_Buf = '\v';
+            break;
+
         case 'x':
-            value += static_cast<char>(Get());
-            value += static_cast<char>(Get());
-            return std::stoi(value, nullptr, 16);
+            Get();
+            value += static_cast<char>(m_Buf);
+            Get();
+            value += static_cast<char>(m_Buf);
+            m_Buf = std::stoi(value, nullptr, 16);
+            break;
+
         default:
-            if ('0' <= c && c <= '7')
+            if ('0' <= m_Buf && m_Buf <= '7')
             {
-                value += static_cast<char>(c);
-                value += static_cast<char>(Get());
-                value += static_cast<char>(Get());
-                return std::stoi(value, nullptr, 8);
+                value += static_cast<char>(m_Buf);
+                Get();
+                value += static_cast<char>(m_Buf);
+                Get();
+                value += static_cast<char>(m_Buf);
+                m_Buf = std::stoi(value, nullptr, 8);
+                break;
             }
-            return c;
+            break;
     }
 }

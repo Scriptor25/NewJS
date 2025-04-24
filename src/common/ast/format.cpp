@@ -1,4 +1,5 @@
 #include <utility>
+#include <llvm/IR/InlineAsm.h>
 #include <newjs/ast.hpp>
 #include <newjs/builder.hpp>
 #include <newjs/std.hpp>
@@ -6,84 +7,89 @@
 #include <newjs/type_context.hpp>
 #include <newjs/value.hpp>
 
+NJS::ConstantFormatNode::ConstantFormatNode(std::string value)
+    : Value(std::move(value))
+{
+}
+
+std::ostream &NJS::ConstantFormatNode::Print(std::ostream &stream) const
+{
+    return stream << Value;
+}
+
+void NJS::ConstantFormatNode::Generate(Builder &builder, std::vector<llvm::Value *> &arguments) const
+{
+    const auto value = builder.GetString(Value);
+
+    arguments.emplace_back(builder.GetBuilder().getInt32(ID_POINTER));
+    arguments.emplace_back(builder.GetBuilder().getInt32(ID_INTEGER));
+    arguments.emplace_back(builder.GetBuilder().getInt32(8));
+    arguments.emplace_back(builder.GetBuilder().getInt32(1));
+    arguments.emplace_back(value);
+}
+
+NJS::ExpressionFormatNode::ExpressionFormatNode(ExpressionPtr value)
+    : Value(std::move(value))
+{
+}
+
+std::ostream &NJS::ExpressionFormatNode::Print(std::ostream &stream) const
+{
+    return Value->Print(stream << "${") << '}';
+}
+
+void NJS::ExpressionFormatNode::Generate(Builder &builder, std::vector<llvm::Value *> &arguments) const
+{
+    const auto value = Value->GenIntermediate(builder, nullptr);
+    const auto size = arguments.size();
+
+    if (value->GetType()->TypeInfo(builder, arguments))
+    {
+        arguments.resize(size);
+        return;
+    }
+
+    if (value->GetType()->IsPrimitive())
+    {
+        arguments.emplace_back(value->Load());
+        return;
+    }
+
+    if (value->IsLValue())
+    {
+        arguments.emplace_back(value->GetPointer());
+        return;
+    }
+
+    const auto alloc = builder.CreateAlloca(value->GetType(), true);
+    alloc->StoreNoError(value);
+
+    arguments.emplace_back(alloc->GetPointer());
+}
+
 NJS::FormatExpression::FormatExpression(
     SourceLocation where,
-    const unsigned operand_count,
-    std::map<unsigned, std::string> static_operands,
-    std::map<unsigned, ExpressionPtr> dynamic_operands)
+    std::vector<FormatNodePtr> nodes)
     : Expression(std::move(where)),
-      OperandCount(operand_count),
-      StaticOperands(std::move(static_operands)),
-      DynamicOperands(std::move(dynamic_operands))
+      Nodes(std::move(nodes))
 {
 }
 
 std::ostream &NJS::FormatExpression::Print(std::ostream &stream) const
 {
-    stream << "f\"";
-    for (unsigned i = 0; i < OperandCount; ++i)
-    {
-        if (StaticOperands.contains(i))
-            stream << StaticOperands.at(i);
-        else if (DynamicOperands.contains(i))
-            DynamicOperands.at(i)->Print(stream << '{') << '}';
-    }
-    return stream << '"';
+    stream << '`';
+    for (const auto &node: Nodes)
+        node->Print(stream);
+    return stream << '`';
 }
 
-NJS::ValuePtr NJS::FormatExpression::PGenLLVM(Builder &builder, const TypePtr &)
+NJS::ValuePtr NJS::FormatExpression::_GenIntermediate(Builder &builder, const TypePtr &)
 {
     std::vector<llvm::Value *> arguments;
-    arguments.emplace_back(builder.GetBuilder().getInt32(OperandCount));
-    for (unsigned i = 0; i < OperandCount; ++i)
-    {
-        if (StaticOperands.contains(i))
-        {
-            const auto value = StaticOperands.at(i);
-            const auto string_value = builder.GetString(value);
+    arguments.emplace_back(builder.GetBuilder().getInt32(Nodes.size()));
 
-            arguments.emplace_back(builder.GetBuilder().getInt32(ID_POINTER));
-            arguments.emplace_back(builder.GetBuilder().getInt32(ID_INTEGER));
-            arguments.emplace_back(builder.GetBuilder().getInt32(8));
-            arguments.emplace_back(builder.GetBuilder().getInt32(1));
-            arguments.emplace_back(string_value);
-
-            continue;
-        }
-
-        if (DynamicOperands.contains(i))
-        {
-            const auto &dynamic = DynamicOperands.at(i);
-
-            const auto value = dynamic->GenLLVM(builder, nullptr);
-            const auto size = arguments.size();
-
-            if (value->GetType()->TypeInfo(builder, arguments))
-            {
-                arguments.resize(size);
-                continue;
-            }
-
-            if (value->GetType()->IsPrimitive())
-            {
-                arguments.emplace_back(value->Load());
-                continue;
-            }
-
-            if (value->IsLValue())
-            {
-                arguments.emplace_back(value->GetPointer());
-                continue;
-            }
-
-            const auto alloc = builder.CreateAlloca(value->GetType(), true);
-            alloc->StoreNoError(value);
-            arguments.emplace_back(alloc->GetPointer());
-            continue;
-        }
-
-        Error(Where, "invalid format operand index {}", i);
-    }
+    for (const auto &node: Nodes)
+        node->Generate(builder, arguments);
 
     arguments.emplace_back(builder.GetBuilder().getInt32(ID_VOID));
 

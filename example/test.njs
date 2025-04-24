@@ -5,14 +5,14 @@ extern function malloc(n: u64): void[]
 extern function realloc(block: void[], n: u64): void[]
 extern function free(block: void[])
 
-#PRINT(X: expr)  "println(f\"#X = {#X}\")"
+#PRINT(X: expr)  "println(`#X = ${#X}`)"
 #ASSERT(X: expr) "assert(%X, \"#X\")"
 
 #TEST(X: expr, Y: expr) "(%X + %Y)"
 
 PRINT(TEST(TEST(1, 2), TEST(3, 4)))
 
-function assert(x: u1, string: i8[const]) { if (!x) println(f"assertion '{string}' failed") }
+function assert(x: u1, string: i8[const]) { if (!x) println(`assertion '${string}' failed`) }
 
 type user_t = {
     name: i8[],
@@ -32,7 +32,7 @@ PRINT(user1)
 PRINT(println)
 
 function printUser(const &{ name: n, surname: s, age: a, job: t }: user_t) {
-    println(f" - {n} {s} ({a}), {t}")
+    println(` - ${n} ${s} (${a}), ${t}`)
 }
 
 class adder {
@@ -49,7 +49,7 @@ function operator()(const &self: adder): u32 {
 }
 
 const add: adder = { a: 123, b: 321 }
-println(f"add() = {add.a} + {add.b} = {add.a + add.b} = {add()}")
+println(`add() = ${add.a} + ${add.b} = ${add.a + add.b} = ${add()}`)
 
 println("IT WORKS!")
 printUser(user1)
@@ -62,21 +62,21 @@ function recurse(n: u32): u32 {
 
 const n: u32 = 10
 const r = recurse(n)
-println(f"recurse({n}) = {r}")
+println(`recurse(${n}) = ${r}`)
 
-println(f"fib({n}) = {fib(n)}")
+println(`fib(${n}) = ${fib(n)}`)
 
 const a1: u32[3] = [1, 2, 3]
 const t1 = ["Max", user1, a1]
 
 function printArray(array: u32[3]) {
-    println(f"{array}")
+    println(`${array}`)
 }
 
 printArray(a1)
 
 for (let i = 0; i < 3; ++i)
-    println(f"a1[{i}] = {a1[i]}")
+    println(`a1[${i}] = ${a1[i]}`)
 
 function foo(a: u32, b: u32, &c: u32): lambda[a: u32, b: u32, &c: u32]<() => u32> {
     return $[ a, b, &r: c ]: u32 {
@@ -86,17 +86,17 @@ function foo(a: u32, b: u32, &c: u32): lambda[a: u32, b: u32, &c: u32]<() => u32
 
 let foo_res: u32
 const foo_123 = foo(123, 321, foo_res)
-println(f"type of foo(123, 321, foo_res) is {typeof(foo_123)}")
-println(f"foo(123, 321, foo_res)() = {foo_123()}")
-println(f"foo_res = {foo_res}")
+println(`type of foo(123, 321, foo_res) is ${typeof(foo_123)}`)
+println(`foo(123, 321, foo_res)() = ${foo_123()}`)
+println(`foo_res = ${foo_res}`)
 
 const [name1, {name, surname, age, job}] = ["Max", user1]
 
-println(f"{name1} {name} {surname} {age} {job} {[4:u32, 5:u32, 6:u32]}")
-println(f"t1 = {t1}")
+println(`${name1} ${name} ${surname} ${age} ${job} ${[4:u32, 5:u32, 6:u32]}`)
+println(`t1 = ${t1}`)
 
 for (let i = 0; i < 64; ++i)
-    println(f"i = {(2 ** i) as u64}")
+    println(`i = ${(2 ** i) as u64}`)
 
 for (let j: u64; j < 5; ++j)
     for (let i: u64; i < 5; ++i) {
@@ -136,5 +136,5 @@ switch (0) {
     const a: i32 = 5
     const b: i32 = 3
     const result = asm volatile("addl $2, $1" : "=r"<i32> : "r"(a), "r"(b))
-    println(f"asm for {a} + {b} = {result}")
+    println(`asm for ${a} + ${b} = ${result}`)
 }

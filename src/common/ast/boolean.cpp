@@ -16,7 +16,7 @@ std::ostream &NJS::BooleanExpression::Print(std::ostream &stream) const
     return stream << (Value ? "true" : "false");
 }
 
-NJS::ValuePtr NJS::BooleanExpression::PGenLLVM(Builder &builder, const TypePtr &)
+NJS::ValuePtr NJS::BooleanExpression::_GenIntermediate(Builder &builder, const TypePtr &)
 {
     const auto result_type = builder.GetTypeContext().GetBooleanType();
     const auto result_value = builder.GetBuilder().getInt1(Value);

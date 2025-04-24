@@ -4,7 +4,7 @@
 void NJS::Parser::ParseTypeAlias()
 {
     const auto where = Expect("type").Where;
-    const auto name = Expect(TokenType_Symbol).String;
+    const auto name = Expect(TokenType_Symbol).Value;
     Expect("=");
     m_TypeContext.GetNamedTypeReference(name) = ParseType();
 }

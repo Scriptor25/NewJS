@@ -23,7 +23,7 @@ std::ostream &NJS::ImportStatement::Print(std::ostream &stream) const
     return Mapping.Print(stream << "import ") << " from " << '"' << Filepath.string() << '"';
 }
 
-void NJS::ImportStatement::PGenLLVM(Builder &builder, bool)
+void NJS::ImportStatement::_GenIntermediate(Builder &builder, bool)
 {
     for (auto &sub_module_id: SubModuleIDs)
         builder.CreateModuleCall(sub_module_id);

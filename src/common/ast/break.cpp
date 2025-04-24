@@ -11,7 +11,7 @@ std::ostream &NJS::BreakStatement::Print(std::ostream &stream) const
     return stream << "break";
 }
 
-void NJS::BreakStatement::PGenLLVM(Builder &builder, bool)
+void NJS::BreakStatement::_GenIntermediate(Builder &builder, bool)
 {
     const auto dest = builder.CurrentTailBlock();
     if (!dest)

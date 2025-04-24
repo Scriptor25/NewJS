@@ -17,9 +17,9 @@ std::ostream &NJS::SizeOfExpression::Print(std::ostream &stream) const
     return Operand->Print(stream << "sizeof(") << ")";
 }
 
-NJS::ValuePtr NJS::SizeOfExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+NJS::ValuePtr NJS::SizeOfExpression::_GenIntermediate(Builder &builder, const TypePtr &expected_type)
 {
-    const auto operand = Operand->GenLLVM(builder, nullptr);
+    const auto operand = Operand->GenIntermediate(builder, nullptr);
 
     const auto type = expected_type && expected_type->IsInteger()
                           ? expected_type

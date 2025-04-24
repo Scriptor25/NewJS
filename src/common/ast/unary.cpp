@@ -25,7 +25,7 @@ std::ostream &NJS::UnaryExpression::Print(std::ostream &stream) const
     return Operand->Print(stream << '(' << (Prefix ? Operator : "")) << (Prefix ? "" : Operator) << ')';
 }
 
-NJS::ValuePtr NJS::UnaryExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+NJS::ValuePtr NJS::UnaryExpression::_GenIntermediate(Builder &builder, const TypePtr &expected_type)
 {
     static const std::map<std::string_view, UnaryOperator> operators
     {
@@ -44,7 +44,7 @@ NJS::ValuePtr NJS::UnaryExpression::PGenLLVM(Builder &builder, const TypePtr &ex
         "--"sv,
     };
 
-    auto operand = Operand->GenLLVM(builder, expected_type);
+    auto operand = Operand->GenIntermediate(builder, expected_type);
 
     if (auto [
             result_,

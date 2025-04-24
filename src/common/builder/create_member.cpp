@@ -49,7 +49,7 @@ NJS::MemberValue NJS::Builder::CreateMember(const ValuePtr &value, const unsigne
                 true
             };
         if (is_const_)
-            return {CreateCast(default_->GenLLVM(*this, type_), type_), false};
+            return {CreateCast(default_->GenIntermediate(*this, type_), type_), false};
         return {LValue::Create(*this, type_, gep, value->IsConst() || is_const_), false};
     }
 

@@ -1,52 +1,52 @@
 #include <sstream>
+#include <llvm/IR/InlineAsm.h>
 #include <newjs/ast.hpp>
 #include <newjs/parser.hpp>
 #include <newjs/type_context.hpp>
 
 NJS::ExpressionPtr NJS::Parser::ParseFormatExpression()
 {
-    const auto where = Expect("f").Where;
-    if (!At(TokenType_String))
-        return ParseSymbolExpression(where, "f");
+    const auto [
+        where_,
+        type_,
+        raw_,
+        value_,
+        int_,
+        float_
+    ] = Expect(TokenType_Format);
 
-    const auto source = Expect(TokenType_String).String;
+    std::vector<FormatNodePtr> nodes;
 
-    std::map<unsigned, std::string> static_operands;
-    std::map<unsigned, ExpressionPtr> dynamic_operands;
-
-    std::string static_operand;
-    unsigned operand_index = 0;
-
-    for (unsigned i = 0; i < source.size(); ++i)
+    auto source = value_;
+    for (size_t pos; (pos = source.find("${")) != std::string::npos;)
     {
-        if (source[i] != '{')
+        if (pos != 0)
         {
-            static_operand += source[i];
-            continue;
+            auto value = source.substr(0, pos);
+            nodes.emplace_back(std::make_unique<ConstantFormatNode>(std::move(value)));
         }
-        if (i == source.size() - 1 || source[i + 1] == '}')
-        {
-            static_operand += source[i++];
-            continue;
-        }
-        if (!static_operand.empty())
-        {
-            static_operands[operand_index++] = static_operand;
-            static_operand.clear();
-        }
-        std::stringstream stream(source.substr(i + 1));
+
+        source = source.substr(pos + 2);
+
+        std::stringstream stream(source);
         Parser parser(
             m_TypeContext,
             m_Builder,
             stream,
-            SourceLocation(where.Filename, where.Row, where.Column + i + 2),
+            where_,
             m_MacroMap,
             m_IsMain);
-        dynamic_operands[operand_index++] = parser.ParseExpression();
-        i += stream.tellg();
-    }
-    if (!static_operand.empty())
-        static_operands[operand_index++] = static_operand;
+        auto value = parser.ParseExpression();
+        nodes.emplace_back(std::make_unique<ExpressionFormatNode>(std::move(value)));
 
-    return std::make_shared<FormatExpression>(where, operand_index, static_operands, dynamic_operands);
+        source = source.substr(stream.gcount());
+        source = source.substr(source.find('}') + 1);
+    }
+
+    if (!source.empty())
+    {
+        nodes.emplace_back(std::make_unique<ConstantFormatNode>(std::move(source)));
+    }
+
+    return std::make_shared<FormatExpression>(where_, std::move(nodes));
 }

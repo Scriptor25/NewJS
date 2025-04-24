@@ -16,7 +16,7 @@ std::ostream &NJS::WhileStatement::Print(std::ostream &stream) const
     return Body->Print(Condition->Print(stream << "while (") << ") ");
 }
 
-void NJS::WhileStatement::PGenLLVM(Builder &builder, bool)
+void NJS::WhileStatement::_GenIntermediate(Builder &builder, bool)
 {
     const auto parent_function = builder.GetBuilder().GetInsertBlock()->getParent();
     const auto head_block = llvm::BasicBlock::Create(builder.GetContext(), "head", parent_function);
@@ -27,7 +27,7 @@ void NJS::WhileStatement::PGenLLVM(Builder &builder, bool)
     builder.GetBuilder().CreateBr(head_block);
 
     builder.GetBuilder().SetInsertPoint(head_block);
-    auto condition = Condition->GenLLVM(builder, builder.GetTypeContext().GetBooleanType());
+    auto condition = Condition->GenIntermediate(builder, builder.GetTypeContext().GetBooleanType());
     if (!condition->GetType()->IsBoolean())
     {
         if (!condition->GetType()->IsIntegerLike())
@@ -40,7 +40,7 @@ void NJS::WhileStatement::PGenLLVM(Builder &builder, bool)
     builder.GetBuilder().CreateCondBr(condition->Load(), loop_block, tail_block);
 
     builder.GetBuilder().SetInsertPoint(loop_block);
-    Body->GenLLVM(builder, false);
+    Body->GenIntermediate(builder, false);
     builder.GetBuilder().CreateBr(head_block);
 
     builder.GetBuilder().SetInsertPoint(tail_block);

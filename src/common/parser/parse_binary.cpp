@@ -43,11 +43,11 @@ NJS::ExpressionPtr NJS::Parser::ParseBinaryExpression(ExpressionPtr lhs, const u
 
     auto get_pre = [&]
     {
-        return OPS.at(m_Token.String);
+        return OPS.at(m_Token.Value);
     };
     auto has_pre = [&]
     {
-        return OPS.contains(m_Token.String);
+        return OPS.contains(m_Token.Value);
     };
 
     while (At(TokenType_Operator) && has_pre() && get_pre() >= min_pre)

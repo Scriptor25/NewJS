@@ -7,7 +7,7 @@ extern function realloc(block: void[], count: u64): void[]
 extern function free(block: void[])
 
 glfw.setErrorCallback($(error_code: i32, description: i8[]) {
-    println(f"[GLFW {error_code}] {description}")
+    println(`[GLFW ${error_code}] ${description}`)
 })
 
 if (!glfw.init()) {

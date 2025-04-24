@@ -6,9 +6,9 @@ NJS::Statement::Statement(SourceLocation where)
 {
 }
 
-void NJS::Statement::GenLLVM(Builder &builder, const bool is_export) try
+void NJS::Statement::GenIntermediate(Builder &builder, const bool is_export) try
 {
-    PGenLLVM(builder, is_export);
+    _GenIntermediate(builder, is_export);
 }
 catch (const RTError &error)
 {
@@ -22,14 +22,14 @@ void NJS::Statement::GenImport(
     ReferenceInfo &dest_info,
     std::string &dest_name) try
 {
-    PGenImport(builder, module_id, dest_value, dest_info, dest_name);
+    _GenImport(builder, module_id, dest_value, dest_info, dest_name);
 }
 catch (const RTError &error)
 {
     Error(error, Where, {});
 }
 
-void NJS::Statement::PGenImport(
+void NJS::Statement::_GenImport(
     Builder &builder,
     const std::string &module_id,
     ValuePtr &dest_value,
@@ -44,18 +44,18 @@ NJS::Expression::Expression(SourceLocation where)
 {
 }
 
-NJS::ValuePtr NJS::Expression::GenLLVM(Builder &builder, const TypePtr &expected_type) try
+NJS::ValuePtr NJS::Expression::GenIntermediate(Builder &builder, const TypePtr &expected_type) try
 {
-    return PGenLLVM(builder, expected_type);
+    return _GenIntermediate(builder, expected_type);
 }
 catch (const RTError &error)
 {
     Error(error, Where, {});
 }
 
-void NJS::Expression::PGenLLVM(Builder &builder, bool is_export) try
+void NJS::Expression::_GenIntermediate(Builder &builder, bool is_export) try
 {
-    (void) GenLLVM(builder, nullptr);
+    (void) GenIntermediate(builder, nullptr);
 }
 catch (const RTError &error)
 {

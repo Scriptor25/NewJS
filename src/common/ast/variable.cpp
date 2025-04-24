@@ -28,15 +28,15 @@ std::ostream &NJS::VariableStatement::Print(std::ostream &stream) const
     return stream;
 }
 
-void NJS::VariableStatement::PGenLLVM(Builder &builder, const bool is_export)
+void NJS::VariableStatement::_GenIntermediate(Builder &builder, const bool is_export)
 {
     const auto value = Value
-                           ? Value->GenLLVM(builder, Parameter->Info.Type)
+                           ? Value->GenIntermediate(builder, Parameter->Info.Type)
                            : nullptr;
     Parameter->CreateVars(builder, value, is_export, IsExtern, Parameter->Info.IsConst, Parameter->Info.IsReference);
 }
 
-void NJS::VariableStatement::PGenImport(
+void NJS::VariableStatement::_GenImport(
     Builder &builder,
     const std::string &module_id,
     ValuePtr &dest_value,

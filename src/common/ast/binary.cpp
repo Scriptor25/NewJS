@@ -28,7 +28,7 @@ std::ostream &NJS::BinaryExpression::Print(std::ostream &stream) const
     return RightOperand->Print(LeftOperand->Print(stream << '(') << ' ' << Operator << ' ') << ')';
 }
 
-NJS::ValuePtr NJS::BinaryExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+NJS::ValuePtr NJS::BinaryExpression::_GenIntermediate(Builder &builder, const TypePtr &expected_type)
 {
     static const std::map<std::string_view, BinaryOperator> operators
     {
@@ -86,12 +86,12 @@ NJS::ValuePtr NJS::BinaryExpression::PGenLLVM(Builder &builder, const TypePtr &e
     const auto is_comparator = comparator_operators.contains(Operator);
     const auto is_assignment = assignment_operators.contains(Operator);
 
-    auto left_operand = LeftOperand->GenLLVM(
+    auto left_operand = LeftOperand->GenIntermediate(
         builder,
         is_comparator
             ? nullptr
             : expected_type);
-    auto right_operand = RightOperand->GenLLVM(
+    auto right_operand = RightOperand->GenIntermediate(
         builder,
         is_comparator
             ? nullptr

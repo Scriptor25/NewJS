@@ -9,7 +9,7 @@ NJS::StatementPtr NJS::Parser::ParseImportStatement()
     const auto where = Expect("import").Where;
     const auto mapping = ParseImportMapping();
     Expect("from");
-    const auto filename = Expect(TokenType_String).String;
+    const auto filename = Expect(TokenType_String).Value;
 
     auto filepath = std::filesystem::path(filename);
     if (filepath.is_relative())
@@ -76,7 +76,7 @@ NJS::ImportMapping NJS::Parser::ParseImportMapping()
         return {true};
 
     if (At(TokenType_Symbol))
-        return {false, Skip().String, {}};
+        return {false, Skip().Value, {}};
 
     std::string overflow;
     std::map<std::string, std::string> mappings;
@@ -86,12 +86,12 @@ NJS::ImportMapping NJS::Parser::ParseImportMapping()
     {
         if (NextAt("..."))
         {
-            overflow = Expect(TokenType_Symbol).String;
+            overflow = Expect(TokenType_Symbol).Value;
             break;
         }
 
-        const auto name = Expect(TokenType_Symbol).String;
-        const auto mapping = NextAt(":") ? Expect(TokenType_Symbol).String : name;
+        const auto name = Expect(TokenType_Symbol).Value;
+        const auto mapping = NextAt(":") ? Expect(TokenType_Symbol).Value : name;
         mappings[name] = mapping;
 
         if (!At("}"))

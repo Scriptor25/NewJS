@@ -44,7 +44,7 @@ std::ostream &NJS::SwitchStatement::Print(std::ostream &stream) const
     return Spacing(stream << std::endl) << '}';
 }
 
-void NJS::SwitchStatement::PGenLLVM(Builder &builder, bool)
+void NJS::SwitchStatement::_GenIntermediate(Builder &builder, bool)
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     const auto tail_block = llvm::BasicBlock::Create(builder.GetContext(), "tail", parent);
@@ -54,13 +54,13 @@ void NJS::SwitchStatement::PGenLLVM(Builder &builder, bool)
 
     builder.StackPush({}, {}, nullptr, tail_block);
 
-    const auto condition = Condition->GenLLVM(builder, nullptr);
+    const auto condition = Condition->GenIntermediate(builder, nullptr);
     const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(), default_dest);
 
     if (DefaultCase)
     {
         builder.GetBuilder().SetInsertPoint(default_dest);
-        DefaultCase->GenLLVM(builder, false);
+        DefaultCase->GenIntermediate(builder, false);
         default_dest = builder.GetBuilder().GetInsertBlock();
         if (!default_dest->getTerminator())
             builder.GetBuilder().CreateBr(tail_block);
@@ -71,12 +71,12 @@ void NJS::SwitchStatement::PGenLLVM(Builder &builder, bool)
         auto dest = llvm::BasicBlock::Create(builder.GetContext(), "case", parent);
         for (const auto &entry: entries_)
         {
-            const auto value = entry->GenLLVM(builder, condition->GetType());
+            const auto value = entry->GenIntermediate(builder, condition->GetType());
             const auto value_int = llvm::dyn_cast<llvm::ConstantInt>(value->Load());
             switch_inst->addCase(value_int, dest);
         }
         builder.GetBuilder().SetInsertPoint(dest);
-        case_->GenLLVM(builder, false);
+        case_->GenIntermediate(builder, false);
         dest = builder.GetBuilder().GetInsertBlock();
         if (!dest->getTerminator())
             builder.GetBuilder().CreateBr(tail_block);
@@ -126,7 +126,7 @@ std::ostream &NJS::SwitchExpression::Print(std::ostream &stream) const
     return Spacing(stream << std::endl) << '}';
 }
 
-NJS::ValuePtr NJS::SwitchExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+NJS::ValuePtr NJS::SwitchExpression::_GenIntermediate(Builder &builder, const TypePtr &expected_type)
 {
     const auto parent = builder.GetBuilder().GetInsertBlock()->getParent();
     auto default_dest = llvm::BasicBlock::Create(builder.GetContext(), "default", parent);
@@ -134,14 +134,14 @@ NJS::ValuePtr NJS::SwitchExpression::PGenLLVM(Builder &builder, const TypePtr &e
 
     builder.StackPush({}, {}, nullptr, tail_block);
 
-    const auto condition = Condition->GenLLVM(builder, nullptr);
+    const auto condition = Condition->GenIntermediate(builder, nullptr);
     const auto switch_inst = builder.GetBuilder().CreateSwitch(condition->Load(), default_dest);
 
     std::vector<std::pair<llvm::BasicBlock *, ValuePtr>> dest_blocks;
     TypePtr result_type;
     {
         builder.GetBuilder().SetInsertPoint(default_dest);
-        auto default_value = DefaultCase->GenLLVM(builder, expected_type);
+        auto default_value = DefaultCase->GenIntermediate(builder, expected_type);
         if (default_value->IsLValue())
             default_value = RValue::Create(builder, default_value->GetType(), default_value->Load());
         result_type = expected_type ? expected_type : default_value->GetType();
@@ -156,12 +156,12 @@ NJS::ValuePtr NJS::SwitchExpression::PGenLLVM(Builder &builder, const TypePtr &e
         auto dest = llvm::BasicBlock::Create(builder.GetContext(), "case", parent);
         for (const auto &entry: entries_)
         {
-            const auto value = entry->GenLLVM(builder, condition->GetType());
+            const auto value = entry->GenIntermediate(builder, condition->GetType());
             const auto value_int = llvm::dyn_cast<llvm::ConstantInt>(value->Load());
             switch_inst->addCase(value_int, dest);
         }
         builder.GetBuilder().SetInsertPoint(dest);
-        auto case_value = case_->GenLLVM(builder, result_type);
+        auto case_value = case_->GenIntermediate(builder, result_type);
         if (case_value->IsLValue())
             case_value = RValue::Create(builder, case_value->GetType(), case_value->Load());
         case_value = builder.CreateCast(case_value, result_type);

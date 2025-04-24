@@ -16,7 +16,7 @@ std::ostream &NJS::CharExpression::Print(std::ostream &stream) const
     return stream << '\'' << Value << '\'';
 }
 
-NJS::ValuePtr NJS::CharExpression::PGenLLVM(Builder &builder, const TypePtr &)
+NJS::ValuePtr NJS::CharExpression::_GenIntermediate(Builder &builder, const TypePtr &)
 {
     const auto result_type = builder.GetTypeContext().GetCharType();
     const auto result_value = builder.GetBuilder().getInt8(Value);

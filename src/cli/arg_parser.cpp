@@ -94,6 +94,7 @@ void NJS::ArgParser::Print() const
     }
 
     std::cerr << m_Executable << " [OPTION <VALUE> | FLAG | FILENAME]..." << std::endl;
+
     std::cerr << "OPTION" << std::endl;
     for (const auto &[pat_, description_]: options | std::ranges::views::values)
     {
@@ -106,6 +107,7 @@ void NJS::ArgParser::Print() const
         print_description(description_);
         std::cerr << std::endl;
     }
+
     std::cerr << "FLAG" << std::endl;
     for (const auto &[pat_, description_]: flags | std::ranges::views::values)
     {

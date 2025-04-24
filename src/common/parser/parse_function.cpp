@@ -30,11 +30,11 @@ NJS::StatementPtr NJS::Parser::ParseFunctionStatement(const bool is_extern)
         }
         else
         {
-            name = Expect(TokenType_Operator).String;
+            name = Expect(TokenType_Operator).Value;
         }
     }
     else
-        name = Expect(TokenType_Symbol).String;
+        name = Expect(TokenType_Symbol).Value;
 
     std::vector<ParameterPtr> parameters;
     Expect("(");
@@ -65,7 +65,7 @@ NJS::ExpressionPtr NJS::Parser::ParseFunctionExpression()
             const auto capture_is_const = NextAt("const");
             const auto capture_is_reference = NextAt("&");
             auto capture_where = CurrentLocation();
-            auto capture_name = Expect(TokenType_Symbol).String;
+            auto capture_name = Expect(TokenType_Symbol).Value;
 
             auto capture_value = NextAt(":")
                                      ? ParseExpression()

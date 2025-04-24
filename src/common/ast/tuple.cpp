@@ -34,7 +34,7 @@ std::ostream &NJS::TupleExpression::Print(std::ostream &stream) const
     return Type->Print(stream << ':');
 }
 
-NJS::ValuePtr NJS::TupleExpression::PGenLLVM(Builder &builder, const TypePtr &expected_type)
+NJS::ValuePtr NJS::TupleExpression::_GenIntermediate(Builder &builder, const TypePtr &expected_type)
 {
     TypePtr result_type;
     if (Type)
@@ -67,7 +67,7 @@ NJS::ValuePtr NJS::TupleExpression::PGenLLVM(Builder &builder, const TypePtr &ex
     for (unsigned i = 0; i < Elements.size(); ++i)
     {
         auto type = get_element_type(i);
-        auto value = Elements[i]->GenLLVM(builder, type);
+        auto value = Elements[i]->GenIntermediate(builder, type);
         element_values.emplace_back(value);
         element_types.emplace_back(value->GetType());
 

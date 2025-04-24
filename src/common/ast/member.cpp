@@ -21,10 +21,10 @@ std::ostream &NJS::MemberExpression::Print(std::ostream &stream) const
     return Object->Print(stream) << (Dereference ? "*." : ".") << Member;
 }
 
-NJS::ValuePtr NJS::MemberExpression::PGenLLVM(Builder &builder, const TypePtr &)
+NJS::ValuePtr NJS::MemberExpression::_GenIntermediate(Builder &builder, const TypePtr &)
 {
     builder.PushLastObjectContext();
-    auto object = Object->GenLLVM(builder, nullptr);
+    auto object = Object->GenIntermediate(builder, nullptr);
     builder.PopLastObjectContext();
     if (Dereference)
     {
